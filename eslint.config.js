@@ -6,8 +6,15 @@ const angular = require("angular-eslint");
 const eslintConfigPrettier = require("eslint-config-prettier");
 
 module.exports = tseslint.config(
+  { ignores: ["src/app/core/transport/generated/**"] },
   {
-    ignores: [".angular/**", ".nx/**", "coverage/**", "dist/**"],
+    ignores: [
+      ".angular/**",
+      ".nx/**",
+      "coverage/**",
+      "dist/**",
+      "src/app/core/transport/generated/**",
+    ],
     files: ["**/*.ts"],
     extends: [
       eslint.configs.recommended,
@@ -138,6 +145,145 @@ module.exports = tseslint.config(
       "@angular-eslint/template/prefer-ngsrc": "warn",
       "@angular-eslint/template/prefer-self-closing-tags": "warn",
       "@angular-eslint/template/use-track-by-function": "warn",
+    },
+  },
+  {
+    files: ["src/app/**/*.ts"],
+    ignores: ["src/app/features/**/infrastructure/**/*.ts"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: ["@foblex/**"],
+              message:
+                "Keep canvas-library types inside infrastructure adapters.",
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    files: ["src/app/features/**/infrastructure/**/*.ts"],
+    ignores: ["**/*.spec.ts"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: [
+                "**/presentation/**",
+                "primeng",
+                "primeng/**",
+                "@angular/material/**",
+              ],
+              message:
+                "Infrastructure adapters must not depend on presentation components.",
+            },
+          ],
+        },
+      ],
+    },
+  },
+  // Layer boundaries apply to both value and type imports.
+  {
+    files: [
+      "src/app/features/**/domain/**/*.ts",
+      "src/app/features/**/application/**/*.ts",
+    ],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: [
+                "@angular/**",
+                "primeng",
+                "primeng/**",
+                "rxjs",
+                "rxjs/**",
+                "@foblex/**",
+                "**/presentation/**",
+                "**/infrastructure/**",
+                "**/core/**",
+                "**/shared/ui/**",
+                "**/generated/**",
+              ],
+              message:
+                "Domain and application contracts must remain independent of UI, transport and framework adapters.",
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    files: ["src/app/features/**/domain/**/*.ts"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: [
+                "@angular/**",
+                "primeng",
+                "primeng/**",
+                "rxjs",
+                "rxjs/**",
+                "@foblex/**",
+                "**/application/**",
+                "**/presentation/**",
+                "**/infrastructure/**",
+                "**/core/**",
+                "**/shared/ui/**",
+                "**/generated/**",
+              ],
+              message:
+                "Domain models may depend only on framework-independent domain contracts.",
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    files: ["src/app/features/**/presentation/**/*.ts"],
+    ignores: ["src/app/features/**/presentation/*.routes.ts", "**/*.spec.ts"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: ["**/infrastructure/**", "**/generated/**", "@foblex/**"],
+              message:
+                "Consume application contracts; compose infrastructure and canvas adapters at feature route boundaries.",
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    files: ["src/app/core/**/*.ts", "src/app/shared/**/*.ts"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: ["**/features/**", "@foblex/**"],
+              message:
+                "Core and shared UI must not depend on feature implementations or canvas libraries.",
+            },
+          ],
+        },
+      ],
     },
   },
 );

@@ -1,0 +1,417 @@
+{
+  "date": "2026-10-04",
+  "full": {
+    "info": 0,
+    "low": 0,
+    "moderate": 0,
+    "high": 13,
+    "critical": 0,
+    "total": 13
+  },
+  "production": {
+    "info": 0,
+    "low": 0,
+    "moderate": 0,
+    "high": 0,
+    "critical": 0,
+    "total": 0
+  },
+  "lockfileSha256": "22c36b3108eeb245c791f3ccb230fa4f9a272a81f4851a886e5aeb3fb22ddca7",
+  "highAffectedPackages": [
+    {
+      "package": "@release-it/conventional-changelog",
+      "direct": true,
+      "fixAvailable": {
+        "name": "@release-it/conventional-changelog",
+        "version": "6.0.0",
+        "isSemVerMajor": true
+      }
+    },
+    {
+      "package": "basic-ftp",
+      "direct": false,
+      "fixAvailable": {
+        "name": "release-it",
+        "version": "15.10.3",
+        "isSemVerMajor": true
+      }
+    },
+    {
+      "package": "braces",
+      "direct": false,
+      "fixAvailable": {
+        "name": "commitizen",
+        "version": "2.8.2",
+        "isSemVerMajor": true
+      }
+    },
+    {
+      "package": "commitizen",
+      "direct": true,
+      "fixAvailable": {
+        "name": "commitizen",
+        "version": "2.8.2",
+        "isSemVerMajor": true
+      }
+    },
+    {
+      "package": "cz-conventional-changelog",
+      "direct": true,
+      "fixAvailable": {
+        "name": "cz-conventional-changelog",
+        "version": "3.0.1",
+        "isSemVerMajor": true
+      }
+    },
+    {
+      "package": "find-node-modules",
+      "direct": false,
+      "fixAvailable": {
+        "name": "commitizen",
+        "version": "2.8.2",
+        "isSemVerMajor": true
+      }
+    },
+    {
+      "package": "findup-sync",
+      "direct": false,
+      "fixAvailable": {
+        "name": "commitizen",
+        "version": "2.8.2",
+        "isSemVerMajor": true
+      }
+    },
+    {
+      "package": "get-uri",
+      "direct": false,
+      "fixAvailable": {
+        "name": "release-it",
+        "version": "15.10.3",
+        "isSemVerMajor": true
+      }
+    },
+    {
+      "package": "http-cache-semantics",
+      "direct": false,
+      "fixAvailable": true
+    },
+    {
+      "package": "micromatch",
+      "direct": false,
+      "fixAvailable": {
+        "name": "commitizen",
+        "version": "2.8.2",
+        "isSemVerMajor": true
+      }
+    },
+    {
+      "package": "pac-proxy-agent",
+      "direct": false,
+      "fixAvailable": {
+        "name": "release-it",
+        "version": "15.10.3",
+        "isSemVerMajor": true
+      }
+    },
+    {
+      "package": "proxy-agent",
+      "direct": false,
+      "fixAvailable": {
+        "name": "release-it",
+        "version": "15.10.3",
+        "isSemVerMajor": true
+      }
+    },
+    {
+      "package": "release-it",
+      "direct": true,
+      "fixAvailable": {
+        "name": "release-it",
+        "version": "15.10.3",
+        "isSemVerMajor": true
+      }
+    }
+  ],
+  "releaseDecision": "Production audit clear; development tooling high findings need maintainer triage before approving release tooling. No audit-based claim of a complete security review.",
+  "licenseDeclarations": 1039,
+  "compatibleFixDryRun": {
+    "added": 0,
+    "removed": 0,
+    "changed": 0,
+    "command": "npm audit fix --package-lock-only --ignore-scripts --dry-run --json"
+  },
+  "accessibilityTool": {
+    "package": "axe-core",
+    "version": "4.13.0",
+    "license": "MPL-2.0",
+    "scope": "Development-only test injection; absent from production application imports"
+  },
+  "rootAdvisories": [
+    {
+      "package": "braces",
+      "installed": "3.0.3",
+      "latestChecked": "3.0.3",
+      "patchedReleaseAvailable": false,
+      "source": "https://github.com/advisories/GHSA-vfj7-8cjw-p6xm",
+      "owner": "Repository maintainer",
+      "nextAction": "Track upstream patch; review commit-tool input exposure and disposition before release tooling signoff"
+    },
+    {
+      "package": "http-cache-semantics",
+      "installed": "4.2.0",
+      "latestChecked": "4.2.0",
+      "patchedReleaseAvailable": false,
+      "source": "https://github.com/advisories/GHSA-ch52-4w7c-c8xp",
+      "owner": "Repository maintainer",
+      "nextAction": "Track upstream patch and signing/registry cache dependency updates; approve tooling input policy"
+    },
+    {
+      "package": "basic-ftp",
+      "installed": "5.3.1",
+      "latestChecked": "6.2.1",
+      "patchedReleaseAvailable": true,
+      "source": "https://github.com/advisories/GHSA-c475-qrg2-pj4r",
+      "owner": "Repository maintainer",
+      "nextAction": "Review patched major-version compatibility through get-uri/release-it before overriding its dependency range"
+    }
+  ],
+  "previousAudit": {
+    "date": "2026-10-03",
+    "full": {
+      "info": 0,
+      "low": 0,
+      "moderate": 0,
+      "high": 24,
+      "critical": 0,
+      "total": 24
+    },
+    "production": {
+      "info": 0,
+      "low": 0,
+      "moderate": 0,
+      "high": 0,
+      "critical": 0,
+      "total": 0
+    },
+    "highAffectedPackages": [
+      {
+        "package": "@angular-eslint/builder",
+        "direct": false,
+        "fixAvailable": {
+          "name": "angular-eslint",
+          "version": "22.5.0",
+          "isSemVerMajor": true
+        }
+      },
+      {
+        "package": "@angular-eslint/schematics",
+        "direct": false,
+        "fixAvailable": {
+          "name": "angular-eslint",
+          "version": "22.5.0",
+          "isSemVerMajor": true
+        }
+      },
+      {
+        "package": "@angular/cli",
+        "direct": true,
+        "fixAvailable": {
+          "name": "@angular/cli",
+          "version": "22.2.1",
+          "isSemVerMajor": true
+        }
+      },
+      {
+        "package": "@release-it/conventional-changelog",
+        "direct": true,
+        "fixAvailable": {
+          "name": "@release-it/conventional-changelog",
+          "version": "6.0.0",
+          "isSemVerMajor": true
+        }
+      },
+      {
+        "package": "@sigstore/sign",
+        "direct": false,
+        "fixAvailable": {
+          "name": "@angular/cli",
+          "version": "22.2.1",
+          "isSemVerMajor": true
+        }
+      },
+      {
+        "package": "@sigstore/tuf",
+        "direct": false,
+        "fixAvailable": {
+          "name": "@angular/cli",
+          "version": "22.2.1",
+          "isSemVerMajor": true
+        }
+      },
+      {
+        "package": "angular-eslint",
+        "direct": true,
+        "fixAvailable": {
+          "name": "angular-eslint",
+          "version": "22.5.0",
+          "isSemVerMajor": true
+        }
+      },
+      {
+        "package": "basic-ftp",
+        "direct": false,
+        "fixAvailable": {
+          "name": "release-it",
+          "version": "15.10.3",
+          "isSemVerMajor": true
+        }
+      },
+      {
+        "package": "braces",
+        "direct": false,
+        "fixAvailable": {
+          "name": "commitizen",
+          "version": "2.8.2",
+          "isSemVerMajor": true
+        }
+      },
+      {
+        "package": "commitizen",
+        "direct": true,
+        "fixAvailable": {
+          "name": "commitizen",
+          "version": "2.8.2",
+          "isSemVerMajor": true
+        }
+      },
+      {
+        "package": "cz-conventional-changelog",
+        "direct": true,
+        "fixAvailable": {
+          "name": "cz-conventional-changelog",
+          "version": "3.0.1",
+          "isSemVerMajor": true
+        }
+      },
+      {
+        "package": "find-node-modules",
+        "direct": false,
+        "fixAvailable": {
+          "name": "commitizen",
+          "version": "2.8.2",
+          "isSemVerMajor": true
+        }
+      },
+      {
+        "package": "findup-sync",
+        "direct": false,
+        "fixAvailable": {
+          "name": "commitizen",
+          "version": "2.8.2",
+          "isSemVerMajor": true
+        }
+      },
+      {
+        "package": "get-uri",
+        "direct": false,
+        "fixAvailable": {
+          "name": "release-it",
+          "version": "15.10.3",
+          "isSemVerMajor": true
+        }
+      },
+      {
+        "package": "http-cache-semantics",
+        "direct": false,
+        "fixAvailable": {
+          "name": "@angular/cli",
+          "version": "22.2.1",
+          "isSemVerMajor": true
+        }
+      },
+      {
+        "package": "make-fetch-happen",
+        "direct": false,
+        "fixAvailable": {
+          "name": "@angular/cli",
+          "version": "22.2.1",
+          "isSemVerMajor": true
+        }
+      },
+      {
+        "package": "micromatch",
+        "direct": false,
+        "fixAvailable": {
+          "name": "commitizen",
+          "version": "2.8.2",
+          "isSemVerMajor": true
+        }
+      },
+      {
+        "package": "npm-registry-fetch",
+        "direct": false,
+        "fixAvailable": {
+          "name": "@angular/cli",
+          "version": "22.2.1",
+          "isSemVerMajor": true
+        }
+      },
+      {
+        "package": "pac-proxy-agent",
+        "direct": false,
+        "fixAvailable": {
+          "name": "release-it",
+          "version": "15.10.3",
+          "isSemVerMajor": true
+        }
+      },
+      {
+        "package": "pacote",
+        "direct": false,
+        "fixAvailable": {
+          "name": "@angular/cli",
+          "version": "22.2.1",
+          "isSemVerMajor": true
+        }
+      },
+      {
+        "package": "proxy-agent",
+        "direct": false,
+        "fixAvailable": {
+          "name": "release-it",
+          "version": "15.10.3",
+          "isSemVerMajor": true
+        }
+      },
+      {
+        "package": "release-it",
+        "direct": true,
+        "fixAvailable": {
+          "name": "release-it",
+          "version": "15.10.3",
+          "isSemVerMajor": true
+        }
+      },
+      {
+        "package": "sigstore",
+        "direct": false,
+        "fixAvailable": {
+          "name": "@angular/cli",
+          "version": "22.2.1",
+          "isSemVerMajor": true
+        }
+      },
+      {
+        "package": "tuf-js",
+        "direct": false,
+        "fixAvailable": {
+          "name": "@angular/cli",
+          "version": "22.2.1",
+          "isSemVerMajor": true
+        }
+      }
+    ]
+  },
+  "rootAdvisoriesLastChecked": "2026-10-03",
+  "auditRefreshNote": "The lockfile is unchanged; advisory metadata now reports 13 affected high-severity development packages. Compatible lockfile-only fix dry-run still proposes zero changes. Root advisory release availability remains the October 3 investigation."
+}

@@ -1,0 +1,106 @@
+<h1 tabindex="-1">{{ "Account and sessions" | localize }}</h1>
+@if (error()) {
+  <p role="alert">{{ error() | localize }}</p>
+}
+@if (busy()) {
+  <p role="status">{{ "Loading…" | localize }}</p>
+}
+<form (ngSubmit)="changePassword()">
+  <h2>{{ "Change password" | localize }}</h2>
+  <label for="current-password">{{ "Current password" | localize }}</label>
+  <input
+    autocomplete="current-password"
+    id="current-password"
+    name="currentPassword"
+    type="password"
+    [ngModel]="currentPassword()"
+    (ngModelChange)="currentPassword.set($event)"
+  />
+  <label for="new-password">{{ "New password" | localize }}</label>
+  <input
+    autocomplete="new-password"
+    id="new-password"
+    minlength="8"
+    name="newPassword"
+    type="password"
+    [ngModel]="newPassword()"
+    (ngModelChange)="newPassword.set($event)"
+  />
+  <button type="submit" [disabled]="busy()">
+    {{ "Change password" | localize }}
+  </button>
+</form>
+<p>
+  {{
+    "Forgot your password? Contact your administrator for reset assistance."
+      | localize
+  }}
+</p>
+<h2>{{ "Sessions" | localize }}</h2>
+<ul>
+  @for (session of sessions(); track session.ref) {
+    <li>
+      {{ session.device }} · <time>{{ session.lastUsed }}</time> ·
+      <time>{{ session.expires }}</time>
+      <button
+        type="button"
+        [disabled]="busy()"
+        (click)="sessionDetail(session.ref)"
+      >
+        {{ "Details" | localize }}
+      </button>
+      <button type="button" [disabled]="busy()" (click)="revoke(session.ref)">
+        {{ "Revoke" | localize }}
+      </button>
+    </li>
+  } @empty {
+    <li>{{ "No sessions" | localize }}</li>
+  }
+</ul>
+<button
+  type="button"
+  [disabled]="busy() || page() <= 1"
+  (click)="load(page() - 1)"
+>
+  {{ "Previous" | localize }}
+</button>
+<button
+  type="button"
+  [disabled]="busy() || page() >= totalPages()"
+  (click)="load(page() + 1)"
+>
+  {{ "Next" | localize }}
+</button>
+<button type="button" [disabled]="busy()" (click)="load(page())">
+  {{ "Refresh" | localize }}
+</button>
+<button type="button" [disabled]="busy()" (click)="logoutAll()">
+  {{ "Sign out all sessions" | localize }}
+</button>
+
+@if (selectedSession(); as session) {
+  <section>
+    <h2>{{ session.device }}</h2>
+    <time>{{ session.lastUsed }}</time> · <time>{{ session.expires }}</time
+    ><button type="button" (click)="selectedSession.set(null)">
+      {{ "Close" | localize }}
+    </button>
+  </section>
+}
+<details>
+  <summary>
+    {{ "Use an administrator-issued password reset token" | localize }}
+  </summary>
+  <label for="reset-token">{{ "Reset token" | localize }}</label
+  ><input
+    autocomplete="off"
+    id="reset-token"
+    type="password"
+    [ngModel]="resetToken()"
+    (ngModelChange)="resetToken.set($event)"
+  />
+  <p>{{ "Enter the new password above, then reset it here." | localize }}</p>
+  <button type="button" [disabled]="busy()" (click)="resetPassword()">
+    {{ "Reset password" | localize }}
+  </button>
+</details>

@@ -1,0 +1,43 @@
+<section aria-labelledby="login-title" class="mx-auto max-w-md p-6">
+  <h1 id="login-title" tabindex="-1">{{ "Sign in" | localize }}</h1>
+  <form [attr.aria-busy]="busy()" [formGroup]="form" (ngSubmit)="submit()">
+    <label for="username">{{ "Username" | localize }}</label>
+    <input
+      aria-describedby="login-errors"
+      autocomplete="username"
+      formControlName="username"
+      id="username"
+      required
+      [attr.aria-invalid]="
+        form.controls.username.touched && form.controls.username.invalid
+      "
+    />
+    <label for="password">{{ "Password" | localize }}</label>
+    <input
+      aria-describedby="login-errors"
+      autocomplete="current-password"
+      formControlName="password"
+      id="password"
+      required
+      type="password"
+      [attr.aria-invalid]="
+        form.controls.password.touched && form.controls.password.invalid
+      "
+    />
+    <div id="login-errors">
+      @if (form.touched && form.invalid) {
+        <p role="alert">{{ "Enter a username and password." | localize }}</p>
+      }
+      @if (error()) {
+        <p role="alert">{{ error() | localize }}</p>
+      }
+    </div>
+    <button type="submit" [disabled]="busy()">
+      {{ (busy() ? "Signing in…" : "Sign in") | localize }}
+    </button>
+  </form>
+</section>
+
+<a routerLink="/reset-password">{{
+  "Forgot password / reset token" | localize
+}}</a>

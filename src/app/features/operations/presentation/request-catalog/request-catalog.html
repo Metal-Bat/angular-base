@@ -1,0 +1,52 @@
+<h1 tabindex="-1">{{ "Start a request" | localize }}</h1>
+<a routerLink="/operations/requests">{{ "My requests" | localize }}</a>
+@if (creation.error()) {
+  <p role="alert">{{ creation.error() | localize }}</p>
+}
+@if (creation.uncertain()) {
+  <button type="button" (click)="creation.reconcile()">
+    {{ "Check current state" | localize }}
+  </button>
+}
+@if (pages.state() === "loading") {
+  <p role="status">{{ "Loading…" | localize }}</p>
+}
+@if (pages.state() === "error") {
+  <p role="alert">{{ pages.error() | localize }}</p>
+  <button type="button" (click)="pages.load('catalog')">
+    {{ "Retry" | localize }}
+  </button>
+}
+@if (pages.state() === "ready") {
+  <ul class="grid gap-4">
+    @for (item of pages.catalog(); track item.ref) {
+      <li class="p-4 border rounded-lg">
+        <h2>{{ item.name }}</h2>
+        <bdi>{{ item.code }}</bdi>
+        <button
+          type="button"
+          [disabled]="creation.busy() || creation.uncertain()"
+          (click)="create(item.ref)"
+        >
+          {{ "Create draft" | localize }}
+        </button>
+      </li>
+    } @empty {
+      <li>{{ "No eligible request types" | localize }}</li>
+    }
+  </ul>
+  <button
+    type="button"
+    [disabled]="pages.page() <= 1"
+    (click)="pages.load('catalog', pages.page() - 1)"
+  >
+    {{ "Previous" | localize }}
+  </button>
+  <button
+    type="button"
+    [disabled]="pages.page() >= pages.totalPages()"
+    (click)="pages.load('catalog', pages.page() + 1)"
+  >
+    {{ "Next" | localize }}
+  </button>
+}

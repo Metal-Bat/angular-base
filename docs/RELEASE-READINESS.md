@@ -1,0 +1,80 @@
+# Release readiness: Steps 36–38
+
+Steps 34–35 are implemented locally. Step 36 has local evidence but remains incomplete until the broader release decisions/tests below pass. Step 37 has executable local HTTP and HTTPS deployment/rollback rehearsals; actual staging remains pending. Step 38 awaits a search/bulk or push/collaboration choice and new contracts; offline drafts were deferred by the project owner on October 4. None of these statuses imply a production release.
+
+## Follow-up verification, October 4, 2026
+
+`mise run check` passed: formatting, generated contracts (314 typed operations), types, lint (26 template-complexity warnings), 258 unit tests, 13 session tests, two deployment tests, production build and release manifest. Initial assets remain 403,887 bytes, with lazy canvas code and no public source maps. Negative CI lint/test/build probes passed. The full Firefox quality suite and Chromium suite through the installed Brave binary passed, including automated accessibility and local HTTPS rollback. This Chromium run uses Brave, rather than the prior Chrome for Testing binary; historical measurements below retain their original scope.
+
+The refreshed npm audit reports zero production vulnerabilities and 13 high-severity development-tool entries with the unchanged lockfile; advisory metadata has changed since the October 3 report. A fresh compatible lockfile-only fix dry-run proposes zero changes. The [dependency review](reference/release-dependency-review.json) records the current snapshot and retains the earlier counts for comparison. Maintainer disposition remains open.
+
+GitHub CI now includes the serial Chromium browser quality suite on every push and pull request and uploads browser/release/dependency evidence. The supplied `localhost:8000` staging address refused both HTTP and HTTPS connections. An active backend, exact HTTPS browser origin/proxy, client/release registration, worker/storage infrastructure and release signoffs remain needed before integrated staging acceptance.
+
+## Local evidence, October 3, 2026
+
+| Check                        | Evidence and scope                                                                                                                                                                               |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Frontend suite               | 258 unit tests; generated baseline/platform/admin contracts, type checking, formatting, lint and production build                                                                                |
+| Session boundary             | 13 protocol tests cover CSRF/origin, cookie/token isolation, refresh races, unsafe-command uncertainty and logout                                                                                |
+| Administration HTTP          | 35 checks with non-superuser administrator/outsider; catalog denial, user lifecycle/conflicts/history, roles, password-reset revocation and membership                                           |
+| PostgreSQL operations        | 17 existing tests: membership, connection grants/rotation/provider redaction, restrictions, scheduler leadership/one-off enqueue, durable outbox/retry and process recovery                      |
+| Firefox administration       | Confirmed commands, transient password input, response redaction, paging, current references, exact retry task ID, QUEUED status, permission revocation and cleanup; synthetic backend responses |
+| Firefox shared UI            | Keyboard/modal focus, linked errors, shared typography/dark theme, Persian RTL, canonical values and responsive layout                                                                           |
+| Static release/rollback      | Two local HTTP tests cover A → B → A, deep links, no-store/immutable caches, API/session separation, HEAD/method handling, source-map denial and traversal/symlink isolation                     |
+| Production asset evidence    | 403,887 bytes of initial assets, below the unchanged 500 kB warning and 1 MB error budgets; no public source maps and no canvas in initial JavaScript; hashes in generated release manifest      |
+| Dependency/license inventory | Current audit: zero production vulnerabilities; 24 high-severity development-tooling entries, no critical entries; 1,039 lockfile license declarations                                           |
+
+Repeatable commands are `mise run check`, `npm run dependencies:report`, `npm run test:browser-admin`, `npm run test:browser-ui`, `npm run test:backend-admin` and `npm run release:evidence` and `npm run ci:gates`. Firefox must be installed; backend checks require fresh disposable PostgreSQL/cache and the backend test toolchain. Keep build workers at two and run backend integration modules serially. `artifacts/` remains ignored; save its release/dependency reports with the eventual release evidence rather than publishing private test data.
+
+The integration harness runs scheduler tests before fixtures that create pending outbox rows, and isolates modules in separate processes to avoid the existing async-pool event-loop contamination. It does not reset a supplied database automatically. Durable scheduler/outbox tests mock broker publication; actual worker execution is a separate gate. Earlier [operations worker/private-storage evidence](OPERATIONS-SERVICES.md) remains historical evidence for its stated scope.
+
+## Dependency triage
+
+[Reviewed audit summary](reference/release-dependency-review.json) records the exact lockfile hash and affected high-severity package entries. They span build tooling (`@angular/cli`, Angular ESLint and signing/registry/cache chains), commit tooling (Commitizen/conventional changelog and glob chains) and release tooling (`release-it`, its changelog plugin and proxy/FTP dependencies). Entries count affected packages, not 24 independent exploitable vulnerabilities.
+
+The repository maintainer owns compatible remediation and a documented decision before running affected tooling with sensitive/untrusted inputs or approving the release workflow. A compatible `npm audit fix --package-lock-only --ignore-scripts --dry-run --json` proposes zero additions/removals/changes. Registry checks found no patched latest release for the installed braces 3.0.3 and http-cache-semantics 4.2.0 roots. The basic-ftp fix is 6.2.1, a major outside the parent dependency range; its override requires compatibility review. The linked root advisories and next actions are recorded in the summary. The audit suggests major changes for several direct tools; this turn does not silently upgrade Angular or downgrade release/commit tools. Recheck upstream fixes and the audit after any lockfile change. Production audit is clear; that alone does not constitute a complete security review or an approval of all development tools. License inventory likewise does not establish legal approval.
+
+## Remaining release gates
+
+| Gate                                 | Current limit                                                                                                      | Needed evidence/decision                                                                                                                                |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| QA-03 worker/storage/proxy/scheduler | Database scheduling/recovery and earlier private storage/report-worker evidence; no new deployed broker/worker run | Actual deployment's broker, worker queues, retry/revoke, reporting/private storage, scheduler and proxy rehearsal                                       |
+| QA-04 accessibility/browser/locale   | Firefox and Chromium Linux automation, axe WCAG A/AA checks on selected screens, focus/RTL checks                  | Approved browser/device matrix, other supported engines, manual screen-reader/contrast/zoom checks, complete studio/canvas RTL and translation coverage |
+| QA-05 performance                    | Production bundle budgets, 16/64/256-field runtime cycles and earlier canvas smoke measurements                    | Agreed reference device, representative large form/row/graph sizes, sustained memory and interaction targets, measured teardown/heap behavior           |
+| QA-06 data/dependencies              | Boundary/actor redaction/authorization checks and current audit/license triage                                     | Maintainer disposition of development-tool findings and deployment-specific data handling review                                                        |
+| Hosted CI                            | Workflow exists and local checks are repeatable                                                                    | A successful hosted run with artifacts; intentional lint/test/build failures are already rejected locally                                               |
+| QA-07 deployment                     | Static serving adapter, local HTTP rollback and Chromium HTTPS production-cookie rehearsal                         | Staging HTTPS origin/access, confidential client/release setup, permission signoff and actual deploy/rollback rehearsal                                 |
+| Optional expansion                   | Current polling/revisions/memory policies remain in place                                                          | Choose [search/bulk, push/collaboration or offline drafts](EXPANSION-DECISIONS.md) and agree contracts/policies                                         |
+
+Do not mark Steps 36–38 complete by substituting local smoke tests, unit tests, a build, or a documentation file for the required external evidence and decisions. [Deployment runbook](DEPLOYMENT.md) makes the next staging action concrete.
+
+## Five local follow-ups: 36a–36d and 37a
+
+The numbered [substeps](BACKLOG.md#release-follow-up-substeps) cover dependency review, a second browser engine, automated accessibility fixes, runtime performance measurement and local HTTPS release behavior. The browsers are Firefox 153.4.0esr and Chrome for Testing 154.0.8037.92 on this Linux development host. This is measured local coverage, not an approved device/browser support policy. Browser runs remain serial and Angular build workers remain capped at two.
+
+The common browser harness supports `BROWSER_ENGINE=firefox|chromium`, `BROWSER_BINARY` (or the existing `FIREFOX_BINARY`) and temporary profiles. `BROWSER_NO_SANDBOX=1` is an explicit opt-in for isolated test environments that cannot support Chromium's sandbox. It is not required by the normal commands below. Real backend/Studio journeys still require their disposable backend fixtures and were not re-established for this batch.
+
+`npm run test:browser-quality` runs boundary, auth, shared UI, workspace, administration and runtime checks serially for one engine; Chromium also includes the local HTTPS rehearsal. Build production assets first with `npm run build`, run the default Firefox batch, then run `BROWSER_ENGINE=chromium npm run test:browser-quality` (set `BROWSER_BINARY` if needed). The shared UI fixture builds a temporary development bundle for its Angular debug interactions; workspace, administration and runtime journeys use the production build.
+
+`npm run test:accessibility` audits login, the shared UI in light and Persian dark mode, the PrimeNG modal and the administration screen through pinned development-only axe-core 4.13.0 (MPL-2.0). `ACCESSIBILITY_CHECKS=1 npm run test:browser-performance` also audits each runtime size. The rule set uses WCAG 2/2.1/2.2 A/AA tags and fails on every reported violation; incomplete findings are retained separately. Set `BROWSER_REPORT_PATH=artifacts/<unique-check-name>.json` to retain successful fixture reports. Reports contain rule IDs/targets/counts and timings rather than HTML or private field values. The tool is injected by the test server and is absent from production application imports.
+
+The audits caught and repaired three accessibility issues: error list items now retain list semantics inside an alert region; the preview dialog close button has an explicit translated accessible name; native disclosure summaries have larger pointer targets and visible keyboard focus. Theme audits wait for finite color transitions to finish. Both engines still report PrimeNG's first/last focus sentinel spans under incomplete `aria-hidden-focus`; record manual keyboard/screen-reader review before accessibility signoff. No rules or findings were suppressed. A Chromium revocation regression also exposed overlapping permission refreshes: one refresh could abort another through actor cleanup and incorrectly sign out the actor. Permission revalidation now shares a single in-flight promise and queues one fresh read when focus arrives during that read, with a focused unit test and repeated browser revocation checks. The cross-tab fixture also waits for the actual logout response before another login, preventing a previous cookie-clearing response from racing the next login.
+
+### Runtime measurement scope
+
+`npm run test:browser-performance` mounts real production request-detail forms containing 16, 64 and 256 writable string fields. Each size runs five mount/edit/navigate-away cycles, checking an exact decimal string before editing, removal of runtime DOM after navigation and empty persistent browser storage. Mount timing includes route/fixture-network/render time and settling frames; edit timing ends after two animation frames. These are synthetic local measurements, not backend latency, a throughput benchmark or a product SLO.
+
+| Engine   | Fields | Mount range, ms | Edit range, ms | Mounted DOM nodes | Runtime nodes after teardown |
+| -------- | ------ | --------------- | -------------- | ----------------- | ---------------------------- |
+| Firefox  | 16     | 66–207          | 9–34           | 101               | 0                            |
+| Firefox  | 64     | 67–84           | 4–34           | 389               | 0                            |
+| Firefox  | 256    | 117–183         | 6–34           | 1547              | 0                            |
+| Chromium | 16     | 50–115          | 12–34          | 101               | 0                            |
+| Chromium | 64     | 48–50           | 33–33          | 389               | 0                            |
+| Chromium | 256    | 65–67           | 11–34          | 1547              | 0                            |
+
+Ranges include all five cycles, including the first lazy load; they are observations, not pass/fail timing thresholds.
+
+[Checked browser quality summary](reference/browser-quality-review.json) retains all raw cycles and selected audit results. Chromium's optional `performance.memory` sample is coarse and Firefox exposes none. Zero retained runtime DOM nodes and five cycles do not establish a heap/subscription leak ceiling. Agree reference hardware, realistic data/graph sizes, zoom/screen-reader coverage and sustained heap profiling before QA-04/QA-05 signoff. Existing 500 kB/1 MB initial and 4 kB/8 kB component-style budgets remain unchanged.
+
+For the local production cookie/cache rehearsal, use `BROWSER_ENGINE=chromium npm run test:deployment-https` with OpenSSL and Chromium installed. [Deployment substep 37a](DEPLOYMENT.md#substep-37a-local-https-rehearsal) documents its temporary certificate and synthetic A → B → A scope. Actual staging TLS/proxy/backend rollback, hosted CI, development-tool risk disposition and the Step 38 product/contract choice remain open.

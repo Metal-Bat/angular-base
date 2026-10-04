@@ -51,7 +51,7 @@ Import only what the consuming component uses. The example demonstrates selectio
 </section>
 ```
 
-Import `ButtonModule` and `MatButtonModule` in the consuming standalone component for that example. Semantic color utilities use PrimeNG tokens; Material controls retain their Material theme tokens. A shared palette can be defined through the respective theme APIs when a feature needs visual alignment.
+Import `ButtonModule` and `MatButtonModule` in the consuming standalone component for that example. Semantic color utilities use PrimeNG tokens; Material controls retain their Material theme tokens. The shared workspace preset maps public PrimeNG color tokens to Material system tokens.
 
 PrimeNG styles use the `primeng` CSS layer. The global order is `theme, base, primeng, components, utilities`, allowing utilities to override layered PrimeNG rules. Material's generated styles remain under its own theme control; use its public theme APIs for colors and typography instead of relying on utility specificity against internal selectors.
 
@@ -64,11 +64,19 @@ document.documentElement.classList.toggle("app-dark", true); // dark
 // Use false to return to light mode.
 ```
 
-Use Angular's injected `DOCUMENT` when implementing a theme service. This configuration provides the styling contract; an application theme toggle and preference persistence can be added by the consuming feature.
+Use Angular's injected `DOCUMENT` when implementing a theme service. The shell uses `ColorScheme` for the theme toggle. Preferences are held in memory. See [UI foundation](UI-FOUNDATION.md) for component selection, localization and repeatable browser checks.
 
 See the [official integration package](https://github.com/primefaces/tailwindcss-primeui) and [PrimeNG 21 Tailwind guide](https://v21.primeng.org/tailwind).
 
 ## Design and domain boundaries
+
+### Workflow canvas and form builder
+
+`@foblex/flow` **19.3.0** is the selected local workflow canvas adapter, with pinned Angular-compatible companion packages. Its MIT source and Angular compatibility are documented in the [canvas decision](CANVAS-ADR.md), alongside the Rete Angular renderer comparison and measured Firefox prototype.
+
+Foblex imports live only in studio infrastructure. The lazy workflow route supplies a canvas port to presentation state; owned domain models retain stable keys, separate control/data edges, trusted metadata and diagnostics. Revisioned workspace persistence is implemented separately from executable graphs, with explicit promotion and publication.
+
+The form builder uses a code-owned palette, nested outline and keyboard reorder controls. Schema/render/behavior inspectors feed backend validation and shared-runtime simulated preview. CDK remains available for future drag-and-drop enhancements. See [implemented studio and limits](STUDIO.md); broader accessibility/RTL/browser and performance acceptance remain QA-04/QA-05.
 
 Keep library imports in feature presentation components and reusable UI wrappers. Domain models and application use cases remain independent of Material, PrimeNG, and Tailwind. Choose components based on interaction needs and keep typography, spacing, colors, density, and focus behavior consistent across the feature.
 
@@ -81,3 +89,5 @@ When adding mixed-library screens, check keyboard navigation, focus restoration,
 - [PrimeNG setup and per-component imports](https://v21.primeng.org/installation)
 - [Angular Material buttons](https://material.angular.dev/components/button/overview)
 - [Angular Tailwind integration](https://angular.dev/guide/tailwind)
+
+Step 19 uses native labeled inputs, selects and textareas for shared runtime scalar controls, with the existing field wrapper and global tokens. The PrimeNG preset is imported by an awaited startup initializer so theme registration completes before the UI opens, while the preset is a separate bundle. This does not remove its startup download. The development `/operations/runtime-preview` exercises the same renderer used by requester and reviewer screens.

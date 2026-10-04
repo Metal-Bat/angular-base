@@ -1,0 +1,14 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+input,
+textarea,
+select {
+  max-width: 100%;
+  width: 100%;
+}
+output {
+  display: block;
+  overflow-wrap: anywhere;
+}

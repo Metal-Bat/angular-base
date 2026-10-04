@@ -1,0 +1,32 @@
+<h1 tabindex="-1">{{ "Private uploads" | localize }}</h1>
+<a routerLink="/operations">{{ "Workspace" | localize }}</a>
+<p>
+  {{
+    "Uploads become case attachments only after you add them in the case form."
+      | localize
+  }}
+</p>
+@if (error()) {
+  <p role="alert">{{ error() | localize }}</p>
+}
+<label for="private-upload">{{ "Choose file" | localize }}</label
+><input
+  id="private-upload"
+  type="file"
+  [disabled]="transfer.busy()"
+  (change)="pick($event)"
+/>
+@if (transfer.busy()) {
+  <p role="status">
+    {{ "Transfer in progress" | localize }} {{ transfer.progress() }}%
+  </p>
+  <button type="button" (click)="transfer.cancel()">
+    {{ "Cancel transfer" | localize }}
+  </button>
+}
+@if (upload(); as item) {
+  <p>{{ item.name }}</p>
+  <button type="button" [disabled]="transfer.busy()" (click)="download()">
+    {{ "Download" | localize }}
+  </button>
+}

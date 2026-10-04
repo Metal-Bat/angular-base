@@ -1,0 +1,155 @@
+@if (state()["visible"] !== false) {
+  @if (collection()) {
+    <fieldset>
+      <legend>{{ node().label }}</legend>
+      @if (!validRows()) {
+        <p role="alert">{{ "Row identities are incompatible" | localize }}</p>
+      }
+      @for (key of rowKeys(); track key; let index = $index) {
+        <fieldset [attr.data-row-key]="key">
+          <legend>{{ "Row" | localize }} {{ index + 1 }}</legend>
+          @for (child of node().children; track $index) {
+            <app-runtime-node
+              [busy]="busy()"
+              [data]="data()"
+              [document]="document()"
+              [indices]="childIndices(index)"
+              [issues]="issues()"
+              [node]="child"
+              [path]="path() + '/children/' + $index"
+              (edit)="edit.emit($event)"
+            />
+          }
+          @if (writable() && resources) {
+            <button type="button" (click)="rowCommand('remove', key)">
+              {{ "Remove row" | localize }}
+            </button>
+            <button type="button" (click)="rowCommand('duplicate', key)">
+              {{ "Duplicate row" | localize }}
+            </button>
+            <button
+              type="button"
+              [disabled]="index === 0"
+              (click)="rowCommand('reorder', key, index - 1)"
+            >
+              {{ "Move up" | localize }}
+            </button>
+            <button
+              type="button"
+              [disabled]="index + 1 >= rows().length"
+              (click)="rowCommand('reorder', key, index + 1)"
+            >
+              {{ "Move down" | localize }}
+            </button>
+          }
+        </fieldset>
+      }
+      @if (writable() && resources) {
+        <button
+          type="button"
+          [disabled]="!validRows() || rows().length >= 256"
+          (click)="rowCommand('add')"
+        >
+          {{ "Add row" | localize }}
+        </button>
+      }
+    </fieldset>
+  } @else if (attachmentsControl()) {
+    <app-attachment-control
+      [busy]="busy()"
+      [document]="document()"
+      [node]="node()"
+      [path]="pointer()"
+      [writable]="writable()"
+    />
+  } @else if (layout()) {
+    <section
+      class="grid gap-4"
+      [attr.aria-label]="node().label"
+      [class]="
+        node().component === 'vertical'
+          ? 'grid gap-4'
+          : 'grid gap-4 sm:grid-cols-2'
+      "
+    >
+      @for (child of node().children; track $index) {
+        <app-runtime-node
+          [busy]="busy()"
+          [data]="data()"
+          [document]="document()"
+          [indices]="indices()"
+          [issues]="issues()"
+          [node]="child"
+          [path]="path() + '/children/' + $index"
+          (edit)="edit.emit($event)"
+        />
+      }
+    </section>
+  } @else if (node().component === "display") {
+    <p>{{ node().label }}</p>
+  } @else if (fieldControl()) {
+    <app-field-wrapper
+      #field
+      [errors]="errors()"
+      [label]="node().label ?? node().scope!"
+      [pointer]="pointer()"
+    >
+      @if (!writable()) {
+        <output tabindex="0" [id]="field.id()"
+          ><bdi>{{ value() | valueText }}</bdi></output
+        >
+      } @else if (choice()) {
+        <app-choice-control
+          [controlId]="field.id()"
+          [data]="data()"
+          [describedBy]="field.describedBy()"
+          [document]="document()"
+          [indices]="indices()"
+          [invalid]="errors().length > 0"
+          [node]="node()"
+          [path]="path()"
+          (edit)="edit.emit($event)"
+        />
+      } @else if (node().component === "boolean") {
+        <select
+          [attr.aria-describedby]="field.describedBy()"
+          [attr.aria-invalid]="errors().length > 0"
+          [id]="field.id()"
+          [value]="text()"
+          (change)="bool($any($event.target).value)"
+        >
+          <option value="">{{ "Not provided" | localize }}</option>
+          <option value="true">{{ "Yes" | localize }}</option>
+          <option value="false">{{ "No" | localize }}</option>
+        </select>
+      } @else if (node().component === "textarea") {
+        <textarea
+          [attr.aria-describedby]="field.describedBy()"
+          [attr.aria-invalid]="errors().length > 0"
+          [id]="field.id()"
+          [value]="text()"
+          (input)="inputValue($any($event.target).value)"
+        ></textarea>
+      } @else {
+        <input
+          [attr.aria-describedby]="field.describedBy()"
+          [attr.aria-invalid]="errors().length > 0"
+          [id]="field.id()"
+          [type]="node().component === 'date' ? 'date' : 'text'"
+          [value]="text()"
+          (input)="inputValue($any($event.target).value)"
+        />
+      }
+      @if (writable()) {
+        @if (nullable()) {
+          <button type="button" (click)="set(null)">
+            {{ "Set null" | localize }}
+          </button>
+        }
+        <button type="button" (click)="clear()">
+          {{ "Remove value" | localize }}
+        </button>
+      }
+    </app-field-wrapper>
+  }
+}

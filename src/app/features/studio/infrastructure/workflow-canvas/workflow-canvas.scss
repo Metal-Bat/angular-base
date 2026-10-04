@@ -1,0 +1,44 @@
+:host {
+  display: block;
+}
+f-flow {
+  display: block;
+  height: 34rem;
+  border: 1px solid var(--p-content-border-color);
+  background: var(--p-content-background);
+}
+.board-node {
+  border: 2px solid var(--p-primary-color);
+  border-radius: 0.5rem;
+  background: var(--p-content-background);
+  min-width: 12rem;
+  padding: 0.5rem;
+}
+.board-node:focus {
+  outline: 3px solid var(--p-primary-color);
+}
+button {
+  padding: 0.5rem;
+  font-weight: 600;
+}
+.control-port {
+  font-size: 0.75rem;
+  padding: 0.2rem;
+  color: var(--p-primary-color);
+}
+.data-port {
+  font-size: 0.75rem;
+  padding: 0.2rem;
+  color: var(--p-text-muted-color);
+}
+.data-edge {
+  stroke-dasharray: 5 4;
+}
+
+.board-node.collapsed {
+  width: 150px;
+}
+.board-node.collapsed .data-port {
+  font-size: 0;
+  min-height: 10px;
+}

@@ -1,0 +1,101 @@
+<fieldset>
+  <legend>{{ node().label }}</legend>
+  @if (error()) {
+    <p role="alert">{{ error() | localize }}</p>
+  }
+  @if (loading()) {
+    <p role="status">{{ "Loading…" | localize }}</p>
+  }
+  <p>
+    {{ "Attachment rules" | localize }}: {{ accept() }} ·
+    {{ options()["max_item_bytes"] }} {{ "bytes per file" | localize }}
+  </p>
+  @if (resources; as resources) {
+    <ul>
+      @for (
+        attachment of attachments();
+        track attachment.ref;
+        let index = $index
+      ) {
+        <li>
+          {{ attachment.caption || ("Attachment" | localize) }} ·
+          {{ attachment.contentType }} · {{ attachment.size }}
+          <button
+            type="button"
+            [disabled]="resources.transferBusy()"
+            (click)="download(attachment.ref)"
+          >
+            {{ "Download" | localize }}
+          </button>
+          @if (writable()) {
+            @if (options()["allow_remove"] !== false) {
+              <button
+                type="button"
+                [disabled]="busy()"
+                (click)="remove(attachment.ref)"
+              >
+                {{ "Remove" | localize }}
+              </button>
+            }
+            @if (options()["allow_reorder"] === true) {
+              <button
+                type="button"
+                [disabled]="busy() || index === 0"
+                (click)="move(index, -1)"
+              >
+                {{ "Move up" | localize }}
+              </button>
+              <button
+                type="button"
+                [disabled]="busy() || index + 1 >= attachments().length"
+                (click)="move(index, 1)"
+              >
+                {{ "Move down" | localize }}
+              </button>
+            }
+            @if (options()["allow_replace"] === true) {
+              <label [for]="inputId() + attachment.ref">{{
+                "Replace attachment" | localize
+              }}</label>
+              <input
+                type="file"
+                [accept]="accept()"
+                [disabled]="busy() || resources.transferBusy()"
+                [id]="inputId() + attachment.ref"
+                (change)="upload($event, attachment.ref)"
+              />
+            }
+          }
+        </li>
+      } @empty {
+        <li>{{ "No attachments" | localize }}</li>
+      }
+    </ul>
+    @if (writable()) {
+      <label [for]="inputId() + '-caption'">{{ "Caption" | localize }}</label>
+      <input
+        maxlength="1024"
+        type="text"
+        [id]="inputId() + '-caption'"
+        [ngModel]="caption()"
+        (ngModelChange)="caption.set($event)"
+      />
+      <label [for]="inputId()">{{ "Upload attachment" | localize }}</label>
+      <input
+        type="file"
+        [accept]="accept()"
+        [disabled]="busy() || resources.transferBusy()"
+        [id]="inputId()"
+        (change)="upload($event)"
+      />
+    }
+    @if (resources.transferBusy()) {
+      <p role="status">
+        {{ "Transfer in progress" | localize }} {{ resources.progress() }}%
+      </p>
+      <button type="button" (click)="resources.cancelTransfer()">
+        {{ "Cancel" | localize }}
+      </button>
+    }
+  }
+</fieldset>

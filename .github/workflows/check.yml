@@ -1,0 +1,65 @@
+name: Project checks
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: checks-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      CI: "true"
+      NG_CLI_ANALYTICS: "false"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install the committed Node and npm toolchain
+        uses: jdx/mise-action@v3
+        with:
+          install_args: node npm:npm
+      - name: Cache npm downloads
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: npm-${{ runner.os }}-${{ hashFiles('mise.toml', 'package-lock.json') }}
+      - name: Install exact dependencies
+        run: mise run install
+      - name: Run project checks
+        run: mise run check
+      - name: Verify failing lint, test and build gates
+        run: mise exec -- npm run ci:gates
+      - name: Install Chrome for browser quality checks
+        id: chrome
+        uses: browser-actions/setup-chrome@v2
+        with:
+          chrome-version: stable
+      - name: Run browser quality and accessibility checks
+        env:
+          BROWSER_ENGINE: chromium
+          BROWSER_BINARY: ${{ steps.chrome.outputs.chrome-path }}
+        run: mise exec -- npm run test:browser-quality
+      - name: Generate dependency reports
+        run: mise exec -- npm run dependencies:report
+      - name: Upload release, dependency and browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependency-reports
+          path: artifacts/
+          if-no-files-found: warn
+          retention-days: 7
+      - name: Upload production build
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-build
+          path: dist/ng-architect
+          if-no-files-found: error
+          retention-days: 7

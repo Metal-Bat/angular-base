@@ -12,7 +12,10 @@ html {
         primary: mat.$azure-palette,
         tertiary: mat.$blue-palette,
       ),
-      typography: Roboto,
+      typography: (
+        plain-family: "Arial, Tahoma, sans-serif",
+        brand-family: "Arial, Tahoma, sans-serif",
+      ),
       density: 0,
     )
   );
@@ -36,10 +39,74 @@ body {
 }
 body {
   margin: 0;
-  font-family: Roboto, "Helvetica Neue", sans-serif;
+  font-family: Arial, Tahoma, sans-serif;
 }
 
 // Shared dark-mode selector for Material, PrimeNG, and Tailwind.
 html.app-dark {
   color-scheme: dark;
+}
+
+:root {
+  --workspace-space: 0.25rem;
+  --workspace-radius: 0.5rem;
+  --workspace-overlay: 1000;
+}
+@layer components {
+  :where(summary) {
+    cursor: pointer;
+    min-block-size: 2.75rem;
+    padding: 0.75rem;
+  }
+  :where(button, input, select, textarea, a, summary):focus-visible {
+    outline: 3px solid var(--mat-sys-primary);
+    outline-offset: 3px;
+  }
+  :where(input, select, textarea):not([class*="mdc-"]):not(.p-inputtext) {
+    border: 1px solid var(--mat-sys-outline);
+    background: var(--mat-sys-surface);
+    color: var(--mat-sys-on-surface);
+    border-radius: var(--workspace-radius);
+    padding: 0.75rem;
+    max-inline-size: 100%;
+  }
+  :where(button):not([class*="mdc-"]):not(.p-button) {
+    padding: 0.625rem 1rem;
+    border: 1px solid var(--mat-sys-outline);
+    border-radius: var(--workspace-radius);
+    background: var(--mat-sys-surface-container);
+    color: var(--mat-sys-on-surface);
+    cursor: pointer;
+    min-block-size: 2.75rem;
+  }
+  :where(button, input):disabled {
+    opacity: 0.6;
+    cursor: default;
+  }
+  :where(input)[aria-invalid="true"] {
+    border-color: var(--mat-sys-error);
+  }
+  dialog {
+    max-inline-size: min(32rem, calc(100vw - 2rem));
+    background: var(--mat-sys-surface);
+    color: var(--mat-sys-on-surface);
+    padding: 1.5rem;
+    border: 1px solid var(--mat-sys-outline);
+    border-radius: var(--workspace-radius);
+  }
+  dialog::backdrop {
+    background: rgb(0 0 0 / 50%);
+  }
+  [dir="rtl"] :where(input[autocomplete="username"], input[type="password"]) {
+    direction: ltr;
+    text-align: start;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }

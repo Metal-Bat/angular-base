@@ -1,0 +1,16 @@
+<div class="grid gap-2 mb-4">
+  <label [for]="id()">{{ label() }}</label>
+  <ng-content />
+  @if (hint()) {
+    <p [id]="id() + '-hint'">{{ hint() }}</p>
+  }
+  @if (errors().length) {
+    <div role="alert" [id]="id() + '-errors'">
+      <ul>
+        @for (error of errors(); track $index) {
+          <li>{{ error }}</li>
+        }
+      </ul>
+    </div>
+  }
+</div>

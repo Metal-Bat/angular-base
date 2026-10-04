@@ -1,0 +1,80 @@
+<h1 tabindex="-1">
+  {{ (kind === "request" ? "Request detail" : "Task detail") | localize }}
+</h1>
+<a
+  [routerLink]="
+    kind === 'request' ? '/operations/requests' : '/operations/tasks'
+  "
+  >{{ "Back to list" | localize }}</a
+>
+@if (editor.busy()) {
+  <p role="status">{{ "Loading…" | localize }}</p>
+}
+@if (editor.error()) {
+  <p role="alert">{{ editor.error() | localize }}</p>
+}
+@if (editor.blocked()) {
+  <p role="alert">
+    {{
+      "Your edits have been kept. Check the latest revision before continuing."
+        | localize
+    }}
+  </p>
+}
+<button type="button" [disabled]="editor.busy()" (click)="editor.refresh()">
+  {{ "Check current state" | localize }}
+</button>
+@if (editor.item(); as item) {
+  <app-case-summary [item]="item" [kind]="kind" />
+  @if (runtimeIncompatible()) {
+    <p role="alert">{{ "This runtime document is incompatible" | localize }}</p>
+  }
+  @if (editor.document(); as document) {
+    <p>{{ (editor.dirty() ? "Unsaved changes" : "Saved") | localize }}</p>
+    <p>
+      {{ "Form version" | localize }} {{ document.identity.versionNumber }} ·
+      <bdi>{{ document.identity.view }}</bdi>
+    </p>
+    <p>
+      {{ "Current reference" | localize }}:
+      <bdi>{{ document.identity.resource }}</bdi>
+    </p>
+    <app-runtime-form
+      [busy]="formBusy()"
+      [data]="editor.data()"
+      [document]="document"
+      [issues]="editor.issues()"
+      (edit)="editor.edit($event)"
+    />
+    @if (editor.canEdit()) {
+      <button
+        type="button"
+        [disabled]="resources.transferBusy()"
+        (click)="editor.save()"
+      >
+        {{ "Save" | localize }}
+      </button>
+      @if (canSubmit()) {
+        <button
+          type="button"
+          [disabled]="resources.transferBusy()"
+          (click)="editor.submit()"
+        >
+          {{ "Submit" | localize }}
+        </button>
+      }
+    }
+  }
+  @if (kind === "request") {
+    <app-request-actions [editor]="editor" />
+  }
+  @if (kind === "task") {
+    <app-task-controls [editor]="editor" />
+    <app-advanced-task [editor]="editor" />
+    @if (aiApproval()) {
+      <app-ai-approval [editor]="editor" />
+    }
+  }
+  <app-case-history [kind]="kind" [reference]="item.ref" />
+  <app-case-overrides [editor]="editor" />
+}

@@ -29,6 +29,7 @@
             "styles": [
               "src/tailwind.css",
               "node_modules/primeicons/primeicons.css",
+              "node_modules/@foblex/flow/styles/default.scss",
               "src/styles.scss"
             ]
           },
@@ -46,7 +47,17 @@
                   "maximumError": "8kB"
                 }
               ],
-              "outputHashing": "all"
+              "outputHashing": "all",
+              "fileReplacements": [
+                {
+                  "replace": "src/app/core/development/preview-routes.ts",
+                  "with": "src/app/core/development/preview-routes.production.ts"
+                },
+                {
+                  "replace": "src/app/features/operations/presentation/runtime-preview.routes.ts",
+                  "with": "src/app/features/operations/presentation/runtime-preview.routes.production.ts"
+                }
+              ]
             },
             "development": {
               "optimization": false,
@@ -66,7 +77,10 @@
               "buildTarget": "ng-architect:build:development"
             }
           },
-          "defaultConfiguration": "development"
+          "defaultConfiguration": "development",
+          "options": {
+            "proxyConfig": "src/proxy.conf.json"
+          }
         },
         "extract-i18n": {
           "builder": "@angular/build:extract-i18n"
@@ -74,7 +88,8 @@
         "test": {
           "builder": "@angular/build:unit-test",
           "options": {
-            "tsConfig": "tsconfig.spec.json"
+            "tsConfig": "tsconfig.spec.json",
+            "runnerConfig": "vitest.config.ts"
           }
         },
         "lint": {

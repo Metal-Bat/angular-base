@@ -1,0 +1,16 @@
+<section>
+  <h1 tabindex="-1">{{ heading() | localize }}</h1>
+  <p class="description">{{ description() | localize }}</p>
+  <p class="notice">
+    {{ "This area is being built." | localize }}
+  </p>
+  <h2>{{ "Planned capabilities" | localize }}</h2>
+  <ul>
+    @for (capability of capabilities(); track capability.name) {
+      <li>
+        <h3>{{ capability.name | localize }}</h3>
+        <p>{{ capability.description | localize }}</p>
+      </li>
+    }
+  </ul>
+</section>

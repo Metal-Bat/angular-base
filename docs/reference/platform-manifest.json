@@ -1,0 +1,33 @@
+{
+  "generatedDate": "2026-10-03",
+  "backendBaseCommit": "8921841a866c190d794f41af7a41389400fea26b",
+  "backendChanges": "Uncommitted tested patch applied to the local fast-api-sample checkout; not deployed.",
+  "operationCount": 314,
+  "schemaCount": 425,
+  "sources": [
+    {
+      "file": "platform-openapi.json",
+      "sha256": "24609294ec8e087f84f2ab0b302b6abf8e0bd9e57d85366721400bba3f90ca7f"
+    },
+    {
+      "file": "backend-platform.patch",
+      "sha256": "de79c55526a741d1dc9030237a8f73840bc84b56cad82c7caf5f583fce8cd63c"
+    },
+    {
+      "file": "backend-command-conflicts.patch",
+      "sha256": "d2ec3feac5b265d7ce91373db5220da9d360862ba86c1476637ac6f8a2314167"
+    },
+    {
+      "file": "backend-runtime-behavior.patch",
+      "sha256": "faae73c41e13281fe4e9ad0609d235d30e34be3dcd6e0aa7ec811e31d354eec1"
+    },
+    {
+      "file": "backend-operations.patch",
+      "sha256": "a0ce2d07bcaa65f2026409df00e8a7a93cb6da5bab6b94c0e2c09a86211abada"
+    },
+    {
+      "file": "backend-studio.patch",
+      "sha256": "ee39a6ccb5053c67469860ee4c4b1ff2d700a6422097c221848c225b6005b91b"
+    }
+  ]
+}

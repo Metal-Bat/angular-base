@@ -1,0 +1,44 @@
+:host {
+  display: block;
+  padding: 1rem;
+  max-width: 85rem;
+  margin: auto;
+}
+.inspectors {
+  display: grid;
+  grid-template-columns: minmax(14rem, 1fr) minmax(20rem, 2fr);
+  gap: 1rem;
+}
+section {
+  padding: 1rem;
+  border: 1px solid var(--p-content-border-color);
+  margin-block: 1rem;
+}
+label,
+textarea,
+select,
+input {
+  display: block;
+  margin-block: 0.5rem;
+}
+textarea {
+  width: 100%;
+  border: 1px solid var(--p-content-border-color);
+  padding: 0.5rem;
+}
+button {
+  padding: 0.4rem;
+  margin: 0.3rem;
+  border: 1px solid var(--p-content-border-color);
+}
+pre {
+  overflow: auto;
+}
+button:disabled {
+  opacity: 0.5;
+}
+@media (max-width: 50rem) {
+  .inspectors {
+    grid-template-columns: 1fr;
+  }
+}

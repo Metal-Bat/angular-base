@@ -1,0 +1,26 @@
+# Configuration and actor data policy
+
+Implemented foundation for ARC-03, October 2, 2026. Public runtime configuration loads from `/runtime-config.json` before Angular bootstrap, with `cache: no-store`. The parser rejects unknown keys, external API origins, invalid locales and malformed capabilities. Configuration failure stops bootstrap with a generic recovery message.
+
+The allowlist is `apiBasePath: /api/v1`, `sessionBasePath: /session`, `locale: en|fa`, and at most 32 versioned `rendererCapabilities`. The capability list now declares the implemented runtime primitives. Server-side client identity/release is separate from display capabilities; claiming a capability never grants access.
+
+| Data                                             | Storage and caching                                                                                              | Logging and cleanup                                                                                                  |
+| ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| Client secret and upstream access/refresh tokens | Server session memory only; never in public config or browser bundles/storage.                                   | No raw values in logs; discard on logout, expiry, account change or process restart.                                 |
+| Session identifier and CSRF                      | HttpOnly cookie for session; CSRF in browser memory.                                                             | Clear actor memory on logout/account change; never log cookie/header values.                                         |
+| Permissions, runtime values, request/task drafts | Actor-owned memory; no localStorage, sessionStorage, IndexedDB, service-worker caches or persistent HTTP caches. | Record safe operation/status/correlation metadata only. Register cleanup and abort pending work when actor changes.  |
+| Attachments and report passwords                 | Temporary actor memory; downloads are explicit user actions.                                                     | No content/password/filename telemetry; revoke temporary object URLs and clear pending handles during actor cleanup. |
+| Authoring documents                              | Server-owned persisted versions; browser editor memory until an explicit save.                                   | No document payload telemetry. Clear editors and pending commands on actor changes.                                  |
+| Public preferences/configuration                 | Only approved non-sensitive settings may be persisted by a future explicit feature.                              | Current implementation introduces no preference persistence.                                                         |
+
+`ActorState` provides a cleanup registry, an abort signal and a monotonically increasing epoch. `SessionContext.beginResolution()`, `resolve()` and `clear()` reset actor-owned state and permissions. Async consumers must bind requests to the actor abort signal and reject responses whose captured epoch no longer matches. A failing cleanup does not retain the old session or prevent other cleanups. New stores/editors must register their cleanup before holding actor data.
+
+Opt-in local recovery drafts are not implemented. A future proposal must define consent, a bounded expiry, explicit shared-device treatment, deletion on account change/logout, and recovery ownership. Never silently enable persistence while implementing later editor steps.
+
+Backend HTTP payload logging is suppressed for request/task, form, workflow, report and integration authoring/runtime routes; no-store responses also bypass response-body capture. Existing credential-key masking remains for other routes. The boundary logs startup only and returns generic transport errors. Proxy/APM deployments must follow the same policy and disable request/response capture on these paths.
+
+Verification: configuration rejection/bootstrap tests, actor-switch cleanup and abort tests, Firefox storage/network checks, and a backend middleware regression proving business values reach the caller without entering HTTP payload logs. Full application store registration and live sign-in/logout wiring are checked when those features are added.
+
+Step 11–13 session requests and protected API calls use a cookie/CSRF interceptor. Protected requests cancel on actor reset; bootstrap/account-switch generations reject late responses. Permission changes also reset actor-owned memory. Cross-tab notifications contain only a session-change/logout event and are never persisted. The single-process boundary owns refresh rotation; neither tokens nor refresh ownership enter browser storage.
+
+Administration retains command inputs in actor memory, redacts credential-like response fields recursively, clears accepted password/credential inputs and fences late responses after actor changes. Static deployment never caches HTML/runtime configuration or serves source maps. See [release checks](RELEASE-READINESS.md).

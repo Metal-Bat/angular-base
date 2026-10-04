@@ -1,0 +1,117 @@
+<h2>{{ "Personal task organization" | localize }}</h2>
+@if (error()) {
+  <p role="alert">{{ error() | localize }}</p>
+}
+<fieldset [disabled]="editor().busy() || editor().blocked()">
+  <button type="button" (click)="resources.personal('read', true)">
+    {{ "Mark read" | localize }}
+  </button>
+  <button type="button" (click)="resources.personal('pin', true)">
+    {{ "Pin" | localize }}
+  </button>
+  <button type="button" (click)="resources.personal('pin', false)">
+    {{ "Unpin" | localize }}
+  </button>
+  <button type="button" (click)="resources.personal('watch', true)">
+    {{ "Watch" | localize }}
+  </button>
+  <button type="button" (click)="resources.personal('watch', false)">
+    {{ "Unwatch" | localize }}
+  </button>
+  <button type="button" (click)="resources.personal('archive', true)">
+    {{ "Archive" | localize }}
+  </button>
+  <button type="button" (click)="resources.personal('archive', false)">
+    {{ "Unarchive" | localize }}
+  </button>
+  <label for="additional-comment">{{ "Add comment" | localize }}</label>
+  <textarea
+    id="additional-comment"
+    maxlength="4000"
+    [ngModel]="comment()"
+    (ngModelChange)="comment.set($event)"
+  ></textarea>
+  <button type="button" (click)="resources.comment(comment()); comment.set('')">
+    {{ "Post comment" | localize }}
+  </button>
+</fieldset>
+<h2>{{ "Correction feedback" | localize }}</h2>
+<ul>
+  @for (entry of feedback(); track entry.key) {
+    <li>
+      <bdi>{{ entry.scope }} {{ entry.item }}</bdi> · {{ entry.message }} ·
+      {{ entry.status | localize }}
+      <dl>
+        <dt>{{ "Current value" | localize }}</dt>
+        <dd>{{ entry.current | valueText }}</dd>
+        <dt>{{ "Previous value" | localize }}</dt>
+        <dd>{{ entry.prior | valueText }}</dd>
+      </dl>
+      @if (entry.status === "OPEN" && editor().canEdit()) {
+        <button type="button" (click)="resolve(entry.key)">
+          {{ "Resolve" | localize }}
+        </button>
+      }
+    </li>
+  } @empty {
+    <li>{{ "No correction feedback" | localize }}</li>
+  }
+</ul>
+@if (editor().ownTask() && editor().item()?.kind === "HUMAN_TASK") {
+  <fieldset [disabled]="editor().busy() || editor().blocked()">
+    <legend>{{ "Forward task" | localize }}</legend>
+    <label for="forward-user">{{ "User reference" | localize }}</label>
+    <input
+      id="forward-user"
+      type="text"
+      [ngModel]="user()"
+      (ngModelChange)="user.set($event)"
+    />
+    <label for="forward-group">{{ "Work group reference" | localize }}</label>
+    <input
+      id="forward-group"
+      type="text"
+      [ngModel]="group()"
+      (ngModelChange)="group.set($event)"
+    />
+    <label for="forward-reason">{{ "Reason" | localize }}</label>
+    <textarea
+      id="forward-reason"
+      maxlength="4000"
+      [ngModel]="reason()"
+      (ngModelChange)="reason.set($event)"
+    ></textarea>
+    <button type="button" (click)="forward()">
+      {{ "Forward" | localize }}
+    </button>
+  </fieldset>
+}
+
+@if (
+  editor().item()?.status !== "COMPLETED" &&
+  editor().item()?.status !== "CANCELLED" &&
+  editor().item()?.status !== "EXPIRED"
+) {
+  <details>
+    <summary>{{ "Close task lifecycle" | localize }}</summary>
+    <p>
+      {{
+        "Only the requester or an administrator may close this task." | localize
+      }}
+    </p>
+    <button
+      type="button"
+      [disabled]="editor().busy() || editor().blocked()"
+      (click)="resources.administrative('cancel')"
+    >
+      {{ "Cancel task" | localize }}
+    </button>
+    <button
+      type="button"
+      [disabled]="editor().busy() || editor().blocked()"
+      (click)="resources.administrative('expire')"
+    >
+      {{ "Expire overdue task" | localize }}
+    </button>
+  </details>
+}

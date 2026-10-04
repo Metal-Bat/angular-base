@@ -1,0 +1,1920 @@
+diff --git a/src/apps/forms/application/authoring_preview.py b/src/apps/forms/application/authoring_preview.py
+new file mode 100644
+--- /dev/null
++++ b/src/apps/forms/application/authoring_preview.py
+@@ -0,0 +1,153 @@
++"""Author-only simulated contexts use the actual runtime projection."""
++
++import json
++from typing import Any, Literal
++
++from pydantic import ConfigDict, Field, field_validator
++
++from apps.forms.application.behavior import evaluate_behavior
++from apps.forms.application.collections import initialize_identity
++from apps.forms.application.designs import resolve_form_documents
++from apps.forms.application.runtime import display_page, render_scopes, runtime_projection
++from apps.forms.application.validation import FormValidator, _bounded, _Invalid
++from apps.forms.domain.dto import FormDocuments
++from apps.forms.domain.runtime import RuntimeFormStateDTO
++from core.base_dto import BaseDTO
++from utils.exceptions import ValidationDetailsException
++
++
++class SimulatedRuntimePreviewRequest(BaseDTO):
++    model_config = ConfigDict(extra="forbid")
++    documents: FormDocuments
++    data: dict[str, Any] = Field(
++        default_factory=dict,
++        description="Bounded synthetic sample values; this endpoint never persists a submission.",
++    )
++    purpose: Literal["edit", "summary", "print", "correction"] = "edit"
++    policy: dict[str, list[str]] | None = Field(
++        default=None,
++        description="Explicit simulated read/write/required/hidden scopes; not real actor entitlements. Null previews all declared scopes.",
++    )
++    before_data: dict[str, Any] | None = Field(
++        default=None, description="Optional synthetic prior correction values."
++    )
++    item_identity: dict[str, list[str]] = Field(
++        default_factory=dict,
++        max_length=256,
++        description="Optional synthetic UUIDv7 row keys, validated against sample values. Omit to generate fresh preview identities.",
++    )
++    before_item_identity: dict[str, list[str]] = Field(
++        default_factory=dict,
++        max_length=256,
++        description="Explicit synthetic prior keys for correction comparisons; never assume row indices identify the same item.",
++    )
++    locale: Literal["en", "fa"] = "en"
++
++    @field_validator("data", "before_data", "item_identity", "before_item_identity")
++    @classmethod
++    def bounded_sample(cls, value):
++        if value is not None:
++            try:
++                _bounded(value, "/data")
++                if len(json.dumps(value, allow_nan=False).encode()) > 262144:
++                    raise ValueError("Sample is too large")
++            except _Invalid as exc:
++                raise ValueError("Invalid sample data") from exc
++        return value
++
++    @field_validator("policy")
++    @classmethod
++    def bounded_policy(cls, value):
++        if value is not None and (
++            set(value) - {"read", "write", "required", "hidden"}
++            or any(
++                len(items) > 256
++                or any(len(scope) > 512 or not scope.startswith("/properties/") for scope in items)
++                for items in value.values()
++            )
++        ):
++            raise ValueError("Invalid simulated policy")
++        return value
++
++
++def runtime_preview(payload, context):
++    structure = FormValidator().validate(payload.documents)
++    if not structure.valid:
++        raise ValidationDetailsException([issue.model_dump() for issue in structure.issues])
++    design = resolve_form_documents(payload.documents, context, locale=payload.locale)
++    documents = payload.documents.model_copy(
++        update={
++            "render_schema": {"dialect": payload.documents.render_dialect, **design.render_schema},
++            "page_settings": design.page_settings,
++        }
++    )
++    data = (
++        evaluate_behavior(documents, payload.data, initialize=True, enforce_required=False).data
++        if documents.behavior_dialect
++        else payload.data
++    )
++    identity = initialize_identity(data, payload.item_identity, documents.data_schema)
++    declared = render_scopes(documents.render_schema)
++    policy = (
++        payload.policy
++        if payload.policy is not None
++        else {
++            "read": sorted(declared),
++            "write": sorted(declared),
++            "required": [],
++            "hidden": [],
++        }
++    )
++    readable = set(policy.get("read", [])) | set(policy.get("write", []))
++    writable = set(policy.get("write", [])) if payload.purpose in {"edit", "correction"} else set()
++    projected = runtime_projection(
++        data,
++        identity,
++        {},
++        documents.data_schema,
++        documents.render_schema,
++        policy,
++        readable,
++        writable,
++        set(policy.get("required", [])),
++    )
++    before = None
++    before_identity = None
++    if payload.before_data is not None:
++        previous = runtime_projection(
++            payload.before_data,
++            initialize_identity(
++                payload.before_data, payload.before_item_identity, documents.data_schema
++            ),
++            {},
++            documents.data_schema,
++            documents.render_schema,
++            policy,
++            readable,
++            set(),
++            set(),
++        )
++        before = previous["data"]
++        before_identity = previous["item_identity"]
++    return RuntimeFormStateDTO(
++        resource_kind="REQUEST",
++        resource_ref_id="simulated-preview",
++        form_version_ref_id="simulated-form",
++        form_version_number=1,
++        submission_ref_id="simulated-submission",
++        design_key=design.key,
++        view_key="simulated-" + payload.purpose,
++        purpose=payload.purpose,
++        resolved_locale=payload.locale,
++        direction="rtl" if payload.locale == "fa" else "ltr",
++        data=projected["data"],
++        item_identity=projected["item_identity"],
++        render_schema=projected["render_schema"],
++        readable_scopes=projected["readable_scopes"],
++        writable_scopes=projected["writable_scopes"],
++        required_scopes=projected["required_scopes"],
++        field_metadata=projected["field_metadata"],
++        before_data=before,
++        before_item_identity=before_identity,
++        page_settings=display_page(design.page_settings, set(projected["readable_scopes"])),
++    )
+diff --git a/src/apps/forms/domain/dtos/preview.py b/src/apps/forms/domain/dtos/preview.py
+--- a/src/apps/forms/domain/dtos/preview.py
++++ b/src/apps/forms/domain/dtos/preview.py
+@@ -1,6 +1,6 @@
+ """Versioned form authoring and validation contracts."""
+ 
+-from typing import Any
++from typing import Any, Literal
+ 
+ from pydantic import ConfigDict, Field
+ 
+@@ -39,6 +39,10 @@
+         description="Bounded canonical draft documents; validated before source resolution. The authenticated client selects the variant."
+     )
+     query: OptionQuery
++    locale: Literal["en", "fa"] | None = Field(
++        default=None,
++        description="Author-only simulated option locale. Null uses Accept-Language; no canonical values or client identity change.",
++    )
+ 
+ 
+ class NavigationPreviewRequest(BaseDTO):
+diff --git a/src/apps/forms/presentation/routes.py b/src/apps/forms/presentation/routes.py
+--- a/src/apps/forms/presentation/routes.py
++++ b/src/apps/forms/presentation/routes.py
+@@ -475,12 +475,15 @@
+         raise ValidationDetailsException(
+             [{"pointer": "/documents", "code": "render.capabilities"}]
+         ) from None
+-    return page_response(
+-        request,
+-        await OptionService(session).resolve(
+-            data.documents, data.query, actor, render=design.render_schema
+-        ),
+-    )
++    from core.i18n import get_language, use_language
++
++    with use_language(data.locale or get_language()):
++        return page_response(
++            request,
++            await OptionService(session).resolve(
++                data.documents, data.query, actor, render=design.render_schema
++            ),
++        )
+ 
+ 
+ @router.post(
+@@ -532,3 +535,38 @@
+             [{"pointer": "/query", "code": "navigation.invalid"}]
+         ) from None
+     return success_response(request, NavigationPreview(plan=plan, data=data))
++
++
++from apps.forms.application.authoring_preview import (
++    SimulatedRuntimePreviewRequest,
++    runtime_preview,
++)
++from apps.forms.domain.runtime import RuntimeFormStateDTO
++from utils.base_schema import PRIVATE_NO_STORE_RESPONSES
++
++
++@router.post(
++    "/runtime-preview",
++    response_model=SuccessResponse[RuntimeFormStateDTO],
++    responses=PRIVATE_NO_STORE_RESPONSES,
++    summary="Preview a simulated runtime form / پیش‌نمایش فرم اجرا",
++    description="Requires forms.manage. Validates authored documents, evaluates supported server behavior and emits the same bounded bpms.runtime/1 projection used for cases. Purpose/policy/prior values are explicitly simulated. This creates no request, submission or attachment and confers no execution permission. Trusted client variants resolve through ClientContext, not arbitrary browser identity. Invalid documents/policies return sanitized 422. / نیازمند مجوز فرم؛ زمینه فقط شبیه‌سازی است و داده ذخیره نمی‌شود.",
++)
++def simulated_runtime_preview(
++    request: Request,
++    response: Response,
++    payload: SimulatedRuntimePreviewRequest,
++    _: FormAdmin,
++    context: ClientContextDep,
++):
++    response.headers["Cache-Control"] = "private, no-store"
++    from apps.forms.application.behavior import BehaviorError
++    from apps.forms.application.collections import CollectionError
++
++    try:
++        result = runtime_preview(payload, context)
++    except BehaviorError, CollectionError, ValueError:
++        raise ValidationDetailsException(
++            [{"pointer": "/documents", "code": "preview.invalid"}]
++        ) from None
++    return success_response(request, result)
+diff --git a/src/apps/workflows/application/service.py b/src/apps/workflows/application/service.py
+--- a/src/apps/workflows/application/service.py
++++ b/src/apps/workflows/application/service.py
+@@ -256,6 +256,9 @@
+ 
+     async def publish(self, ref_id: str, actor_id: UUID) -> WorkflowVersionEntity:
+         version = await self._draft(ref_id)
++        from apps.workflows.application.workspace import WorkspaceService
++
++        await WorkspaceService(self).require_promoted(version.id)
+         root = await self.session.get(
+             WorkflowDefinitionEntity, version.workflow_definition_id, with_for_update=True
+         )
+diff --git a/src/apps/workflows/application/workspace.py b/src/apps/workflows/application/workspace.py
+new file mode 100644
+--- /dev/null
++++ b/src/apps/workflows/application/workspace.py
+@@ -0,0 +1,119 @@
++"""Save bounded WIP and explicitly promote validated snapshots."""
++
++import hashlib
++import json
++
++from pydantic import ValidationError
++from sqlmodel import select
++
++from apps.workflows.domain.dto import GraphSnapshot
++from apps.workflows.domain.entities.workspace import WorkflowWorkspaceEntity
++from apps.workflows.domain.workspace import WorkflowWorkspaceDTO, WorkspaceDocument
++from core.ref_id import create_ref_id, open_ref_id
++from utils.date_utils import get_datetime_utc
++from utils.exceptions import ValidationDetailsException, VersionConflictException
++
++
++def graph_checksum(graph, executable):
++    # Bind promotion to both the authored intent and the resolved executable
++    # snapshot. Database ordering of equivalent top-level rows is incidental.
++    documents = []
++    for snapshot in (graph, executable):
++        value = snapshot.model_dump(mode="json")
++        for key in ("steps", "transitions", "bindings", "targets"):
++            value[key] = sorted(value[key], key=lambda row: json.dumps(row, sort_keys=True))
++        documents.append(value)
++    return hashlib.sha256(
++        json.dumps(documents, sort_keys=True, separators=(",", ":")).encode()
++    ).hexdigest()
++
++
++class WorkspaceService:
++    def __init__(self, workflows):
++        self.workflows = workflows
++        self.session = workflows.session
++
++    async def row(self, version_id, *, lock=False):
++        statement = select(WorkflowWorkspaceEntity).where(
++            WorkflowWorkspaceEntity.workflow_version_id == version_id
++        )
++        if lock:
++            statement = statement.with_for_update().execution_options(populate_existing=True)
++        return (await self.session.exec(statement)).one_or_none()
++
++    async def get(self, version_ref):
++        version = await self.workflows.get_version(version_ref)
++        row = await self.row(version.id)
++        document = (
++            WorkspaceDocument.model_validate(row.document)
++            if row
++            else WorkspaceDocument(
++                graph=(await self.workflows.snapshot(version.id)).model_dump(mode="json")
++            )
++        )
++        return WorkflowWorkspaceDTO(
++            workflow_version_ref_id=create_ref_id(version.id, version.version),
++            workspace_ref_id=create_ref_id(row.id, row.version) if row else None,
++            document=document,
++            promoted_graph_checksum=row.promoted_graph_checksum if row else None,
++        )
++
++    def require_current(self, row, reference):
++        if row is None:
++            if reference is not None:
++                raise VersionConflictException("Workspace does not exist")
++        elif reference is None or open_ref_id(reference) != (row.id, row.version):
++            raise VersionConflictException("Workspace changed; reload and reconcile")
++
++    async def save(self, version_ref, data):
++        version = await self.workflows._draft(version_ref)
++        row = await self.row(version.id, lock=True)
++        self.require_current(row, data.workspace_ref_id)
++        if row is None:
++            row = WorkflowWorkspaceEntity(
++                workflow_version_id=version.id, document=data.document.model_dump(mode="json")
++            )
++            self.session.add(row)
++        else:
++            row.document = data.document.model_dump(mode="json")
++            row.updated_at = get_datetime_utc()
++        await self.session.flush()
++        return await self.get(version_ref)
++
++    async def promote(self, version_ref, data, actor_id):
++        version = await self.workflows._draft(version_ref)
++        row = await self.row(version.id, lock=True)
++        self.require_current(row, data.workspace_ref_id)
++        if row is None:
++            raise VersionConflictException("Save a workspace before promotion")
++        try:
++            graph = GraphSnapshot.model_validate(row.document["graph"])
++        except ValidationError:
++            raise ValidationDetailsException(
++                [{"pointer": "/graph", "code": "workspace.graph.invalid"}]
++            ) from None
++        result = await self.workflows.replace_graph(version_ref, graph, actor_id)
++        row.promoted_graph_checksum = graph_checksum(
++            graph, await self.workflows.snapshot(version.id)
++        )
++        row.updated_at = get_datetime_utc()
++        await self.session.flush()
++        return result
++
++    async def require_promoted(self, version_id):
++        row = await self.row(version_id)
++        if row is None:
++            return
++        try:
++            checksum = graph_checksum(
++                GraphSnapshot.model_validate(row.document["graph"]),
++                await self.workflows.snapshot(version_id),
++            )
++        except ValidationError:
++            raise ValidationDetailsException(
++                [{"pointer": "/graph", "code": "workspace.graph.invalid"}]
++            ) from None
++        if checksum != row.promoted_graph_checksum:
++            raise VersionConflictException(
++                "Promote the current workspace graph before publication", conflict_kind="lifecycle"
++            )
+diff --git a/src/apps/workflows/domain/entities/workspace.py b/src/apps/workflows/domain/entities/workspace.py
+new file mode 100644
+--- /dev/null
++++ b/src/apps/workflows/domain/entities/workspace.py
+@@ -0,0 +1,48 @@
++"""Independently revisioned workflow authoring persistence."""
++
++from typing import Any
++from uuid import UUID
++
++from sqlalchemy import Column, ForeignKey, String, UniqueConstraint, Uuid
++from sqlalchemy.dialects.postgresql import JSONB
++from sqlmodel import Field
++
++from core.base_entity import BaseEntity
++from core.history import create_history_table
++
++
++class WorkflowWorkspaceEntity(BaseEntity, table=True):
++    __tablename__ = "WORKFLOW_WORKSPACE"
++    __table_args__ = (
++        UniqueConstraint("WORKFLOW_VERSION_ID", name="uq_WORKFLOW_WORKSPACE_version"),
++    )
++    workflow_version_id: UUID = Field(
++        sa_column=Column(
++            "WORKFLOW_VERSION_ID",
++            Uuid,
++            ForeignKey(
++                "WORKFLOW_VERSION.ID",
++                ondelete="RESTRICT",
++                onupdate="RESTRICT",
++            ),
++            nullable=False,
++        ),
++    )
++    document: dict[str, Any] = Field(
++        sa_column=Column(
++            "DOCUMENT",
++            JSONB,
++            nullable=False,
++        ),
++    )
++    promoted_graph_checksum: str | None = Field(
++        default=None,
++        sa_column=Column(
++            "PROMOTED_GRAPH_CHECKSUM",
++            String(64),
++            nullable=True,
++        ),
++    )
++
++
++create_history_table(WorkflowWorkspaceEntity.__table__, ondelete="RESTRICT", onupdate="RESTRICT")  # ty:ignore[unresolved-attribute]
+diff --git a/src/apps/workflows/domain/entity.py b/src/apps/workflows/domain/entity.py
+--- a/src/apps/workflows/domain/entity.py
++++ b/src/apps/workflows/domain/entity.py
+@@ -31,3 +31,5 @@
+     "WorkflowTransitionEntity",
+     "WorkflowVersionEntity",
+ ]
++
++from apps.workflows.domain.entities.workspace import WorkflowWorkspaceEntity  # noqa: F401
+diff --git a/src/apps/workflows/domain/workspace.py b/src/apps/workflows/domain/workspace.py
+new file mode 100644
+--- /dev/null
++++ b/src/apps/workflows/domain/workspace.py
+@@ -0,0 +1,97 @@
++"""Bounded authoring workspace, distinct from executable graph DTOs."""
++
++import json
++from typing import Annotated, Any
++
++from pydantic import ConfigDict, Field, field_validator, model_validator
++
++from core.base_dto import BaseDTO
++
++
++class WorkspacePoint(BaseDTO):
++    model_config = ConfigDict(extra="forbid")
++    x: float = Field(default=0, ge=-1000000, le=1000000, allow_inf_nan=False)
++    y: float = Field(default=0, ge=-1000000, le=1000000, allow_inf_nan=False)
++
++
++class WorkspaceViewport(WorkspacePoint):
++    zoom: float = Field(default=1, ge=0.1, le=4, allow_inf_nan=False)
++
++
++class WorkspaceDocument(BaseDTO):
++    model_config = ConfigDict(extra="forbid")
++    dialect: str = Field(default="bpms.workspace/1", pattern=r"^bpms\.workspace/1$")
++    graph: dict[str, Any] = Field(
++        default_factory=dict,
++        description="Incomplete authoring JSON, at most 256 KiB and depth 32. It is never executed; promotion validates GraphSnapshot and all dependencies.",
++    )
++    positions: dict[str, WorkspacePoint] = Field(
++        default_factory=dict,
++        max_length=256,
++        description="Positions keyed by stable authored step key, never database row IDs.",
++    )
++    viewport: WorkspaceViewport = Field(default_factory=WorkspaceViewport)
++    collapsed: list[Annotated[str, Field(min_length=1, max_length=128)]] = Field(
++        default_factory=list, max_length=256
++    )
++    routing: dict[str, list[WorkspacePoint]] = Field(
++        default_factory=dict,
++        max_length=2048,
++        description="Optional edge waypoints keyed by authored connection identity; at most 64 points each.",
++    )
++
++    @model_validator(mode="after")
++    def bounded_document(self):
++        if len(self.model_dump_json().encode()) > 1048576:
++            raise ValueError("Workspace exceeds one MiB")
++        if len(set(self.collapsed)) != len(self.collapsed):
++            raise ValueError("Collapsed keys must be unique")
++        return self
++
++    @field_validator("graph")
++    @classmethod
++    def bounded_graph(cls, value):
++        from apps.forms.application.validation import _bounded, _Invalid
++
++        try:
++            _bounded(value, "/graph")
++        except _Invalid as exc:
++            raise ValueError("Invalid bounded workspace graph") from exc
++        if len(json.dumps(value, allow_nan=False).encode()) > 262144:
++            raise ValueError("Workspace graph is too large")
++        return value
++
++    @field_validator("positions", "routing")
++    @classmethod
++    def bounded_keys(cls, value):
++        if any(not key or len(key) > 128 for key in value):
++            raise ValueError("Invalid workspace key")
++        if any(isinstance(points, list) and len(points) > 64 for points in value.values()):
++            raise ValueError("Too many route points")
++        return value
++
++
++class WorkspaceUpdateDTO(BaseDTO):
++    model_config = ConfigDict(extra="forbid")
++    workspace_ref_id: str | None = Field(
++        default=None,
++        min_length=1,
++        max_length=512,
++        description="Current workspace ref; null creates the first workspace only. Stale refs return recoverable 409.",
++    )
++    document: WorkspaceDocument
++
++
++class WorkspacePromoteDTO(BaseDTO):
++    model_config = ConfigDict(extra="forbid")
++    workspace_ref_id: str = Field(min_length=1, max_length=512)
++
++
++class WorkflowWorkspaceDTO(BaseDTO):
++    workflow_version_ref_id: str
++    workspace_ref_id: str | None
++    document: WorkspaceDocument
++    promoted_graph_checksum: str | None = Field(
++        default=None,
++        description="Checksum of the last explicitly promoted graph; layout-only saves do not change execution pins.",
++    )
+diff --git a/src/apps/workflows/presentation/routes.py b/src/apps/workflows/presentation/routes.py
+--- a/src/apps/workflows/presentation/routes.py
++++ b/src/apps/workflows/presentation/routes.py
+@@ -2,7 +2,7 @@
+ 
+ from typing import Annotated, Any, cast
+ 
+-from fastapi import APIRouter, Depends, Request
++from fastapi import APIRouter, Depends, Request, Response
+ 
+ from apps.step_types.application.registry import get_registry
+ from apps.users.application.authorization import RequirePermission
+@@ -330,3 +330,99 @@
+     row = await WorkflowService(session, get_registry()).retire(ref_id)
+     await session.commit()
+     return success_response(request, version_dto(row))
++
++
++from apps.workflows.application.workspace import WorkspaceService
++from apps.workflows.domain.workspace import (
++    WorkflowWorkspaceDTO,
++    WorkspacePromoteDTO,
++    WorkspaceUpdateDTO,
++)
++
++
++@versions_router.get(
++    "/{ref_id}/workspace",
++    response_model=SuccessResponse[WorkflowWorkspaceDTO],
++    responses=PRIVATE_NO_STORE_RESPONSES,
++    summary="Read workflow authoring workspace / خواندن فضای طراحی",
++    description="Requires workflows.manage. Returns independently revisioned WIP, stable-key layout and viewport; never an executable graph. Missing WIP starts from the current saved snapshot. / نیازمند مجوز طراحی؛ فضای کار مستقل از گراف اجرایی است.",
++)
++async def get_workspace(
++    request: Request, response: Response, ref_id: str, _: WorkflowAdmin, session: SessionDep
++):
++    private_no_store(response)
++    result = await WorkspaceService(WorkflowService(session, get_registry())).get(ref_id)
++    return success_response(request, result)
++
++
++@versions_router.put(
++    "/{ref_id}/workspace",
++    response_model=SuccessResponse[WorkflowWorkspaceDTO],
++    responses=PRIVATE_NO_STORE_RESPONSES,
++    summary="Save incomplete workflow workspace / ذخیره فضای طراحی",
++    description="Requires workflows.manage and a current DRAFT workflow ref. Bounded incomplete graph/layout is accepted without execution validation. workspace_ref_id null creates once; a stale workspace or workflow ref returns 409. Save does not modify graph rows or execution pins; no automatic replay. / طراحی ناقص با نسخه مستقل ذخیره می‌شود؛ تعارض نسخه پاسخ ۴۰۹ دارد.",
++)
++async def save_workspace(
++    request: Request,
++    response: Response,
++    ref_id: str,
++    data: WorkspaceUpdateDTO,
++    _: WorkflowAdmin,
++    session: SessionDep,
++):
++    private_no_store(response)
++    service = WorkspaceService(WorkflowService(session, get_registry()))
++    await service.save(ref_id, data)
++    await session.commit()
++    return success_response(request, await service.get(ref_id))
++
++
++@versions_router.post(
++    "/{ref_id}/workspace/promote",
++    response_model=SuccessResponse[WorkflowVersionDTO],
++    responses=PRIVATE_NO_STORE_RESPONSES,
++    summary="Promote validated workspace graph / ارتقای گراف معتبر",
++    description="Requires workflows.manage, current DRAFT/workspace refs and all dependency authorizations. Validates GraphSnapshot then atomically replaces executable rows, retaining WIP/layout. 422 preserves the invalid workspace; 409 requires reconciliation. This does not publish. Publication requires the current graph to have been promoted and revalidates all dependencies. / ارتقا پس از اعتبارسنجی انجام می‌شود و انتشار دستور جداگانه است.",
++)
++async def promote_workspace(
++    request: Request,
++    response: Response,
++    ref_id: str,
++    data: WorkspacePromoteDTO,
++    actor: WorkflowAdmin,
++    session: SessionDep,
++):
++    private_no_store(response)
++    row = await WorkspaceService(WorkflowService(session, get_registry())).promote(
++        ref_id, data, actor.id
++    )
++    await session.commit()
++    return success_response(request, version_dto(row))
++
++
++@versions_router.post(
++    "/{ref_id}/workspace/history",
++    response_model=PageResponse[Page[HistoryRecordDTO]],
++    responses=PRIVATE_NO_STORE_RESPONSES,
++    summary="Read authoring workspace history / تاریخچه طراحی",
++    description="Requires workflows.manage; bounded authorized audit pages include WIP changes. Not an ordinary-user runtime endpoint. / فقط برای طراح مجاز است.",
++)
++async def workspace_history(
++    request: Request,
++    response: Response,
++    ref_id: str,
++    query: HistoryQuery,
++    _: WorkflowAdmin,
++    session: SessionDep,
++):
++    private_no_store(response)
++    service = WorkspaceService(WorkflowService(session, get_registry()))
++    version = await service.workflows.get_version(ref_id)
++    row = await service.row(version.id)
++    if row is None:
++        return page_response(
++            request, Page[HistoryRecordDTO](items=[], page=query.page, size=query.size, total=0)
++        )
++    return page_response(
++        request, await HistoryService.for_entity(session, "workflow_workspace").list(query, row.id)
++    )
+diff --git a/src/migrations/versions/c24f913ab601_workflow_workspace.py b/src/migrations/versions/c24f913ab601_workflow_workspace.py
+new file mode 100644
+--- /dev/null
++++ b/src/migrations/versions/c24f913ab601_workflow_workspace.py
+@@ -0,0 +1,46 @@
++"""Persist authoring WIP separately from executable workflow graphs."""
++
++import sqlalchemy as sa
++from alembic import op
++from sqlalchemy.dialects.postgresql import JSONB
++
++revision = "c24f913ab601"
++down_revision = "b13a0c7d2e44"
++branch_labels = None
++depends_on = None
++
++
++def upgrade():
++    op.create_table(
++        "WORKFLOW_WORKSPACE",
++        sa.Column("ID", sa.Uuid(), primary_key=True, server_default=sa.text("uuidv7()")),
++        sa.Column("VERSION", sa.Integer(), nullable=False, server_default="1"),
++        sa.Column(
++            "CREATED_AT",
++            sa.DateTime(timezone=True),
++            nullable=False,
++            server_default=sa.text("now()"),
++        ),
++        sa.Column("UPDATED_AT", sa.DateTime(timezone=True)),
++        sa.Column("DELETED_AT", sa.DateTime(timezone=True)),
++        sa.Column(
++            "WORKFLOW_VERSION_ID",
++            sa.Uuid(),
++            sa.ForeignKey("WORKFLOW_VERSION.ID", ondelete="RESTRICT", onupdate="RESTRICT"),
++            nullable=False,
++        ),
++        sa.Column("DOCUMENT", JSONB(), nullable=False),
++        sa.Column("PROMOTED_GRAPH_CHECKSUM", sa.String(64)),
++        sa.UniqueConstraint("WORKFLOW_VERSION_ID", name="uq_WORKFLOW_WORKSPACE_version"),
++    )
++    op.create_index("ix_WORKFLOW_WORKSPACE_CREATED_AT", "WORKFLOW_WORKSPACE", ["CREATED_AT"])
++    from core.history import create_history_table
++
++    metadata = sa.MetaData()
++    source = sa.Table("WORKFLOW_WORKSPACE", metadata, autoload_with=op.get_bind())
++    create_history_table(source, ondelete="RESTRICT", onupdate="RESTRICT").create(op.get_bind())
++
++
++def downgrade():
++    op.drop_table("WORKFLOW_WORKSPACE_HISTORY")
++    op.drop_table("WORKFLOW_WORKSPACE")
+diff --git a/tests/apps/forms/test_authoring_runtime_preview.py b/tests/apps/forms/test_authoring_runtime_preview.py
+new file mode 100644
+--- /dev/null
++++ b/tests/apps/forms/test_authoring_runtime_preview.py
+@@ -0,0 +1,28 @@
++"""Author previews use the same safe runtime projection without creating a case."""
++
++from main import app
++
++
++def test_author_preview_contract_is_authenticated_and_explicitly_simulated():
++    operation = app.openapi()["paths"]["/api/v1/forms/runtime-preview"]["post"]
++    assert operation["security"]
++    assert (
++        operation["responses"]["200"]["headers"]["Cache-Control"]["schema"]["const"]
++        == "private, no-store"
++    )
++    assert "SimulatedRuntimePreviewRequest" in app.openapi()["components"]["schemas"]
++
++
++def test_frontend_palette_examples_validate_against_the_code_owned_catalog():
++    import json
++    from pathlib import Path
++
++    from apps.forms.application.validation import FormValidator
++    from apps.forms.domain.dto import FormDocuments
++    from apps.forms.domain.fields import FIELD_DEFINITIONS
++
++    examples = json.loads(Path("docs/examples/studio-primitives.json").read_text())
++    assert {example["kind"] for example in examples} == set(FIELD_DEFINITIONS)
++    for example in examples:
++        result = FormValidator().validate(FormDocuments.model_validate(example["documents"]))
++        assert result.valid, (example["kind"], result.issues)
+diff --git a/tests/apps/workflows/test_workspace_contract.py b/tests/apps/workflows/test_workspace_contract.py
+new file mode 100644
+--- /dev/null
++++ b/tests/apps/workflows/test_workspace_contract.py
+@@ -0,0 +1,34 @@
++"""Workspace persistence is bounded and separate from executable GraphSnapshot."""
++
++import pytest
++from pydantic import ValidationError
++
++from apps.workflows.domain import workspace
++from main import app
++
++
++def test_workspace_accepts_incomplete_graph_but_bounds_layout():
++    value = workspace.WorkspaceDocument.model_validate(
++        {"graph": {"steps": [{"key": "half"}]}, "positions": {"half": {"x": 12, "y": 30}}}
++    )
++    assert value.graph["steps"][0]["key"] == "half"
++    with pytest.raises(ValidationError):
++        workspace.WorkspaceDocument.model_validate({"viewport": {"x": 0, "y": 0, "zoom": 0}})
++
++
++def test_workspace_routes_require_author_and_expose_revision():
++    schema = app.openapi()
++    for method, suffix in [
++        ("get", "workspace"),
++        ("put", "workspace"),
++        ("post", "workspace/promote"),
++    ]:
++        operation = schema["paths"]["/api/v1/workflow-versions/{ref_id}/" + suffix][method]
++        assert operation["security"]
++        assert (
++            operation["responses"]["200"]["headers"]["Cache-Control"]["schema"]["const"]
++            == "private, no-store"
++        )
++    assert (
++        "workspace_ref_id" in schema["components"]["schemas"]["WorkflowWorkspaceDTO"]["properties"]
++    )
+diff --git a/tests/integration/test_studio_workspace.py b/tests/integration/test_studio_workspace.py
+new file mode 100644
+--- /dev/null
++++ b/tests/integration/test_studio_workspace.py
+@@ -0,0 +1,272 @@
++"""Actual HTTP workspace persistence, conflict and publication gates."""
++
++import os
++from uuid import uuid7
++
++import pytest
++from httpx import ASGITransport, AsyncClient
++from sqlmodel import select
++
++from apps.step_types.application.registry import builtin_registry
++from apps.step_types.application.service import StepTypeService
++from apps.users.domain.auth_entity import (
++    PermissionEntity,
++    RoleEntity,
++    RolePermissionEntity,
++    UserRoleEntity,
++)
++from apps.users.domain.entity import UserEntity
++from apps.workflows.application.service import WorkflowService
++from apps.workflows.domain.dto import WorkflowCreateDTO, WorkflowVersionCreateDTO
++from core.deps import SessionFactory, engine
++from core.ref_id import create_ref_id
++from main import app
++from tests.integration.test_processes import _step_refs
++from utils.security import hash_password
++
++pytestmark = [
++    pytest.mark.integration,
++    pytest.mark.skipif(os.getenv("RUN_INTEGRATION") != "1", reason="uses isolated PostgreSQL"),
++]
++
++
++async def seed_studio():
++    password = "Studio-" + str(uuid7())
++    hashed = await hash_password(password)
++    async with SessionFactory() as session:
++        author = UserEntity(username="studio-" + str(uuid7()), hashed_password=hashed)
++        outsider = UserEntity(username="studio-outsider-" + str(uuid7()), hashed_password=hashed)
++        session.add_all([author, outsider])
++        await session.flush()
++        role = RoleEntity(name="studio-author-" + str(uuid7()))
++        session.add(role)
++        await session.flush()
++        session.add(UserRoleEntity(user_id=author.id, role_id=role.id))
++        for name in ["forms.manage", "workflows.manage", "requests.manage"]:
++            permission = (
++                await session.exec(select(PermissionEntity).where(PermissionEntity.name == name))
++            ).one_or_none()
++            if permission is None:
++                permission = PermissionEntity(name=name)
++                session.add(permission)
++                await session.flush()
++            session.add(RolePermissionEntity(role_id=role.id, permission_id=permission.id))
++        registry = builtin_registry()
++        await StepTypeService(session, registry).reconcile()
++        service = WorkflowService(session, registry)
++        root = await service.create(
++            WorkflowCreateDTO(code="ST" + uuid7().hex, name="Studio WIP"), author.id
++        )
++        version = await service.create_version(
++            WorkflowVersionCreateDTO(workflow_ref_id=create_ref_id(root.id, root.version), number=1)
++        )
++        refs = await _step_refs(session)
++        graph = {
++            "steps": [
++                {"key": "start", "type_code": "START", "type_version_ref": refs[("START", 1)]},
++                {"key": "finish", "type_code": "FINISH", "type_version_ref": refs[("FINISH", 1)]},
++            ],
++            "transitions": [
++                {"source": "start", "target": "finish", "outcome": "next", "is_default": True}
++            ],
++            "bindings": [],
++            "targets": [],
++        }
++        await session.commit()
++        return {
++            "username": author.username,
++            "outsider": outsider.username,
++            "password": password,
++            "workflow_ref": create_ref_id(root.id, root.version),
++            "version_ref": create_ref_id(version.id, version.version),
++            "graph": graph,
++        }
++
++
++@pytest.mark.anyio
++async def test_workspace_reopen_conflict_promotion_and_immutable_publication():
++    fixture = await seed_studio()
++    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
++
++        async def login(username):
++            response = await client.post(
++                "/api/v1/auth/login", json={"username": username, "password": fixture["password"]}
++            )
++            assert response.status_code == 200
++            return {"Authorization": "Bearer " + response.json()["data"]["access_token"]}
++
++        headers = await login(fixture["username"])
++        denied = await login(fixture["outsider"])
++        base = "/api/v1/workflow-versions/" + fixture["version_ref"]
++        assert (await client.get(base + "/workspace", headers=denied)).status_code == 403
++        original = (await client.get(base, headers=headers)).json()["data"]
++        doc = {
++            "graph": {"steps": [{"key": "half"}]},
++            "positions": {"half": {"x": 40, "y": 80}},
++            "viewport": {"x": 10, "y": 20, "zoom": 1.2},
++        }
++        saved = await client.put(
++            base + "/workspace", headers=headers, json={"workspace_ref_id": None, "document": doc}
++        )
++        assert saved.status_code == 200
++        assert saved.headers["cache-control"] == "private, no-store"
++        state = saved.json()["data"]
++        assert state["workspace_ref_id"]
++        assert (await client.get(base + "/workspace", headers=headers)).json()["data"]["document"][
++            "positions"
++        ]["half"] == {"x": 40.0, "y": 80.0}
++        assert (await client.get(base, headers=headers)).json()["data"]["ref_id"] == original[
++            "ref_id"
++        ]
++        assert (
++            await client.put(
++                base + "/workspace",
++                headers=headers,
++                json={"workspace_ref_id": None, "document": doc},
++            )
++        ).status_code == 409
++        assert (
++            await client.post(
++                base + "/workspace/promote",
++                headers=headers,
++                json={"workspace_ref_id": state["workspace_ref_id"]},
++            )
++        ).status_code == 422
++        assert (await client.post(base + "/publish", headers=headers)).status_code in {409, 422}
++        doc["graph"] = fixture["graph"]
++        saved = await client.put(
++            base + "/workspace",
++            headers=headers,
++            json={"workspace_ref_id": state["workspace_ref_id"], "document": doc},
++        )
++        assert saved.status_code == 200
++        state = saved.json()["data"]
++        promoted = await client.post(
++            base + "/workspace/promote",
++            headers=headers,
++            json={"workspace_ref_id": state["workspace_ref_id"]},
++        )
++        assert promoted.status_code == 200
++        base = "/api/v1/workflow-versions/" + promoted.json()["data"]["ref_id"]
++        reopened = (await client.get(base + "/workspace", headers=headers)).json()["data"]
++        assert reopened["document"]["positions"]["half"] == {"x": 40.0, "y": 80.0}
++        # Layout-only edits retain promotion and do not modify executable version identity.
++        doc["positions"]["half"]["x"] = 100
++        layout = await client.put(
++            base + "/workspace",
++            headers=headers,
++            json={"workspace_ref_id": reopened["workspace_ref_id"], "document": doc},
++        )
++        assert layout.status_code == 200
++        # An edit through the existing executable-graph API invalidates promotion.
++        changed_graph = __import__("copy").deepcopy(fixture["graph"])
++        changed_graph["steps"][1]["display_order"] = 1
++        changed = await client.put(base + "/graph", headers=headers, json=changed_graph)
++        assert changed.status_code == 200
++        base = "/api/v1/workflow-versions/" + changed.json()["data"]["ref_id"]
++        assert (await client.post(base + "/publish", headers=headers)).status_code == 409
++        promoted_again = await client.post(
++            base + "/workspace/promote",
++            headers=headers,
++            json={"workspace_ref_id": layout.json()["data"]["workspace_ref_id"]},
++        )
++        assert promoted_again.status_code == 200
++        base = "/api/v1/workflow-versions/" + promoted_again.json()["data"]["ref_id"]
++        history = await client.post(
++            base + "/workspace/history", headers=headers, json={"page": 1, "size": 20}
++        )
++        assert history.status_code == 200
++        assert history.json()["result"]["items"]
++        publication = await client.post(base + "/publish", headers=headers)
++        assert publication.status_code == 200
++        published = publication.json()["data"]
++        assert published["status"] == "PUBLISHED"
++        base = "/api/v1/workflow-versions/" + published["ref_id"]
++        assert (
++            await client.put(
++                base + "/workspace",
++                headers=headers,
++                json={
++                    "workspace_ref_id": layout.json()["data"]["workspace_ref_id"],
++                    "document": doc,
++                },
++            )
++        ).status_code == 409
++        assert (
++            await client.put(base + "/graph", headers=headers, json=fixture["graph"])
++        ).status_code == 409
++    await engine.dispose()
++
++
++@pytest.mark.anyio
++async def test_author_preview_filters_simulated_policy_and_uses_runtime_metadata():
++    fixture = await seed_studio()
++    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
++        login = await client.post(
++            "/api/v1/auth/login",
++            json={"username": fixture["username"], "password": fixture["password"]},
++        )
++        headers = {"Authorization": "Bearer " + login.json()["data"]["access_token"]}
++        body = {
++            "documents": {
++                "data_schema": {
++                    "type": "object",
++                    "properties": {"amount": {"type": "string"}, "secret": {"type": "string"}},
++                },
++                "render_schema": {
++                    "root": {
++                        "component": "vertical",
++                        "children": [
++                            {"component": "text", "scope": "/properties/amount"},
++                            {"component": "text", "scope": "/properties/secret"},
++                        ],
++                    }
++                },
++            },
++            "data": {"amount": "125.750", "secret": "hidden"},
++            "policy": {
++                "read": ["/properties/amount"],
++                "write": ["/properties/amount"],
++                "hidden": ["/properties/secret"],
++            },
++        }
++        response = await client.post("/api/v1/forms/runtime-preview", headers=headers, json=body)
++        assert response.status_code == 200
++        result = response.json()["data"]
++        assert result["resource_ref_id"] == "simulated-preview"
++        assert result["data"] == {"amount": "125.750"}
++        assert len(result["field_metadata"]) == 1
++        assert result["render_schema"]["dialect"] == "bpms.render/1"
++        body["policy"] = {}
++        empty = await client.post("/api/v1/forms/runtime-preview", headers=headers, json=body)
++        assert empty.status_code == 200
++        assert empty.json()["data"]["data"] == {}
++        body["policy"] = {"read": ["/properties/amount"]}
++        body["purpose"] = "print"
++        result = (
++            await client.post("/api/v1/forms/runtime-preview", headers=headers, json=body)
++        ).json()["data"]
++        assert result["writable_scopes"] == []
++        options = await client.post(
++            "/api/v1/forms/options",
++            headers=headers,
++            json={
++                "documents": {
++                    "data_schema": {"type": "object", "properties": {"choice": {"type": "string"}}},
++                    "render_schema": {
++                        "root": {
++                            "component": "choice",
++                            "scope": "/properties/choice",
++                            "source": {"kind": "custom", "items": [{"key": "one", "value": "One"}]},
++                        }
++                    },
++                },
++                "query": {"node_pointer": "/root", "generation": 3},
++                "locale": "fa",
++            },
++        )
++        assert options.status_code == 200
++        assert options.json()["result"]["locale"] == "fa"
++        assert options.json()["result"]["items"][0]["key"] == 'json:"one"'
++
++    await engine.dispose()
+diff --git a/tests/migrations/versions/test_initial_schema.py b/tests/migrations/versions/test_initial_schema.py
+--- a/tests/migrations/versions/test_initial_schema.py
++++ b/tests/migrations/versions/test_initial_schema.py
+@@ -75,6 +75,7 @@
+     versions = Path(__file__).resolve().parents[3] / "src/migrations/versions"
+     assert sorted(path.name for path in versions.glob("*.py")) == [
+         "b13a0c7d2e44_initial_schema.py",
++        "c24f913ab601_workflow_workspace.py",
+     ]
+ 
+     migration = load_migration()
+diff --git a/docs/examples/studio-primitives.json b/docs/examples/studio-primitives.json
+new file mode 100644
+--- /dev/null
++++ b/docs/examples/studio-primitives.json
+@@ -0,0 +1,520 @@
++[
++  {
++    "kind": "vertical",
++    "documents": {
++      "data_schema": {
++        "type": "object",
++        "properties": {}
++      },
++      "render_schema": {
++        "root": {
++          "component": "vertical",
++          "children": [
++            {
++              "component": "vertical",
++              "label": "field",
++              "children": []
++            }
++          ]
++        }
++      }
++    }
++  },
++  {
++    "kind": "horizontal",
++    "documents": {
++      "data_schema": {
++        "type": "object",
++        "properties": {}
++      },
++      "render_schema": {
++        "root": {
++          "component": "vertical",
++          "children": [
++            {
++              "component": "horizontal",
++              "label": "field",
++              "children": []
++            }
++          ]
++        }
++      }
++    }
++  },
++  {
++    "kind": "grid",
++    "documents": {
++      "data_schema": {
++        "type": "object",
++        "properties": {}
++      },
++      "render_schema": {
++        "root": {
++          "component": "vertical",
++          "children": [
++            {
++              "component": "grid",
++              "label": "field",
++              "children": []
++            }
++          ]
++        }
++      }
++    }
++  },
++  {
++    "kind": "text",
++    "documents": {
++      "data_schema": {
++        "type": "object",
++        "properties": {
++          "field": {
++            "type": "string"
++          }
++        }
++      },
++      "render_schema": {
++        "root": {
++          "component": "vertical",
++          "children": [
++            {
++              "component": "text",
++              "label": "field",
++              "scope": "/properties/field"
++            }
++          ]
++        }
++      }
++    }
++  },
++  {
++    "kind": "textarea",
++    "documents": {
++      "data_schema": {
++        "type": "object",
++        "properties": {
++          "field": {
++            "type": "string"
++          }
++        }
++      },
++      "render_schema": {
++        "root": {
++          "component": "vertical",
++          "children": [
++            {
++              "component": "textarea",
++              "label": "field",
++              "scope": "/properties/field"
++            }
++          ]
++        }
++      }
++    }
++  },
++  {
++    "kind": "integer",
++    "documents": {
++      "data_schema": {
++        "type": "object",
++        "properties": {
++          "field": {
++            "type": "integer"
++          }
++        }
++      },
++      "render_schema": {
++        "root": {
++          "component": "vertical",
++          "children": [
++            {
++              "component": "integer",
++              "label": "field",
++              "scope": "/properties/field"
++            }
++          ]
++        }
++      }
++    }
++  },
++  {
++    "kind": "number",
++    "documents": {
++      "data_schema": {
++        "type": "object",
++        "properties": {
++          "field": {
++            "type": "number"
++          }
++        }
++      },
++      "render_schema": {
++        "root": {
++          "component": "vertical",
++          "children": [
++            {
++              "component": "number",
++              "label": "field",
++              "scope": "/properties/field"
++            }
++          ]
++        }
++      }
++    }
++  },
++  {
++    "kind": "date",
++    "documents": {
++      "data_schema": {
++        "type": "object",
++        "properties": {
++          "field": {
++            "type": "string",
++            "format": "date"
++          }
++        }
++      },
++      "render_schema": {
++        "root": {
++          "component": "vertical",
++          "children": [
++            {
++              "component": "date",
++              "label": "field",
++              "scope": "/properties/field"
++            }
++          ]
++        }
++      }
++    }
++  },
++  {
++    "kind": "datetime",
++    "documents": {
++      "data_schema": {
++        "type": "object",
++        "properties": {
++          "field": {
++            "type": "string",
++            "format": "date-time"
++          }
++        }
++      },
++      "render_schema": {
++        "root": {
++          "component": "vertical",
++          "children": [
++            {
++              "component": "datetime",
++              "label": "field",
++              "scope": "/properties/field"
++            }
++          ]
++        }
++      }
++    }
++  },
++  {
++    "kind": "boolean",
++    "documents": {
++      "data_schema": {
++        "type": "object",
++        "properties": {
++          "field": {
++            "type": "boolean"
++          }
++        }
++      },
++      "render_schema": {
++        "root": {
++          "component": "vertical",
++          "children": [
++            {
++              "component": "boolean",
++              "label": "field",
++              "scope": "/properties/field"
++            }
++          ]
++        }
++      }
++    }
++  },
++  {
++    "kind": "choice",
++    "documents": {
++      "data_schema": {
++        "type": "object",
++        "properties": {
++          "field": {
++            "type": "string"
++          }
++        }
++      },
++      "render_schema": {
++        "root": {
++          "component": "vertical",
++          "children": [
++            {
++              "component": "choice",
++              "label": "field",
++              "scope": "/properties/field",
++              "source": {
++                "kind": "custom",
++                "items": [
++                  {
++                    "key": "option1",
++                    "value": "Option 1"
++                  }
++                ]
++              }
++            }
++          ]
++        }
++      }
++    }
++  },
++  {
++    "kind": "calculated",
++    "documents": {
++      "data_schema": {
++        "type": "object",
++        "properties": {
++          "field": {
++            "type": "string"
++          }
++        }
++      },
++      "render_schema": {
++        "root": {
++          "component": "vertical",
++          "children": [
++            {
++              "component": "calculated",
++              "label": "field",
++              "scope": "/properties/field",
++              "calculation": {
++                "expression": "\"\""
++              }
++            }
++          ]
++        }
++      },
++      "behavior_dialect": "bpms.behavior/1"
++    }
++  },
++  {
++    "kind": "display",
++    "documents": {
++      "data_schema": {
++        "type": "object",
++        "properties": {}
++      },
++      "render_schema": {
++        "root": {
++          "component": "vertical",
++          "children": [
++            {
++              "component": "display",
++              "label": "field"
++            }
++          ]
++        }
++      }
++    }
++  },
++  {
++    "kind": "user",
++    "documents": {
++      "data_schema": {
++        "type": "object",
++        "properties": {
++          "field": {
++            "type": "string"
++          }
++        }
++      },
++      "render_schema": {
++        "root": {
++          "component": "vertical",
++          "children": [
++            {
++              "component": "user",
++              "label": "field",
++              "scope": "/properties/field",
++              "source": {
++                "kind": "domain",
++                "selector": "users"
++              }
++            }
++          ]
++        }
++      }
++    }
++  },
++  {
++    "kind": "group",
++    "documents": {
++      "data_schema": {
++        "type": "object",
++        "properties": {
++          "field": {
++            "type": "string"
++          }
++        }
++      },
++      "render_schema": {
++        "root": {
++          "component": "vertical",
++          "children": [
++            {
++              "component": "group",
++              "label": "field",
++              "scope": "/properties/field",
++              "source": {
++                "kind": "domain",
++                "selector": "work_groups"
++              }
++            }
++          ]
++        }
++      }
++    }
++  },
++  {
++    "kind": "repeater",
++    "documents": {
++      "data_schema": {
++        "type": "object",
++        "properties": {
++          "field": {
++            "type": "array",
++            "items": {
++              "type": "object",
++              "properties": {}
++            }
++          }
++        }
++      },
++      "render_schema": {
++        "root": {
++          "component": "vertical",
++          "children": [
++            {
++              "component": "repeater",
++              "label": "field",
++              "scope": "/properties/field",
++              "children": []
++            }
++          ]
++        }
++      }
++    }
++  },
++  {
++    "kind": "table",
++    "documents": {
++      "data_schema": {
++        "type": "object",
++        "properties": {
++          "field": {
++            "type": "array",
++            "items": {
++              "type": "object",
++              "properties": {}
++            }
++          }
++        }
++      },
++      "render_schema": {
++        "root": {
++          "component": "vertical",
++          "children": [
++            {
++              "component": "table",
++              "label": "field",
++              "scope": "/properties/field",
++              "children": []
++            }
++          ]
++        }
++      }
++    }
++  },
++  {
++    "kind": "media",
++    "documents": {
++      "data_schema": {
++        "type": "object",
++        "properties": {
++          "field": {
++            "type": "string"
++          }
++        }
++      },
++      "render_schema": {
++        "root": {
++          "component": "vertical",
++          "children": [
++            {
++              "component": "media",
++              "label": "field",
++              "scope": "/properties/field"
++            }
++          ]
++        }
++      }
++    }
++  },
++  {
++    "kind": "attachment_collection",
++    "documents": {
++      "data_schema": {
++        "type": "object",
++        "properties": {
++          "field": {
++            "type": "array",
++            "items": {
++              "type": "string"
++            }
++          }
++        }
++      },
++      "render_schema": {
++        "root": {
++          "component": "vertical",
++          "children": [
++            {
++              "component": "attachment_collection",
++              "label": "field",
++              "scope": "/properties/field"
++            }
++          ]
++        }
++      }
++    }
++  },
++  {
++    "kind": "action",
++    "documents": {
++      "data_schema": {
++        "type": "object",
++        "properties": {}
++      },
++      "render_schema": {
++        "root": {
++          "component": "vertical",
++          "children": [
++            {
++              "component": "action",
++              "label": "field",
++              "outcome": "next"
++            }
++          ]
++        },
++        "outcomes": [
++          "next"
++        ]
++      }
++    }
++  }
++]
+diff --git a/docs/reference/responses/forms.md b/docs/reference/responses/forms.md
+--- a/docs/reference/responses/forms.md
++++ b/docs/reference/responses/forms.md
+@@ -377,6 +377,71 @@
+ 
+ No reviewed business example is published for this schema. Use the field contract above and the [response scenarios](../../api/response-scenarios.md); do not infer valid lifecycle values from field types alone.
+ 
++### `RuntimeActionDTO`
++
++Used by: `POST /api/v1/forms/runtime-preview`
++
++| Field | Type | Required | Notes |
++| --- | --- | --- | --- |
++| `key` | `string` | Yes | — |
++| `kind` | `string` | Yes | — |
++| `outcome_key` | `string` | Yes | — |
++| `title` | `string` | Yes | — |
++| `confirmation` | `string | null` | Yes | — |
++| `required_scopes` | `array[string]` | Yes | — |
++| `require_comment` | `boolean` | Yes | — |
++| `validation` | `string` | Yes | — |
++
++No reviewed business example is published for this schema. Use the field contract above and the [response scenarios](../../api/response-scenarios.md); do not infer valid lifecycle values from field types alone.
++
++### `RuntimeFieldMetadataDTO`
++
++Used by: `POST /api/v1/forms/runtime-preview`
++
++| Field | Type | Required | Notes |
++| --- | --- | --- | --- |
++| `scope` | `string` | Yes | Visible JSON Schema property/items scope. |
++| `validation_schema` | `object` | Yes | Bounded compiled schema of this visible field only. No defaults, examples, hidden properties or shared definitions; backend validates the full canonical document. |
++| `writable` | `boolean` | Yes | — |
++| `required` | `boolean` | Yes | — |
++
++No reviewed business example is published for this schema. Use the field contract above and the [response scenarios](../../api/response-scenarios.md); do not infer valid lifecycle values from field types alone.
++
++### `RuntimeFormStateDTO`
++
++Used by: `POST /api/v1/forms/runtime-preview`
++
++| Field | Type | Required | Notes |
++| --- | --- | --- | --- |
++| `runtime_dialect` | `string` | No |  Default: `bpms.runtime/1`. |
++| `resource_kind` | `string` | Yes | — |
++| `resource_ref_id` | `string` | Yes | Current opaque revision-bearing reference for the owning request/work item; replace after every mutation. |
++| `form_version_ref_id` | `string` | Yes | Opaque reference; use the value returned by the API. |
++| `form_version_number` | `integer` | Yes | — |
++| `submission_ref_id` | `string` | Yes | Opaque reference; use the value returned by the API. |
++| `design_key` | `string` | Yes | Exact pinned client variant; locale changes cannot change this key. |
++| `render_dialect` | `string` | No |  Default: `bpms.render/1`. |
++| `data_dialect` | `string` | No |  Default: `https://json-schema.org/draft/2020-12/schema`. |
++| `view_key` | `string` | Yes | — |
++| `purpose` | `string` | Yes | — |
++| `resolved_locale` | `string` | Yes | Locale selected by the pinned catalog, or negotiated en/fa fallback. |
++| `direction` | `string` | Yes | — |
++| `data` | `object` | Yes | Canonical actor-visible values. Hidden values are preserved only on the server. |
++| `item_identity` | `object` | Yes | Stable row keys for visible collection paths only. |
++| `page_settings` | `object` | No | Pinned display-only settings; optional pages contains at most 32 unique key/title/scopes entries with actor-readable scopes only. No scripts, bindings or runtime values. |
++| `before_data` | `object | null` | No | Prior submitted data filtered through the same task view, or null when unavailable. |
++| `before_item_identity` | `object | null` | No | Actor-filtered prior row identities; null when unavailable. / هویت مجاز ردیف‌های پیشین؛ در صورت نبودن null. |
++| `render_schema` | `object` | Yes | Actor-filtered bounded bpms.render/1 display document. Server-evaluated calculation metadata and client expressions are omitted; writable_scopes is authoritative for editability. |
++| `readable_scopes` | `array[string]` | Yes | — |
++| `writable_scopes` | `array[string]` | Yes | — |
++| `required_scopes` | `array[string]` | Yes | — |
++| `field_metadata` | `array[RuntimeFieldMetadataDTO]` | Yes | — |
++| `actions` | `array[RuntimeActionDTO]` | No | — |
++| `override_provenance` | `object` | No | Visible override actor/reason/value/time only; input checksums remain server-only. |
++| `issues` | `array[object]` | No | Safe visible pointer/code pairs. Hidden canonical validation failures produce a generic task.validation issue. |
++
++No reviewed business example is published for this schema. Use the field contract above and the [response scenarios](../../api/response-scenarios.md); do not infer valid lifecycle values from field types alone.
++
+ ### `SelectOption_str_`
+ 
+ Used by: `POST /api/v1/forms/options`
+@@ -469,6 +534,20 @@
+ | `error` | `null` | No | — |
+ | `code` | `integer` | No |  Default: `200`. |
+ | `data` | `PreviewDTO` | Yes | — |
++
++No reviewed business example is published for this schema. Use the field contract above and the [response scenarios](../../api/response-scenarios.md); do not infer valid lifecycle values from field types alone.
++
++### `SuccessResponse_RuntimeFormStateDTO_`
++
++Used by: `POST /api/v1/forms/runtime-preview`
++
++| Field | Type | Required | Notes |
++| --- | --- | --- | --- |
++| `success` | `boolean` | No |  Default: `True`. |
++| `request_id` | `string` | Yes | — |
++| `error` | `null` | No | — |
++| `code` | `integer` | No |  Default: `200`. |
++| `data` | `RuntimeFormStateDTO` | Yes | — |
+ 
+ No reviewed business example is published for this schema. Use the field contract above and the [response scenarios](../../api/response-scenarios.md); do not infer valid lifecycle values from field types alone.
+ 
+diff --git a/docs/reference/responses/index.md b/docs/reference/responses/index.md
+--- a/docs/reference/responses/index.md
++++ b/docs/reference/responses/index.md
+@@ -20,7 +20,7 @@
+ - [form-data-type-versions](form-data-type-versions.md) — 8 schemas
+ - [form-data-types](form-data-types.md) — 10 schemas
+ - [form-versions](form-versions.md) — 16 schemas
+-- [forms](forms.md) — 36 schemas
++- [forms](forms.md) — 40 schemas
+ - [health](health.md) — 5 schemas
+ - [history](history.md) — 3 schemas
+ - [images](images.md) — 2 schemas
+@@ -40,5 +40,5 @@
+ - [users](users.md) — 13 schemas
+ - [work-groups](work-groups.md) — 11 schemas
+ - [work-items](work-items.md) — 23 schemas
+-- [workflow-versions](workflow-versions.md) — 24 schemas
++- [workflow-versions](workflow-versions.md) — 29 schemas
+ - [workflows](workflows.md) — 15 schemas
+diff --git a/docs/reference/responses/workflow-versions.md b/docs/reference/responses/workflow-versions.md
+--- a/docs/reference/responses/workflow-versions.md
++++ b/docs/reference/responses/workflow-versions.md
+@@ -109,7 +109,7 @@
+ 
+ ### `HistoryRecordDTO`
+ 
+-Used by: `POST /api/v1/workflow-versions/{ref_id}/history`
++Used by: `POST /api/v1/workflow-versions/{ref_id}/history`, `POST /api/v1/workflow-versions/{ref_id}/workspace/history`
+ 
+ | Field | Type | Required | Notes |
+ | --- | --- | --- | --- |
+@@ -156,7 +156,7 @@
+ 
+ ### `PageResponse_Page_HistoryRecordDTO__`
+ 
+-Used by: `POST /api/v1/workflow-versions/{ref_id}/history`
++Used by: `POST /api/v1/workflow-versions/{ref_id}/history`, `POST /api/v1/workflow-versions/{ref_id}/workspace/history`
+ 
+ | Field | Type | Required | Notes |
+ | --- | --- | --- | --- |
+@@ -184,7 +184,7 @@
+ 
+ ### `Page_HistoryRecordDTO_`
+ 
+-Used by: `POST /api/v1/workflow-versions/{ref_id}/history`
++Used by: `POST /api/v1/workflow-versions/{ref_id}/history`, `POST /api/v1/workflow-versions/{ref_id}/workspace/history`
+ 
+ | Field | Type | Required | Notes |
+ | --- | --- | --- | --- |
+@@ -309,7 +309,7 @@
+ 
+ ### `SuccessResponse_WorkflowVersionDTO_`
+ 
+-Used by: `GET /api/v1/workflow-versions/{ref_id}`, `POST /api/v1/workflow-versions`, `POST /api/v1/workflow-versions/{ref_id}/publish`, `POST /api/v1/workflow-versions/{ref_id}/retire`, `PUT /api/v1/workflow-versions/{ref_id}`, `PUT /api/v1/workflow-versions/{ref_id}/graph`
++Used by: `GET /api/v1/workflow-versions/{ref_id}`, `POST /api/v1/workflow-versions`, `POST /api/v1/workflow-versions/{ref_id}/publish`, `POST /api/v1/workflow-versions/{ref_id}/retire`, `POST /api/v1/workflow-versions/{ref_id}/workspace/promote`, `PUT /api/v1/workflow-versions/{ref_id}`, `PUT /api/v1/workflow-versions/{ref_id}/graph`
+ 
+ | Field | Type | Required | Notes |
+ | --- | --- | --- | --- |
+@@ -318,6 +318,20 @@
+ | `error` | `null` | No | — |
+ | `code` | `integer` | No |  Default: `200`. |
+ | `data` | `WorkflowVersionDTO` | Yes | — |
++
++No reviewed business example is published for this schema. Use the field contract above and the [response scenarios](../../api/response-scenarios.md); do not infer valid lifecycle values from field types alone.
++
++### `SuccessResponse_WorkflowWorkspaceDTO_`
++
++Used by: `GET /api/v1/workflow-versions/{ref_id}/workspace`, `PUT /api/v1/workflow-versions/{ref_id}/workspace`
++
++| Field | Type | Required | Notes |
++| --- | --- | --- | --- |
++| `success` | `boolean` | No |  Default: `True`. |
++| `request_id` | `string` | Yes | — |
++| `error` | `null` | No | — |
++| `code` | `integer` | No |  Default: `200`. |
++| `data` | `WorkflowWorkspaceDTO` | Yes | — |
+ 
+ No reviewed business example is published for this schema. Use the field contract above and the [response scenarios](../../api/response-scenarios.md); do not infer valid lifecycle values from field types alone.
+ 
+@@ -353,7 +367,7 @@
+ 
+ ### `WorkflowVersionDTO`
+ 
+-Used by: `GET /api/v1/workflow-versions/{ref_id}`, `POST /api/v1/workflow-versions`, `POST /api/v1/workflow-versions/report`, `POST /api/v1/workflow-versions/search`, `POST /api/v1/workflow-versions/{ref_id}/publish`, `POST /api/v1/workflow-versions/{ref_id}/retire`, `PUT /api/v1/workflow-versions/{ref_id}`, `PUT /api/v1/workflow-versions/{ref_id}/graph`
++Used by: `GET /api/v1/workflow-versions/{ref_id}`, `POST /api/v1/workflow-versions`, `POST /api/v1/workflow-versions/report`, `POST /api/v1/workflow-versions/search`, `POST /api/v1/workflow-versions/{ref_id}/publish`, `POST /api/v1/workflow-versions/{ref_id}/retire`, `POST /api/v1/workflow-versions/{ref_id}/workspace/promote`, `PUT /api/v1/workflow-versions/{ref_id}`, `PUT /api/v1/workflow-versions/{ref_id}/graph`
+ 
+ | Field | Type | Required | Notes |
+ | --- | --- | --- | --- |
+@@ -368,3 +382,54 @@
+ | `published_by_ref_id` | `string | null` | Yes | Opaque reference; use the value returned by the API. |
+ 
+ No reviewed business example is published for this schema. Use the field contract above and the [response scenarios](../../api/response-scenarios.md); do not infer valid lifecycle values from field types alone.
++
++### `WorkflowWorkspaceDTO`
++
++Used by: `GET /api/v1/workflow-versions/{ref_id}/workspace`, `PUT /api/v1/workflow-versions/{ref_id}/workspace`
++
++| Field | Type | Required | Notes |
++| --- | --- | --- | --- |
++| `workflow_version_ref_id` | `string` | Yes | Opaque reference; use the value returned by the API. |
++| `workspace_ref_id` | `string | null` | Yes | Opaque reference; use the value returned by the API. |
++| `document` | `WorkspaceDocument` | Yes | — |
++| `promoted_graph_checksum` | `string | null` | No | Checksum of the last explicitly promoted graph; layout-only saves do not change execution pins. |
++
++No reviewed business example is published for this schema. Use the field contract above and the [response scenarios](../../api/response-scenarios.md); do not infer valid lifecycle values from field types alone.
++
++### `WorkspaceDocument`
++
++Used by: `GET /api/v1/workflow-versions/{ref_id}/workspace`, `PUT /api/v1/workflow-versions/{ref_id}/workspace`
++
++| Field | Type | Required | Notes |
++| --- | --- | --- | --- |
++| `dialect` | `string` | No |  Default: `bpms.workspace/1`. |
++| `graph` | `object` | No | Incomplete authoring JSON, at most 256 KiB and depth 32. It is never executed; promotion validates GraphSnapshot and all dependencies. |
++| `positions` | `object` | No | Positions keyed by stable authored step key, never database row IDs. |
++| `viewport` | `WorkspaceViewport` | No | — |
++| `collapsed` | `array[string]` | No | — |
++| `routing` | `object` | No | Optional edge waypoints keyed by authored connection identity; at most 64 points each. |
++
++No reviewed business example is published for this schema. Use the field contract above and the [response scenarios](../../api/response-scenarios.md); do not infer valid lifecycle values from field types alone.
++
++### `WorkspacePoint`
++
++Used by: `GET /api/v1/workflow-versions/{ref_id}/workspace`, `PUT /api/v1/workflow-versions/{ref_id}/workspace`
++
++| Field | Type | Required | Notes |
++| --- | --- | --- | --- |
++| `x` | `number` | No |  Default: `0`. |
++| `y` | `number` | No |  Default: `0`. |
++
++No reviewed business example is published for this schema. Use the field contract above and the [response scenarios](../../api/response-scenarios.md); do not infer valid lifecycle values from field types alone.
++
++### `WorkspaceViewport`
++
++Used by: `GET /api/v1/workflow-versions/{ref_id}/workspace`, `PUT /api/v1/workflow-versions/{ref_id}/workspace`
++
++| Field | Type | Required | Notes |
++| --- | --- | --- | --- |
++| `x` | `number` | No |  Default: `0`. |
++| `y` | `number` | No |  Default: `0`. |
++| `zoom` | `number` | No |  Default: `1`. |
++
++No reviewed business example is published for this schema. Use the field contract above and the [response scenarios](../../api/response-scenarios.md); do not infer valid lifecycle values from field types alone.
+diff --git a/scripts/seed_studio_browser.py b/scripts/seed_studio_browser.py
+new file mode 100644
+--- /dev/null
++++ b/scripts/seed_studio_browser.py
+@@ -0,0 +1,83 @@
++"""Seed an ordinary studio author in disposable infrastructure; never log credentials."""
++
++import asyncio
++import json
++import os
++from pathlib import Path
++from uuid import uuid7
++
++
++async def main():
++    import tests.conftest  # noqa: F401
++    from sqlmodel import select
++    from tests.integration.test_studio_workspace import seed_studio
++
++    from apps.clients.application.service import ClientService
++    from apps.clients.domain.dto import ClientCreateDTO, ClientReleaseCreateDTO
++    from apps.forms.application.service import FormService
++    from apps.forms.domain.dto import FormCreateDTO, FormVersionCreateDTO
++    from apps.requests.application.service import RequestService
++    from apps.requests.domain.dto import RequestTypeClientTargetDTO, RequestTypeCreateDTO
++    from apps.users.domain.entity import UserEntity
++    from core.deps import SessionFactory, engine
++    from core.ref_id import create_ref_id
++
++    fixture = await seed_studio()
++    async with SessionFactory() as session:
++        author = (
++            await session.exec(select(UserEntity).where(UserEntity.username == fixture["username"]))
++        ).one()
++        forms = FormService(session)
++        form = await forms.create(
++            FormCreateDTO(code="BROWSER" + uuid7().hex, name="Browser author form"), author.id
++        )
++        version = await forms.create_version(
++            FormVersionCreateDTO(
++                form_ref_id=create_ref_id(form.id, form.version),
++                number=1,
++                data_schema={"type": "object", "properties": {}},
++                render_schema={"root": {"component": "vertical", "children": []}},
++            )
++        )
++        clients = ClientService(session)
++        client, _secret = await clients.create_client(
++            ClientCreateDTO(
++                code="CLIENT" + uuid7().hex,
++                name="Restricted studio client",
++                kind="WEB",
++                platform="test",
++                confidential=True,
++            )
++        )
++        client_ref = create_ref_id(client.id, client.version)
++        release = await clients.create_release(
++            client.id, ClientReleaseCreateDTO(version="1.0", api_version="v1")
++        )
++        request_type = await RequestService(session).create_type(
++            RequestTypeCreateDTO(
++                code="TYPE" + uuid7().hex,
++                name="Restricted studio request",
++                workflow_ref_id=fixture["workflow_ref"],
++                form_ref_id=create_ref_id(form.id, form.version),
++                client_targets=[
++                    RequestTypeClientTargetDTO(
++                        client_ref_id=client_ref,
++                        minimum_release="1.0",
++                        maximum_release_exclusive="2.0",
++                    )
++                ],
++            )
++        )
++        fixture["client_ref"] = client_ref
++        fixture["release_ref"] = create_ref_id(release.id, release.version)
++        fixture["request_type_ref"] = create_ref_id(request_type.id, request_type.version)
++        await session.commit()
++        fixture["form_ref"] = create_ref_id(version.id, version.version)
++    destination = Path(os.getenv("BROWSER_ACCOUNTS_FILE", "/tmp/studio-browser-accounts.json"))
++    destination.write_text(json.dumps(fixture))
++    destination.chmod(0o600)
++    await engine.dispose()
++
++
++if __name__ == "__main__":
++    asyncio.run(main())

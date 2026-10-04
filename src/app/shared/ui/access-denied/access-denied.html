@@ -1,0 +1,21 @@
+@if (unavailable) {
+  <h1 tabindex="-1">{{ "Access unavailable" | localize }}</h1>
+  <p>
+    {{
+      "Your session could not be verified. Try checking it again." | localize
+    }}
+  </p>
+  <button type="button" (click)="retry()">
+    {{ "Retry session check" | localize }}
+  </button>
+} @else {
+  <h1 tabindex="-1">{{ "Access denied" | localize }}</h1>
+  <p>
+    {{
+      "You need a signed-in session with the required permissions to open this page."
+        | localize
+    }}
+  </p>
+}
+<a routerLink="/operations">{{ "Return to Operations" | localize }}</a>
+<a routerLink="/login">{{ "Return to sign in" | localize }}</a>

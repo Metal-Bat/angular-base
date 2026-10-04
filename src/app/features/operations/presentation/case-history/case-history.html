@@ -1,0 +1,31 @@
+<details>
+  <summary>{{ "History" | localize }}</summary>
+  <button type="button" [disabled]="busy()" (click)="load(page())">
+    {{ "Load history" | localize }}
+  </button>
+  @if (error()) {
+    <p role="alert">{{ error() | localize }}</p>
+  }
+  <ol>
+    @for (entry of items(); track $index) {
+      <li>
+        {{ entry.revision }} · <time>{{ entry.date }}</time> ·
+        {{ entry.action }}
+      </li>
+    }
+  </ol>
+  <button
+    type="button"
+    [disabled]="busy() || page() <= 1"
+    (click)="load(page() - 1)"
+  >
+    {{ "Previous" | localize }}
+  </button>
+  <button
+    type="button"
+    [disabled]="busy() || page() >= totalPages()"
+    (click)="load(page() + 1)"
+  >
+    {{ "Next" | localize }}
+  </button>
+</details>

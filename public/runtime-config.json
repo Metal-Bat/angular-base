@@ -1,0 +1,27 @@
+{
+  "apiBasePath": "/api/v1",
+  "sessionBasePath": "/session",
+  "locale": "en",
+  "rendererCapabilities": [
+    "primitive.action/1",
+    "primitive.boolean/1",
+    "primitive.calculated/1",
+    "primitive.choice/1",
+    "primitive.date/1",
+    "primitive.datetime/1",
+    "primitive.display/1",
+    "primitive.grid/1",
+    "primitive.group/1",
+    "primitive.horizontal/1",
+    "primitive.integer/1",
+    "primitive.number/1",
+    "primitive.text/1",
+    "primitive.textarea/1",
+    "primitive.user/1",
+    "primitive.vertical/1",
+    "primitive.attachment_collection/1",
+    "primitive.media/1",
+    "primitive.repeater/1",
+    "primitive.table/1"
+  ]
+}

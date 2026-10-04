@@ -1,0 +1,17 @@
+<app-area-overview
+  description="Design the forms and workflows used by your organization."
+  heading="Studio"
+  [capabilities]="capabilities"
+/>
+
+<nav aria-label="Studio catalogs">
+  <a routerLink="/studio/forms">{{ "Forms" | localize }}</a> ·
+  <a routerLink="/studio/workflows">{{ "Workflows" | localize }}</a> ·
+  <a routerLink="/studio/request-types">{{ "Request types" | localize }}</a> ·
+  <a routerLink="/studio/clients">{{ "Clients and releases" | localize }}</a> ·
+  <a routerLink="/studio/form-components">{{
+    "Reusable components" | localize
+  }}</a>
+  · <a routerLink="/studio/form-data-types">{{ "Data types" | localize }}</a> ·
+  <a routerLink="/studio/library">{{ "Library and upgrades" | localize }}</a>
+</nav>

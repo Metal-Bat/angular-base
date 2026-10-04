@@ -1,0 +1,246 @@
+<h1 tabindex="-1">{{ spec.title | localize }}</h1>
+<a routerLink="/studio">{{ "Studio" | localize }}</a>
+@if (error()) {
+  <p role="alert">{{ error() | localize }}</p>
+}
+@if (notice()) {
+  <p role="status">{{ notice() | localize }}</p>
+}
+@if (busy()) {
+  <p role="status">{{ "Loading…" | localize }}</p>
+}
+<form (ngSubmit)="load()">
+  @for (field of spec.queryFields; track field.key) {
+    <label [for]="'query-' + field.key">{{ field.title }}</label>
+    <input
+      required
+      [id]="'query-' + field.key"
+      [name]="field.key"
+      [ngModel]="display(field, true)"
+      (ngModelChange)="change(field, $event, true)"
+    />
+  }
+  <button type="submit" [disabled]="busy()">{{ "Search" | localize }}</button>
+  <button type="button" [disabled]="busy()" (click)="load(page(), true)">
+    {{ "Report" | localize }}
+  </button>
+  <button type="button" [disabled]="busy()" (click)="create()">
+    {{ "Create" | localize }}
+  </button>
+</form>
+<ul>
+  @for (row of items(); track ref(row)) {
+    <li>
+      <button type="button" [disabled]="busy()" (click)="open(ref(row))">
+        {{ label(row) }}
+      </button>
+      {{ row["status"] ?? "" }}
+    </li>
+  } @empty {
+    <li>{{ "No items" | localize }}</li>
+  }
+</ul>
+<button
+  type="button"
+  [disabled]="busy() || page() <= 1"
+  (click)="load(page() - 1)"
+>
+  {{ "Previous" | localize }}
+</button>
+<button
+  type="button"
+  [disabled]="busy() || page() >= totalPages()"
+  (click)="load(page() + 1)"
+>
+  {{ "Next" | localize }}
+</button>
+<section aria-label="Definition editor">
+  <h2>{{ selected() ? ("Edit" | localize) : ("Create" | localize) }}</h2>
+  @if (selected(); as row) {
+    <details>
+      <summary>{{ "Definition details" | localize }}</summary>
+      <pre>{{ json(row, null, 2) }}</pre>
+    </details>
+    <p>
+      {{ row["status"] ?? "" }} ·
+      {{ row["checksum"] ?? row["graph_checksum"] ?? "" }}
+    </p>
+  }
+  @if (immutable()) {
+    <p>
+      {{
+        "Published versions are immutable. Create a new draft version."
+          | localize
+      }}
+    </p>
+  }
+  <form (ngSubmit)="save()">
+    @for (field of fields(); track field.key) {
+      <div class="field">
+        <label [for]="'author-' + field.key"
+          >{{ field.title }} {{ field.required ? "*" : "" }}</label
+        >
+        @switch (field.type) {
+          @case ("json") {
+            <textarea
+              rows="6"
+              spellcheck="false"
+              [disabled]="!canSave()"
+              [id]="'author-' + field.key"
+              [name]="field.key"
+              [ngModel]="display(field)"
+              (ngModelChange)="change(field, $event)"
+            ></textarea>
+          }
+          @case ("boolean") {
+            <input
+              type="checkbox"
+              [disabled]="!canSave()"
+              [id]="'author-' + field.key"
+              [name]="field.key"
+              [ngModel]="values()[field.key] === true"
+              (ngModelChange)="change(field, $event)"
+            />
+          }
+          @default {
+            @if (field.options.length) {
+              <select
+                [disabled]="!canSave()"
+                [id]="'author-' + field.key"
+                [name]="field.key"
+                [ngModel]="display(field)"
+                (ngModelChange)="change(field, $event)"
+              >
+                <option value="">—</option>
+                @for (option of field.options; track option) {
+                  <option [value]="option">{{ option }}</option>
+                }
+              </select>
+            } @else {
+              <input
+                [disabled]="!canSave()"
+                [id]="'author-' + field.key"
+                [name]="field.key"
+                [ngModel]="display(field)"
+                [required]="field.required"
+                [type]="field.type === 'number' ? 'number' : 'text'"
+                (ngModelChange)="change(field, $event)"
+              />
+            }
+          }
+        }
+      </div>
+    }
+    <button type="submit" [disabled]="!canSave()">
+      {{ "Save" | localize }}
+    </button>
+  </form>
+</section>
+@if (selected()) {
+  <nav aria-label="Definition actions">
+    @if (versionCatalog) {
+      <a
+        [queryParams]="{ parent: reference() }"
+        [routerLink]="['/studio', versionCatalog]"
+        >{{ "Versions" | localize }}</a
+      >
+    }
+    @if (spec.editor) {
+      <a [routerLink]="['/studio', key, reference(), 'edit']">{{
+        "Open designer" | localize
+      }}</a>
+    }
+    @for (
+      action of ["publish", "retire", "disable", "rotate", "remove"];
+      track action
+    ) {
+      @if (spec.actions.includes(action)) {
+        <button
+          type="button"
+          [disabled]="busy() || dirty()"
+          (click)="act(action)"
+        >
+          {{ action | localize }}
+        </button>
+      }
+    }
+    <button type="button" [disabled]="busy()" (click)="history()">
+      {{ "History" | localize }}
+    </button>
+  </nav>
+  @if (spec.actions.includes("grant")) {
+    <details>
+      <summary>{{ "Access grants" | localize }}</summary>
+      @if (spec.actions.includes("grants")) {
+        <button type="button" [disabled]="busy()" (click)="loadGrants()">
+          {{ "Current grants" | localize }}
+        </button>
+        <pre>{{ grants() }}</pre>
+        <button
+          type="button"
+          [disabled]="grantPage() <= 1"
+          (click)="loadGrants(grantPage() - 1)"
+        >
+          {{ "Previous" | localize }}</button
+        ><button
+          type="button"
+          [disabled]="grantPage() >= grantPages()"
+          (click)="loadGrants(grantPage() + 1)"
+        >
+          {{ "Next" | localize }}
+        </button>
+      }
+      <label for="grant-body">{{
+        "Grant target and capabilities" | localize
+      }}</label
+      ><textarea id="grant-body" rows="4" [(ngModel)]="grantBody"></textarea
+      ><button type="button" [disabled]="busy() || dirty()" (click)="grant()">
+        {{ "Add grant" | localize }}</button
+      ><label for="grant-reference">{{
+        "Grant reference to revoke" | localize
+      }}</label
+      ><input id="grant-reference" [(ngModel)]="grantTarget" /><button
+        type="button"
+        [disabled]="busy() || dirty()"
+        (click)="grant(true)"
+      >
+        {{ "Revoke grant" | localize }}
+      </button>
+    </details>
+  }
+}
+@if (secret()) {
+  <aside>
+    <p>
+      {{
+        "One-time confidential client secret. Transfer it to the server operator; never put it in browser configuration."
+          | localize
+      }}
+    </p>
+    <details>
+      <summary>{{ "Reveal secret" | localize }}</summary>
+      <code>{{ secret() }}</code>
+    </details>
+    <button type="button" (click)="secret.set('')">
+      {{ "Dismiss secret" | localize }}
+    </button>
+  </aside>
+}
+@if (audit().length) {
+  <section aria-label="History">
+    <pre>{{ json(audit(), null, 2) }}</pre>
+    <button
+      type="button"
+      [disabled]="busy() || auditPage() <= 1"
+      (click)="history(auditPage() - 1)"
+    >
+      {{ "Previous" | localize }}</button
+    ><button
+      type="button"
+      [disabled]="busy() || auditPage() >= auditPages()"
+      (click)="history(auditPage() + 1)"
+    >
+      {{ "Next" | localize }}
+    </button>
+  </section>
+}

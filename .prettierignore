@@ -13,3 +13,12 @@ package-lock.json
 .env.local
 
 .local/
+
+# Supplied API snapshots and generated inventory
+docs/reference/
+docs/API-INVENTORY.md
+
+artifacts/
+
+# Deterministic generator owns exact formatting
+src/app/core/transport/generated/

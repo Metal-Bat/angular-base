@@ -1,0 +1,47 @@
+@if (editor().canEdit() && editor().overrides().length) {
+  <fieldset>
+    <legend>{{ "Calculation override" | localize }}</legend>
+    <label for="override-field">{{ "Field" | localize }}</label
+    ><select
+      id="override-field"
+      [ngModel]="overrideScope()"
+      (ngModelChange)="overrideScope.set($event)"
+    >
+      <option value="">{{ "Choose a value" | localize }}</option>
+      @for (node of editor().overrides(); track node.scope) {
+        <option [value]="node.scope">{{ node.label ?? node.scope }}</option>
+      }
+    </select>
+    <label for="override-value">{{ "Value" | localize }}</label
+    ><input
+      id="override-value"
+      [ngModel]="overrideValue()"
+      (ngModelChange)="overrideValue.set($event)"
+    />
+    <label for="override-reason">{{ "Reason" | localize }}</label
+    ><input
+      id="override-reason"
+      maxlength="1024"
+      [ngModel]="overrideReason()"
+      (ngModelChange)="overrideReason.set($event)"
+    />
+    <button
+      type="button"
+      [disabled]="
+        editor().dirty() || !overrideScope() || !overrideReason().trim()
+      "
+      (click)="override('set')"
+    >
+      {{ "Override value" | localize }}
+    </button>
+    <button
+      type="button"
+      [disabled]="
+        editor().dirty() || !overrideScope() || !overrideReason().trim()
+      "
+      (click)="override('reset')"
+    >
+      {{ "Reset calculation" | localize }}
+    </button>
+  </fieldset>
+}

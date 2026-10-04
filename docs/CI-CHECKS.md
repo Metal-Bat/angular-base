@@ -1,0 +1,15 @@
+# CI and dependency evidence
+
+The GitHub Actions workflow installs the committed mise Node/npm pins, runs `npm ci`, formatting, API inventory verification, types, lint, unit and session-boundary tests, and the production build. Checks do not rewrite source. The lockfile/toolchain keys the npm download cache. Release commands are excluded.
+
+The workflow runs for every push and pull request, with no branch or path filters, and supports manual dispatch. It now installs stable Chrome for Testing using [setup-chrome](https://github.com/browser-actions/setup-chrome) and runs the serial Chromium quality suite, including accessibility, permission revocation, runtime teardown and local HTTPS cookie/rollback checks. Browser, dependency and release evidence are uploaded even after a failure. These synthetic checks do not run a real backend, broker or staging deployment. On October 4, the local feature branch was not present on the remote; hosted evidence requires pushing the implementation and checking the resulting Actions run.
+
+`npm run ci:gates` copies maintained inputs into a disposable directory and verifies that a deliberate lint error, failing assertion, and TypeScript build defect each fail their expected gate. The copy is deleted afterward. These negative checks pass locally; hosted execution remains unverified until the workflow runs in GitHub.
+
+`npm run dependencies:report` writes `artifacts/licenses.json`, `audit-all.json`, and `audit-production.json`. High/critical production findings fail the command. Development findings remain visible for maintainer review without blocking an unrelated production build. Reports and build output are uploaded by CI; reports retain seven days. Lockfile license declarations are an inventory, not legal approval of every distribution obligation.
+
+Local evidence refreshed October 4, 2026: 1,039 lockfile license declarations, zero production audit findings, and 13 high development findings across commit and release tooling and the cache-semantics dependency. The lockfile is unchanged; advisory metadata has changed since the prior 24-entry report. The current advisories include basic-ftp, braces and http-cache-semantics; npm suggests incompatible major versions or older tooling, which have not been applied blindly. The complete machine reports are local ignored artifacts. Review those findings before invoking release tooling. Dependabot groups Angular and PrimeNG updates; review peer compatibility, unit/build results, lockfile changes, security and license changes before merging.
+
+## Resource limits and backend browser acceptance
+
+Production builds and Angular unit checks set `NG_BUILD_MAX_WORKERS=2`; `vitest.config.ts` caps workers at two and disables file parallelism. The disposable failing-test CI probe copies that configuration. `npm run test:browser-backend` requires disposable seeded accounts and a running real backend, as documented in [operations services](OPERATIONS-SERVICES.md). It is a local acceptance runner; hosted CI and deployment remain separate gates.

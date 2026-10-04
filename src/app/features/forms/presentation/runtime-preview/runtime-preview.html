@@ -1,0 +1,12 @@
+<h1 tabindex="-1">{{ "Runtime preview" | localize }}</h1>
+<p>{{ "Synthetic development fixture" | localize }}</p>
+@if (error()) {
+  <p role="alert">{{ error() | localize }}</p>
+}
+@if (runtime.status === "ready") {
+  <app-runtime-form
+    [data]="data()"
+    [document]="runtime.document"
+    (edit)="edit($event)"
+  />
+}

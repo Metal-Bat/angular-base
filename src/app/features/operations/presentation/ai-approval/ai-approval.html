@@ -1,0 +1,32 @@
+<h2>{{ "AI tool approval" | localize }}</h2>
+@if (error()) {
+  <p role="alert">{{ error() | localize }}</p>
+}
+@if (approval(); as approval) {
+  <p>
+    <bdi>{{ approval.tool }} · {{ approval.version }}</bdi> ·
+    {{ approval.status | localize }}
+  </p>
+  <p>
+    {{ "Expires" | localize }}: <time>{{ approval.expires }}</time>
+  </p>
+  <pre>{{ argumentsText() }}</pre>
+  @if (approval.status === "PENDING" && approval.arguments) {
+    <button
+      type="button"
+      [disabled]="editor().busy() || editor().blocked()"
+      (click)="decide(true)"
+    >
+      {{ "Approve tool call" | localize }}
+    </button>
+    <button
+      type="button"
+      [disabled]="editor().busy() || editor().blocked()"
+      (click)="decide(false)"
+    >
+      {{ "Deny tool call" | localize }}
+    </button>
+  }
+} @else {
+  <p>{{ "Claim the task to inspect the authorized tool call" | localize }}</p>
+}

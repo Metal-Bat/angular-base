@@ -1,0 +1,63 @@
+<h1 tabindex="-1">{{ "Task inbox" | localize }}</h1>
+<nav class="flex flex-wrap gap-2" [attr.aria-label]="'Inbox views' | localize">
+  @for (kind of kinds; track kind) {
+    <button
+      type="button"
+      [attr.aria-pressed]="cartable() === kind"
+      (click)="select(kind)"
+    >
+      {{ kind | localize }}
+    </button>
+  }
+</nav>
+@if (pages.state() === "loading") {
+  <p role="status">{{ "Loading…" | localize }}</p>
+}
+@if (pages.state() === "error") {
+  <p role="alert">{{ pages.error() | localize }}</p>
+}
+<button
+  type="button"
+  [disabled]="pages.state() === 'loading'"
+  (click)="pages.load('task', pages.page(), cartable())"
+>
+  {{ "Refresh" | localize }}
+</button>
+@if (pages.state() === "ready") {
+  <ul class="grid gap-3">
+    @for (item of pages.cases(); track item.ref) {
+      <li>
+        <a [routerLink]="['/operations/tasks', item.ref]"
+          ><bdi>{{ item.ref }}</bdi></a
+        >
+        — {{ item.status | localize }}
+        @if (item.kind !== "HUMAN_TASK") {
+          <span>{{
+            (item.kind === "AI_APPROVAL" ? "AI approval" : "Unsupported task")
+              | localize
+          }}</span>
+        }
+      </li>
+    } @empty {
+      <li>{{ "No tasks in this view" | localize }}</li>
+    }
+  </ul>
+  <button
+    type="button"
+    [disabled]="pages.page() <= 1"
+    (click)="pages.load('task', pages.page() - 1, cartable())"
+  >
+    {{ "Previous" | localize }}
+  </button>
+  <button
+    type="button"
+    [disabled]="pages.page() >= pages.totalPages()"
+    (click)="pages.load('task', pages.page() + 1, cartable())"
+  >
+    {{ "Next" | localize }}
+  </button>
+}
+
+@if (polling.paused()) {
+  <p role="status">{{ "Updates paused while offline or hidden" | localize }}</p>
+}

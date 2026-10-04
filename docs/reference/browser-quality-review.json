@@ -1,0 +1,409 @@
+{
+  "date": "2026-10-03",
+  "scope": "Local synthetic upstream fixtures and temporary browser profiles; no staging, reverse proxy or real-backend deployment signoff",
+  "platform": "Linux development host; not an approved reference device",
+  "requestedWindowPixels": {
+    "width": 390,
+    "height": 844
+  },
+  "productionBuild": {
+    "initialBytes": 403887,
+    "sourceMaps": 0,
+    "canvasInInitialJavaScript": false,
+    "contractSha256": "24609294ec8e087f84f2ab0b302b6abf8e0bd9e57d85366721400bba3f90ca7f",
+    "lockfileSha256": "22c36b3108eeb245c791f3ccb230fa4f9a272a81f4851a886e5aeb3fb22ddca7"
+  },
+  "browsers": [
+    {
+      "engine": "firefox",
+      "version": "153.4.0esr",
+      "passed": [
+        "boundary",
+        "auth",
+        "ui",
+        "workspace",
+        "admin",
+        "runtime"
+      ],
+      "accessibility": [
+        {
+          "context": "shared-ui-light",
+          "violations": [],
+          "incomplete": [],
+          "passes": 31
+        },
+        {
+          "context": "shared-ui-persian-dark",
+          "violations": [],
+          "incomplete": [],
+          "passes": 29
+        },
+        {
+          "context": "prime-dialog",
+          "violations": [],
+          "incomplete": [
+            {
+              "id": "aria-hidden-focus",
+              "impact": "serious",
+              "targets": [
+                [
+                  "span[data-pc-section=\"firstfocusableelement\"]"
+                ],
+                [
+                  "span[data-pc-section=\"lastfocusableelement\"]"
+                ]
+              ]
+            }
+          ],
+          "passes": 29
+        },
+        {
+          "context": "administration",
+          "violations": [],
+          "incomplete": [],
+          "passes": 26
+        },
+        {
+          "context": "runtime-16",
+          "violations": [],
+          "incomplete": [],
+          "passes": 27
+        },
+        {
+          "context": "runtime-64",
+          "violations": [],
+          "incomplete": [],
+          "passes": 27
+        },
+        {
+          "context": "runtime-256",
+          "violations": [],
+          "incomplete": [],
+          "passes": 27
+        }
+      ],
+      "measurements": [
+        {
+          "fields": 16,
+          "cycles": [
+            {
+              "mountMs": 207,
+              "editMs": 9,
+              "domNodes": 101,
+              "remainingRuntimeNodes": 0,
+              "heapBytes": null
+            },
+            {
+              "mountMs": 66,
+              "editMs": 34,
+              "domNodes": 101,
+              "remainingRuntimeNodes": 0,
+              "heapBytes": null
+            },
+            {
+              "mountMs": 67,
+              "editMs": 33,
+              "domNodes": 101,
+              "remainingRuntimeNodes": 0,
+              "heapBytes": null
+            },
+            {
+              "mountMs": 67,
+              "editMs": 33,
+              "domNodes": 101,
+              "remainingRuntimeNodes": 0,
+              "heapBytes": null
+            },
+            {
+              "mountMs": 67,
+              "editMs": 33,
+              "domNodes": 101,
+              "remainingRuntimeNodes": 0,
+              "heapBytes": null
+            }
+          ]
+        },
+        {
+          "fields": 64,
+          "cycles": [
+            {
+              "mountMs": 80,
+              "editMs": 4,
+              "domNodes": 389,
+              "remainingRuntimeNodes": 0,
+              "heapBytes": null
+            },
+            {
+              "mountMs": 84,
+              "editMs": 32,
+              "domNodes": 389,
+              "remainingRuntimeNodes": 0,
+              "heapBytes": null
+            },
+            {
+              "mountMs": 67,
+              "editMs": 34,
+              "domNodes": 389,
+              "remainingRuntimeNodes": 0,
+              "heapBytes": null
+            },
+            {
+              "mountMs": 82,
+              "editMs": 33,
+              "domNodes": 389,
+              "remainingRuntimeNodes": 0,
+              "heapBytes": null
+            },
+            {
+              "mountMs": 83,
+              "editMs": 33,
+              "domNodes": 389,
+              "remainingRuntimeNodes": 0,
+              "heapBytes": null
+            }
+          ]
+        },
+        {
+          "fields": 256,
+          "cycles": [
+            {
+              "mountMs": 147,
+              "editMs": 6,
+              "domNodes": 1547,
+              "remainingRuntimeNodes": 0,
+              "heapBytes": null
+            },
+            {
+              "mountMs": 118,
+              "editMs": 32,
+              "domNodes": 1547,
+              "remainingRuntimeNodes": 0,
+              "heapBytes": null
+            },
+            {
+              "mountMs": 117,
+              "editMs": 33,
+              "domNodes": 1547,
+              "remainingRuntimeNodes": 0,
+              "heapBytes": null
+            },
+            {
+              "mountMs": 183,
+              "editMs": 33,
+              "domNodes": 1547,
+              "remainingRuntimeNodes": 0,
+              "heapBytes": null
+            },
+            {
+              "mountMs": 183,
+              "editMs": 34,
+              "domNodes": 1547,
+              "remainingRuntimeNodes": 0,
+              "heapBytes": null
+            }
+          ]
+        }
+      ],
+      "measurementDate": "2026-10-03T19:48:32.586Z"
+    },
+    {
+      "engine": "chromium",
+      "version": "Chrome for Testing 154.0.8037.92",
+      "passed": [
+        "boundary",
+        "auth",
+        "ui",
+        "workspace",
+        "admin",
+        "runtime",
+        "local HTTPS release/cookie rehearsal"
+      ],
+      "accessibility": [
+        {
+          "context": "shared-ui-light",
+          "violations": [],
+          "incomplete": [],
+          "passes": 31
+        },
+        {
+          "context": "shared-ui-persian-dark",
+          "violations": [],
+          "incomplete": [],
+          "passes": 29
+        },
+        {
+          "context": "prime-dialog",
+          "violations": [],
+          "incomplete": [
+            {
+              "id": "aria-hidden-focus",
+              "impact": "serious",
+              "targets": [
+                [
+                  "span[data-pc-section=\"firstfocusableelement\"]"
+                ],
+                [
+                  "span[data-pc-section=\"lastfocusableelement\"]"
+                ]
+              ]
+            }
+          ],
+          "passes": 29
+        },
+        {
+          "context": "administration",
+          "violations": [],
+          "incomplete": [],
+          "passes": 26
+        },
+        {
+          "context": "runtime-16",
+          "violations": [],
+          "incomplete": [],
+          "passes": 27
+        },
+        {
+          "context": "runtime-64",
+          "violations": [],
+          "incomplete": [],
+          "passes": 27
+        },
+        {
+          "context": "runtime-256",
+          "violations": [],
+          "incomplete": [],
+          "passes": 27
+        }
+      ],
+      "measurements": [
+        {
+          "fields": 16,
+          "cycles": [
+            {
+              "mountMs": 115,
+              "editMs": 12,
+              "domNodes": 101,
+              "remainingRuntimeNodes": 0,
+              "heapBytes": 23100000
+            },
+            {
+              "mountMs": 50,
+              "editMs": 33,
+              "domNodes": 101,
+              "remainingRuntimeNodes": 0,
+              "heapBytes": 23100000
+            },
+            {
+              "mountMs": 50,
+              "editMs": 33,
+              "domNodes": 101,
+              "remainingRuntimeNodes": 0,
+              "heapBytes": 23100000
+            },
+            {
+              "mountMs": 50,
+              "editMs": 34,
+              "domNodes": 101,
+              "remainingRuntimeNodes": 0,
+              "heapBytes": 23100000
+            },
+            {
+              "mountMs": 50,
+              "editMs": 33,
+              "domNodes": 101,
+              "remainingRuntimeNodes": 0,
+              "heapBytes": 23100000
+            }
+          ]
+        },
+        {
+          "fields": 64,
+          "cycles": [
+            {
+              "mountMs": 48,
+              "editMs": 33,
+              "domNodes": 389,
+              "remainingRuntimeNodes": 0,
+              "heapBytes": 23100000
+            },
+            {
+              "mountMs": 50,
+              "editMs": 33,
+              "domNodes": 389,
+              "remainingRuntimeNodes": 0,
+              "heapBytes": 23100000
+            },
+            {
+              "mountMs": 50,
+              "editMs": 33,
+              "domNodes": 389,
+              "remainingRuntimeNodes": 0,
+              "heapBytes": 23100000
+            },
+            {
+              "mountMs": 50,
+              "editMs": 33,
+              "domNodes": 389,
+              "remainingRuntimeNodes": 0,
+              "heapBytes": 23100000
+            },
+            {
+              "mountMs": 50,
+              "editMs": 33,
+              "domNodes": 389,
+              "remainingRuntimeNodes": 0,
+              "heapBytes": 23100000
+            }
+          ]
+        },
+        {
+          "fields": 256,
+          "cycles": [
+            {
+              "mountMs": 65,
+              "editMs": 11,
+              "domNodes": 1547,
+              "remainingRuntimeNodes": 0,
+              "heapBytes": 23100000
+            },
+            {
+              "mountMs": 66,
+              "editMs": 33,
+              "domNodes": 1547,
+              "remainingRuntimeNodes": 0,
+              "heapBytes": 23100000
+            },
+            {
+              "mountMs": 67,
+              "editMs": 34,
+              "domNodes": 1547,
+              "remainingRuntimeNodes": 0,
+              "heapBytes": 23100000
+            },
+            {
+              "mountMs": 67,
+              "editMs": 33,
+              "domNodes": 1547,
+              "remainingRuntimeNodes": 0,
+              "heapBytes": 23100000
+            },
+            {
+              "mountMs": 67,
+              "editMs": 33,
+              "domNodes": 1547,
+              "remainingRuntimeNodes": 0,
+              "heapBytes": 23100000
+            }
+          ]
+        }
+      ],
+      "measurementDate": "2026-10-03T19:48:49.678Z"
+    }
+  ],
+  "additionalChromiumRevocationPasses": 3,
+  "limits": [
+    "PrimeNG focus sentinel aria-hidden-focus findings require manual review",
+    "Coarse Chromium performance.memory samples and zero retained DOM do not prove a heap/subscription leak ceiling",
+    "Browser/device policy, sustained performance SLOs, staged services/proxy/rollback and tooling risk decisions remain pending"
+  ]
+}

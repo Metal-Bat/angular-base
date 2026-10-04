@@ -1,0 +1,82 @@
+<f-flow
+  fDraggable
+  [fDraggableDisabled]="disabled()"
+  (fCreateConnection)="created($event)"
+>
+  <f-canvas
+    fZoom
+    [position]="viewport()"
+    [scale]="viewport().zoom"
+    (fCanvasChange)="changed($event)"
+  >
+    @for (edge of edges(); track edge.id) {
+      <f-connection
+        [class.data-edge]="edge.kind === 'data'"
+        [fConnectionId]="edge.id"
+        [fSourceId]="edge.source"
+        [fTargetId]="edge.target"
+        ><f-connection-waypoints
+          [waypoints]="routing()[edge.id] || []"
+          (waypointsChange)="routeEdge()(edge.id, $event)"
+      /></f-connection>
+    }
+    @for (node of nodes(); track node.key) {
+      <div
+        class="board-node"
+        fNode
+        tabindex="0"
+        [attr.aria-label]="node.title"
+        [class.collapsed]="collapsed().includes(node.key)"
+        [fNodeId]="node.key"
+        [fNodePosition]="node.position"
+        (fNodePositionChange)="moveNode()(node.key, $event)"
+        (keydown)="keyMove($event, node)"
+      >
+        <button fDragHandle type="button" (click)="selectNode()(node.key)">
+          {{ node.key }} · {{ node.title }}
+        </button>
+        <div
+          class="control-port"
+          fConnector
+          fConnectorConnectableSide="left"
+          fConnectorType="target"
+          [fConnectorDisabled]="disabled()"
+          [fConnectorId]="'control:' + node.key + ':in'"
+        >
+          Control in
+        </div>
+        <div
+          class="control-port"
+          fConnector
+          fConnectorConnectableSide="right"
+          fConnectorType="source"
+          [fConnectorDisabled]="disabled()"
+          [fConnectorId]="'control:' + node.key + ':out'"
+        >
+          Control out
+        </div>
+        @for (port of node.ports; track port.direction + ":" + port.key) {
+          <div
+            class="data-port"
+            fConnector
+            [fConnectorConnectableSide]="
+              port.direction === 'INPUT' ? 'left' : 'right'
+            "
+            [fConnectorDisabled]="disabled()"
+            [fConnectorId]="
+              'data:' +
+              node.key +
+              ':' +
+              (port.direction === 'INPUT' ? 'in' : 'out') +
+              ':' +
+              port.key
+            "
+            [fConnectorType]="port.direction === 'INPUT' ? 'target' : 'source'"
+          >
+            {{ port.key }} · {{ port.direction }}
+          </div>
+        }
+      </div>
+    }
+  </f-canvas>
+</f-flow>

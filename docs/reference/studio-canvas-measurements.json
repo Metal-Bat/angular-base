@@ -1,0 +1,31 @@
+{
+  "date": "2026-10-03",
+  "browser": "headless Firefox",
+  "build": "production",
+  "runs": 1,
+  "timingIncludes": "75 ms click wait for mount; two animation frames for keyboard",
+  "samples": [
+    {
+      "nodes": 16,
+      "mountMs": 93,
+      "keyboardMoveMs": 35,
+      "domNodes": 68
+    },
+    {
+      "nodes": 64,
+      "mountMs": 82,
+      "keyboardMoveMs": 34,
+      "domNodes": 260
+    },
+    {
+      "nodes": 256,
+      "mountMs": 200,
+      "keyboardMoveMs": 32,
+      "domNodes": 1028
+    }
+  ],
+  "limitations": [
+    "Local smoke measurements, not agreed performance budgets",
+    "DOM teardown verified; heap retention not instrumented"
+  ]
+}

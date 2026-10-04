@@ -1,0 +1,17 @@
+<h1>{{ "Administration" | localize }}</h1>
+<p>
+  {{
+    "Manage the configuration and access that support your workspace."
+      | localize
+  }}
+</p>
+<nav aria-label="Administration resources">
+  @if (canManageClients()) {
+    <a routerLink="/administration/clients">{{
+      "Clients and releases" | localize
+    }}</a>
+  }
+  @for (group of groups(); track group.key) {
+    <a [routerLink]="group.key">{{ group.title | localize }}</a>
+  }
+</nav>

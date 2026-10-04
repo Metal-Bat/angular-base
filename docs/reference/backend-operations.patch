@@ -1,0 +1,1196 @@
+diff --git a/src/apps/forms/application/runtime.py b/src/apps/forms/application/runtime.py
+--- a/src/apps/forms/application/runtime.py
++++ b/src/apps/forms/application/runtime.py
+@@ -209,11 +209,40 @@
+     return state
+ 
+ 
+-def display_page(settings):
+-    return {
++def display_page(settings, scopes=None) -> dict[str, Any]:
++    result: dict[str, Any] = {
+         key: deepcopy(value)
+         for key, value in (settings or {}).items()
+         if key
+         in {"paper", "orientation", "margins", "title", "header", "footer", "width", "height"}
+         and isinstance(value, (str, int, float, bool))
+     }
++
++    declared = (settings or {}).get("pages")
++    if not isinstance(declared, list) or not 1 <= len(declared) <= 32:
++        return result
++    pages, keys = [], set()
++    for page in declared:
++        if not isinstance(page, dict):
++            return result
++        key, title, fields = page.get("key"), page.get("title"), page.get("scopes")
++        if (
++            not isinstance(key, str)
++            or not key
++            or len(key) > 64
++            or key in keys
++            or not isinstance(title, str)
++            or len(title) > 256
++            or not isinstance(fields, list)
++            or len(fields) > 256
++        ):
++            return result
++        fields = [
++            scope for scope in fields if isinstance(scope, str) and scope in (scopes or set())
++        ]
++        keys.add(key)
++        if fields:
++            pages.append({"key": key, "title": title, "scopes": fields})
++    if pages:
++        result["pages"] = pages
++    return result
+diff --git a/src/apps/forms/domain/runtime.py b/src/apps/forms/domain/runtime.py
+--- a/src/apps/forms/domain/runtime.py
++++ b/src/apps/forms/domain/runtime.py
+@@ -102,11 +102,15 @@
+     )
+     page_settings: dict[str, Any] = Field(
+         default_factory=dict,
+-        description="Pinned display-only page settings; no scripts, bindings or runtime values.",
++        description="Pinned display-only settings; optional pages contains at most 32 unique key/title/scopes entries with actor-readable scopes only. No scripts, bindings or runtime values.",
+     )
+     before_data: dict[str, Any] | None = Field(
+         default=None,
+         description="Prior submitted data filtered through the same task view, or null when unavailable.",
++    )
++    before_item_identity: dict[str, list[str]] | None = Field(
++        default=None,
++        description="Actor-filtered prior row identities; null when unavailable. / هویت مجاز ردیف‌های پیشین؛ در صورت نبودن null.",
+     )
+     render_schema: dict[str, Any] = Field(
+         description="Actor-filtered bounded bpms.render/1 display document. Server-evaluated calculation metadata and client expressions are omitted; writable_scopes is authoritative for editability."
+diff --git a/src/apps/reporting/presentation/routes.py b/src/apps/reporting/presentation/routes.py
+--- a/src/apps/reporting/presentation/routes.py
++++ b/src/apps/reporting/presentation/routes.py
+@@ -52,7 +52,21 @@
+     return success_response(request, detail)
+ 
+ 
+-@router.get("/{ref_id}/download")
++@router.get(
++    "/{ref_id}/download",
++    response_class=StreamingResponse,
++    responses={
++        200: {
++            "description": "Authorized private bytes; no JSON envelope. / محتوای خصوصی مجاز؛ بدون پوشش JSON.",
++            "content": {"application/zip": {"schema": {"type": "string", "format": "binary"}}},
++            "headers": {
++                "Cache-Control": {"schema": {"type": "string", "const": "private, no-store"}},
++                "Content-Disposition": {"schema": {"type": "string"}},
++                "X-Content-Type-Options": {"schema": {"type": "string", "const": "nosniff"}},
++            },
++        }
++    },
++)
+ async def download_report(
+     ref_id: str,
+     user: CurrentUser,
+@@ -64,7 +78,11 @@
+     return StreamingResponse(
+         content=content,
+         media_type=report.content_type or "application/zip",
+-        headers={"Content-Disposition": f'attachment; filename="{report.file_name}"'},
++        headers={
++            "Content-Disposition": f'attachment; filename="{report.file_name}"',
++            "Cache-Control": "private, no-store",
++            "X-Content-Type-Options": "nosniff",
++        },
+     )
+ 
+ 
+diff --git a/src/apps/requests/application/service.py b/src/apps/requests/application/service.py
+--- a/src/apps/requests/application/service.py
++++ b/src/apps/requests/application/service.py
+@@ -152,7 +152,10 @@
+         locale = (snapshot.get("localization") or {}).get("resolved_locale", get_language())
+         return RuntimeFormStateDTO(
+             resource_kind="REQUEST",
+-            page_settings=display_page(snapshot.get("page_settings", form.page_settings)),
++            page_settings=display_page(
++                snapshot.get("page_settings", form.page_settings),
++                set(projection["readable_scopes"]),
++            ),
+             resource_ref_id=create_ref_id(row.id, row.version),
+             form_version_ref_id=create_ref_id(form.id, form.version),
+             form_version_number=form.number,
+@@ -163,6 +166,29 @@
+             resolved_locale=locale,
+             direction="rtl" if locale == "fa" else "ltr",
+             **projection,
++        )
++
++    async def history_metadata(self, ref_id, query, actor):
++        """Project only metadata after checking request ownership."""
++        from core.history_dto import HistoryQuery, ResourceHistoryDTO
++        from core.history_service import HistoryService
++        from utils.pagination import Page
++
++        row = await self.get_request(ref_id, actor)
++        if not actor.is_superuser and row.requester_user_id != actor.id:
++            raise NotFoundException("Request history not found")
++        submission = await self.submission_for(row.id)
++        result = await HistoryService.for_entity(self.session, "form_submission").list(
++            HistoryQuery.model_validate(query.model_dump()), submission.id
++        )
++        return Page[ResourceHistoryDTO](
++            items=[
++                ResourceHistoryDTO(changed_at=item.changed_at, operation=item.operation)
++                for item in result.items
++            ],
++            total=result.total,
++            page=result.page,
++            size=result.size,
+         )
+ 
+     async def eligible_types(
+diff --git a/src/apps/requests/presentation/routes.py b/src/apps/requests/presentation/routes.py
+--- a/src/apps/requests/presentation/routes.py
++++ b/src/apps/requests/presentation/routes.py
+@@ -17,7 +17,7 @@
+     SubmissionAttachmentDTO,
+ )
+ from apps.forms.domain.behavior import ManualOverrideRequest, ManualOverrideState
+-from apps.forms.domain.collection import CollectionEditRequest, CollectionState
++from apps.forms.domain.collection import CollectionEditRequest
+ from apps.forms.domain.dto import FormDocuments
+ from apps.forms.domain.entity import FormDefinitionEntity, FormVersionEntity
+ from apps.forms.domain.options import OptionQuery, OptionResult
+@@ -42,7 +42,12 @@
+ from apps.users.domain.entity import UserEntity
+ from apps.workflows.domain.entity import WorkflowDefinitionEntity, WorkflowVersionEntity
+ from core.deps import ClientContextDep, SessionDep
+-from core.history_dto import HistoryQuery, HistoryRecordDTO
++from core.history_dto import (
++    HistoryQuery,
++    HistoryRecordDTO,
++    ResourceHistoryDTO,
++    ResourceHistoryQuery,
++)
+ from core.history_service import HistoryService
+ from core.ref_id import create_ref_id, open_ref_id
+ from utils.base_schema import PRIVATE_NO_STORE_RESPONSES, response_schema
+@@ -305,8 +310,8 @@
+ 
+ @requests_router.post(
+     "/{ref_id}/collections/edit",
+-    response_model=SuccessResponse[CollectionState],
+-    description="Requires requests.start and ownership of the current draft revision and authenticated origin client. Mutates a declared array by stable item_key; returns canonical data and UUIDv7 identity map. Nested identities and attachment paths move with items. Duplicate items receive new keys. Stale ref_id fails with VERSION_CONFLICT.",
++    response_model=SuccessResponse[RuntimeFormStateDTO],
++    description="Requires requests.start and ownership of the current draft revision and authenticated origin client. Mutates a declared array by stable item_key; returns actor-filtered runtime data, the current owning revision and UUIDv7 identities. Nested identities and attachment paths move with items. Duplicate items receive new keys. Stale ref_id fails with VERSION_CONFLICT.",
+ )
+ async def edit_request_collection(
+     request: Request,
+@@ -316,12 +321,10 @@
+     client: ClientContextDep,
+     session: SessionDep,
+ ):
+-    result = await RequestService(session).edit_collection(ref_id, data, actor, client)
+-    await session.commit()
+-    return success_response(
+-        request,
+-        CollectionState(data=result.data, item_identity=result.identity, issues=result.issues),
+-    )
++    service = RequestService(session)
++    await service.edit_collection(ref_id, data, actor, client)
++    await session.commit()
++    return success_response(request, await service.runtime_state(ref_id, actor, client))
+ 
+ 
+ @requests_router.post(
+@@ -485,7 +488,23 @@
+     return success_response(request, await request_dto(RequestService(session), row))
+ 
+ 
+-@requests_router.get("/{ref_id}/attachments/{attachment_ref_id}/content")
++@requests_router.get(
++    "/{ref_id}/attachments/{attachment_ref_id}/content",
++    response_class=StreamingResponse,
++    responses={
++        200: {
++            "description": "Authorized private bytes; no JSON envelope. / محتوای خصوصی مجاز؛ بدون پوشش JSON.",
++            "content": {
++                "application/octet-stream": {"schema": {"type": "string", "format": "binary"}}
++            },
++            "headers": {
++                "Cache-Control": {"schema": {"type": "string", "const": "private, no-store"}},
++                "Content-Disposition": {"schema": {"type": "string"}},
++                "X-Content-Type-Options": {"schema": {"type": "string", "const": "nosniff"}},
++            },
++        }
++    },
++)
+ async def download_attachment(
+     ref_id: str, attachment_ref_id: str, actor: RequestUser, session: SessionDep
+ ) -> StreamingResponse:
+@@ -543,3 +562,21 @@
+     return page_response(
+         request, await OptionService(session).resolve(documents, query, actor, render=render)
+     )
++
++
++@requests_router.post(
++    "/{ref_id}/history",
++    response_model=PageResponse[Page[ResourceHistoryDTO]],
++    summary="Read owned request submission history",
++    description="Requires requests.start and ownership or superuser status. Reads the latest owned submission by opaque revision-bearing ref_id; it does not mutate or repin the request. Body page defaults to 1, size to 20 (1–100); filters/sort_orders allow changed_at and operation only. Stable descending change-time order is used by default. Canonical values, comments and actor identities are omitted. Inaccessible resources return 404. / نیازمند requests.start و مالکیت درخواست یا دسترسی مدیر است. نسخهٔ کنونی فرم را با صفحه‌بندی می‌خواند؛ داده‌های فرم، نظرها و هویت کاربران بازگردانده نمی‌شوند. منبع غیرمجاز خطای 404 دارد.",
++)
++async def request_history(
++    request: Request,
++    ref_id: str,
++    query: ResourceHistoryQuery,
++    actor: RequestUser,
++    session: SessionDep,
++):
++    return page_response(
++        request, await RequestService(session).history_metadata(ref_id, query, actor)
++    )
+diff --git a/src/apps/work_items/application/service.py b/src/apps/work_items/application/service.py
+--- a/src/apps/work_items/application/service.py
++++ b/src/apps/work_items/application/service.py
+@@ -33,7 +33,11 @@
+ )
+ from apps.users.domain.entity import UserEntity
+ from apps.work_groups.domain.entity import WorkGroupEntity, WorkGroupMemberEntity
+-from apps.work_items.application.task_mutations import merge_task_data, project_task_state
++from apps.work_items.application.task_mutations import (
++    merge_task_data,
++    normalize_task_behavior,
++    project_task_state,
++)
+ from apps.work_items.domain.dto import CartableKind, CartableQueryDTO, WorkItemForwardDTO
+ from apps.work_items.domain.entity import (
+     UserWorkItemStateEntity,
+@@ -422,13 +426,16 @@
+         canonical = merge_task_data(
+             submission.data, data, step.field_policy, view_scopes=scopes, delete_paths=delete_paths
+         )
++        documents = pinned_behavior_documents(
++            FormDocuments.model_validate(form, from_attributes=True), submission.design_snapshot
++        )
++        canonical = normalize_task_behavior(
++            documents, submission.data, data, canonical, submission.override_provenance
++        )
+         submission.data = self._validate_visible_data(
+             step.field_policy,
+             scopes,
+-            pinned_behavior_documents(
+-                FormDocuments.model_validate(form, from_attributes=True),
+-                submission.design_snapshot,
+-            ),
++            documents,
+             canonical,
+             None,
+             submission.override_provenance,
+@@ -554,6 +561,7 @@
+                 [{"pointer": "/feedback", "code": "task.feedback.return_only"}]
+             )
+         scopes = self._mutation_scopes(step, view_key)
++        before = deepcopy(submission.data)
+         submission.data = merge_task_data(
+             submission.data, data, step.field_policy, view_scopes=scopes, delete_paths=delete_paths
+         )
+@@ -561,6 +569,9 @@
+         documents = pinned_behavior_documents(
+             FormDocuments.model_validate(form, from_attributes=True),
+             submission.design_snapshot,
++        )
++        submission.data = normalize_task_behavior(
++            documents, before, data, submission.data, submission.override_provenance
+         )
+         submission.data = self._validate_visible_data(
+             step.field_policy,
+@@ -1018,10 +1029,10 @@
+                     .limit(1)
+                 )
+             ).first()
+-        before = (
++        before_state = (
+             project_task_state(
+                 source.data, source.item_identity, None, [], step.field_policy, scopes
+-            )["data"]
++            )
+             if source
+             else None
+         )
+@@ -1038,7 +1049,8 @@
+             title=title,
+             data=data,
+             item_identity=projected["item_identity"],
+-            before_data=before,
++            before_data=before_state["data"] if before_state else None,
++            before_item_identity=before_state["item_identity"] if before_state else None,
+             render_schema=render,
+             actions=actions,
+             feedback=feedback_rows,
+@@ -1078,6 +1090,46 @@
+             return validate_action_data(*args, **kwargs)
+         except ValidationDetailsException as exc:
+             raise cls._visible_error(exc, policy, scopes) from None
++
++    async def history_metadata(self, ref_id, query, actor):
++        """Page only metadata for an authorized task; never expose action details."""
++        from types import SimpleNamespace
++
++        from sqlmodel import func
++
++        from core.history_dto import ResourceHistoryDTO
++        from utils.pagination import Page, apply_query
++
++        item = await self.get(ref_id, actor)
++        columns = SimpleNamespace(
++            changed_at=WorkItemActionEntity.occurred_at,
++            operation=WorkItemActionEntity.action,
++            id=WorkItemActionEntity.id,
++        )
++        predicate = WorkItemActionEntity.work_item_id == item.id
++        statement = apply_query(
++            select(WorkItemActionEntity).where(predicate),
++            columns,
++            query,
++            default_ordering=("-changed_at", "-id"),
++        )
++        count = apply_query(
++            select(func.count()).select_from(WorkItemActionEntity).where(predicate),
++            columns,
++            query,
++            paginate=False,
++        )
++        actions = (await self.session.exec(statement)).all()
++        total = (await self.session.exec(count)).one()
++        return Page[ResourceHistoryDTO](
++            items=[
++                ResourceHistoryDTO(changed_at=action.occurred_at, operation=action.action)
++                for action in actions
++            ],
++            total=total,
++            page=query.page,
++            size=query.size,
++        )
+ 
+     async def runtime_state(self, ref_id: str, actor: UserEntity, view_key: str | None = None):
+         from apps.forms.application.runtime import display_page, runtime_projection
+@@ -1140,7 +1192,10 @@
+         return RuntimeFormStateDTO(
+             resource_kind="WORK_ITEM",
+             before_data=view.before_data,
+-            page_settings=display_page(snapshot.get("page_settings", form.page_settings)),
++            before_item_identity=view.before_item_identity,
++            page_settings=display_page(
++                snapshot.get("page_settings", form.page_settings), set(projected["readable_scopes"])
++            ),
+             resource_ref_id=create_ref_id(item.id, item.version),
+             form_version_ref_id=create_ref_id(form.id, form.version),
+             form_version_number=form.number,
+diff --git a/src/apps/work_items/application/task_mutations.py b/src/apps/work_items/application/task_mutations.py
+--- a/src/apps/work_items/application/task_mutations.py
++++ b/src/apps/work_items/application/task_mutations.py
+@@ -211,3 +211,38 @@
+         "override_provenance": overrides,
+         "issues": safe_issues,
+     }
++
++
++def normalize_task_behavior(documents, before, incoming, canonical, overrides):
++    """Recompute merged calculations; reject explicitly forged derived values."""
++    if not documents.behavior_dialect:
++        return canonical
++    from apps.forms.application.behavior import (
++        _MISSING as missing,
++    )
++    from apps.forms.application.behavior import (
++        BehaviorError,
++        _get_concrete,
++        _locations,
++        evaluate_behavior,
++    )
++    from apps.forms.application.bindings import render_nodes
++
++    try:
++        normalized = evaluate_behavior(
++            documents, canonical, overrides=overrides, enforce_required=False
++        ).data
++        for _, node in render_nodes(documents.render_schema):
++            if not node.get("calculation") or not node.get("scope"):
++                continue
++            for concrete, _ in _locations(normalized, node["scope"]):
++                supplied = _get_concrete(incoming, concrete)
++                if (
++                    supplied is not missing
++                    and supplied != _get_concrete(before, concrete)
++                    and supplied != _get_concrete(normalized, concrete)
++                ):
++                    raise BehaviorError("behavior.derived_tampered")
++        return normalized
++    except BehaviorError as exc:
++        raise ValidationDetailsException([{"pointer": "/data", "code": str(exc)}]) from None
+diff --git a/src/apps/work_items/domain/dto.py b/src/apps/work_items/domain/dto.py
+--- a/src/apps/work_items/domain/dto.py
++++ b/src/apps/work_items/domain/dto.py
+@@ -117,6 +117,10 @@
+     before_data: dict[str, Any] | None = Field(
+         description="Prior submitted canonical data through the same read filter, or null."
+     )
++    before_item_identity: dict[str, list[str]] | None = Field(
++        default=None,
++        description="Stable prior keys through the same read filter. / کلیدهای پیشین با همان فیلتر دسترسی.",
++    )
+     render_schema: dict[str, Any] = Field(
+         description="Pinned client variant's bpms.render/1 document with unreadable nodes removed and messages localized."
+     )
+diff --git a/src/apps/work_items/presentation/routes.py b/src/apps/work_items/presentation/routes.py
+--- a/src/apps/work_items/presentation/routes.py
++++ b/src/apps/work_items/presentation/routes.py
+@@ -42,6 +42,7 @@
+ )
+ from apps.work_items.domain.entity import WorkItemEntity
+ from core.deps import SessionDep
++from core.history_dto import ResourceHistoryDTO, ResourceHistoryQuery
+ from core.ref_id import create_ref_id
+ from utils.base_schema import PRIVATE_NO_STORE_RESPONSES, response_schema
+ from utils.exceptions import NotFoundException
+@@ -320,7 +321,23 @@
+     return await _command_response(request, service, item, actor, session)
+ 
+ 
+-@router.get("/{ref_id}/attachments/{attachment_ref_id}/content")
++@router.get(
++    "/{ref_id}/attachments/{attachment_ref_id}/content",
++    response_class=StreamingResponse,
++    responses={
++        200: {
++            "description": "Authorized private bytes; no JSON envelope. / محتوای خصوصی مجاز؛ بدون پوشش JSON.",
++            "content": {
++                "application/octet-stream": {"schema": {"type": "string", "format": "binary"}}
++            },
++            "headers": {
++                "Cache-Control": {"schema": {"type": "string", "const": "private, no-store"}},
++                "Content-Disposition": {"schema": {"type": "string"}},
++                "X-Content-Type-Options": {"schema": {"type": "string", "const": "nosniff"}},
++            },
++        }
++    },
++)
+ async def download_work_item_attachment(
+     ref_id: str,
+     attachment_ref_id: str,
+@@ -638,3 +655,17 @@
+     return page_response(
+         request, await OptionService(session).resolve(documents, query, actor, render=render)
+     )
++
++
++@router.post(
++    "/{ref_id}/history",
++    response_model=PageResponse[Page[ResourceHistoryDTO]],
++    summary="Read authorized task lifecycle history",
++    description="Requires requests.start and per-item visibility. Reads metadata for the current task by opaque revision-bearing ref_id without claiming or changing it. Body page defaults to 1 and size to 20 (1–100); changed_at/operation are the only filter/sort fields. Actions are ordered by change time descending and stable identity. No payloads, comments, command keys or actor identities are disclosed. Inaccessible items return 404. / نیازمند requests.start و دسترسی به همان کار است. تاریخچهٔ رخدادها را با صفحه‌بندی می‌خواند و کار را تصاحب یا تغییر نمی‌دهد. داده‌ها، نظرها، کلید فرمان و هویت کاربران افشا نمی‌شوند. کار غیرمجاز خطای 404 دارد.",
++)
++async def work_item_history(
++    request: Request, ref_id: str, query: ResourceHistoryQuery, actor: WorkUser, session: SessionDep
++):
++    return page_response(
++        request, await WorkItemService(session).history_metadata(ref_id, query, actor)
++    )
+diff --git a/src/core/history_dto.py b/src/core/history_dto.py
+--- a/src/core/history_dto.py
++++ b/src/core/history_dto.py
+@@ -1,6 +1,8 @@
+ from datetime import datetime
+-from typing import Any
++from typing import Any, ClassVar
+ from uuid import UUID
++
++from pydantic import Field
+ 
+ from core.base_dto import BaseDTO
+ from utils.pagination import SearchRequest, auto_query_model
+@@ -26,3 +28,23 @@
+     __query_fields__ = auto_query_model(
+         HistoryRecordDTO, exclude={"from_values", "to_values"}
+     ).__query_fields__
++
++
++class ResourceHistoryDTO(BaseDTO):
++    """Authorized timeline metadata; no canonical values or actor identifiers.
++
++    فرادادهٔ مجاز تاریخچه؛ بدون مقادیر فرم یا شناسهٔ کاربران.
++    """
++
++    changed_at: datetime = Field(description="UTC change timestamp. / زمان تغییر به UTC.")
++    operation: str = Field(description="Persisted lifecycle action. / رخداد ذخیره‌شده.")
++    version: int | None = Field(
++        default=None,
++        description="Recorded revision when available; null otherwise. / نسخه در صورت موجود بودن؛ در غیر این صورت null.",
++    )
++
++
++class ResourceHistoryQuery(SearchRequest):
++    """Bounded metadata search with no arbitrary entity or canonical-value selectors."""
++
++    __query_fields__: ClassVar[dict[str, Any]] = {"changed_at": datetime, "operation": str}
+diff --git a/tests/apps/forms/test_operations_contract.py b/tests/apps/forms/test_operations_contract.py
+new file mode 100644
+--- /dev/null
++++ b/tests/apps/forms/test_operations_contract.py
+@@ -0,0 +1,60 @@
++"""Observable contracts required by frontend operational steps."""
++
++from unittest.mock import AsyncMock, MagicMock
++
++import pytest
++
++from apps.forms.application.runtime import display_page
++from main import app
++
++
++@pytest.mark.parametrize(
++    "path",
++    [
++        "/api/v1/business-requests/{ref_id}/attachments/{attachment_ref_id}/content",
++        "/api/v1/work-items/{ref_id}/attachments/{attachment_ref_id}/content",
++        "/api/v1/reports/{ref_id}/download",
++    ],
++)
++def test_private_stream_schema_is_binary(path):
++    content = app.openapi()["paths"][path]["get"]["responses"]["200"]["content"]
++    assert any(row.get("schema", {}).get("format") == "binary" for row in content.values())
++
++
++def test_declared_pages_are_bounded_and_actor_filtered():
++    settings = {
++        "pages": [
++            {"key": "public", "title": "Visible", "scopes": ["/properties/name"]},
++            {"key": "private", "title": "Secret", "scopes": ["/properties/hidden"]},
++        ],
++        "script": "unsafe",
++    }
++    assert display_page(settings, {"/properties/name"}) == {
++        "pages": [{"key": "public", "title": "Visible", "scopes": ["/properties/name"]}]
++    }
++    assert "pages" not in display_page({"pages": [{}] * 33}, {"/properties/name"})
++
++
++def test_history_is_metadata_only_and_authenticated():
++    schema = app.openapi()
++    for subject in ("business-requests", "work-items"):
++        route = schema["paths"][f"/api/v1/{subject}/{{ref_id}}/history"]["post"]
++        assert route["security"]
++    fields = schema["components"]["schemas"]["ResourceHistoryDTO"]["properties"]
++    assert set(fields) == {"changed_at", "operation", "version"}
++
++
++@pytest.mark.anyio
++async def test_request_collection_returns_latest_owning_runtime(monkeypatch):
++    from apps.requests.presentation import routes
++
++    runtime = object()
++    service = MagicMock(edit_collection=AsyncMock(), runtime_state=AsyncMock(return_value=runtime))
++    monkeypatch.setattr(routes, "RequestService", lambda _: service)
++    monkeypatch.setattr(routes, "success_response", lambda request, data: data)
++    session = MagicMock(commit=AsyncMock())
++    result = await routes.edit_request_collection(
++        MagicMock(), "current", MagicMock(), MagicMock(), MagicMock(), session
++    )
++    assert result is runtime
++    service.runtime_state.assert_awaited_once()
+diff --git a/tests/apps/forms/test_runtime_behavior_projection.py b/tests/apps/forms/test_runtime_behavior_projection.py
+--- a/tests/apps/forms/test_runtime_behavior_projection.py
++++ b/tests/apps/forms/test_runtime_behavior_projection.py
+@@ -1,8 +1,12 @@
+ """Server-resolved behavior flags do not disclose authored expressions."""
+ 
++from typing import Any, cast
++
+ import pytest
++from sqlmodel.ext.asyncio.session import AsyncSession
+ 
+ from apps.forms.application.runtime import runtime_projection
++from apps.users.domain.entity import UserEntity
+ 
+ 
+ def test_runtime_flags_use_canonical_dependencies_and_keep_hidden_bindings_private():
+@@ -167,12 +171,13 @@
+         view_key="review",
+         purpose="edit",
+         before_data=None,
++        before_item_identity=None,
+         render_schema=display_render(render, policy, {scope}),
+         actions=[],
+     )
+     assert "rules" not in view.render_schema["root"]
+     session = SimpleNamespace(get=AsyncMock(return_value=form))
+-    service = WorkItemService(session)
++    service = WorkItemService(cast(AsyncSession, cast(Any, session)))
+     service.get = AsyncMock(return_value=item)
+     service.task_view = AsyncMock(return_value=view)
+     service.submission = AsyncMock(return_value=submission)
+@@ -180,7 +185,9 @@
+     monkeypatch.setattr(
+         "apps.users.application.authorization.user_permissions", AsyncMock(return_value=set())
+     )
+-    runtime = await service.runtime_state("opaque/task", actor, "review")
++    runtime = await service.runtime_state(
++        "opaque/task", cast(UserEntity, cast(Any, actor)), "review"
++    )
+     assert runtime.render_schema["root"]["runtime_state"]["enabled"] is False
+     assert runtime.data == {"amount": 5}
+     assert "rules" not in runtime.render_schema["root"]
+diff --git a/tests/apps/forms/test_task_derived_patch.py b/tests/apps/forms/test_task_derived_patch.py
+new file mode 100644
+--- /dev/null
++++ b/tests/apps/forms/test_task_derived_patch.py
+@@ -0,0 +1,63 @@
++"""Filtered task patches recompute canonical calculations without permitting tampering."""
++
++import pytest
++
++from apps.forms.domain.dto import FormDocuments
++from apps.work_items.application import task_mutations
++from utils.exceptions import ValidationDetailsException
++
++
++def documents():
++    return FormDocuments(
++        behavior_dialect="bpms.behavior/1",
++        data_schema={
++            "type": "object",
++            "properties": {"amount": {"type": "string"}, "summary": {"type": "string"}},
++        },
++        render_schema={
++            "root": {
++                "component": "vertical",
++                "children": [
++                    {"component": "text", "scope": "/properties/amount"},
++                    {
++                        "component": "calculated",
++                        "scope": "/properties/summary",
++                        "calculation": {"function": "concat", "scopes": ["/properties/amount"]},
++                    },
++                ],
++            }
++        },
++    )
++
++
++def test_omitted_derived_value_recomputed_after_dependency_patch():
++    before = {"amount": "125.750", "summary": "125.750"}
++    assert task_mutations.normalize_task_behavior(
++        documents(), before, {"amount": "200.000"}, {**before, "amount": "200.000"}, {}
++    ) == {"amount": "200.000", "summary": "200.000"}
++
++
++def test_unchanged_old_derived_value_is_recomputed_not_treated_as_tampering():
++    before = {"amount": "125.750", "summary": "125.750"}
++    assert (
++        task_mutations.normalize_task_behavior(
++            documents(),
++            before,
++            {"amount": "200.000", "summary": "125.750"},
++            {**before, "amount": "200.000"},
++            {},
++        )["summary"]
++        == "200.000"
++    )
++
++
++def test_modified_derived_value_still_rejected():
++    before = {"amount": "125.750", "summary": "125.750"}
++    with pytest.raises(ValidationDetailsException):
++        task_mutations.normalize_task_behavior(
++            documents(),
++            before,
++            {"amount": "200.000", "summary": "forged"},
++            {"amount": "200.000", "summary": "forged"},
++            {},
++        )
+diff --git a/tests/integration/test_frontend_journey.py b/tests/integration/test_frontend_journey.py
+--- a/tests/integration/test_frontend_journey.py
++++ b/tests/integration/test_frontend_journey.py
+@@ -85,6 +85,20 @@
+                         },
+                     },
+                     "required": ["amount"],
++                },
++                page_settings={
++                    "pages": [
++                        {
++                            "key": "details",
++                            "title": "Details",
++                            "scopes": ["/properties/amount", "/properties/private_note"],
++                        },
++                        {
++                            "key": "rows",
++                            "title": "Rows",
++                            "scopes": ["/properties/lines", "/properties/summary"],
++                        },
++                    ]
+                 },
+                 render_schema={
+                     "dialect": "bpms.render/1",
+diff --git a/tests/integration/test_owned_report_worker.py b/tests/integration/test_owned_report_worker.py
+new file mode 100644
+--- /dev/null
++++ b/tests/integration/test_owned_report_worker.py
+@@ -0,0 +1,90 @@
++"""Prove owned artifacts through the real worker and private object storage."""
++
++import asyncio
++import os
++from urllib.parse import quote
++
++import pytest
++from httpx import ASGITransport, AsyncClient
++from sqlmodel import select
++
++from apps.reporting.application.service import ReportService
++from apps.reporting.domain.entity import ReportEntity, ReportStatus
++from apps.tasks.application.outbox import dispatch_outbox
++from apps.users.domain.dto import UserQuery
++from apps.users.domain.entity import UserEntity
++from core.celery_app import celery_app
++from core.deps import SessionFactory, engine
++from core.ref_id import create_ref_id
++from main import app
++from tests.integration.test_frontend_journey import _prepare_journey
++from utils.s3 import ensure_bucket
++
++pytestmark = [
++    pytest.mark.integration,
++    pytest.mark.skipif(
++        os.getenv("RUN_REPORT_WORKER") != "1",
++        reason="requires disposable reporting worker and storage",
++    ),
++]
++
++
++@pytest.mark.anyio
++async def test_actual_worker_owned_report_download_and_delete():
++    await ensure_bucket()
++    users, password, _ = await _prepare_journey()
++    async with SessionFactory() as session:
++        owner = (
++            await session.exec(select(UserEntity).where(UserEntity.username == users[0]))
++        ).one()
++        # Fixture setup creates one narrowly filtered report; it grants no admin API entitlement.
++        report = await ReportService(session).create(
++            "users",
++            owner,
++            UserQuery.model_validate(
++                {"filters": [{"field_name": "username", "operation": "equal", "value": users[0]}]}
++            ),
++            "en",
++        )
++        report_id = report.id
++        await dispatch_outbox(celery_app)
++    ready = None
++    for _ in range(100):
++        async with SessionFactory() as session:
++            ready = await session.get(ReportEntity, report_id)
++            assert ready is not None
++            assert ready.status != ReportStatus.FAILED, "Worker generation failed"
++            if ready.status == ReportStatus.READY:
++                break
++        await asyncio.sleep(0.5)
++    assert ready is not None and ready.status == ReportStatus.READY
++    ref = quote(create_ref_id(ready.id, ready.version), safe="")
++    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
++
++        async def login(username):
++            response = await client.post(
++                "/api/v1/auth/login", json={"username": username, "password": password}
++            )
++            assert response.status_code == 200
++            return {"Authorization": "Bearer " + response.json()["data"]["access_token"]}
++
++        owner_headers = await login(users[0])
++        other_headers = await login(users[2])
++        detail = await client.get("/api/v1/reports/" + ref, headers=owner_headers)
++        assert detail.status_code == 200
++        assert detail.json()["data"]["status"] == "READY"
++        assert detail.json()["data"]["zip_password"]
++        for suffix in ("", "/download"):
++            assert (
++                await client.get("/api/v1/reports/" + ref + suffix, headers=other_headers)
++            ).status_code == 404
++        download = await client.get("/api/v1/reports/" + ref + "/download", headers=owner_headers)
++        assert download.status_code == 200 and download.content.startswith(b"PK")
++        assert download.headers["cache-control"] == "private, no-store"
++        assert download.headers["x-content-type-options"] == "nosniff"
++        deleted = await client.delete("/api/v1/reports/" + ref, headers=owner_headers)
++        assert deleted.status_code == 200 and deleted.json()["code"] == 204
++        assert (
++            await client.get("/api/v1/reports/" + ref, headers=owner_headers)
++        ).status_code == 404
++    await engine.dispose()
+diff --git a/tests/integration/test_task_corrections.py b/tests/integration/test_task_corrections.py
+--- a/tests/integration/test_task_corrections.py
++++ b/tests/integration/test_task_corrections.py
+@@ -314,7 +314,7 @@
+                 "return",
+                 f"return-{round_number}",
+                 "return",
+-                {**view.data, "secret": "private"},
++                view.data,
+                 reviewer,
+                 comment="Need correction",
+                 feedback=[
+@@ -327,7 +327,7 @@
+                 "return",
+                 f"return-{round_number}",
+                 "return",
+-                {**view.data, "secret": "private"},
++                view.data,
+                 reviewer,
+                 comment="Need correction",
+                 feedback=[
+@@ -362,7 +362,7 @@
+                 "complete",
+                 f"correct-{round_number}",
+                 "approve",
+-                {**correction_view.data, "amount": 7 + round_number, "secret": "private"},
++                {**correction_view.data, "amount": 7 + round_number},
+                 applicant,
+             )
+             assert correction.status == "COMPLETED"
+diff --git a/scripts/seed_frontend_browser.py b/scripts/seed_frontend_browser.py
+new file mode 100644
+--- /dev/null
++++ b/scripts/seed_frontend_browser.py
+@@ -0,0 +1,25 @@
++"""Seed fresh disposable accounts without printing credentials."""
++
++import asyncio
++import json
++import os
++from pathlib import Path
++
++
++async def main():
++    import tests.conftest  # noqa: F401 -- initialize the disposable test environment
++    from tests.integration.test_frontend_journey import _prepare_journey
++
++    from core.deps import engine
++
++    users, password, request_type = await _prepare_journey()
++    destination = Path(os.getenv("BROWSER_ACCOUNTS_FILE", "/tmp/frontend-steps-accounts.json"))
++    destination.write_text(
++        json.dumps({"users": users, "password": password, "request_type": request_type})
++    )
++    destination.chmod(0o600)
++    await engine.dispose()
++
++
++if __name__ == "__main__":
++    asyncio.run(main())
+diff --git a/docs/api/operations-runtime.md b/docs/api/operations-runtime.md
+new file mode 100644
+--- /dev/null
++++ b/docs/api/operations-runtime.md
+@@ -0,0 +1,33 @@
++# Operations runtime additions / افزوده‌های اجرای عملیات
++
++This local contract extends the platform-runtime contract. Live FastAPI OpenAPI remains authoritative. These changes are tested locally and are not a deployment.
++
++این قرارداد محلی مکمل قرارداد اجرای پلتفرم است. سند زنده OpenAPI مرجع نهایی است؛ این تغییرات فقط محلی آزمایش شده‌اند.
++
++## Private content / محتوای خصوصی
++
++Authorized request/work-item attachment content returns raw binary bytes (`application/octet-stream`); report downloads return a private ZIP. They have no success JSON envelope. Errors retain the documented public error envelope. Responses use `Cache-Control: private, no-store`, `Content-Disposition` and `X-Content-Type-Options: nosniff`. Ownership/participant checks are performed before storage access; unauthorized resources return 404. Generic media retains its existing MIME-specific contract.
++
++محتوای پیوست مجاز به صورت باینری و گزارش به صورت ZIP خصوصی برگردانده می‌شود؛ خطاها پوشش JSON عمومی دارند. کنترل مالکیت یا مشارکت پیش از دسترسی به ذخیره‌سازی انجام می‌شود و منبع غیرمجاز پاسخ ۴۰۴ دارد.
++
++## Resource history / تاریخچه منبع
++
++`POST /api/v1/business-requests/{ref_id}/history` requires `requests.start` and request ownership or superuser authority. `POST /api/v1/work-items/{ref_id}/history` requires `requests.start` and the ordinary work-item visibility check. Both accept bounded `ResourceHistoryQuery` pages and return `PageResponse[Page[ResourceHistoryDTO]]`. Search/sort fields are restricted to `changed_at` and `operation`; response records contain only those fields and nullable `version`. Canonical values, users, comments, command details and arbitrary entity names are not exposed. Invalid query input returns 422; invalid/unauthorized references follow the existing 404 contract. No new idempotency or stale-write rule applies to these read operations.
++
++تاریخچه درخواست فقط برای مالک یا مدیر ارشد و تاریخچه کار فقط برای بازیگر دارای دسترسی کار در دسترس است. جستجو محدود به زمان و نوع عملیات است؛ مقادیر فرم، کاربران و جزئیات دستور افشا نمی‌شوند. ورودی نامعتبر پاسخ ۴۲۲ و منبع نامعتبر یا غیرمجاز پاسخ ۴۰۴ دارد.
++
++## Collections, pages and corrections / مجموعه، صفحات و اصلاحات
++
++Request collection commands now return `SuccessResponse[RuntimeFormStateDTO]` with the current revision-bearing resource reference after commit. Existing command bodies, collection validation and stale reference checks remain authoritative. Actor-filtered page settings may include at most 32 declared pages, unique keys of at most 64 characters, titles of at most 256 characters and up to 256 readable scopes per page. Hidden or unknown scopes and empty pages are removed. Only declared navigation metadata is exposed; no authored script is executed. Presentation resume remains an explicit authorized command with the existing form-version pin semantics.
++
++دستور مجموعه، وضعیت اجرا و شناسه نسخه جاری را پس از ثبت برمی‌گرداند. حداکثر ۳۲ صفحه با محدوده‌های مجاز قابل نمایش است. محدوده پنهان یا ناشناخته حذف می‌شود. ادامه ارائه همچنان دستور صریح و مجاز است.
++
++Correction views include optional actor-filtered `before_item_identity` alongside `before_data`; clients resolve prior repeated values by stable identity, never by a reordered index. Task save/finish recompute derived values after the permission-aware merge. Omitted or unchanged prior calculated values may be recomputed; explicitly forged calculated values still return sanitized validation errors. Hidden values remain canonical on the server and cannot be supplied by unauthorized actors. Existing override provenance and stale override checks remain enforced.
++
++نمای اصلاح، هویت پایدار ردیف‌های قبلی را همراه داده قبلی مجاز ارائه می‌کند. ذخیره و پایان کار محاسبات را پس از ادغام مجاز دوباره اجرا می‌کنند؛ مقدار محاسباتی جعل‌شده همچنان رد می‌شود. داده پنهان در سرور حفظ و برای بازیگر غیرمجاز غیرقابل ارسال است.
++
++## Local evidence / شواهد محلی
++
++Regression tests cover actual schemas, binary headers, page projection, revision-bearing collection responses and derived-value tampering. The HTTP journey uses ordinary accounts and PostgreSQL; the Firefox runner in the frontend uses the same backend and session boundary. The opt-in `RUN_REPORT_WORKER=1` integration test uses a real reporting worker and private object storage to verify READY, owned download, outsider rejection and deletion. `scripts/seed_frontend_browser.py` is test-environment-only and writes a mode-0600 credential fixture for disposable accounts; delete it after verification. It must never be used with production data.
++
++آزمون‌های محلی قرارداد، فیلتر دسترسی، ذخیره و پایان را بررسی می‌کنند. آزمون اختیاری گزارش از worker و ذخیره‌سازی واقعی استفاده می‌کند. داده ورود آزمون فقط برای حساب‌های موقت است و باید پس از آزمایش حذف شود.
+diff --git a/docs/api/platform-runtime.md b/docs/api/platform-runtime.md
+--- a/docs/api/platform-runtime.md
++++ b/docs/api/platform-runtime.md
+@@ -49,3 +49,5 @@
+ Flags refresh after authorized reads/saves. Unsaved dependency changes require saving before their server-calculated visibility/required state is authoritative. No browser expression evaluator or authoring-preview endpoint is advertised. Repeated-row behavior and host navigation remain later frontend capabilities. Existing clients may ignore these additional display hints; runtime/render dialects, DTO schema shapes and operation IDs are unchanged.
+ 
+ وضعیت نمایش `runtime_state` شامل پرچم‌های بولی `visible`، `enabled`، `required` و `overridable` است که با قواعد نسخهٔ ثابت و داده‌های فعلی روی سرور محاسبه می‌شوند. عبارت‌ها، وابستگی‌ها و مقادیر پنهان به مرورگر ارسال نمی‌شوند. فعال بودن کنترل مجوز ویرایش نمی‌دهد؛ محدودهٔ قابل نوشتن و مجوز بازنویسی همچنان روی سرور بررسی می‌شود. وضعیت پس از خواندن یا ذخیرهٔ مجاز تازه می‌شود.
++
++See [operations runtime additions](operations-runtime.md) for private binary responses, authorized metadata history, bounded pages and correction row identities. / برای قراردادهای افزوده، [اجرای عملیات](operations-runtime.md) را ببینید.
+diff --git a/docs/reference/responses/business-requests.md b/docs/reference/responses/business-requests.md
+--- a/docs/reference/responses/business-requests.md
++++ b/docs/reference/responses/business-requests.md
+@@ -62,30 +62,6 @@
+ }
+ ```
+ 
+-### `CollectionIssue`
+-
+-Used by: `POST /api/v1/business-requests/{ref_id}/collections/edit`
+-
+-| Field | Type | Required | Notes |
+-| --- | --- | --- | --- |
+-| `pointer` | `string` | Yes | — |
+-| `code` | `string` | Yes | — |
+-| `item_keys` | `array[string]` | No | — |
+-
+-No reviewed business example is published for this schema. Use the field contract above and the [response scenarios](../../api/response-scenarios.md); do not infer valid lifecycle values from field types alone.
+-
+-### `CollectionState`
+-
+-Used by: `POST /api/v1/business-requests/{ref_id}/collections/edit`
+-
+-| Field | Type | Required | Notes |
+-| --- | --- | --- | --- |
+-| `data` | `object` | Yes | — |
+-| `item_identity` | `object` | Yes | — |
+-| `issues` | `array[CollectionIssue]` | No | — |
+-
+-No reviewed business example is published for this schema. Use the field contract above and the [response scenarios](../../api/response-scenarios.md); do not infer valid lifecycle values from field types alone.
+-
+ ### `ManualOverrideState`
+ 
+ Used by: `POST /api/v1/business-requests/{ref_id}/overrides`
+@@ -148,6 +124,20 @@
+ 
+ No reviewed business example is published for this schema. Use the field contract above and the [response scenarios](../../api/response-scenarios.md); do not infer valid lifecycle values from field types alone.
+ 
++### `PageResponse_Page_ResourceHistoryDTO__`
++
++Used by: `POST /api/v1/business-requests/{ref_id}/history`
++
++| Field | Type | Required | Notes |
++| --- | --- | --- | --- |
++| `success` | `boolean` | No |  Default: `True`. |
++| `request_id` | `string` | Yes | — |
++| `error` | `null` | No | — |
++| `code` | `integer` | No |  Default: `200`. |
++| `result` | `Page_ResourceHistoryDTO_` | Yes | — |
++
++No reviewed business example is published for this schema. Use the field contract above and the [response scenarios](../../api/response-scenarios.md); do not infer valid lifecycle values from field types alone.
++
+ ### `Page_BusinessRequestDTO_`
+ 
+ Used by: `POST /api/v1/business-requests/report`, `POST /api/v1/business-requests/search`
+@@ -155,6 +145,20 @@
+ | Field | Type | Required | Notes |
+ | --- | --- | --- | --- |
+ | `items` | `array[BusinessRequestDTO]` | No | — |
++| `page` | `integer` | No |  Default: `1`. |
++| `size` | `integer` | No |  Default: `20`. |
++| `total` | `integer` | Yes | — |
++| `total_pages` | `integer` | Yes | Return the number of nonempty pages in the full result set. |
++
++No reviewed business example is published for this schema. Use the field contract above and the [response scenarios](../../api/response-scenarios.md); do not infer valid lifecycle values from field types alone.
++
++### `Page_ResourceHistoryDTO_`
++
++Used by: `POST /api/v1/business-requests/{ref_id}/history`
++
++| Field | Type | Required | Notes |
++| --- | --- | --- | --- |
++| `items` | `array[ResourceHistoryDTO]` | No | — |
+ | `page` | `integer` | No |  Default: `1`. |
+ | `size` | `integer` | No |  Default: `20`. |
+ | `total` | `integer` | Yes | — |
+@@ -189,9 +193,25 @@
+ 
+ No reviewed business example is published for this schema. Use the field contract above and the [response scenarios](../../api/response-scenarios.md); do not infer valid lifecycle values from field types alone.
+ 
++### `ResourceHistoryDTO`
++
++Used by: `POST /api/v1/business-requests/{ref_id}/history`
++
++Authorized timeline metadata; no canonical values or actor identifiers.
++
++فرادادهٔ مجاز تاریخچه؛ بدون مقادیر فرم یا شناسهٔ کاربران.
++
++| Field | Type | Required | Notes |
++| --- | --- | --- | --- |
++| `changed_at` | `string` | Yes | UTC change timestamp. / زمان تغییر به UTC. |
++| `operation` | `string` | Yes | Persisted lifecycle action. / رخداد ذخیره‌شده. |
++| `version` | `integer | null` | No | Recorded revision when available; null otherwise. / نسخه در صورت موجود بودن؛ در غیر این صورت null. |
++
++No reviewed business example is published for this schema. Use the field contract above and the [response scenarios](../../api/response-scenarios.md); do not infer valid lifecycle values from field types alone.
++
+ ### `RuntimeActionDTO`
+ 
+-Used by: `GET /api/v1/business-requests/{ref_id}/view`
++Used by: `GET /api/v1/business-requests/{ref_id}/view`, `POST /api/v1/business-requests/{ref_id}/collections/edit`
+ 
+ | Field | Type | Required | Notes |
+ | --- | --- | --- | --- |
+@@ -208,7 +228,7 @@
+ 
+ ### `RuntimeFieldMetadataDTO`
+ 
+-Used by: `GET /api/v1/business-requests/{ref_id}/view`
++Used by: `GET /api/v1/business-requests/{ref_id}/view`, `POST /api/v1/business-requests/{ref_id}/collections/edit`
+ 
+ | Field | Type | Required | Notes |
+ | --- | --- | --- | --- |
+@@ -221,7 +241,7 @@
+ 
+ ### `RuntimeFormStateDTO`
+ 
+-Used by: `GET /api/v1/business-requests/{ref_id}/view`
++Used by: `GET /api/v1/business-requests/{ref_id}/view`, `POST /api/v1/business-requests/{ref_id}/collections/edit`
+ 
+ | Field | Type | Required | Notes |
+ | --- | --- | --- | --- |
+@@ -240,8 +260,9 @@
+ | `direction` | `string` | Yes | — |
+ | `data` | `object` | Yes | Canonical actor-visible values. Hidden values are preserved only on the server. |
+ | `item_identity` | `object` | Yes | Stable row keys for visible collection paths only. |
+-| `page_settings` | `object` | No | Pinned display-only page settings; no scripts, bindings or runtime values. |
++| `page_settings` | `object` | No | Pinned display-only settings; optional pages contains at most 32 unique key/title/scopes entries with actor-readable scopes only. No scripts, bindings or runtime values. |
+ | `before_data` | `object | null` | No | Prior submitted data filtered through the same task view, or null when unavailable. |
++| `before_item_identity` | `object | null` | No | Actor-filtered prior row identities; null when unavailable. / هویت مجاز ردیف‌های پیشین؛ در صورت نبودن null. |
+ | `render_schema` | `object` | Yes | Actor-filtered bounded bpms.render/1 display document. Server-evaluated calculation metadata and client expressions are omitted; writable_scopes is authoritative for editability. |
+ | `readable_scopes` | `array[string]` | Yes | — |
+ | `writable_scopes` | `array[string]` | Yes | — |
+@@ -338,20 +359,6 @@
+ }
+ ```
+ 
+-### `SuccessResponse_CollectionState_`
+-
+-Used by: `POST /api/v1/business-requests/{ref_id}/collections/edit`
+-
+-| Field | Type | Required | Notes |
+-| --- | --- | --- | --- |
+-| `success` | `boolean` | No |  Default: `True`. |
+-| `request_id` | `string` | Yes | — |
+-| `error` | `null` | No | — |
+-| `code` | `integer` | No |  Default: `200`. |
+-| `data` | `CollectionState` | Yes | — |
+-
+-No reviewed business example is published for this schema. Use the field contract above and the [response scenarios](../../api/response-scenarios.md); do not infer valid lifecycle values from field types alone.
+-
+ ### `SuccessResponse_ManualOverrideState_`
+ 
+ Used by: `POST /api/v1/business-requests/{ref_id}/overrides`
+@@ -368,7 +375,7 @@
+ 
+ ### `SuccessResponse_RuntimeFormStateDTO_`
+ 
+-Used by: `GET /api/v1/business-requests/{ref_id}/view`
++Used by: `GET /api/v1/business-requests/{ref_id}/view`, `POST /api/v1/business-requests/{ref_id}/collections/edit`
+ 
+ | Field | Type | Required | Notes |
+ | --- | --- | --- | --- |
+diff --git a/docs/reference/responses/index.md b/docs/reference/responses/index.md
+--- a/docs/reference/responses/index.md
++++ b/docs/reference/responses/index.md
+@@ -39,6 +39,6 @@
+ - [task-schedules](task-schedules.md) — 8 schemas
+ - [users](users.md) — 13 schemas
+ - [work-groups](work-groups.md) — 11 schemas
+-- [work-items](work-items.md) — 20 schemas
++- [work-items](work-items.md) — 23 schemas
+ - [workflow-versions](workflow-versions.md) — 24 schemas
+ - [workflows](workflows.md) — 15 schemas
+diff --git a/docs/reference/responses/work-items.md b/docs/reference/responses/work-items.md
+--- a/docs/reference/responses/work-items.md
++++ b/docs/reference/responses/work-items.md
+@@ -58,6 +58,20 @@
+ | `error` | `null` | No | — |
+ | `code` | `integer` | No |  Default: `200`. |
+ | `result` | `OptionResult` | Yes | — |
++
++No reviewed business example is published for this schema. Use the field contract above and the [response scenarios](../../api/response-scenarios.md); do not infer valid lifecycle values from field types alone.
++
++### `PageResponse_Page_ResourceHistoryDTO__`
++
++Used by: `POST /api/v1/work-items/{ref_id}/history`
++
++| Field | Type | Required | Notes |
++| --- | --- | --- | --- |
++| `success` | `boolean` | No |  Default: `True`. |
++| `request_id` | `string` | Yes | — |
++| `error` | `null` | No | — |
++| `code` | `integer` | No |  Default: `200`. |
++| `result` | `Page_ResourceHistoryDTO_` | Yes | — |
+ 
+ No reviewed business example is published for this schema. Use the field contract above and the [response scenarios](../../api/response-scenarios.md); do not infer valid lifecycle values from field types alone.
+ 
+@@ -113,6 +127,20 @@
+ }
+ ```
+ 
++### `Page_ResourceHistoryDTO_`
++
++Used by: `POST /api/v1/work-items/{ref_id}/history`
++
++| Field | Type | Required | Notes |
++| --- | --- | --- | --- |
++| `items` | `array[ResourceHistoryDTO]` | No | — |
++| `page` | `integer` | No |  Default: `1`. |
++| `size` | `integer` | No |  Default: `20`. |
++| `total` | `integer` | Yes | — |
++| `total_pages` | `integer` | Yes | Return the number of nonempty pages in the full result set. |
++
++No reviewed business example is published for this schema. Use the field contract above and the [response scenarios](../../api/response-scenarios.md); do not infer valid lifecycle values from field types alone.
++
+ ### `Page_WorkItemDTO_`
+ 
+ Used by: `POST /api/v1/work-items/search`
+@@ -186,6 +214,22 @@
+ 
+ No reviewed business example is published for this schema. Use the field contract above and the [response scenarios](../../api/response-scenarios.md); do not infer valid lifecycle values from field types alone.
+ 
++### `ResourceHistoryDTO`
++
++Used by: `POST /api/v1/work-items/{ref_id}/history`
++
++Authorized timeline metadata; no canonical values or actor identifiers.
++
++فرادادهٔ مجاز تاریخچه؛ بدون مقادیر فرم یا شناسهٔ کاربران.
++
++| Field | Type | Required | Notes |
++| --- | --- | --- | --- |
++| `changed_at` | `string` | Yes | UTC change timestamp. / زمان تغییر به UTC. |
++| `operation` | `string` | Yes | Persisted lifecycle action. / رخداد ذخیره‌شده. |
++| `version` | `integer | null` | No | Recorded revision when available; null otherwise. / نسخه در صورت موجود بودن؛ در غیر این صورت null. |
++
++No reviewed business example is published for this schema. Use the field contract above and the [response scenarios](../../api/response-scenarios.md); do not infer valid lifecycle values from field types alone.
++
+ ### `RuntimeActionDTO`
+ 
+ Used by: `DELETE /api/v1/work-items/{ref_id}/attachments/{attachment_ref_id}`, `GET /api/v1/work-items/{ref_id}`, `GET /api/v1/work-items/{ref_id}/runtime`, `POST /api/v1/work-items/search`, `POST /api/v1/work-items/{ref_id}/archive`, `POST /api/v1/work-items/{ref_id}/cancel`, `POST /api/v1/work-items/{ref_id}/claim`, `POST /api/v1/work-items/{ref_id}/collections/edit`, `POST /api/v1/work-items/{ref_id}/comment`, `POST /api/v1/work-items/{ref_id}/complete`, `POST /api/v1/work-items/{ref_id}/expire`, `POST /api/v1/work-items/{ref_id}/forward`, `POST /api/v1/work-items/{ref_id}/overrides`, `POST /api/v1/work-items/{ref_id}/pin`, `POST /api/v1/work-items/{ref_id}/read`, `POST /api/v1/work-items/{ref_id}/reject`, `POST /api/v1/work-items/{ref_id}/release`, `POST /api/v1/work-items/{ref_id}/return`, `POST /api/v1/work-items/{ref_id}/save`, `POST /api/v1/work-items/{ref_id}/start`, `POST /api/v1/work-items/{ref_id}/watch`, `PUT /api/v1/work-items/{ref_id}/attachments`
+@@ -237,8 +281,9 @@
+ | `direction` | `string` | Yes | — |
+ | `data` | `object` | Yes | Canonical actor-visible values. Hidden values are preserved only on the server. |
+ | `item_identity` | `object` | Yes | Stable row keys for visible collection paths only. |
+-| `page_settings` | `object` | No | Pinned display-only page settings; no scripts, bindings or runtime values. |
++| `page_settings` | `object` | No | Pinned display-only settings; optional pages contains at most 32 unique key/title/scopes entries with actor-readable scopes only. No scripts, bindings or runtime values. |
+ | `before_data` | `object | null` | No | Prior submitted data filtered through the same task view, or null when unavailable. |
++| `before_item_identity` | `object | null` | No | Actor-filtered prior row identities; null when unavailable. / هویت مجاز ردیف‌های پیشین؛ در صورت نبودن null. |
+ | `render_schema` | `object` | Yes | Actor-filtered bounded bpms.render/1 display document. Server-evaluated calculation metadata and client expressions are omitted; writable_scopes is authoritative for editability. |
+ | `readable_scopes` | `array[string]` | Yes | — |
+ | `writable_scopes` | `array[string]` | Yes | — |
+@@ -545,6 +590,7 @@
+ | `data` | `object` | Yes | Current canonical data filtered by the task read policy and named view. |
+ | `item_identity` | `object | null` | Yes | Stable row keys only for readable collection paths. |
+ | `before_data` | `object | null` | Yes | Prior submitted canonical data through the same read filter, or null. |
++| `before_item_identity` | `object | null` | No | Stable prior keys through the same read filter. / کلیدهای پیشین با همان فیلتر دسترسی. |
+ | `render_schema` | `object` | Yes | Pinned client variant's bpms.render/1 document with unreadable nodes removed and messages localized. |
+ | `actions` | `array[TaskActionViewDTO]` | Yes | Available declared actions for the current claimant; empty for observers or closed work. |
+ | `feedback` | `array[CorrectionFeedbackDTO]` | Yes | Visible feedback keyed by stable field scope and optional collection item key. |

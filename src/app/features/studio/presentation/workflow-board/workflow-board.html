@@ -1,0 +1,237 @@
+<h1 tabindex="-1">{{ "Workflow designer" | localize }}</h1>
+<a routerLink="/studio/workflow-versions">{{
+  "Workflow versions" | localize
+}}</a>
+<p>{{ status() }} · {{ reference() }}</p>
+<p>
+  {{
+    "Workspace changes are separate from executable versions. Save, validate, promote, then publish."
+      | localize
+  }}
+</p>
+@if (error()) {
+  <p role="alert">{{ error() | localize }}</p>
+}
+@if (busy()) {
+  <p role="status">{{ "Loading…" | localize }}</p>
+}
+<nav aria-label="Workflow commands">
+  <button type="button" [disabled]="busy()" (click)="load()">
+    {{ "Reload" | localize }}</button
+  ><button
+    type="button"
+    [disabled]="readonly() || pending().length > 0"
+    (click)="save()"
+  >
+    {{ "Save workspace" | localize }}</button
+  ><button type="button" [disabled]="readonly()" (click)="undo()">
+    {{ "Undo" | localize }}</button
+  ><button type="button" [disabled]="readonly()" (click)="undo(true)">
+    {{ "Redo" | localize }}</button
+  ><button type="button" [disabled]="busy()" (click)="validate()">
+    {{ "Validate" | localize }}</button
+  ><button
+    type="button"
+    [disabled]="readonly() || dirty() || pending().length > 0"
+    (click)="promote()"
+  >
+    {{ "Promote graph" | localize }}</button
+  ><button
+    type="button"
+    [disabled]="readonly() || dirty() || pending().length > 0"
+    (click)="publish()"
+  >
+    {{ "Publish" | localize }}
+  </button>
+</nav>
+@if (pending().length) {
+  <p role="status">
+    {{ "Apply each edited JSON panel before saving." | localize }}
+  </p>
+}
+<section aria-label="Step palette">
+  <label for="type-key">{{ "Registered step type" | localize }}</label
+  ><select id="type-key" [(ngModel)]="typeKey">
+    @for (type of catalog(); track type["key"]) {
+      <option [value]="type['key']">
+        {{ type["title"] }} · {{ type["key"] }}
+      </option>
+    }</select
+  ><label for="step-key">{{ "Stable step key" | localize }}</label
+  ><input id="step-key" [(ngModel)]="stepKey" /><button
+    type="button"
+    [disabled]="readonly()"
+    (click)="add()"
+  >
+    {{ "Add step" | localize }}</button
+  ><button
+    type="button"
+    [disabled]="catalogPage() <= 1"
+    (click)="loadCatalog(catalogPage() - 1)"
+  >
+    {{ "Previous" | localize }}</button
+  ><button
+    type="button"
+    [disabled]="catalogPage() >= catalogPages()"
+    (click)="loadCatalog(catalogPage() + 1)"
+  >
+    {{ "Next" | localize }}
+  </button>
+</section>
+<ng-container *ngComponentOutlet="canvas; inputs: inputs()" />
+<div class="inspectors">
+  <section aria-label="Step inspector">
+    <h2>{{ "Selected step" | localize }} {{ selected }}</h2>
+    <label for="step-json">{{
+      "Configuration, human views/actions, assignment policy and subprocess pins"
+        | localize
+    }}</label
+    ><textarea
+      id="step-json"
+      rows="14"
+      [disabled]="readonly()"
+      [(ngModel)]="selectedJson"
+      (ngModelChange)="markPending('node')"
+    ></textarea
+    ><button type="button" [disabled]="readonly()" (click)="applyNode()">
+      {{ "Apply step" | localize }}</button
+    ><button type="button" [disabled]="readonly()" (click)="remove()">
+      {{ "Remove step" | localize }}
+    </button>
+    <p>
+      {{
+        "Arrow keys move focused nodes; buttons select nodes. Control and data ports remain separate."
+          | localize
+      }}
+    </p>
+  </section>
+  <section aria-label="Connections and graph">
+    <h2>{{ "Connections" | localize }}</h2>
+    <label for="source-port">{{ "Source port" | localize }}</label
+    ><input id="source-port" [(ngModel)]="source" /><label for="target-port">{{
+      "Target port" | localize
+    }}</label
+    ><input id="target-port" [(ngModel)]="target" /><label for="outcome">{{
+      "Control outcome" | localize
+    }}</label
+    ><input id="outcome" [(ngModel)]="outcome" /><button
+      type="button"
+      [disabled]="readonly()"
+      (click)="connect()"
+    >
+      {{ "Connect" | localize }}</button
+    ><label for="graph-json">{{
+      "Transitions, data bindings, assignment targets and interface" | localize
+    }}</label
+    ><textarea
+      id="graph-json"
+      rows="12"
+      [disabled]="readonly()"
+      [(ngModel)]="graphJson"
+      (ngModelChange)="markPending('graph')"
+    ></textarea
+    ><button type="button" [disabled]="readonly()" (click)="applyGraph()">
+      {{ "Apply graph edits" | localize }}
+    </button>
+  </section>
+</div>
+<button type="button" [disabled]="busy()" (click)="inspect('workspaceHistory')">
+  {{ "Workspace history" | localize }}
+</button>
+<details>
+  <summary>{{ "Designer assistance" | localize }}</summary>
+  <label for="selector-kind">{{ "Selector kind" | localize }}</label
+  ><select id="selector-kind" [(ngModel)]="selectorKind">
+    @for (
+      kind of [
+        "users",
+        "work_groups",
+        "forms",
+        "form_versions",
+        "workflows",
+        "workflow_versions",
+        "request_types",
+        "outcome",
+      ];
+      track kind
+    ) {
+      <option>{{ kind }}</option>
+    }</select
+  ><label for="selector-search">{{ "Search" | localize }}</label
+  ><input id="selector-search" [(ngModel)]="selectorSearch" /><button
+    type="button"
+    [disabled]="busy()"
+    (click)="inspect('selectors')"
+  >
+    {{ "Find references" | localize }}</button
+  ><label for="start-form">{{
+    "Start form version reference" | localize
+  }}</label
+  ><input id="start-form" [(ngModel)]="startForm" /><button
+    type="button"
+    [disabled]="busy()"
+    (click)="inspect('inventory')"
+  >
+    {{ "Field inventory" | localize }}</button
+  ><label for="completion-request-type">{{
+    "Request type reference" | localize
+  }}</label
+  ><input id="completion-request-type" [(ngModel)]="requestType" /><button
+    type="button"
+    [disabled]="busy()"
+    (click)="inspect('completion')"
+  >
+    {{ "Binding suggestions" | localize }}
+  </button>
+  <button
+    type="button"
+    [disabled]="busy() || assistantPage() <= 1"
+    (click)="inspect(assistantTool, assistantPage() - 1)"
+  >
+    {{ "Previous" | localize }}</button
+  ><button
+    type="button"
+    [disabled]="busy() || assistantPage() >= assistantPages()"
+    (click)="inspect(assistantTool, assistantPage() + 1)"
+  >
+    {{ "Next" | localize }}
+  </button>
+</details>
+<details>
+  <summary>{{ "Layout groups and edge routing" | localize }}</summary>
+  <label for="collapsed-groups">{{ "Collapsed group keys" | localize }}</label
+  ><textarea
+    id="collapsed-groups"
+    [(ngModel)]="collapsedJson"
+    (ngModelChange)="markPending('layout')"
+  ></textarea
+  ><label for="edge-routing">{{
+    "Edge waypoints by connection key" | localize
+  }}</label
+  ><textarea
+    id="edge-routing"
+    [(ngModel)]="routingJson"
+    (ngModelChange)="markPending('layout')"
+  ></textarea
+  ><button type="button" [disabled]="readonly()" (click)="applyLayout()">
+    {{ "Apply layout" | localize }}
+  </button>
+</details>
+@if (diagnostics()) {
+  <section aria-label="Diagnostics">
+    <ul>
+      @for (issue of issues(); track $index) {
+        <li>
+          @if (issue.node) {
+            <button type="button" (click)="select(issue.node)">
+              {{ issue.pointer }} · {{ issue.code }} {{ issue.edge }}
+            </button>
+          } @else {
+            {{ issue.pointer }} · {{ issue.code }}
+          }
+        </li>
+      }
+    </ul>
+    <pre>{{ diagnostics() }}</pre>
+  </section>
+}

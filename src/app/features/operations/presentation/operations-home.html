@@ -1,0 +1,19 @@
+<app-area-overview
+  description="Start requests, review assigned work, and follow case progress."
+  heading="Operations"
+  [capabilities]="capabilities"
+/>
+
+<nav aria-label="Operations workspace" class="flex flex-wrap gap-4">
+  <a routerLink="/operations/catalog">{{ "Start a request" | localize }}</a
+  ><a routerLink="/operations/requests">{{ "My requests" | localize }}</a
+  ><a routerLink="/operations/tasks">{{ "Task inbox" | localize }}</a>
+  <a routerLink="/account">{{ "Account and sessions" | localize }}</a>
+</nav>
+
+<nav>
+  <a routerLink="/operations/notifications">{{ "Notifications" | localize }}</a>
+  · <a routerLink="/operations/reports">{{ "My reports" | localize }}</a>
+</nav>
+
+<a routerLink="/operations/media">{{ "Private uploads" | localize }}</a>

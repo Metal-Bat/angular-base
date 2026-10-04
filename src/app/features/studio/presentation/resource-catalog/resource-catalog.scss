@@ -1,0 +1,49 @@
+:host {
+  display: block;
+  max-width: 75rem;
+  margin: auto;
+  padding: 1rem;
+}
+form,
+nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-block: 1rem;
+}
+section form {
+  display: block;
+}
+.field {
+  display: grid;
+  gap: 0.4rem;
+  margin-block: 1rem;
+}
+input,
+select,
+textarea {
+  border: 1px solid var(--p-content-border-color);
+  border-radius: 0.3rem;
+  padding: 0.5rem;
+}
+textarea,
+pre {
+  max-width: 100%;
+  overflow: auto;
+}
+button,
+a {
+  margin-inline-end: 0.5rem;
+}
+button {
+  border: 1px solid var(--p-content-border-color);
+  padding: 0.4rem 0.8rem;
+  border-radius: 0.3rem;
+}
+button:disabled {
+  opacity: 0.5;
+}
+aside {
+  border: 1px solid var(--p-primary-color);
+  padding: 1rem;
+}

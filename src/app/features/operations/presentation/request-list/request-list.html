@@ -1,0 +1,47 @@
+<h1 tabindex="-1">{{ "My requests" | localize }}</h1>
+<a routerLink="/operations/catalog">{{ "Start a request" | localize }}</a>
+@if (pages.state() === "loading") {
+  <p role="status">{{ "Loading…" | localize }}</p>
+}
+@if (pages.state() === "error") {
+  <p role="alert">{{ pages.error() | localize }}</p>
+}
+<button
+  type="button"
+  [disabled]="pages.state() === 'loading'"
+  (click)="pages.load('request', pages.page())"
+>
+  {{ "Refresh" | localize }}
+</button>
+@if (pages.state() === "ready") {
+  <ul class="grid gap-3">
+    @for (item of pages.cases(); track item.ref) {
+      <li>
+        <a [routerLink]="['/operations/requests', item.ref]"
+          ><bdi>{{ item.ref }}</bdi></a
+        >
+        — {{ item.status | localize }}
+      </li>
+    } @empty {
+      <li>{{ "No requests" | localize }}</li>
+    }
+  </ul>
+  <button
+    type="button"
+    [disabled]="pages.page() <= 1"
+    (click)="pages.load('request', pages.page() - 1)"
+  >
+    {{ "Previous" | localize }}
+  </button>
+  <button
+    type="button"
+    [disabled]="pages.page() >= pages.totalPages()"
+    (click)="pages.load('request', pages.page() + 1)"
+  >
+    {{ "Next" | localize }}
+  </button>
+}
+
+@if (polling.paused()) {
+  <p role="status">{{ "Updates paused while offline or hidden" | localize }}</p>
+}
