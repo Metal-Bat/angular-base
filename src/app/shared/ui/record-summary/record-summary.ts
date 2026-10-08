@@ -97,6 +97,10 @@ export class RecordSummary {
         value: this.value(value, true),
       })),
   );
+  readonly sections = computed(() => [
+    { title: 'Overview', entries: this.overview() },
+    { title: 'Activity', entries: this.activity() },
+  ]);
   readonly changes = computed(() =>
     fieldChanges(this.record()['from_values'], this.record()['to_values']).map(
       (change) => ({

@@ -1,10 +1,11 @@
+import { OperationsGuide } from './operations-guide';
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { LocalizePipe } from '../../../shared/ui/localize-pipe';
 
 @Component({
-  imports: [RouterLink, LocalizePipe, ButtonModule],
+  imports: [OperationsGuide, RouterLink, LocalizePipe, ButtonModule],
   selector: 'app-operations-home',
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './operations-home.scss',

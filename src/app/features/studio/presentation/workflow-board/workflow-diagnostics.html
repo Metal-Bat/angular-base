@@ -1,0 +1,25 @@
+@let vm = view();
+@if (vm.diagnostics()) {
+  <section aria-label="Diagnostics">
+    <ul>
+      @for (issue of vm.issues(); track $index) {
+        <li>
+          @if (issue.node) {
+            <button
+              pButton
+              severity="secondary"
+              type="button"
+              [outlined]="true"
+              (click)="vm.select(issue.node)"
+            >
+              {{ issue.pointer }} · {{ issue.code }} {{ issue.edge }}
+            </button>
+          } @else {
+            {{ issue.pointer }} · {{ issue.code }}
+          }
+        </li>
+      }
+    </ul>
+    <pre>{{ vm.diagnostics() }}</pre>
+  </section>
+}

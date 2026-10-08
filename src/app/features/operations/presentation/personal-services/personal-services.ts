@@ -1,3 +1,4 @@
+import { PersonalServiceDetail } from './personal-service-detail';
 import { ButtonDirective } from 'primeng/button';
 import {
   ChangeDetectionStrategy,
@@ -18,12 +19,11 @@ import {
   ServiceKind,
 } from '../../application/personal-services-port';
 import { PERSONAL_SERVICES } from '../../bindings';
-import { CaseHistory } from '../case-history/case-history';
 @Component({
   host: { class: 'console-page' },
   selector: 'app-personal-services',
   providers: [BinaryTransfer, BoundedPolling],
-  imports: [ButtonDirective, RouterLink, LocalizePipe, CaseHistory],
+  imports: [PersonalServiceDetail, ButtonDirective, RouterLink, LocalizePipe],
   templateUrl: './personal-services.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

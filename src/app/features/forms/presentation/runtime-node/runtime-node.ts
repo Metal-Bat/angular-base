@@ -1,4 +1,4 @@
-import { SelectControl } from '../../../../shared/ui/select-control/select-control';
+import { RuntimeField } from './runtime-field';
 import { ButtonDirective } from 'primeng/button';
 import { AttachmentControl } from '../attachment-control/attachment-control';
 import { FORM_RESOURCES } from '../../bindings';
@@ -9,7 +9,6 @@ import {
   rowValue,
   writableScope,
 } from '../../domain/row-values';
-import { ChoiceControl } from '../choice-control/choice-control';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -19,8 +18,6 @@ import {
   input,
   output,
 } from '@angular/core';
-import { ValueTextPipe } from '../value-text-pipe';
-import { FieldWrapper } from '../../../../shared/ui/field-wrapper/field-wrapper';
 import { LocalizePipe } from '../../../../shared/ui/localize-pipe';
 import { Locale } from '../../../../core/localization/locale';
 import {
@@ -39,13 +36,10 @@ import { isLayout } from '../../domain/primitive-registry';
   host: { class: 'console-fragment' },
   selector: 'app-runtime-node',
   imports: [
-    SelectControl,
+    RuntimeField,
     ButtonDirective,
     forwardRef(() => RuntimeNode),
-    ValueTextPipe,
-    FieldWrapper,
     LocalizePipe,
-    ChoiceControl,
     AttachmentControl,
   ],
   templateUrl: './runtime-node.html',

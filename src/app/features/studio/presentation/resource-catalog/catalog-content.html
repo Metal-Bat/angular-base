@@ -1,0 +1,182 @@
+@let vm = view();
+@if (vm.selected(); as row) {
+  <section class="catalog-detail">
+    <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
+      <button
+        pButton
+        severity="secondary"
+        type="button"
+        [disabled]="vm.busy()"
+        [text]="true"
+        (click)="vm.back()"
+      >
+        {{ "Back to list" | localize }}
+      </button>
+      <button
+        class="reload-control"
+        pButton
+        severity="secondary"
+        type="button"
+        [attr.aria-label]="'Reload record' | localize"
+        [attr.title]="'Reload record' | localize"
+        [disabled]="vm.busy()"
+        [text]="true"
+        (click)="vm.open(vm.reference())"
+      >
+        <i aria-hidden="true" class="pi pi-refresh"></i
+        ><span class="sr-only">{{ "Reload record" | localize }}</span>
+      </button>
+    </div>
+    @if (vm.immutable()) {
+      <p>
+        {{
+          "Published versions are immutable. Create a new draft version."
+            | localize
+        }}
+      </p>
+    }
+    <ng-template #overview>
+      <app-record-summary
+        [caption]="vm.spec.title"
+        [icon]="
+          vm.key.startsWith('workflow')
+            ? 'pi pi-sitemap'
+            : vm.key.startsWith('form')
+              ? 'pi pi-file-edit'
+              : 'pi pi-box'
+        "
+        [record]="row"
+        [title]="vm.label(row)"
+      />
+    </ng-template>
+    @if (vm.key === "workflows" || vm.key === "workflow-versions") {
+      <p-tabs value="overview" [lazy]="true">
+        <p-tablist>
+          <p-tab value="overview">{{ "Overview" | localize }}</p-tab>
+          <p-tab value="display"
+            ><i aria-hidden="true" class="pi pi-sitemap"></i>
+            {{ "Display" | localize }}</p-tab
+          >
+        </p-tablist>
+        <p-tabpanels>
+          <p-tabpanel value="overview"
+            ><ng-container [ngTemplateOutlet]="overview"
+          /></p-tabpanel>
+          <p-tabpanel value="display">
+            <ng-template #content>
+              @defer (when vm.reference()) {
+                <app-workflow-diagram
+                  [version]="
+                    vm.key === 'workflow-versions' ? vm.reference() : ''
+                  "
+                  [workflow]="vm.key === 'workflows' ? vm.reference() : ''"
+                />
+              } @placeholder {
+                <p role="status">
+                  {{ "Loading workflow diagram…" | localize }}
+                </p>
+              }
+            </ng-template>
+          </p-tabpanel>
+        </p-tabpanels>
+      </p-tabs>
+    } @else {
+      <ng-container [ngTemplateOutlet]="overview" />
+    }
+  </section>
+} @else {
+  @if (vm.parentSpec) {
+    <div
+      class="scope-toolbar flex flex-wrap items-center justify-between gap-3 mb-5"
+    >
+      <div>
+        <strong>{{ vm.parentSpec.title | localize }}</strong>
+        <p>
+          {{
+            vm.parentLabel() ||
+              "Choose a parent definition to show its versions." | localize
+          }}
+        </p>
+      </div>
+      <button
+        pButton
+        severity="secondary"
+        type="button"
+        [disabled]="vm.busy()"
+        [outlined]="true"
+        (click)="vm.chooseParents()"
+      >
+        {{ (vm.canScope() ? "Change parent" : "Choose parent") | localize }}
+      </button>
+    </div>
+  } @else {
+    @if (vm.spec.queryFields.length) {
+      <form
+        class="scope-toolbar flex flex-wrap items-end gap-3 mb-5"
+        (ngSubmit)="vm.applyScope()"
+      >
+        @for (field of vm.spec.queryFields; track field.key) {
+          <label class="grid gap-2" [for]="'query-' + field.key"
+            >{{ field.title | localize
+            }}<input
+              pInputText
+              [id]="'query-' + field.key"
+              [name]="field.key"
+              [ngModel]="vm.display(field, true)"
+              [required]="field.required"
+              (ngModelChange)="vm.change(field, $event, true)"
+          /></label>
+        }
+        <button pButton type="submit" [disabled]="vm.busy()">
+          {{ "Show versions" | localize }}
+        </button>
+      </form>
+    }
+  }
+
+  <section class="catalog-list">
+    <div class="flex flex-wrap justify-between items-center gap-3 mb-4">
+      <div>
+        <strong>{{ vm.spec.title | localize }}</strong>
+      </div>
+      <button
+        class="reload-control"
+        pButton
+        severity="secondary"
+        type="button"
+        [attr.aria-label]="'Refresh' | localize"
+        [attr.title]="'Refresh' | localize"
+        [disabled]="vm.busy() || !vm.appliedQuery()"
+        [text]="true"
+        (click)="vm.load(vm.page())"
+      >
+        <i aria-hidden="true" class="pi pi-refresh"></i
+        ><span class="sr-only">{{ "Refresh" | localize }}</span>
+      </button>
+    </div>
+    @if (vm.spec.list) {
+      <app-list-query
+        [busy]="vm.busy() || !vm.canScope()"
+        [fields]="vm.spec.list.queryFields"
+        [query]="vm.listQuery()"
+        (applied)="vm.applyList($event)"
+      />
+    }
+    <app-record-table
+      [busy]="vm.busy() || !vm.canScope()"
+      [canEdit]="vm.canEditRow"
+      [columns]="vm.columns()"
+      [fields]="vm.spec.list?.queryFields ?? []"
+      [moreActions]="vm.rowActions"
+      [page]="vm.page()"
+      [pages]="vm.totalPages()"
+      [query]="vm.listQuery()"
+      [rows]="vm.items()"
+      (actionRequested)="vm.rowAction($event)"
+      (edited)="vm.editRow($event)"
+      (opened)="vm.open(vm.ref($any($event)))"
+      (pageChanged)="vm.load($event)"
+      (queried)="vm.applyList($event)"
+    />
+  </section>
+}

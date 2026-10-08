@@ -37,8 +37,21 @@ import { setAt } from '../../../administration/domain/reference-options';
       (picked)="pick($event.path, $event.value)"
     />
   `,
-  styles:
-    ':host{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem}:host > app-schema-input:has(fieldset){grid-column:1/-1}@media(max-width:40rem){:host{grid-template-columns:minmax(0,1fr)}}',
+  styles: `
+    :host {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1rem;
+    }
+    :host > app-schema-input:has(fieldset) {
+      grid-column: 1/-1;
+    }
+    @media (max-width: 40rem) {
+      :host {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+  `,
 })
 export class RecordFields {
   readonly fields = input.required<readonly RecordField[]>();

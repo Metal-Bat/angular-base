@@ -53,7 +53,10 @@ export class CatalogParents extends CatalogState {
             this.parentLabel.set(resourceLabel(row));
           }
         })
-        .catch(() => {});
+        .catch(() => {
+          // The optional parent label must not block loading the scoped catalog.
+          // The parent picker remains available if this lookup is unavailable.
+        });
     }
   }
   private clearParents(): void {

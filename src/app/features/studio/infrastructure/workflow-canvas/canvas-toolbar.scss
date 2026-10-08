@@ -1,0 +1,41 @@
+.canvas-toolbar {
+  padding: 1rem 1.25rem;
+  border-block-end: 1px solid var(--console-border);
+}
+.canvas-summary {
+  strong {
+    display: block;
+    font-size: 0.85rem;
+  }
+  > span {
+    display: block;
+    color: var(--console-muted);
+    font-size: 0.7rem;
+    margin-block-start: 0.2rem;
+  }
+}
+.canvas-tools {
+  button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.65rem;
+    border: 0;
+    border-radius: 0.5rem;
+    background: transparent;
+    color: var(--console-text);
+    font-size: 0.75rem;
+    min-block-size: 2.5rem;
+    &:hover:not(:disabled) {
+      background: var(--console-accent-soft);
+    }
+  }
+}
+.zoom-value {
+  min-inline-size: 3rem;
+  text-align: center;
+  color: var(--console-muted);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+}

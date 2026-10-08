@@ -34,51 +34,30 @@
   }
 </header>
 <div class="summary-sections">
-  @if (!isHistory() && overview().length) {
-    <section>
-      <h3>{{ "Overview" | localize }}</h3>
-      <dl>
-        @for (entry of overview(); track entry.key) {
-          <div>
-            <dt>{{ entry.label | localize }}</dt>
-            <dd
-              [attr.title]="entry.empty ? ('Not set' | localize) : null"
-              [class.unset-value]="entry.empty"
-            >
-              @if (entry.empty) {
-                <span aria-hidden="true">—</span
-                ><span class="sr-only">{{ "Not set" | localize }}</span>
-              } @else {
-                <bdi>{{ entry.value }}</bdi>
-              }
-            </dd>
-          </div>
-        }
-      </dl>
-    </section>
-  }
-  @if (!isHistory() && activity().length) {
-    <section>
-      <h3>{{ "Activity" | localize }}</h3>
-      <dl>
-        @for (entry of activity(); track entry.key) {
-          <div>
-            <dt>{{ entry.label | localize }}</dt>
-            <dd
-              [attr.title]="entry.empty ? ('Not set' | localize) : null"
-              [class.unset-value]="entry.empty"
-            >
-              @if (entry.empty) {
-                <span aria-hidden="true">—</span
-                ><span class="sr-only">{{ "Not set" | localize }}</span>
-              } @else {
-                <bdi>{{ entry.value }}</bdi>
-              }
-            </dd>
-          </div>
-        }
-      </dl>
-    </section>
+  @for (section of sections(); track section.title) {
+    @if (!isHistory() && section.entries.length) {
+      <section>
+        <h3>{{ section.title | localize }}</h3>
+        <dl>
+          @for (entry of section.entries; track entry.key) {
+            <div>
+              <dt>{{ entry.label | localize }}</dt>
+              <dd
+                [attr.title]="entry.empty ? ('Not set' | localize) : null"
+                [class.unset-value]="entry.empty"
+              >
+                @if (entry.empty) {
+                  <span aria-hidden="true">—</span
+                  ><span class="sr-only">{{ "Not set" | localize }}</span>
+                } @else {
+                  <bdi>{{ entry.value }}</bdi>
+                }
+              </dd>
+            </div>
+          }
+        </dl>
+      </section>
+    }
   }
 </div>
 @if (isHistory()) {

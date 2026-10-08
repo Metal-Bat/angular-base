@@ -74,7 +74,16 @@ describe('Resource operation adapters', () => {
     );
     req.flush(
       new Blob([
-        '{"success":true,"result":{"items":[{"from_values":{"password":"hidden"}}],"page":1,"size":20,"total":1,"total_pages":1}}',
+        JSON.stringify({
+          success: true,
+          result: {
+            items: [{ from_values: { password: 'hidden' } }],
+            page: 1,
+            size: 20,
+            total: 1,
+            total_pages: 1,
+          },
+        }),
       ]),
     );
     expect(JSON.stringify(await history)).not.toContain('hidden');

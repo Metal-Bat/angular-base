@@ -1,0 +1,100 @@
+@let vm = view();
+@if (vm.definition.adminGroup === "tasks") {
+  <nav
+    class="flex flex-wrap gap-2 mb-4"
+    [attr.aria-label]="'Background tasks' | localize"
+  >
+    <a
+      class="p-button p-button-text"
+      routerLink="/administration/tasks/definitions"
+      >{{ "Task definitions" | localize }}</a
+    >
+    <a
+      class="p-button p-button-text"
+      routerLink="/administration/tasks/schedules"
+      >{{ "Task schedules" | localize }}</a
+    >
+    <a
+      class="p-button p-button-text"
+      routerLink="/administration/tasks/executions"
+      >{{ "Task executions" | localize }}</a
+    >
+  </nav>
+}
+
+<header class="console-page-header">
+  <div>
+    <span class="console-eyebrow">{{ "Workspace records" | localize }}</span>
+    <h1 tabindex="-1">{{ vm.definition.title | localize }}</h1>
+    <p class="console-description">
+      {{ vm.definition.description | localize }}
+    </p>
+  </div>
+  <div class="flex flex-wrap items-center gap-2">
+    @if (vm.definition.operations.report && !vm.detail()) {
+      <button
+        pButton
+        severity="secondary"
+        type="button"
+        [disabled]="vm.busy() || vm.actionBusy() || !vm.page()"
+        [outlined]="true"
+        (click)="vm.report()"
+      >
+        <i aria-hidden="true" class="pi pi-file-export"></i
+        >{{
+          (vm.definition.key === "admin-users"
+            ? "Report Admin Users"
+            : "Request report"
+          ) | localize
+        }}
+      </button>
+    }
+    @if (vm.definition.operations.create && !vm.detail()) {
+      <button
+        pButton
+        type="button"
+        [disabled]="vm.busy() || vm.actionBusy() || !vm.allowed()"
+        (click)="vm.create()"
+      >
+        <i aria-hidden="true" class="pi pi-plus"></i
+        >{{
+          (vm.user
+            ? "Create User"
+            : vm.definition.key === "roles"
+              ? "Create Role"
+              : vm.definition.key === "permissions"
+                ? "Create Permission"
+                : "Create"
+          ) | localize
+        }}
+      </button>
+    }
+    @if (
+      vm.detail() &&
+      vm.definition.operations.update &&
+      vm.canEditRow(vm.detail()!)
+    ) {
+      <button
+        pButton
+        type="button"
+        [disabled]="vm.actionBusy() || !vm.allowed()"
+        (click)="vm.edit()"
+      >
+        {{ (vm.user ? "Update User" : "Edit") | localize }}
+      </button>
+    }
+    @if (vm.detail() && vm.definition.operations.history) {
+      <button
+        pButton
+        severity="secondary"
+        type="button"
+        [disabled]="vm.busy() || vm.actionBusy()"
+        [outlined]="true"
+        (click)="vm.history()"
+      >
+        <i aria-hidden="true" class="pi pi-history"></i
+        >{{ (vm.user ? "User History" : "History") | localize }}
+      </button>
+    }
+  </div>
+</header>

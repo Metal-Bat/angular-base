@@ -1,0 +1,116 @@
+@let vm = view();
+@let row = vm.detail()!;
+<section class="record-detail">
+  <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
+    <button
+      pButton
+      severity="secondary"
+      type="button"
+      [text]="true"
+      (click)="vm.detail.set(null)"
+    >
+      <i aria-hidden="true" class="pi pi-arrow-left rtl:rotate-180"></i
+      >{{ "Back to list" | localize }}
+    </button>
+    @if (vm.definition.operations.get) {
+      <button
+        class="reload-control"
+        pButton
+        severity="secondary"
+        type="button"
+        [attr.aria-label]="'Reload record' | localize"
+        [attr.title]="'Reload record' | localize"
+        [disabled]="vm.busy() || vm.actionBusy()"
+        [text]="true"
+        (click)="vm.open(row)"
+      >
+        <i aria-hidden="true" class="pi pi-refresh"></i
+        ><span class="sr-only">{{ "Reload record" | localize }}</span>
+      </button>
+    }
+  </div>
+  @if (vm.deleted()) {
+    <p class="text-console-muted">
+      {{ "This record is deleted." | localize }}
+    </p>
+  }
+  <app-record-summary
+    [caption]="vm.definition.title"
+    [icon]="vm.user ? 'pi pi-user' : 'pi pi-file'"
+    [record]="row"
+    [title]="
+      $any(
+        row['username'] ||
+          row['name'] ||
+          row['file_name'] ||
+          row['event_type'] ||
+          ('Record detail' | localize)
+      )
+    "
+  />
+  <div class="flex flex-wrap gap-3 mt-5">
+    @if (vm.user && !vm.deleted()) {
+      @if (vm.roleAllowed()) {
+        <button
+          pButton
+          severity="secondary"
+          type="button"
+          [disabled]="vm.actionBusy()"
+          [outlined]="true"
+          (click)="vm.assignRole()"
+        >
+          {{ "Assign role" | localize }}
+        </button>
+      }
+      <button
+        pButton
+        severity="secondary"
+        type="button"
+        [disabled]="vm.actionBusy()"
+        [outlined]="true"
+        (click)="vm.resetPassword()"
+      >
+        {{ "Reset password" | localize }}
+      </button>
+    }
+    @if (vm.definition.operations.delete && !vm.deleted() && !vm.immutable()) {
+      <button
+        pButton
+        severity="danger"
+        type="button"
+        [disabled]="vm.actionBusy() || !vm.allowed()"
+        [outlined]="true"
+        (click)="vm.remove()"
+      >
+        {{ "Delete" | localize }}
+      </button>
+    }
+    @if (vm.definition.operations.restore && vm.deleted()) {
+      <button
+        pButton
+        type="button"
+        [disabled]="vm.actionBusy() || !vm.allowed()"
+        (click)="vm.restore()"
+      >
+        {{ "Restore User" | localize }}
+      </button>
+    }
+    @if (vm.definition.key === "reports" && row["status"] === "READY") {
+      <button
+        pButton
+        type="button"
+        [disabled]="vm.transfer.busy()"
+        (click)="vm.download()"
+      >
+        {{ "Download" | localize }}
+      </button>
+    }
+  </div>
+  @if (vm.definition.key === "reports" && row["zip_password"]) {
+    <app-copy-field
+      controlId="report-password"
+      label="Report password"
+      [value]="$any(row['zip_password'])"
+    />
+  }
+</section>

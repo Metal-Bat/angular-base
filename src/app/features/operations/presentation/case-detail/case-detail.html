@@ -86,8 +86,7 @@
   }
   @if (kind === "request") {
     <app-request-actions [editor]="editor" />
-  }
-  @if (kind === "task") {
+  } @else {
     <app-task-controls [editor]="editor" />
     <app-advanced-task [editor]="editor" />
     @if (aiApproval()) {

@@ -1,0 +1,105 @@
+h2 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+}
+h3 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 650;
+}
+p {
+  color: var(--console-muted);
+  font-size: 0.85rem;
+  line-height: 1.75;
+}
+.eyebrow {
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--console-muted);
+  font-weight: 600;
+}
+.surface-panel {
+  background: var(--console-surface);
+  border: 1px solid var(--console-border);
+  border-radius: 1rem;
+}
+.panel-heading {
+  padding: 1.5rem 1.5rem 0.75rem;
+  p {
+    margin: 0.35rem 0 0;
+  }
+}
+:host-context([dir="rtl"]) .pi-arrow-right,
+:host-context([dir="rtl"]) .pi-angle-right {
+  transform: scaleX(-1);
+}
+.guide-panel {
+  background: linear-gradient(
+    135deg,
+    var(--console-surface),
+    var(--console-accent-soft)
+  );
+  .panel-heading h2 {
+    margin-top: 0.4rem;
+  }
+}
+.workflow-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0.75rem 1.5rem;
+  li {
+    padding: 0.25rem 0;
+  }
+  h3 {
+    font-size: 0.8rem;
+  }
+  p {
+    font-size: 0.75rem;
+    margin: 0.25rem 0 0;
+  }
+}
+.step-action {
+  display: flex;
+  align-items: start;
+  gap: 0.85rem;
+  padding: 0.65rem;
+  margin-inline: -0.65rem;
+  border-radius: 0.65rem;
+  color: var(--console-text);
+  text-decoration: none;
+  transition: background 180ms ease;
+  &:hover {
+    background: var(--console-surface);
+  }
+  > i {
+    align-self: center;
+    font-size: 0.8rem;
+    color: var(--console-muted);
+  }
+}
+.step-number {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 1.75rem;
+  height: 1.75rem;
+  border: 1px solid var(--console-border);
+  border-radius: 50%;
+  color: var(--console-accent);
+  background: var(--console-surface);
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+.guide-link {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.75rem;
+  color: var(--console-accent);
+  font-weight: 600;
+  text-decoration: none;
+  margin: 0.5rem 1.5rem 1.5rem;
+}

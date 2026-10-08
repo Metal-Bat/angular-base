@@ -89,34 +89,6 @@
         }
       </nav>
     </section>
-    <section
-      aria-labelledby="guide-heading"
-      class="surface-panel guide-panel xl:col-span-2"
-    >
-      <div class="panel-heading">
-        <span class="eyebrow">{{ "A clear path forward" | localize }}</span>
-        <h2 id="guide-heading">{{ "Keep work moving." | localize }}</h2>
-      </div>
-      <ol class="workflow-steps">
-        @for (step of steps; track step.title; let index = $index) {
-          <li>
-            <a class="step-action" [routerLink]="step.path">
-              <span aria-hidden="true" class="step-number">{{
-                index + 1
-              }}</span>
-              <div class="min-w-0 flex-1">
-                <h3>{{ step.title | localize }}</h3>
-                <p>{{ step.description | localize }}</p>
-              </div>
-              <i aria-hidden="true" class="pi pi-angle-right"></i>
-            </a>
-          </li>
-        }
-      </ol>
-      <a class="guide-link" routerLink="/operations/catalog"
-        >{{ "Explore request types" | localize
-        }}<i aria-hidden="true" class="pi pi-arrow-right"></i
-      ></a>
-    </section>
+    <app-operations-guide [view]="this" />
   </div>
 </div>

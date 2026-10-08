@@ -76,74 +76,7 @@
 >
   {{ "Next" | localize }}
 </button>
-@if (detail(); as item) {
-  <section>
-    <h2>{{ item.title }}</h2>
-    <p>{{ item.status | localize }}</p>
-    <p class="whitespace-pre-wrap">{{ item.content }}</p>
-    <button
-      pButton
-      severity="secondary"
-      type="button"
-      [outlined]="true"
-      (click)="detail.set(null)"
-    >
-      {{ "Close" | localize }}
-    </button>
-    @if (notifications) {
-      <button
-        pButton
-        severity="secondary"
-        type="button"
-        [disabled]="busy() || item.read"
-        [outlined]="true"
-        (click)="open(item.ref, true)"
-      >
-        {{ "Mark read" | localize }}
-      </button>
-      @if (item.request) {
-        <a [routerLink]="['/operations/requests', item.request]">{{
-          "Request detail" | localize
-        }}</a>
-      }
-      @if (item.process) {
-        <a [routerLink]="['/operations/processes', item.process]">{{
-          "Process tracking" | localize
-        }}</a>
-      }
-    } @else {
-      @if (readyReport()) {
-        <button
-          pButton
-          severity="secondary"
-          type="button"
-          [disabled]="transfer.busy()"
-          [outlined]="true"
-          (click)="download()"
-        >
-          {{ "Download" | localize }}
-        </button>
-        @if (item.password) {
-          <details>
-            <summary>{{ "Archive password" | localize }}</summary>
-            <bdi>{{ item.password }}</bdi>
-          </details>
-        }
-      }
-      <button
-        pButton
-        severity="secondary"
-        type="button"
-        [disabled]="busy() || transfer.busy()"
-        [outlined]="true"
-        (click)="remove()"
-      >
-        {{ "Delete report" | localize }}
-      </button>
-      <app-case-history kind="report" [reference]="item.ref" />
-    }
-  </section>
-}
+<app-personal-service-detail [view]="this" />
 @if (transfer.busy()) {
   <p role="status">
     {{ "Transfer in progress" | localize }} {{ transfer.progress() }}%

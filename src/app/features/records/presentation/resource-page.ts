@@ -1,10 +1,12 @@
+import { RecordPageHeader } from './record-page-header';
+import { RecordHistoryDialog } from './record-history-dialog';
+import { RecordRoleDialog } from './record-role-dialog';
+import { RecordDetail } from './record-detail';
 import { focusInvalidControl } from '../../../shared/ui/focus-invalid-control';
 import { RecordFields } from './record-fields/record-fields';
 import { ResourceActions } from '../../administration/presentation/resource-actions/resource-actions';
 import { ApiFailure } from '../../../core/transport/api-failure';
-import { CopyField } from '../../../shared/ui/copy-field/copy-field';
 import { ControlField } from '../../../shared/ui/control-field/control-field';
-import { RecordSummary } from '../../../shared/ui/record-summary/record-summary';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -37,11 +39,13 @@ import { ResourceRowActions } from './resource-row-actions';
   selector: 'app-resource-page',
   host: { class: 'console-page', '[attr.data-resource]': 'definition.key' },
   imports: [
+    RecordPageHeader,
+    RecordHistoryDialog,
+    RecordRoleDialog,
+    RecordDetail,
     RecordFields,
     ResourceActions,
     ControlField,
-    CopyField,
-    RecordSummary,
     FormsModule,
     RouterLink,
     ButtonDirective,

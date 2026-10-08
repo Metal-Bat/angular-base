@@ -1,3 +1,5 @@
+import { SchemaArray } from './schema-array';
+import { SchemaObject } from './schema-object';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -23,6 +25,8 @@ import {
 @Component({
   selector: 'app-schema-input',
   imports: [
+    SchemaArray,
+    SchemaObject,
     FormsModule,
     ButtonModule,
     InputTextModule,

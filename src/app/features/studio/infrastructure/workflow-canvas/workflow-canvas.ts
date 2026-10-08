@@ -1,3 +1,4 @@
+import { CanvasToolbar } from './canvas-toolbar';
 import {
   afterNextRender,
   ChangeDetectionStrategy,
@@ -21,7 +22,7 @@ import { Point } from '../../domain/authoring';
 import { LocalizePipe } from '../../../../shared/ui/localize-pipe';
 @Component({
   selector: 'app-workflow-canvas',
-  imports: [FFlowModule, FZoomDirective, LocalizePipe],
+  imports: [CanvasToolbar, FFlowModule, FZoomDirective, LocalizePipe],
   templateUrl: './workflow-canvas.html',
   styleUrl: './workflow-canvas.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

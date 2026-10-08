@@ -133,67 +133,7 @@
     </button>
   }
 </header>
-@if (auth.profile() && notificationsOpen()) {
-  <section
-    animate.enter="panel-enter"
-    class="notification-panel"
-    id="notification-panel"
-    [attr.aria-label]="'Notifications' | localize"
-  >
-    @switch (notifications.status()) {
-      @case ("loading") {
-        <p role="status">{{ "Loading…" | localize }}</p>
-      }
-      @case ("error") {
-        <p role="alert">{{ "The service is unavailable." | localize }}</p>
-        <button
-          class="reload-control"
-          pButton
-          severity="secondary"
-          type="button"
-          [attr.aria-label]="'Retry' | localize"
-          [attr.title]="'Retry' | localize"
-          [text]="true"
-          (click)="notifications.load()"
-        >
-          <i aria-hidden="true" class="pi pi-refresh"></i
-          ><span class="sr-only">{{ "Retry" | localize }}</span>
-        </button>
-      }
-      @case ("ready") {
-        <ul>
-          @for (item of notifications.items(); track item.ref) {
-            <li>
-              <bdi>{{ item.subject }}</bdi>
-            </li>
-          } @empty {
-            <li>{{ "No notifications." | localize }}</li>
-          }
-        </ul>
-        <button
-          pButton
-          severity="secondary"
-          type="button"
-          [disabled]="notifications.page() <= 1"
-          [text]="true"
-          (click)="notifications.load(notifications.page() - 1)"
-        >
-          {{ "Previous" | localize }}
-        </button>
-        <button
-          pButton
-          severity="secondary"
-          type="button"
-          [disabled]="notifications.page() >= notifications.totalPages()"
-          [text]="true"
-          (click)="notifications.load(notifications.page() + 1)"
-        >
-          {{ "Next" | localize }}
-        </button>
-      }
-    }
-  </section>
-}
+<app-workspace-notifications [view]="this" />
 <div class="workspace-layout" [class.guest-layout]="!signedIn()">
   @if (signedIn()) {
     <nav
@@ -202,18 +142,16 @@
       [class.expanded]="menuOpen()"
     >
       <span class="nav-caption">{{ "Workspace" | localize }}</span>
-      @for (area of areas; track area) {
-        @if (canEnter(area)) {
-          <a
-            ariaCurrentWhenActive="page"
-            routerLinkActive="active"
-            [routerLink]="'/' + area"
-            [routerLinkActiveOptions]="{ exact: true }"
-            ><i aria-hidden="true" [class]="areaIcons[area]"></i
-            ><span>{{ areaLabels[area] | localize }}</span
-            ><i aria-hidden="true" class="pi pi-angle-right nav-arrow"></i
-          ></a>
-        }
+      @for (area of visibleAreas(); track area) {
+        <a
+          ariaCurrentWhenActive="page"
+          routerLinkActive="active"
+          [routerLink]="'/' + area"
+          [routerLinkActiveOptions]="{ exact: true }"
+          ><i aria-hidden="true" [class]="areaIcons[area]"></i
+          ><span>{{ areaLabels[area] | localize }}</span
+          ><i aria-hidden="true" class="pi pi-angle-right nav-arrow"></i
+        ></a>
       }
       @if (canManageWorkflows()) {
         <a

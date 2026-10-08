@@ -42,7 +42,8 @@ export const persianMessages: Readonly<Record<string, string>> = {
   'Workflow canvas': 'بوم گردش کار',
   Reload: 'بارگذاری دوباره',
   'Workspace changes are separate from executable versions. Save, validate, promote, then publish.':
-    'تغییرات فضای کاری از نسخه‌های اجرایی جدا هستند. ابتدا ذخیره و اعتبارسنجی کنید، سپس گراف را ارتقا دهید و منتشر کنید.',
+    'تغییرات فضای کاری از نسخه‌های اجرایی جدا هستند. ' +
+    'ابتدا ذخیره و اعتبارسنجی کنید، سپس گراف را ارتقا دهید و منتشر کنید.',
   'Arrow keys move focused nodes; buttons select nodes. Control and data ports remain separate.':
     'گام دارای تمرکز را با کلیدهای جهت جابه‌جا کنید و با دکمه‌ها انتخاب کنید. درگاه‌های کنترل و داده جدا هستند.',
   'Workflow commands': 'فرمان‌های گردش کار',

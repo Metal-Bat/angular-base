@@ -1,5 +1,6 @@
+import { AdminCommandResult } from './admin-command-result';
+import { AdminCommandForm } from './admin-command-form';
 import { SelectControl } from '../../../../shared/ui/select-control/select-control';
-import { ButtonDirective } from 'primeng/button';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -30,7 +31,13 @@ import {
 @Component({
   host: { class: 'console-page' },
   selector: 'app-admin-console',
-  imports: [SelectControl, ButtonDirective, FormsModule, LocalizePipe],
+  imports: [
+    AdminCommandResult,
+    AdminCommandForm,
+    SelectControl,
+    FormsModule,
+    LocalizePipe,
+  ],
   templateUrl: './admin-console.html',
   styleUrl: './admin-console.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

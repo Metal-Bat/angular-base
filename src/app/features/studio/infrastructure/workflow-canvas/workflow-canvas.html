@@ -1,45 +1,5 @@
 <section class="canvas-panel" [attr.aria-label]="'Workflow canvas' | localize">
-  <header
-    class="canvas-toolbar flex flex-wrap items-center justify-between gap-3"
-  >
-    <div class="canvas-summary">
-      <strong>{{ "Workflow canvas" | localize }}</strong
-      ><span
-        >{{ nodes().length }} {{ "steps" | localize }} · {{ edges().length }}
-        {{ "connections" | localize }}</span
-      >
-    </div>
-    <div class="canvas-tools flex flex-wrap items-center gap-1">
-      <button
-        type="button"
-        [attr.aria-label]="'Zoom out' | localize"
-        [disabled]="disabled() || viewport().zoom <= 0.1"
-        (click)="zoom(-0.1)"
-      >
-        <i aria-hidden="true" class="pi pi-minus"></i>
-      </button>
-      <span class="zoom-value">{{ zoomPercent() }}%</span>
-      <button
-        type="button"
-        [attr.aria-label]="'Zoom in' | localize"
-        [disabled]="disabled() || viewport().zoom >= 4"
-        (click)="zoom(0.1)"
-      >
-        <i aria-hidden="true" class="pi pi-plus"></i>
-      </button>
-      <button
-        type="button"
-        [disabled]="disabled() || !nodes().length"
-        (click)="fit()"
-      >
-        <i aria-hidden="true" class="pi pi-expand"></i
-        ><span>{{ "Fit to view" | localize }}</span>
-      </button>
-      <button type="button" [disabled]="disabled()" (click)="reset()">
-        <span>{{ "Reset view" | localize }}</span>
-      </button>
-    </div>
-  </header>
+  <app-canvas-toolbar [view]="this" />
   <div
     class="canvas-stage"
     role="region"

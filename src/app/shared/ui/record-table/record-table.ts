@@ -1,6 +1,5 @@
+import { RecordTableHeader } from './record-table-header';
 import { SelectModule } from 'primeng/select';
-import { ListValues } from '../list-values/list-values';
-import { SelectControl } from '../select-control/select-control';
 import { ControlField } from '../control-field/control-field';
 import {
   ChangeDetectionStrategy,
@@ -11,7 +10,6 @@ import {
   signal,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { PopoverModule } from 'primeng/popover';
 import { InputTextModule } from 'primeng/inputtext';
 import {
   compileQuery,
@@ -39,9 +37,8 @@ export type RowActionEvent = { key: string; row: Record<string, unknown> };
 @Component({
   selector: 'app-record-table',
   imports: [
+    RecordTableHeader,
     SelectModule,
-    ListValues,
-    SelectControl,
     ControlField,
     TableModule,
     ButtonModule,
@@ -49,7 +46,6 @@ export type RowActionEvent = { key: string; row: Record<string, unknown> };
     TooltipModule,
     LocalizePipe,
     FormsModule,
-    PopoverModule,
     InputTextModule,
   ],
   templateUrl: './record-table.html',

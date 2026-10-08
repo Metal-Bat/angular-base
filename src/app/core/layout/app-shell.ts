@@ -1,3 +1,4 @@
+import { WorkspaceNotifications } from './workspace-notifications';
 import { SelectControl } from '../../shared/ui/select-control/select-control';
 import { isSupportedLocale } from '../localization/languages';
 import { NotificationPreview } from '../notifications/notification-preview';
@@ -28,6 +29,7 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 
 @Component({
   imports: [
+    WorkspaceNotifications,
     SelectControl,
     RouterLink,
     RouterLinkActive,
@@ -82,6 +84,9 @@ export class AppShell {
   readonly notifications = inject(NotificationPreview);
   readonly notificationsOpen = signal(false);
   readonly areas = ['operations', 'studio', 'administration'] as const;
+  readonly visibleAreas = computed(() =>
+    this.areas.filter((area) => this.canEnter(area)),
+  );
   readonly areaLabels = {
     operations: 'Operations',
     studio: 'Studio',

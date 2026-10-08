@@ -22,7 +22,8 @@
   gap: 0.85rem;
   min-inline-size: 0;
 }
-.query-section + .query-section {
+.query-section + .query-section,
+app-query-filters + .query-section {
   border-top: 1px solid var(--console-border);
   padding-block-start: 1rem;
 }

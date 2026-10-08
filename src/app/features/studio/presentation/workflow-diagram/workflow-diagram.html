@@ -96,29 +96,6 @@
     @if (canvas(); as adapter) {
       <ng-container *ngComponentOutlet="adapter; inputs: canvasInputs()" />
     }
-    @if (selectedStep(); as step) {
-      <aside
-        class="rounded-xl border border-console-border bg-console-surface p-5 mt-4"
-      >
-        <h3>
-          <bdi>{{ step.key }}</bdi> · <bdi>{{ step.typeCode }}</bdi>
-        </h3>
-        <h4>{{ "Transitions" | localize }}</h4>
-        @for (edge of transitions(); track $index) {
-          <p>
-            <bdi>{{ edge.source }}</bdi> → <bdi>{{ edge.target }}</bdi> ·
-            <bdi>{{ edge.outcome }}</bdi>
-            @if (edge.condition) {
-              <span>
-                · {{ "Condition" | localize }}:
-                <bdi>{{ edge.condition }}</bdi></span
-              >
-            }
-          </p>
-        } @empty {
-          <p>{{ "No transitions for this step." | localize }}</p>
-        }
-      </aside>
-    }
+    <app-workflow-step-inspector [view]="this" />
   }
 </section>

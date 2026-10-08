@@ -1,3 +1,4 @@
+import { WorkflowDiagnostics } from './workflow-diagnostics';
 import { SelectControl } from '../../../../shared/ui/select-control/select-control';
 import { ButtonDirective } from 'primeng/button';
 import { readWorkspace } from '../../domain/workspace-document';
@@ -24,6 +25,7 @@ import { WorkflowBoardState } from './workflow-board-state';
   host: { class: 'console-page' },
   selector: 'app-workflow-board',
   imports: [
+    WorkflowDiagnostics,
     SelectControl,
     ButtonDirective,
     FormsModule,

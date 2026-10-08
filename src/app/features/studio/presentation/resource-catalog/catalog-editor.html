@@ -1,0 +1,115 @@
+@let vm = view();
+<p-dialog
+  appendTo="body"
+  position="center"
+  [closable]="false"
+  [draggable]="false"
+  [header]="(vm.selected() ? 'Edit' : 'Create') | localize"
+  [modal]="true"
+  [resizable]="false"
+  [style]="{ width: '56rem', maxWidth: 'calc(100vw - 2rem)' }"
+  [visible]="vm.formOpen()"
+>
+  @if (vm.formOpen()) {
+    <p class="text-sm text-console-muted">
+      {{ "Required fields are marked with *." | localize }}
+    </p>
+    <form class="editor-form" (ngSubmit)="vm.save()">
+      @for (field of vm.fields(); track field.key) {
+        <app-control-field
+          [controlId]="'author-' + field.key"
+          [error]="
+            vm.invalid().includes(field.key)
+              ? 'Correct this field before saving'
+              : ''
+          "
+          [label]="field.title"
+          [required]="field.required"
+        >
+          @switch (field.type) {
+            @case ("json") {
+              <textarea
+                class="font-mono"
+                rows="6"
+                spellcheck="false"
+                [disabled]="vm.controlsDisabled()"
+                [id]="'author-' + field.key"
+                [name]="field.key"
+                [ngModel]="vm.display(field)"
+                [required]="field.required"
+                (ngModelChange)="vm.change(field, $event)"
+              ></textarea>
+            }
+            @case ("boolean") {
+              <input
+                class="size-4 justify-self-start accent-console-accent"
+                type="checkbox"
+                [disabled]="vm.controlsDisabled()"
+                [id]="'author-' + field.key"
+                [name]="field.key"
+                [ngModel]="vm.values()[field.key] === true"
+                (ngModelChange)="vm.change(field, $event)"
+              />
+            }
+            @default {
+              @if (field.options.length) {
+                <p-select
+                  appendTo="body"
+                  optionLabel="label"
+                  optionValue="value"
+                  scrollHeight="20rem"
+                  [ariaLabelledBy]="'author-' + field.key + '-label'"
+                  [checkmark]="true"
+                  [disabled]="vm.controlsDisabled()"
+                  [inputId]="'author-' + field.key"
+                  [name]="field.key"
+                  [ngModel]="vm.display(field) || null"
+                  [options]="vm.enumChoices()[field.key]"
+                  [placeholder]="'Choose a value' | localize"
+                  [required]="field.required"
+                  [showClear]="!field.required"
+                  [style]="{ width: '100%' }"
+                  (ngModelChange)="vm.change(field, $event ?? '')"
+                />
+              } @else {
+                <input
+                  [attr.maxlength]="field.schema['maxLength'] ?? null"
+                  [attr.minlength]="field.schema['minLength'] ?? null"
+                  [disabled]="vm.controlsDisabled()"
+                  [id]="'author-' + field.key"
+                  [name]="field.key"
+                  [ngModel]="vm.display(field)"
+                  [required]="field.required"
+                  [type]="field.type === 'number' ? 'number' : 'text'"
+                  (ngModelChange)="vm.change(field, $event)"
+                />
+              }
+            }
+          }
+          @for (hint of hints(field); track hint.label) {
+            <small class="text-console-muted" fieldHint
+              >{{ hint.label | localize }}{{ hint.value }}</small
+            >
+          }
+        </app-control-field>
+      }
+      <div class="flex justify-end gap-3 mt-5">
+        <button
+          pButton
+          severity="secondary"
+          type="button"
+          [disabled]="vm.busy()"
+          [outlined]="true"
+          (click)="vm.closeForm()"
+        >
+          {{ "Cancel" | localize }}</button
+        ><button pButton type="submit" [disabled]="!vm.canSave()">
+          {{ "Save" | localize }}
+        </button>
+      </div>
+    </form>
+    @if (vm.error()) {
+      <p role="alert">{{ vm.error() | localize }}</p>
+    }
+  }
+</p-dialog>

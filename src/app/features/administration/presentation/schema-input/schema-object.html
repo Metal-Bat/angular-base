@@ -1,0 +1,88 @@
+@let vm = view();
+<fieldset
+  class="object-fields"
+  tabindex="-1"
+  [attr.aria-describedby]="
+    vm.errors()[vm.path()] ? vm.controlId() + '-error' : null
+  "
+  [attr.aria-invalid]="vm.errors()[vm.path()] ? 'true' : null"
+  [disabled]="vm.disabled()"
+  [id]="vm.controlId()"
+>
+  @if (vm.title()) {
+    <legend>
+      {{ vm.title() | localize }}
+      @if (vm.required()) {
+        <span aria-hidden="true">*</span>
+      }
+    </legend>
+  }
+  @for (field of vm.properties(); track field.key) {
+    <app-schema-input
+      [controlId]="vm.childId(field.key)"
+      [disabled]="vm.disabled()"
+      [errors]="vm.errors()"
+      [label]="field.label"
+      [path]="vm.childPath(field.key)"
+      [required]="field.required"
+      [schema]="field.schema"
+      [value]="vm.object()[field.key]"
+      (referenceRequested)="vm.referenceRequested.emit($event)"
+      (valueChange)="vm.setChild(field.key, $event)"
+    />
+  }
+  @if (vm.shape()["additionalProperties"] !== false) {
+    @for (key of vm.extras(); track key) {
+      <div class="map-entry">
+        <app-schema-input
+          [controlId]="vm.childId(key)"
+          [disabled]="vm.disabled()"
+          [errors]="vm.errors()"
+          [label]="key"
+          [path]="vm.childPath(key)"
+          [schema]="vm.extraSchema()"
+          [value]="vm.object()[key]"
+          (valueChange)="vm.setChild(key, $event)"
+        />
+        <button
+          pButton
+          severity="secondary"
+          type="button"
+          [attr.aria-label]="('Remove' | localize) + ' ' + key"
+          [text]="true"
+          (click)="vm.setChild(key, undefined)"
+        >
+          <i aria-hidden="true" class="pi pi-times"></i>
+        </button>
+      </div>
+    }
+    @if (!vm.properties().length || vm.shape()["additionalProperties"]) {
+      <div class="map-entry">
+        <app-control-field
+          label="Field"
+          [controlId]="vm.controlId() + '-new-key'"
+          ><input
+            pInputText
+            [id]="vm.controlId() + '-new-key'"
+            [ngModelOptions]="{ standalone: true }"
+            [(ngModel)]="vm.newKey"
+        /></app-control-field>
+        <button
+          pButton
+          severity="secondary"
+          type="button"
+          [disabled]="vm.disabled() || !vm.newKey.trim()"
+          [outlined]="true"
+          (click)="vm.addProperty()"
+        >
+          <i aria-hidden="true" class="pi pi-plus"></i>{{ "Add" | localize }}
+        </button>
+      </div>
+    }
+  }
+  @if (vm.errors()[vm.path()]) {
+    <p class="field-error" role="alert" [id]="vm.controlId() + '-error'">
+      {{ vm.errors()[vm.path()] | localize }}
+    </p>
+  }
+</fieldset>

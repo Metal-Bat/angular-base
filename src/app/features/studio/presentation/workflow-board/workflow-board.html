@@ -428,27 +428,4 @@
     {{ "Apply layout" | localize }}
   </button>
 </details>
-@if (diagnostics()) {
-  <section aria-label="Diagnostics">
-    <ul>
-      @for (issue of issues(); track $index) {
-        <li>
-          @if (issue.node) {
-            <button
-              pButton
-              severity="secondary"
-              type="button"
-              [outlined]="true"
-              (click)="select(issue.node)"
-            >
-              {{ issue.pointer }} · {{ issue.code }} {{ issue.edge }}
-            </button>
-          } @else {
-            {{ issue.pointer }} · {{ issue.code }}
-          }
-        </li>
-      }
-    </ul>
-    <pre>{{ diagnostics() }}</pre>
-  </section>
-}
+<app-workflow-diagnostics [view]="this" />

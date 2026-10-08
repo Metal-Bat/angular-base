@@ -1,3 +1,4 @@
+import { WorkflowStepInspector } from './workflow-step-inspector';
 import { SelectControl } from '../../../../shared/ui/select-control/select-control';
 import {
   ChangeDetectionStrategy,
@@ -27,6 +28,7 @@ import { diagramPositions } from '../../domain/diagram-layout';
 @Component({
   selector: 'app-workflow-diagram',
   imports: [
+    WorkflowStepInspector,
     SelectControl,
     NgComponentOutlet,
     FormsModule,

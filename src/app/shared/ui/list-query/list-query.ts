@@ -1,4 +1,4 @@
-import { ListValues } from '../list-values/list-values';
+import { QueryFilters } from './query-filters';
 import { SelectControl } from '../select-control/select-control';
 import { PanelModule } from 'primeng/panel';
 import { TagModule } from 'primeng/tag';
@@ -26,7 +26,7 @@ import {
 @Component({
   selector: 'app-list-query',
   imports: [
-    ListValues,
+    QueryFilters,
     SelectControl,
     PanelModule,
     TagModule,

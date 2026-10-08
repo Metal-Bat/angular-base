@@ -1,7 +1,7 @@
-import { SelectModule } from 'primeng/select';
-import { NgTemplateOutlet } from '@angular/common';
-import { TabsModule } from 'primeng/tabs';
-import { ControlField } from '../../../../shared/ui/control-field/control-field';
+import { CatalogEditor } from './catalog-editor';
+import { CatalogActions } from './catalog-actions';
+import { CatalogContent } from './catalog-content';
+import { CatalogHeader } from './catalog-header';
 import { RecordSummary } from '../../../../shared/ui/record-summary/record-summary';
 import {
   ChangeDetectionStrategy,
@@ -10,11 +10,9 @@ import {
   inject,
 } from '@angular/core';
 import { Locale } from '../../../../core/localization/locale';
-import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { ButtonDirective } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
-import { InputTextModule } from 'primeng/inputtext';
 import { ListQueryEditor } from '../../../../shared/ui/list-query/list-query';
 import { RecordTable } from '../../../../shared/ui/record-table/record-table';
 import { ApiFailure } from '../../../../core/transport/api-failure';
@@ -22,24 +20,20 @@ import { LocalizePipe } from '../../../../shared/ui/localize-pipe';
 import { JsonObject, JsonValue } from '../../../forms/domain/runtime-document';
 import { parseDocument } from '../../domain/authoring';
 import { resourceLabel } from './resource-values';
-import { WorkflowDiagram } from '../workflow-diagram/workflow-diagram';
 import { CatalogParents } from './catalog-parents';
 @Component({
   host: { class: 'console-page' },
   selector: 'app-resource-catalog',
   imports: [
-    ControlField,
-    SelectModule,
-    NgTemplateOutlet,
-    TabsModule,
+    CatalogEditor,
+    CatalogActions,
+    CatalogContent,
+    CatalogHeader,
     RecordSummary,
-    WorkflowDiagram,
     DialogModule,
-    InputTextModule,
     ListQueryEditor,
     RecordTable,
     ButtonDirective,
-    FormsModule,
     RouterLink,
     LocalizePipe,
   ],
