@@ -1,4 +1,8 @@
-import { SessionContext } from './core/auth/session-context';
+import {
+  HttpTestingController,
+  provideHttpClientTesting,
+} from '@angular/common/http/testing';
+import { finishSessionBootstrap } from './testing/session-bootstrap';
 import { Title } from '@angular/platform-browser';
 import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
@@ -7,9 +11,13 @@ import { RouterTestingHarness } from '@angular/router/testing';
 import { appConfig } from './app.config';
 
 describe('Workspace routes', () => {
-  beforeEach(() => {
-    TestBed.configureTestingModule({ providers: appConfig.providers });
-    TestBed.inject(SessionContext).resolve({
+  afterEach(() => TestBed.inject(HttpTestingController).verify());
+
+  beforeEach(async () => {
+    TestBed.configureTestingModule({
+      providers: [...appConfig.providers, provideHttpClientTesting()],
+    });
+    await finishSessionBootstrap({
       status: 'authenticated',
       permissions: ['*'],
     });

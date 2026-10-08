@@ -1,3 +1,8 @@
+import {
+  HttpTestingController,
+  provideHttpClientTesting,
+} from '@angular/common/http/testing';
+import { finishSessionBootstrap } from './testing/session-bootstrap';
 import { TestBed } from '@angular/core/testing';
 import { Router, Routes } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
@@ -37,20 +42,20 @@ function protectedRoutes(data: Record<string, unknown>): Routes {
   ];
 }
 
-function configure(
+async function configure(
   data: Record<string, unknown>,
   session: SessionSnapshot,
-): void {
+): Promise<void> {
   TestBed.configureTestingModule({
-    providers: appConfig.providers,
+    providers: [...appConfig.providers, provideHttpClientTesting()],
   });
   TestBed.inject(Router).resetConfig(protectedRoutes(data));
-  if (session.status !== 'unresolved') {
-    TestBed.inject(SessionContext).resolve(session);
-  }
+  await finishSessionBootstrap(session);
 }
 
 describe('Area access boundaries', () => {
+  afterEach(() => TestBed.inject(HttpTestingController).verify());
+
   it.each([
     [{ status: 'unresolved' }, '/access-unavailable', 'Access unavailable'],
     [
@@ -71,7 +76,7 @@ describe('Area access boundaries', () => {
   ] as const)(
     'resolves %j without flashing protected content',
     async (session, url, heading) => {
-      configure(
+      await configure(
         { access: 'authenticated', requiredPermissions: ['requests.manage'] },
         session,
       );
@@ -99,7 +104,7 @@ describe('Area access boundaries', () => {
   ])(
     'fails closed for missing/invalid policy or public preview on a non-home path %j',
     async (data) => {
-      configure(data, {
+      await configure(data, {
         status: 'authenticated',
         permissions: ['requests.manage'],
       });
@@ -114,7 +119,7 @@ describe('Area access boundaries', () => {
   );
 
   it('allows authenticated-only routes with explicitly empty permission requirements', async () => {
-    configure(
+    await configure(
       { access: 'authenticated', requiredPermissions: [] },
       { status: 'authenticated', permissions: [] },
     );
@@ -123,7 +128,7 @@ describe('Area access boundaries', () => {
   });
 
   it('denies a missing permission even if another required permission is granted', async () => {
-    configure(
+    await configure(
       {
         access: 'authenticated',
         requiredPermissions: ['requests.manage', 'forms.manage'],
@@ -135,7 +140,7 @@ describe('Area access boundaries', () => {
   });
 
   it('clears old permissions on session reset and denies the next protected navigation', async () => {
-    configure(
+    await configure(
       { access: 'authenticated', requiredPermissions: ['requests.manage'] },
       { status: 'authenticated', permissions: ['requests.manage'] },
     );
@@ -152,7 +157,7 @@ describe('Area access boundaries', () => {
   });
 
   it('redirects signed-out area navigation to login with a local return path', async () => {
-    configure(
+    await configure(
       { access: 'authenticated', requiredPermissions: [] },
       { status: 'signed-out' },
     );

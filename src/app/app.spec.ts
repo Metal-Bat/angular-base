@@ -1,16 +1,22 @@
-import { SessionContext } from './core/auth/session-context';
+import {
+  HttpTestingController,
+  provideHttpClientTesting,
+} from '@angular/common/http/testing';
+import { finishSessionBootstrap } from './testing/session-bootstrap';
 import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { App } from './app';
 import { appConfig } from './app.config';
 
 describe('App', () => {
+  afterEach(() => TestBed.inject(HttpTestingController).verify());
+
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [App],
-      providers: appConfig.providers,
+      providers: [...appConfig.providers, provideHttpClientTesting()],
     }).compileComponents();
-    TestBed.inject(SessionContext).resolve({
+    await finishSessionBootstrap({
       status: 'authenticated',
       permissions: ['*'],
     });
