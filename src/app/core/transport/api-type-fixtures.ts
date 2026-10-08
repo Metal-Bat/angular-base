@@ -17,7 +17,6 @@ export type SnakeCase = Assert<
 export type OpaqueReference = Assert<
   components['schemas']['UserDTO']['ref_id'] extends string ? true : false
 >;
-export type HealthIsSeparate = SuccessBody<'liveness_health_get'>;
 export const permissionSearchFixture = {
   body: { page: 1, size: 100 },
 } satisfies RequestInput<'current_permissions_api_v1_auth_permissions_search_post'>;

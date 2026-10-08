@@ -1,0 +1,63 @@
+<header class="console-page-header">
+  <div>
+    <span class="console-eyebrow">{{ "Administration" | localize }}</span>
+    <h1 tabindex="-1">{{ "Process controls" | localize }}</h1>
+    <p class="console-description">
+      {{
+        "Open a process to review its state, timeline and scheduled actions."
+          | localize
+      }}
+    </p>
+  </div>
+  @if (row()) {
+    <button
+      pButton
+      severity="secondary"
+      type="button"
+      [attr.aria-label]="'Reload' | localize"
+      [disabled]="busy()"
+      [outlined]="true"
+      (click)="load($any(row())['ref_id'])"
+    >
+      <i aria-hidden="true" class="pi pi-refresh"></i>
+    </button>
+  }
+</header>
+<form
+  class="console-panel flex flex-wrap items-end gap-3 mb-4"
+  (ngSubmit)="load()"
+>
+  <app-control-field
+    controlId="process-reference"
+    label="Process reference"
+    [error]="error()"
+    [required]="true"
+  >
+    <input
+      id="process-reference"
+      name="reference"
+      pInputText
+      required
+      [disabled]="busy() || !allowed()"
+      [(ngModel)]="reference"
+    />
+  </app-control-field>
+  <button pButton type="submit" [disabled]="busy() || !allowed()">
+    {{ "Open" | localize }}
+  </button>
+</form>
+@if (notice()) {
+  <p role="status">{{ notice() | localize }}</p>
+}
+@if (row(); as record) {
+  <section class="console-panel mb-4">
+    <app-record-summary title="Selected process" [record]="record" />
+  </section>
+  <app-resource-actions
+    base="/api/v1/processes"
+    group="processes"
+    [disabled]="busy()"
+    [row]="record"
+    (changed)="refresh()"
+  />
+}

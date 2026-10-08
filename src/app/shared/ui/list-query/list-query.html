@@ -1,0 +1,330 @@
+<p-panel
+  class="query-panel"
+  [dt]="{ header: { padding: '0.5rem 0.75rem' } }"
+  [header]="'Advanced filters' | localize"
+  [pt]="{
+    contentContainer: {
+      hidden: collapsed,
+      'aria-labelledby': sortFieldsId + '-panel-label',
+    },
+  }"
+>
+  <ng-template #header>
+    <div class="query-heading">
+      <button
+        pButton
+        severity="secondary"
+        type="button"
+        [attr.aria-controls]="sortFieldsId + '-editor'"
+        [attr.aria-expanded]="!collapsed"
+        [attr.aria-label]="'Advanced filters' | localize"
+        [id]="sortFieldsId + '-panel-label'"
+        [text]="true"
+        (click)="collapsed = !collapsed"
+      >
+        <i aria-hidden="true" class="pi pi-sliders-h"></i>
+        <span>{{ "Advanced filters" | localize }}</span>
+        <i
+          aria-hidden="true"
+          [class]="collapsed ? 'pi pi-chevron-down' : 'pi pi-chevron-up'"
+        ></i>
+      </button>
+      @if (query()?.filters?.length) {
+        <p-tag
+          severity="secondary"
+          [value]="('Filters' | localize) + ': ' + query()!.filters.length"
+        />
+      }
+      @if (query()?.sort_orders?.length) {
+        <p-tag
+          severity="secondary"
+          [value]="('Sorts' | localize) + ': ' + query()!.sort_orders.length"
+        />
+      }
+    </div>
+  </ng-template>
+  <div [hidden]="collapsed" [id]="sortFieldsId + '-editor'">
+    @if (!collapsed) {
+      <form class="query-form" (ngSubmit)="apply()">
+        <section
+          class="query-section"
+          [attr.aria-labelledby]="sortFieldsId + '-filters-title'"
+        >
+          <div class="query-section-header">
+            <h3 [id]="sortFieldsId + '-filters-title'">
+              {{ "Filters" | localize }}
+            </h3>
+            <button
+              pButton
+              severity="secondary"
+              size="small"
+              type="button"
+              [outlined]="true"
+              (click)="addFilter()"
+            >
+              <i aria-hidden="true" class="pi pi-plus"></i
+              >{{ "Add filter" | localize }}
+            </button>
+          </div>
+          @if (!filters.length) {
+            <p class="query-empty">
+              {{ "Add a condition to narrow the results." | localize }}
+            </p>
+          }
+          @for (filter of filters; track $index; let index = $index) {
+            <div class="filter-row">
+              <app-control-field
+                label="Field"
+                [controlId]="sortFieldsId + '-field-' + index"
+                ><app-select-control
+                  [inputId]="sortFieldsId + '-field-' + index"
+                  [name]="'field' + index"
+                  [(ngModel)]="filter.field"
+                  (ngModelChange)="
+                    filter.operation = 'equal';
+                    filter.value = '';
+                    filter.end = ''
+                  "
+                >
+                  @for (field of fields(); track field.key) {
+                    <option [value]="field.key">
+                      {{ field.label | localize }}
+                    </option>
+                  }
+                </app-select-control></app-control-field
+              >
+              <app-control-field
+                label="Operation"
+                [controlId]="sortFieldsId + '-operation-' + index"
+                ><app-select-control
+                  [attr.data-query-operation]="index"
+                  [inputId]="sortFieldsId + '-operation-' + index"
+                  [name]="'operator' + index"
+                  [(ngModel)]="filter.operation"
+                >
+                  @for (
+                    operation of operations(filter.field);
+                    track operation
+                  ) {
+                    <option [value]="operation">
+                      {{ operators[operation] | localize }}
+                    </option>
+                  }
+                </app-select-control></app-control-field
+              >
+              @if (
+                filter.operation !== "isNull" &&
+                filter.operation !== "isNotNull"
+              ) {
+                <div
+                  class="filter-values"
+                  [class.range-values]="filter.operation === 'between'"
+                >
+                  <app-control-field
+                    label="Value"
+                    [controlId]="sortFieldsId + '-value-' + index"
+                    [error]="filterErrors[index] || ''"
+                  >
+                    @if (
+                      filter.operation === "in" || filter.operation === "nin"
+                    ) {
+                      <app-list-values
+                        [controlId]="sortFieldsId + '-value-' + index"
+                        [disabled]="busy()"
+                        [type]="fieldType(filter.field)"
+                        [(value)]="filter.value"
+                      />
+                    } @else if (fieldType(filter.field) === "boolean") {
+                      <app-select-control
+                        [attr.data-query-value]="index"
+                        [inputId]="sortFieldsId + '-value-' + index"
+                        [name]="'value' + index"
+                        [(ngModel)]="filter.value"
+                      >
+                        <option value="">
+                          {{ "Choose a value" | localize }}
+                        </option>
+                        <option value="true">{{ "Yes" | localize }}</option>
+                        <option value="false">{{ "No" | localize }}</option>
+                      </app-select-control>
+                    } @else {
+                      <input
+                        pInputText
+                        [attr.data-query-value]="index"
+                        [id]="sortFieldsId + '-value-' + index"
+                        [name]="'value' + index"
+                        [type]="
+                          fieldType(filter.field) === 'date'
+                            ? 'date'
+                            : fieldType(filter.field) === 'number'
+                              ? 'number'
+                              : 'text'
+                        "
+                        [(ngModel)]="filter.value"
+                      />
+                    }
+                  </app-control-field>
+                  @if (filter.operation === "between") {
+                    <app-control-field
+                      label="To"
+                      [controlId]="sortFieldsId + '-end-' + index"
+                      ><input
+                        pInputText
+                        [id]="sortFieldsId + '-end-' + index"
+                        [name]="'end' + index"
+                        [type]="
+                          fieldType(filter.field) === 'date'
+                            ? 'date'
+                            : fieldType(filter.field) === 'number'
+                              ? 'number'
+                              : 'text'
+                        "
+                        [(ngModel)]="filter.end"
+                    /></app-control-field>
+                  }
+                </div>
+              } @else {
+                <div></div>
+              }
+              <button
+                class="remove-control"
+                pButton
+                severity="secondary"
+                type="button"
+                [attr.aria-label]="
+                  ('Remove filter' | localize) + ' ' + (index + 1)
+                "
+                [text]="true"
+                (click)="
+                  filters = filters
+                    .slice(0, index)
+                    .concat(filters.slice(index + 1))
+                "
+              >
+                <i aria-hidden="true" class="pi pi-times"></i>
+              </button>
+            </div>
+          }
+        </section>
+        <section
+          class="query-section"
+          [attr.aria-labelledby]="sortFieldsId + '-sorts-title'"
+        >
+          <div class="query-section-header">
+            <h3 [id]="sortFieldsId + '-sorts-title'">
+              {{ "Sorts" | localize }}
+            </h3>
+            <button
+              pButton
+              severity="secondary"
+              size="small"
+              type="button"
+              [outlined]="true"
+              (click)="addSort()"
+            >
+              <i aria-hidden="true" class="pi pi-plus"></i
+              >{{ "Add sort" | localize }}
+            </button>
+          </div>
+          @if (!sorts.length) {
+            <p class="query-empty">
+              {{ "Add a sort to choose the result order." | localize }}
+            </p>
+          }
+          @for (sort of sorts; track $index; let index = $index) {
+            <div class="sort-row">
+              <app-control-field
+                label="Sort fields in priority order"
+                [controlId]="sortFieldsId + '-sort-' + index"
+                [error]="sortErrors[index] || ''"
+                ><input
+                  pInputText
+                  [attr.data-query-sort]="index"
+                  [attr.list]="sortFieldsId"
+                  [id]="sortFieldsId + '-sort-' + index"
+                  [name]="'sort' + index"
+                  [(ngModel)]="sort.fields"
+                /><small fieldHint>{{
+                  "Separate multiple fields with commas" | localize
+                }}</small></app-control-field
+              >
+              <app-control-field
+                label="Direction"
+                [controlId]="sortFieldsId + '-direction-' + index"
+                ><app-select-control
+                  [inputId]="sortFieldsId + '-direction-' + index"
+                  [name]="'direction' + index"
+                  [(ngModel)]="sort.operation"
+                >
+                  <option value="asc">{{ "Ascending" | localize }}</option>
+                  <option value="desc">{{ "Descending" | localize }}</option>
+                </app-select-control></app-control-field
+              >
+              <button
+                class="remove-control"
+                pButton
+                severity="secondary"
+                type="button"
+                [attr.aria-label]="
+                  ('Remove sort' | localize) + ' ' + (index + 1)
+                "
+                [text]="true"
+                (click)="
+                  sorts = sorts.slice(0, index).concat(sorts.slice(index + 1))
+                "
+              >
+                <i aria-hidden="true" class="pi pi-times"></i>
+              </button>
+            </div>
+          }
+        </section>
+        <datalist [id]="sortFieldsId">
+          @for (field of fields(); track field.key) {
+            <option [value]="field.key">{{ field.label | localize }}</option>
+          }
+        </datalist>
+        <section
+          class="query-section"
+          [attr.aria-labelledby]="sortFieldsId + '-settings-title'"
+        >
+          <h3 [id]="sortFieldsId + '-settings-title'">
+            {{ "List settings" | localize }}
+          </h3>
+          <div class="query-settings">
+            <div class="query-extras">
+              @for (extra of extraFields(); track extra.key) {
+                <label class="query-extra"
+                  ><input
+                    type="checkbox"
+                    [attr.data-query-extra]="extra.key"
+                    [name]="extra.key"
+                    [(ngModel)]="extras[extra.key]"
+                  />
+                  {{ extra.label | localize }}</label
+                >
+              }
+            </div>
+            <div class="query-actions">
+              <button pButton type="submit" [disabled]="busy()">
+                {{ "Apply" | localize }}
+              </button>
+              <button
+                pButton
+                severity="secondary"
+                type="button"
+                [disabled]="busy()"
+                [text]="true"
+                (click)="reset()"
+              >
+                {{ "Clear" | localize }}
+              </button>
+            </div>
+          </div>
+        </section>
+        @if (error) {
+          <p role="alert">{{ error | localize }}</p>
+        }
+      </form>
+    }
+  </div>
+</p-panel>

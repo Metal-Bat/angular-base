@@ -1,3 +1,5 @@
+import { SelectControl } from '../../../../shared/ui/select-control/select-control';
+import { ButtonDirective } from 'primeng/button';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -26,8 +28,9 @@ import {
   freezeCommand,
 } from '../../domain/admin-command';
 @Component({
+  host: { class: 'console-page' },
   selector: 'app-admin-console',
-  imports: [FormsModule, LocalizePipe],
+  imports: [SelectControl, ButtonDirective, FormsModule, LocalizePipe],
   templateUrl: './admin-console.html',
   styleUrl: './admin-console.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

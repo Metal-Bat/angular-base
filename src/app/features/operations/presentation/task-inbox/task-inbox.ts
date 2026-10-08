@@ -1,3 +1,7 @@
+import { SelectControl } from '../../../../shared/ui/select-control/select-control';
+import { ControlField } from '../../../../shared/ui/control-field/control-field';
+import { FormsModule } from '@angular/forms';
+import { ButtonDirective } from 'primeng/button';
 import { BoundedPolling } from '../../../../core/transport/bounded-polling';
 import { PagesPort } from '../../application/workspace-ports';
 import {
@@ -11,6 +15,7 @@ import { LocalizePipe } from '../../../../shared/ui/localize-pipe';
 import { Cartable, cartables } from '../../domain/workspace-models';
 import { WORKSPACE_PAGES, WORKSPACE_PAGES_FACTORY } from '../../bindings';
 @Component({
+  host: { class: 'console-page' },
   providers: [
     BoundedPolling,
     {
@@ -20,7 +25,14 @@ import { WORKSPACE_PAGES, WORKSPACE_PAGES_FACTORY } from '../../bindings';
   ],
   selector: 'app-task-inbox',
 
-  imports: [LocalizePipe, RouterLink],
+  imports: [
+    ControlField,
+    SelectControl,
+    FormsModule,
+    ButtonDirective,
+    LocalizePipe,
+    RouterLink,
+  ],
   templateUrl: './task-inbox.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

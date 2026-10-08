@@ -1,8 +1,15 @@
-<h1 tabindex="-1">{{ "Workflow designer" | localize }}</h1>
-<a routerLink="/studio/workflow-versions">{{
-  "Workflow versions" | localize
-}}</a>
-<p>{{ status() }} · {{ reference() }}</p>
+<header class="console-page-header">
+  <h1 tabindex="-1">{{ "Workflow designer" | localize }}</h1>
+  <a routerLink="/studio/workflow-versions">{{
+    "Workflow versions" | localize
+  }}</a>
+</header>
+<div class="workflow-meta flex flex-wrap items-center gap-3">
+  <span class="console-record-status">{{ status() }}</span
+  ><span class="save-state">{{
+    (dirty() || pending().length ? "Unsaved changes" : "Saved") | localize
+  }}</span>
+</div>
 <p>
   {{
     "Workspace changes are separate from executable versions. Save, validate, promote, then publish."
@@ -15,30 +22,72 @@
 @if (busy()) {
   <p role="status">{{ "Loading…" | localize }}</p>
 }
-<nav aria-label="Workflow commands">
-  <button type="button" [disabled]="busy()" (click)="load()">
-    {{ "Reload" | localize }}</button
+<nav
+  class="workflow-commands"
+  [attr.aria-label]="'Workflow commands' | localize"
+>
+  <button
+    class="reload-control"
+    pButton
+    severity="secondary"
+    type="button"
+    [attr.aria-label]="'Reload' | localize"
+    [attr.title]="'Reload' | localize"
+    [disabled]="busy()"
+    [text]="true"
+    (click)="load()"
+  >
+    <i aria-hidden="true" class="pi pi-refresh"></i
+    ><span class="sr-only">{{ "Reload" | localize }}</span></button
   ><button
+    pButton
     type="button"
     [disabled]="readonly() || pending().length > 0"
     (click)="save()"
   >
     {{ "Save workspace" | localize }}</button
-  ><button type="button" [disabled]="readonly()" (click)="undo()">
+  ><button
+    pButton
+    severity="secondary"
+    type="button"
+    [disabled]="readonly()"
+    [outlined]="true"
+    (click)="undo()"
+  >
     {{ "Undo" | localize }}</button
-  ><button type="button" [disabled]="readonly()" (click)="undo(true)">
+  ><button
+    pButton
+    severity="secondary"
+    type="button"
+    [disabled]="readonly()"
+    [outlined]="true"
+    (click)="undo(true)"
+  >
     {{ "Redo" | localize }}</button
-  ><button type="button" [disabled]="busy()" (click)="validate()">
+  ><button
+    pButton
+    severity="secondary"
+    type="button"
+    [disabled]="busy()"
+    [outlined]="true"
+    (click)="validate()"
+  >
     {{ "Validate" | localize }}</button
   ><button
+    pButton
+    severity="secondary"
     type="button"
     [disabled]="readonly() || dirty() || pending().length > 0"
+    [outlined]="true"
     (click)="promote()"
   >
     {{ "Promote graph" | localize }}</button
   ><button
+    pButton
+    severity="secondary"
     type="button"
     [disabled]="readonly() || dirty() || pending().length > 0"
+    [outlined]="true"
     (click)="publish()"
   >
     {{ "Publish" | localize }}
@@ -49,63 +98,183 @@
     {{ "Apply each edited JSON panel before saving." | localize }}
   </p>
 }
-<section aria-label="Step palette">
-  <label for="type-key">{{ "Registered step type" | localize }}</label
-  ><select id="type-key" [(ngModel)]="typeKey">
-    @for (type of catalog(); track type["key"]) {
-      <option [value]="type['key']">
-        {{ type["title"] }} · {{ type["key"] }}
-      </option>
-    }</select
-  ><label for="step-key">{{ "Stable step key" | localize }}</label
-  ><input id="step-key" [(ngModel)]="stepKey" /><button
-    type="button"
-    [disabled]="readonly()"
-    (click)="add()"
-  >
-    {{ "Add step" | localize }}</button
-  ><button
-    type="button"
-    [disabled]="catalogPage() <= 1"
-    (click)="loadCatalog(catalogPage() - 1)"
-  >
-    {{ "Previous" | localize }}</button
-  ><button
-    type="button"
-    [disabled]="catalogPage() >= catalogPages()"
-    (click)="loadCatalog(catalogPage() + 1)"
-  >
-    {{ "Next" | localize }}
-  </button>
-</section>
-<ng-container *ngComponentOutlet="canvas; inputs: inputs()" />
-<div class="inspectors">
-  <section aria-label="Step inspector">
-    <h2>{{ "Selected step" | localize }} {{ selected }}</h2>
-    <label for="step-json">{{
-      "Configuration, human views/actions, assignment policy and subprocess pins"
-        | localize
-    }}</label
-    ><textarea
-      id="step-json"
-      rows="14"
-      [disabled]="readonly()"
-      [(ngModel)]="selectedJson"
-      (ngModelChange)="markPending('node')"
-    ></textarea
-    ><button type="button" [disabled]="readonly()" (click)="applyNode()">
-      {{ "Apply step" | localize }}</button
-    ><button type="button" [disabled]="readonly()" (click)="remove()">
-      {{ "Remove step" | localize }}
-    </button>
-    <p>
-      {{
-        "Arrow keys move focused nodes; buttons select nodes. Control and data ports remain separate."
+<div class="canvas-workspace">
+  <ng-container *ngComponentOutlet="canvas; inputs: inputs()" />
+  <div class="inspectors">
+    <section class="step-palette" [attr.aria-label]="'Step palette' | localize">
+      <h2>{{ "Studio steps" | localize }}</h2>
+      <p class="palette-hint">
+        {{
+          "Drag a step onto the canvas, or select it and click where to place it."
+            | localize
+        }}
+      </p>
+      <label for="palette-search">{{ "Search" | localize }}</label>
+      <input
+        id="palette-search"
+        [ngModel]="paletteSearch()"
+        (ngModelChange)="paletteSearch.set($event)"
+      />
+      <div class="palette-items">
+        @for (type of paletteItems(); track type["key"]) {
+          <div
+            class="palette-card"
+            [class.palette-selected]="paletteSelection() === type['key']"
+          >
+            <button
+              class="palette-item"
+              type="button"
+              [attr.aria-pressed]="paletteSelection() === type['key']"
+              [disabled]="readonly() || pending().length > 0"
+              [draggable]="!readonly() && !pending().length"
+              (click)="choosePalette($any(type['key']))"
+              (dragstart)="dragType($event, $any(type['key']))"
+            >
+              <i aria-hidden="true" class="pi pi-box"></i>
+              <span>{{ type["title"] }}</span>
+              <i aria-hidden="true" class="pi pi-bars"></i>
+            </button>
+            <button
+              class="palette-add"
+              pButton
+              severity="secondary"
+              type="button"
+              [attr.aria-label]="('Add step' | localize) + ': ' + type['title']"
+              [attr.title]="'Add step' | localize"
+              [disabled]="readonly() || pending().length > 0"
+              [text]="true"
+              (click)="addType($any(type['key']))"
+            >
+              <i aria-hidden="true" class="pi pi-plus"></i>
+            </button>
+          </div>
+        } @empty {
+          <p>{{ "No results" | localize }}</p>
+        }
+      </div>
+      <details>
+        <summary>{{ "Add a step" | localize }}</summary>
+        <div class="palette-fields">
+          <div class="palette-type">
+            <label for="type-key">{{
+              "Registered step type" | localize
+            }}</label>
+            <app-select-control
+              inputId="type-key"
+              [disabled]="readonly()"
+              [(ngModel)]="typeKey"
+            >
+              @for (type of catalog(); track type["key"]) {
+                <option [value]="type['key']">
+                  {{ type["title"] }} · {{ type["key"] }}
+                </option>
+              }
+            </app-select-control>
+          </div>
+          <div>
+            <label for="step-key">{{ "Stable step key" | localize }}</label>
+            <input
+              id="step-key"
+              [disabled]="readonly()"
+              [(ngModel)]="stepKey"
+            />
+          </div>
+          <button
+            pButton
+            type="button"
+            [disabled]="
+              readonly() || pending().length > 0 || !typeKey || !stepKey
+            "
+            (click)="add()"
+          >
+            {{ "Add step" | localize }}
+          </button>
+          @if (catalogPages() > 1) {
+            <div class="palette-pagination flex gap-2">
+              <button
+                pButton
+                severity="secondary"
+                type="button"
+                [disabled]="catalogPage() <= 1"
+                [outlined]="true"
+                (click)="loadCatalog(catalogPage() - 1)"
+              >
+                {{ "Previous" | localize }}
+              </button>
+              <button
+                pButton
+                severity="secondary"
+                type="button"
+                [disabled]="catalogPage() >= catalogPages()"
+                [outlined]="true"
+                (click)="loadCatalog(catalogPage() + 1)"
+              >
+                {{ "Next" | localize }}
+              </button>
+            </div>
+          }
+        </div>
+      </details>
+    </section>
+
+    <section
+      class="step-inspector"
+      [attr.aria-label]="'Step inspector' | localize"
+    >
+      <h2>
+        {{ "Selected step" | localize }} <bdi>{{ selected() }}</bdi>
+      </h2>
+      @if (!selected()) {
+        <p class="inspector-hint">
+          {{
+            "Select a step on the canvas to inspect its configuration."
+              | localize
+          }}
+        </p>
+      }
+      <label for="step-json">{{
+        "Configuration, human views/actions, assignment policy and subprocess pins"
           | localize
-      }}
-    </p>
-  </section>
-  <section aria-label="Connections and graph">
+      }}</label
+      ><textarea
+        class="font-mono"
+        id="step-json"
+        rows="14"
+        [disabled]="readonly() || !selected()"
+        [(ngModel)]="selectedJson"
+        (ngModelChange)="markPending('node')"
+      ></textarea
+      ><button
+        pButton
+        severity="secondary"
+        type="button"
+        [disabled]="readonly() || !selected()"
+        [outlined]="true"
+        (click)="applyNode()"
+      >
+        {{ "Apply step" | localize }}</button
+      ><button
+        pButton
+        severity="secondary"
+        type="button"
+        [disabled]="readonly() || !selected() || pending().length > 0"
+        [outlined]="true"
+        (click)="remove()"
+      >
+        {{ "Remove step" | localize }}
+      </button>
+      <p>
+        {{
+          "Arrow keys move focused nodes; buttons select nodes. Control and data ports remain separate."
+            | localize
+        }}
+      </p>
+    </section>
+  </div>
+</div>
+<details class="graph-editor">
+  <summary>{{ "Connections and graph" | localize }}</summary>
+  <section [attr.aria-label]="'Connections and graph' | localize">
     <h2>{{ "Connections" | localize }}</h2>
     <label for="source-port">{{ "Source port" | localize }}</label
     ><input id="source-port" [(ngModel)]="source" /><label for="target-port">{{
@@ -115,8 +284,11 @@
       "Control outcome" | localize
     }}</label
     ><input id="outcome" [(ngModel)]="outcome" /><button
+      pButton
+      severity="secondary"
       type="button"
       [disabled]="readonly()"
+      [outlined]="true"
       (click)="connect()"
     >
       {{ "Connect" | localize }}</button
@@ -124,24 +296,39 @@
       "Transitions, data bindings, assignment targets and interface" | localize
     }}</label
     ><textarea
+      class="font-mono"
       id="graph-json"
       rows="12"
       [disabled]="readonly()"
       [(ngModel)]="graphJson"
       (ngModelChange)="markPending('graph')"
     ></textarea
-    ><button type="button" [disabled]="readonly()" (click)="applyGraph()">
+    ><button
+      pButton
+      severity="secondary"
+      type="button"
+      [disabled]="readonly()"
+      [outlined]="true"
+      (click)="applyGraph()"
+    >
       {{ "Apply graph edits" | localize }}
     </button>
   </section>
-</div>
-<button type="button" [disabled]="busy()" (click)="inspect('workspaceHistory')">
+</details>
+<button
+  pButton
+  severity="secondary"
+  type="button"
+  [disabled]="busy()"
+  [outlined]="true"
+  (click)="inspect('workspaceHistory')"
+>
   {{ "Workspace history" | localize }}
 </button>
 <details>
   <summary>{{ "Designer assistance" | localize }}</summary>
   <label for="selector-kind">{{ "Selector kind" | localize }}</label
-  ><select id="selector-kind" [(ngModel)]="selectorKind">
+  ><app-select-control inputId="selector-kind" [(ngModel)]="selectorKind">
     @for (
       kind of [
         "users",
@@ -156,11 +343,14 @@
       track kind
     ) {
       <option>{{ kind }}</option>
-    }</select
+    }</app-select-control
   ><label for="selector-search">{{ "Search" | localize }}</label
   ><input id="selector-search" [(ngModel)]="selectorSearch" /><button
+    pButton
+    severity="secondary"
     type="button"
     [disabled]="busy()"
+    [outlined]="true"
     (click)="inspect('selectors')"
   >
     {{ "Find references" | localize }}</button
@@ -168,8 +358,11 @@
     "Start form version reference" | localize
   }}</label
   ><input id="start-form" [(ngModel)]="startForm" /><button
+    pButton
+    severity="secondary"
     type="button"
     [disabled]="busy()"
+    [outlined]="true"
     (click)="inspect('inventory')"
   >
     {{ "Field inventory" | localize }}</button
@@ -177,21 +370,30 @@
     "Request type reference" | localize
   }}</label
   ><input id="completion-request-type" [(ngModel)]="requestType" /><button
+    pButton
+    severity="secondary"
     type="button"
     [disabled]="busy()"
+    [outlined]="true"
     (click)="inspect('completion')"
   >
     {{ "Binding suggestions" | localize }}
   </button>
   <button
+    pButton
+    severity="secondary"
     type="button"
     [disabled]="busy() || assistantPage() <= 1"
+    [outlined]="true"
     (click)="inspect(assistantTool, assistantPage() - 1)"
   >
     {{ "Previous" | localize }}</button
   ><button
+    pButton
+    severity="secondary"
     type="button"
     [disabled]="busy() || assistantPage() >= assistantPages()"
+    [outlined]="true"
     (click)="inspect(assistantTool, assistantPage() + 1)"
   >
     {{ "Next" | localize }}
@@ -201,6 +403,7 @@
   <summary>{{ "Layout groups and edge routing" | localize }}</summary>
   <label for="collapsed-groups">{{ "Collapsed group keys" | localize }}</label
   ><textarea
+    class="font-mono"
     id="collapsed-groups"
     [(ngModel)]="collapsedJson"
     (ngModelChange)="markPending('layout')"
@@ -209,11 +412,19 @@
     "Edge waypoints by connection key" | localize
   }}</label
   ><textarea
+    class="font-mono"
     id="edge-routing"
     [(ngModel)]="routingJson"
     (ngModelChange)="markPending('layout')"
   ></textarea
-  ><button type="button" [disabled]="readonly()" (click)="applyLayout()">
+  ><button
+    pButton
+    severity="secondary"
+    type="button"
+    [disabled]="readonly()"
+    [outlined]="true"
+    (click)="applyLayout()"
+  >
     {{ "Apply layout" | localize }}
   </button>
 </details>
@@ -223,7 +434,13 @@
       @for (issue of issues(); track $index) {
         <li>
           @if (issue.node) {
-            <button type="button" (click)="select(issue.node)">
+            <button
+              pButton
+              severity="secondary"
+              type="button"
+              [outlined]="true"
+              (click)="select(issue.node)"
+            >
               {{ issue.pointer }} · {{ issue.code }} {{ issue.edge }}
             </button>
           } @else {

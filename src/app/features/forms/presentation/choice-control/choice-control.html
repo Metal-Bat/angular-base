@@ -5,11 +5,11 @@
   [ngModel]="search()"
   (ngModelChange)="search.set($event); page.set(1)"
 />
-<select
-  [attr.aria-describedby]="describedBy()"
-  [attr.aria-invalid]="invalid()"
+<app-select-control
+  [describedBy]="describedBy()"
   [disabled]="disabled()"
-  [id]="controlId()"
+  [inputId]="controlId()"
+  [invalid]="invalid()"
   [multiple]="multiple()"
   [ngModel]="multiple() ? selectedKeys() : selected()"
   (ngModelChange)="choose($event)"
@@ -23,7 +23,7 @@
   @for (option of options()?.items ?? []; track option.key) {
     <option [value]="option.key">{{ option.value }}</option>
   }
-</select>
+</app-select-control>
 <p aria-live="polite" role="status">
   @if (optionState() === "loading") {
     {{ "Loading…" | localize }}
@@ -42,21 +42,37 @@
   }
 </p>
 <button
+  pButton
+  severity="secondary"
   type="button"
   [disabled]="page() <= 1 || optionState() === 'loading'"
+  [outlined]="true"
   (click)="page.set(page() - 1)"
 >
   {{ "Previous" | localize }}
 </button>
 <button
+  pButton
+  severity="secondary"
   type="button"
   [disabled]="
     page() >= (options()?.totalPages ?? 0) || optionState() === 'loading'
   "
+  [outlined]="true"
   (click)="page.set(page() + 1)"
 >
   {{ "Next" | localize }}
 </button>
-<button type="button" (click)="search.set(''); page.set(1); reloadOptions()">
-  {{ "Retry" | localize }}
+<button
+  class="reload-control"
+  pButton
+  severity="secondary"
+  type="button"
+  [attr.aria-label]="'Retry' | localize"
+  [attr.title]="'Retry' | localize"
+  [text]="true"
+  (click)="search.set(''); page.set(1); reloadOptions()"
+>
+  <i aria-hidden="true" class="pi pi-refresh"></i
+  ><span class="sr-only">{{ "Retry" | localize }}</span>
 </button>

@@ -16,6 +16,16 @@ describe('Actual administration contracts', () => {
       providers: [{ provide: ApiClient, useValue: { call } }],
     });
   });
+  it('treats process timeline reads as readonly and report requests as mutations', () => {
+    const commands = TestBed.inject(AdminApi).commands('processes');
+    expect(
+      commands.find((command) => command.path.endsWith('/timeline'))?.mutation,
+    ).toBe(false);
+    expect(
+      commands.find((command) => command.path.endsWith('/timeline/report'))
+        ?.mutation,
+    ).toBe(true);
+  });
   it('uses the declared task_id route and excludes unrelated body fields', async () => {
     const api = TestBed.inject(AdminApi);
     const command = api
@@ -47,6 +57,7 @@ describe('Actual administration contracts', () => {
     expect(
       api
         .commands('audit')
+        .filter((item) => !item.path.endsWith('/report'))
         .every(
           (item) =>
             !item.mutation && item.permission === 'admin.permissions.manage',

@@ -1,3 +1,4 @@
+import { errorInterceptor } from './core/feedback/error-interceptor';
 import { Locale } from './core/localization/locale';
 import {
   provideHttpClient,
@@ -24,7 +25,7 @@ export const appConfig: ApplicationConfig = {
     provideZonelessChangeDetection(),
     provideRouter(routes),
     provideHttpClient(
-      withInterceptors([sessionInterceptor]),
+      withInterceptors([errorInterceptor, sessionInterceptor]),
       withNoXsrfProtection(),
     ),
     provideAppInitializer(() => inject(AuthSession).bootstrap()),

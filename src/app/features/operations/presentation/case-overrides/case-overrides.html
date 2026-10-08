@@ -2,8 +2,8 @@
   <fieldset>
     <legend>{{ "Calculation override" | localize }}</legend>
     <label for="override-field">{{ "Field" | localize }}</label
-    ><select
-      id="override-field"
+    ><app-select-control
+      inputId="override-field"
       [ngModel]="overrideScope()"
       (ngModelChange)="overrideScope.set($event)"
     >
@@ -11,7 +11,7 @@
       @for (node of editor().overrides(); track node.scope) {
         <option [value]="node.scope">{{ node.label ?? node.scope }}</option>
       }
-    </select>
+    </app-select-control>
     <label for="override-value">{{ "Value" | localize }}</label
     ><input
       id="override-value"
@@ -26,19 +26,25 @@
       (ngModelChange)="overrideReason.set($event)"
     />
     <button
+      pButton
+      severity="secondary"
       type="button"
       [disabled]="
         editor().dirty() || !overrideScope() || !overrideReason().trim()
       "
+      [outlined]="true"
       (click)="override('set')"
     >
       {{ "Override value" | localize }}
     </button>
     <button
+      pButton
+      severity="secondary"
       type="button"
       [disabled]="
         editor().dirty() || !overrideScope() || !overrideReason().trim()
       "
+      [outlined]="true"
       (click)="override('reset')"
     >
       {{ "Reset calculation" | localize }}

@@ -34,6 +34,7 @@ import {
   specifications,
 } from './resource-specifications';
 const tools = {
+  workflowGraph: 'get_graph_api_v1_workflow_versions__ref_id__graph_get',
   workspaceHistory:
     'workspace_history_api_v1_workflow_versions__ref_id__workspace_history_post',
   validate: 'validate_form_api_v1_forms_validate_post',
@@ -72,6 +73,7 @@ export class StudioApi implements StudioPort {
     }
     return {
       key,
+      list: contract.list,
       title: contract.title,
       permission: contract.permission,
       editor: contract.editor,
@@ -106,13 +108,15 @@ export class StudioApi implements StudioPort {
     query: JsonObject,
     report = false,
   ): Promise<AuthorPage> {
-    return readResultPage(
-      await this.request(
-        operation(specifications[key].operations[report ? 'report' : 'search']),
-        { page, size: 20, filters: [], sort_orders: [], ...query },
-      ),
-      (value) => record(value) as JsonObject,
+    const response = await this.request(
+      operation(specifications[key].operations[report ? 'report' : 'search']),
+      { size: 20, filters: [], sort_orders: [], ...query, page },
     );
+    if (report) {
+      const item = readData(response, (value) => record(value) as JsonObject);
+      return { items: [item], page: 1, totalPages: 1 };
+    }
+    return readResultPage(response, (value) => record(value) as JsonObject);
   }
   async get(key: ResourceKey, reference: string): Promise<JsonObject> {
     return readData(
@@ -178,11 +182,12 @@ export class StudioApi implements StudioPort {
     key: ResourceKey,
     reference: string,
     page: number,
+    size = 20,
   ): Promise<AuthorPage> {
     return readResultPage(
       await this.request(
         operation(specifications[key].operations['history']),
-        { page, size: 20, filters: [], sort_orders: [] },
+        { page, size, filters: [], sort_orders: [] },
         { ref_id: reference },
       ),
       (value) => record(value) as JsonObject,

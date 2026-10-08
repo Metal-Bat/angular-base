@@ -1,3 +1,4 @@
+import { ButtonDirective } from 'primeng/button';
 import { ValueTextPipe } from '../../../forms/presentation/value-text-pipe';
 import {
   ChangeDetectionStrategy,
@@ -14,8 +15,9 @@ import { FORM_RESOURCES } from '../../../forms/bindings';
 import { CaseFeedback } from '../../../forms/application/form-resources';
 import { EditorPort } from '../../application/workspace-ports';
 @Component({
+  host: { class: 'console-fragment' },
   selector: 'app-advanced-task',
-  imports: [FormsModule, LocalizePipe, ValueTextPipe],
+  imports: [ButtonDirective, FormsModule, LocalizePipe, ValueTextPipe],
   templateUrl: './advanced-task.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

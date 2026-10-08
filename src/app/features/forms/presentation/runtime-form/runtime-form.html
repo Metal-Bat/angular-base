@@ -7,15 +7,21 @@
       <h2>{{ pages()[page()].title }}</h2>
       <span>{{ page() + 1 }} / {{ pages().length }}</span>
       <button
+        pButton
+        severity="secondary"
         type="button"
         [disabled]="busy() || page() === 0"
+        [outlined]="true"
         (click)="page.set(page() - 1); pageError.set('')"
       >
         {{ "Previous page" | localize }}
       </button>
       <button
+        pButton
+        severity="secondary"
         type="button"
         [disabled]="busy() || page() + 1 >= pages().length"
+        [outlined]="true"
         (click)="next()"
       >
         {{ "Next page" | localize }}

@@ -1,0 +1,17 @@
+.request-type-card {
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  gap: 1rem;
+  padding: 1.5rem;
+}
+.request-type-card h2 {
+  margin: 0;
+}
+.request-type-card bdi {
+  font-size: 0.8rem;
+  color: var(--console-muted);
+}
+.request-type-card button {
+  margin-block-start: auto;
+}

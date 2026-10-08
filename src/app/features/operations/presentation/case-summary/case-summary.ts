@@ -3,6 +3,7 @@ import { RouterLink } from '@angular/router';
 import { LocalizePipe } from '../../../../shared/ui/localize-pipe';
 import { CaseKind, CaseRecord } from '../../domain/workspace-models';
 @Component({
+  host: { class: 'console-fragment' },
   selector: 'app-case-summary',
   imports: [RouterLink, LocalizePipe],
   templateUrl: './case-summary.html',

@@ -1,69 +1,163 @@
 <a class="skip-link" href="#main-content">{{ "Skip to content" | localize }}</a>
-<header class="workspace-header">
-  <a class="brand" routerLink="/operations">{{
-    "Workflow workspace" | localize
-  }}</a>
-  <span class="preview-label">{{ "Foundation preview" | localize }}</span>
-  <button
-    aria-controls="area-navigation"
-    class="mobile-menu"
-    type="button"
-    [attr.aria-expanded]="menuOpen()"
-    (click)="menuOpen.set(!menuOpen())"
+<header
+  class="workspace-header flex flex-wrap items-center gap-2 px-4 py-3 lg:gap-3 lg:px-8"
+>
+  <a class="brand" routerLink="/operations">
+    <span aria-hidden="true" class="brand-mark"
+      ><i class="pi pi-sitemap"></i
+    ></span>
+    <span
+      >{{ "Workflow workspace" | localize
+      }}<small>{{ "Workspace console" | localize }}</small></span
+    >
+  </a>
+  @if (signedIn()) {
+    <button
+      aria-controls="area-navigation"
+      class="mobile-menu"
+      pButton
+      severity="secondary"
+      type="button"
+      [attr.aria-expanded]="menuOpen()"
+      [text]="true"
+      (click)="menuOpen.set(!menuOpen())"
+    >
+      <i aria-hidden="true" class="pi pi-bars"></i
+      ><span>{{ "Menu" | localize }}</span>
+    </button>
+  }
+  <div class="inline-flex items-center gap-2">
+    <i aria-hidden="true" class="pi pi-globe text-console-muted"></i>
+    <span class="sr-only">{{ "Language" | localize }}</span>
+    <app-select-control
+      class="w-32 max-w-full"
+      data-language-picker
+      [ariaLabel]="'Language' | localize"
+      [disabled]="locale.changing()"
+      [value]="locale.language()"
+      (selectionChanged)="setLanguage($any($event.target).value)"
+    >
+      @for (language of locale.languages; track language.code) {
+        <option [attr.lang]="language.code" [value]="language.code">
+          {{ language.name }}
+        </option>
+      }
+    </app-select-control>
+  </div>
+  <p-select
+    appendTo="body"
+    class="theme-picker w-52 max-w-full"
+    data-theme-picker
+    optionLabel="label"
+    optionValue="value"
+    scrollHeight="20rem"
+    [ariaLabel]="'Theme' | localize"
+    [checkmark]="true"
+    [group]="true"
+    [ngModel]="scheme.selected()"
+    [options]="themeGroups()"
+    [pt]="{
+      listContainer: {
+        tabindex: '0',
+        role: 'region',
+        'aria-label': locale.text('Theme'),
+      },
+    }"
+    (ngModelChange)="scheme.select($event)"
   >
-    {{ "Menu" | localize }}
-  </button>
-  <button
-    type="button"
-    [attr.aria-label]="'Language' | localize"
-    [disabled]="locale.changing()"
-    (click)="switchLocale()"
-  >
-    {{ locale.language() === "en" ? "فارسی" : "English" }}
-  </button>
-  <button
-    type="button"
-    [attr.aria-pressed]="scheme.dark()"
-    (click)="scheme.toggle()"
-  >
-    {{ (scheme.dark() ? "Light mode" : "Dark mode") | localize }}
-  </button>
+    <ng-template #selectedItem let-option>
+      <span class="inline-flex items-center gap-2">
+        <span
+          aria-hidden="true"
+          class="theme-swatch size-3 shrink-0 rounded-full"
+          [style.backgroundColor]="option.color"
+        ></span>
+        <span>{{ option.label }}</span>
+      </span>
+    </ng-template>
+    <ng-template #group let-group>
+      <span class="inline-flex items-center gap-2 text-sm">
+        <i aria-hidden="true" [class]="group.icon"></i>
+        {{ group.label }}
+      </span>
+    </ng-template>
+    <ng-template #item let-option>
+      <span
+        class="inline-flex items-center gap-2 text-sm"
+        [attr.data-theme-option]="option.value"
+      >
+        <span
+          aria-hidden="true"
+          class="size-3 shrink-0 rounded-full"
+          [style.backgroundColor]="option.color"
+        ></span>
+        <span>{{ option.label }}</span>
+      </span>
+    </ng-template>
+  </p-select>
   @if (auth.profile(); as profile) {
-    <details>
+    <a
+      class="account-avatar"
+      routerLink="/account/profile"
+      [attr.aria-label]="'My information' | localize"
+      [attr.title]="'My information' | localize"
+      ><span aria-hidden="true">{{
+        profile.username.slice(0, 1).toUpperCase()
+      }}</span></a
+    >
+    <details class="account-menu">
       <summary>
         {{ "Account" | localize }}: <bdi>{{ profile.username }}</bdi>
       </summary>
-      <button type="button" (click)="auth.logout()">
+      <button
+        pButton
+        severity="secondary"
+        type="button"
+        [text]="true"
+        (click)="auth.logout()"
+      >
         {{ "Sign out" | localize }}
       </button>
     </details>
     <button
       aria-controls="notification-panel"
+      pButton
+      severity="secondary"
       type="button"
       [attr.aria-expanded]="notificationsOpen()"
+      [attr.aria-label]="'Notifications' | localize"
+      [text]="true"
       (click)="toggleNotifications()"
     >
-      {{ "Notifications" | localize }}
+      <i aria-hidden="true" class="pi pi-bell"></i>
     </button>
-  } @else {
-    <a routerLink="/login">{{ "Sign in" | localize }}</a>
   }
 </header>
 @if (auth.profile() && notificationsOpen()) {
   <section
-    aria-labelledby="notifications-title"
-    class="p-4"
+    animate.enter="panel-enter"
+    class="notification-panel"
     id="notification-panel"
+    [attr.aria-label]="'Notifications' | localize"
   >
-    <h2 id="notifications-title">{{ "Notifications" | localize }}</h2>
     @switch (notifications.status()) {
       @case ("loading") {
         <p role="status">{{ "Loading…" | localize }}</p>
       }
       @case ("error") {
         <p role="alert">{{ "The service is unavailable." | localize }}</p>
-        <button type="button" (click)="notifications.load()">
-          {{ "Retry" | localize }}
+        <button
+          class="reload-control"
+          pButton
+          severity="secondary"
+          type="button"
+          [attr.aria-label]="'Retry' | localize"
+          [attr.title]="'Retry' | localize"
+          [text]="true"
+          (click)="notifications.load()"
+        >
+          <i aria-hidden="true" class="pi pi-refresh"></i
+          ><span class="sr-only">{{ "Retry" | localize }}</span>
         </button>
       }
       @case ("ready") {
@@ -77,15 +171,21 @@
           }
         </ul>
         <button
+          pButton
+          severity="secondary"
           type="button"
           [disabled]="notifications.page() <= 1"
+          [text]="true"
           (click)="notifications.load(notifications.page() - 1)"
         >
           {{ "Previous" | localize }}
         </button>
         <button
+          pButton
+          severity="secondary"
           type="button"
           [disabled]="notifications.page() >= notifications.totalPages()"
+          [text]="true"
           (click)="notifications.load(notifications.page() + 1)"
         >
           {{ "Next" | localize }}
@@ -94,27 +194,84 @@
     }
   </section>
 }
-<div class="workspace-layout">
-  <nav
-    id="area-navigation"
-    [attr.aria-label]="'Main navigation' | localize"
-    [class.expanded]="menuOpen()"
-  >
-    @for (area of areas; track area) {
-      @if (canEnter(area)) {
+<div class="workspace-layout" [class.guest-layout]="!signedIn()">
+  @if (signedIn()) {
+    <nav
+      id="area-navigation"
+      [attr.aria-label]="'Main navigation' | localize"
+      [class.expanded]="menuOpen()"
+    >
+      <span class="nav-caption">{{ "Workspace" | localize }}</span>
+      @for (area of areas; track area) {
+        @if (canEnter(area)) {
+          <a
+            ariaCurrentWhenActive="page"
+            routerLinkActive="active"
+            [routerLink]="'/' + area"
+            [routerLinkActiveOptions]="{ exact: true }"
+            ><i aria-hidden="true" [class]="areaIcons[area]"></i
+            ><span>{{ areaLabels[area] | localize }}</span
+            ><i aria-hidden="true" class="pi pi-angle-right nav-arrow"></i
+          ></a>
+        }
+      }
+      @if (canManageWorkflows()) {
         <a
           ariaCurrentWhenActive="page"
+          routerLink="/studio/workflows"
           routerLinkActive="active"
-          [routerLink]="'/' + area"
-          >{{ areaLabels[area] | localize }}</a
+          ><i aria-hidden="true" class="pi pi-sitemap"></i
+          ><span>{{ "Workflows" | localize }}</span></a
         >
       }
-    }
-  </nav>
-  <main id="main-content" tabindex="-1">
-    <nav [attr.aria-label]="'Breadcrumb' | localize">
-      <span aria-current="page">{{ breadcrumb() | localize }}</span>
+      @if (canManageUsers()) {
+        <a
+          ariaCurrentWhenActive="page"
+          routerLink="/users"
+          routerLinkActive="active"
+          ><i aria-hidden="true" class="pi pi-users"></i
+          ><span>{{ "Users" | localize }}</span></a
+        >
+      }
+      @if (canEnter("operations")) {
+        <span class="nav-caption secondary-caption">{{
+          "Your work" | localize
+        }}</span>
+        @for (item of shortcuts; track item.path) {
+          <a
+            ariaCurrentWhenActive="page"
+            routerLinkActive="active"
+            [routerLink]="item.path"
+          >
+            <i aria-hidden="true" [class]="item.icon"></i
+            ><span>{{ item.label | localize }}</span>
+          </a>
+        }
+      }
+      <div class="sidebar-footer">
+        <span aria-hidden="true" class="sidebar-symbol"
+          ><i class="pi pi-sitemap"></i
+        ></span>
+        <strong>{{ "Keep work moving." | localize }}</strong>
+        <p>{{ "One workspace. Clear next steps." | localize }}</p>
+        <a
+          ariaCurrentWhenActive="page"
+          routerLink="/account"
+          routerLinkActive="active"
+          ><i aria-hidden="true" class="pi pi-user"></i
+          >{{ "Account and sessions" | localize }}</a
+        >
+      </div>
     </nav>
+  }
+  <main id="main-content" tabindex="-1">
+    @if (signedIn()) {
+      <nav class="breadcrumb" [attr.aria-label]="'Breadcrumb' | localize">
+        <span>{{ "Workspace" | localize }}</span
+        ><i aria-hidden="true" class="pi pi-angle-right"></i>
+        <span aria-current="page">{{ breadcrumb() | localize }}</span>
+      </nav>
+    }
     <app-command-feedback />
     <router-outlet />
   </main>

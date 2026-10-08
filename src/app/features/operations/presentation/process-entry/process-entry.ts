@@ -1,3 +1,4 @@
+import { ButtonDirective } from 'primeng/button';
 import { BoundedPolling } from '../../../../core/transport/bounded-polling';
 import { ProcessSnapshot } from '../../domain/process-tracking';
 import {
@@ -12,9 +13,10 @@ import { LocalizePipe } from '../../../../shared/ui/localize-pipe';
 import { ActorState } from '../../../../core/auth/actor-state';
 import { PROCESS_READER } from '../../bindings';
 @Component({
+  host: { class: 'console-page' },
   selector: 'app-process-entry',
   providers: [BoundedPolling],
-  imports: [LocalizePipe, RouterLink],
+  imports: [ButtonDirective, LocalizePipe, RouterLink],
   templateUrl: './process-entry.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

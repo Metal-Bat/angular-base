@@ -8,7 +8,6 @@ import { TestBed } from '@angular/core/testing';
 import { firstValueFrom } from 'rxjs';
 import { ApiClient } from './api-client';
 import { ApiFailure } from './api-failure';
-import { HealthClient } from './health-client';
 
 async function settle(): Promise<void> {
   for (let index = 0; index < 20; index++) {
@@ -29,16 +28,13 @@ describe('Generated operation transport', () => {
   afterEach(() => {
     http.verify();
   });
-  it('uses exact versioned paths and keeps health at the root', async () => {
+  it('uses exact versioned API paths', async () => {
     const work = firstValueFrom(api.call('me_api_v1_auth_me_get', {}));
     await settle();
     (await vi.waitFor(() => http.expectOne('/api/v1/auth/me'))).flush(
       new Blob(['{"success":true,"data":null}']),
     );
     expect((await work).body).toEqual({ success: true, data: null });
-    const health = firstValueFrom(TestBed.inject(HealthClient).liveness());
-    (await vi.waitFor(() => http.expectOne('/health'))).flush({ status: 'ok' });
-    expect((await health).status).toBe(200);
   });
   it('preserves binary multipart uploads without supplying a multipart boundary', async () => {
     const upload = new Blob(['fixture']);

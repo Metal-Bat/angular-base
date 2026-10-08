@@ -1,17 +1,61 @@
-<h1>{{ "Administration" | localize }}</h1>
-<p>
-  {{
-    "Manage the configuration and access that support your workspace."
-      | localize
-  }}
-</p>
-<nav aria-label="Administration resources">
+<header class="console-page-header">
+  <div>
+    <span class="console-eyebrow">{{
+      "Manage your workspace" | localize
+    }}</span>
+    <h1 tabindex="-1">{{ "Administration" | localize }}</h1>
+    <p class="console-description">
+      {{
+        "Manage the configuration and access that support your workspace."
+          | localize
+      }}
+    </p>
+  </div>
+</header>
+<div class="flex items-center justify-between gap-4 mb-4">
+  <h2>{{ "Administration resources" | localize }}</h2>
+  <span class="text-sm text-console-muted">{{
+    "Choose your next step" | localize
+  }}</span>
+</div>
+<nav
+  class="console-card-grid"
+  [attr.aria-label]="'Administration resources' | localize"
+>
   @if (canManageClients()) {
-    <a routerLink="/administration/clients">{{
-      "Clients and releases" | localize
-    }}</a>
+    <a class="console-card" routerLink="/administration/clients">
+      <span aria-hidden="true" class="console-card-icon"
+        ><i class="pi pi-desktop"></i
+      ></span>
+      <strong>{{ "Clients and releases" | localize }}</strong>
+      <p>{{ "Configure trusted clients and release policies." | localize }}</p>
+      <span class="console-card-action"
+        >{{ "Open workspace" | localize
+        }}<i aria-hidden="true" class="pi pi-arrow-right"></i
+      ></span>
+    </a>
   }
   @for (group of groups(); track group.key) {
-    <a [routerLink]="group.key">{{ group.title | localize }}</a>
+    <a
+      class="console-card"
+      [routerLink]="group.key === 'users' ? 'admin-users' : group.key"
+    >
+      <span aria-hidden="true" class="console-card-icon"
+        ><i [class]="groupIcons[group.key] || 'pi pi-cog'"></i
+      ></span>
+      <strong>{{
+        (group.key === "users" ? "Admin Users" : group.title) | localize
+      }}</strong>
+      @if (groupDescriptions[group.key]; as description) {
+        <p>{{ description | localize }}</p>
+      }
+      <span class="console-card-action"
+        >{{ "Open workspace" | localize
+        }}<i aria-hidden="true" class="pi pi-arrow-right"></i
+      ></span>
+    </a>
   }
 </nav>
+@if (!canManageClients() && !groups().length) {
+  <p role="status">{{ "No permitted operations." | localize }}</p>
+}

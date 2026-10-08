@@ -1,82 +1,215 @@
-<f-flow
-  fDraggable
-  [fDraggableDisabled]="disabled()"
-  (fCreateConnection)="created($event)"
->
-  <f-canvas
-    fZoom
-    [position]="viewport()"
-    [scale]="viewport().zoom"
-    (fCanvasChange)="changed($event)"
+<section class="canvas-panel" [attr.aria-label]="'Workflow canvas' | localize">
+  <header
+    class="canvas-toolbar flex flex-wrap items-center justify-between gap-3"
   >
-    @for (edge of edges(); track edge.id) {
-      <f-connection
-        [class.data-edge]="edge.kind === 'data'"
-        [fConnectionId]="edge.id"
-        [fSourceId]="edge.source"
-        [fTargetId]="edge.target"
-        ><f-connection-waypoints
-          [waypoints]="routing()[edge.id] || []"
-          (waypointsChange)="routeEdge()(edge.id, $event)"
-      /></f-connection>
-    }
-    @for (node of nodes(); track node.key) {
-      <div
-        class="board-node"
-        fNode
-        tabindex="0"
-        [attr.aria-label]="node.title"
-        [class.collapsed]="collapsed().includes(node.key)"
-        [fNodeId]="node.key"
-        [fNodePosition]="node.position"
-        (fNodePositionChange)="moveNode()(node.key, $event)"
-        (keydown)="keyMove($event, node)"
+    <div class="canvas-summary">
+      <strong>{{ "Workflow canvas" | localize }}</strong
+      ><span
+        >{{ nodes().length }} {{ "steps" | localize }} · {{ edges().length }}
+        {{ "connections" | localize }}</span
       >
-        <button fDragHandle type="button" (click)="selectNode()(node.key)">
-          {{ node.key }} · {{ node.title }}
-        </button>
-        <div
-          class="control-port"
-          fConnector
-          fConnectorConnectableSide="left"
-          fConnectorType="target"
-          [fConnectorDisabled]="disabled()"
-          [fConnectorId]="'control:' + node.key + ':in'"
-        >
-          Control in
-        </div>
-        <div
-          class="control-port"
-          fConnector
-          fConnectorConnectableSide="right"
-          fConnectorType="source"
-          [fConnectorDisabled]="disabled()"
-          [fConnectorId]="'control:' + node.key + ':out'"
-        >
-          Control out
-        </div>
-        @for (port of node.ports; track port.direction + ":" + port.key) {
+    </div>
+    <div class="canvas-tools flex flex-wrap items-center gap-1">
+      <button
+        type="button"
+        [attr.aria-label]="'Zoom out' | localize"
+        [disabled]="disabled() || viewport().zoom <= 0.1"
+        (click)="zoom(-0.1)"
+      >
+        <i aria-hidden="true" class="pi pi-minus"></i>
+      </button>
+      <span class="zoom-value">{{ zoomPercent() }}%</span>
+      <button
+        type="button"
+        [attr.aria-label]="'Zoom in' | localize"
+        [disabled]="disabled() || viewport().zoom >= 4"
+        (click)="zoom(0.1)"
+      >
+        <i aria-hidden="true" class="pi pi-plus"></i>
+      </button>
+      <button
+        type="button"
+        [disabled]="disabled() || !nodes().length"
+        (click)="fit()"
+      >
+        <i aria-hidden="true" class="pi pi-expand"></i
+        ><span>{{ "Fit to view" | localize }}</span>
+      </button>
+      <button type="button" [disabled]="disabled()" (click)="reset()">
+        <span>{{ "Reset view" | localize }}</span>
+      </button>
+    </div>
+  </header>
+  <div
+    class="canvas-stage"
+    role="region"
+    tabindex="0"
+    [attr.aria-label]="'Workflow canvas' | localize"
+    [class.placing-step]="!!paletteKey() && !disabled() && !readOnly()"
+    (click)="place($event)"
+    (dragover)="dragOver($event)"
+    (drop)="drop($event)"
+    (keydown.enter)="placeWithKeyboard($event)"
+    (keydown.space)="placeWithKeyboard($event)"
+  >
+    <f-flow
+      fDraggable
+      [fDraggableDisabled]="disabled()"
+      (fCreateConnection)="created($event)"
+    >
+      <f-canvas
+        fZoom
+        [position]="viewport()"
+        [scale]="viewport().zoom"
+        (fCanvasChange)="changed($event)"
+      >
+        @for (edge of edges(); track edge.id) {
+          <f-connection
+            [class.data-edge]="edge.kind === 'data'"
+            [fConnectionId]="edge.id"
+            [fReassignDisabled]="disabled() || readOnly()"
+            [fSourceId]="edge.source"
+            [fTargetId]="edge.target"
+            ><f-connection-marker-arrow />
+            @if (edge.label) {
+              <span class="transition-label" fConnectionContent>{{
+                edge.label
+              }}</span>
+            }
+            <f-connection-waypoints
+              [visibility]="!readOnly()"
+              [waypoints]="routing()[edge.id] || []"
+              (waypointsChange)="!readOnly() && routeEdge()(edge.id, $event)"
+          /></f-connection>
+        }
+        @for (node of nodes(); track node.key) {
           <div
-            class="data-port"
-            fConnector
-            [fConnectorConnectableSide]="
-              port.direction === 'INPUT' ? 'left' : 'right'
-            "
-            [fConnectorDisabled]="disabled()"
-            [fConnectorId]="
-              'data:' +
-              node.key +
-              ':' +
-              (port.direction === 'INPUT' ? 'in' : 'out') +
-              ':' +
-              port.key
-            "
-            [fConnectorType]="port.direction === 'INPUT' ? 'target' : 'source'"
+            class="board-node"
+            fNode
+            tabindex="0"
+            [attr.aria-invalid]="invalidNodes().includes(node.key)"
+            [attr.aria-label]="node.title"
+            [class.collapsed]="collapsed().includes(node.key)"
+            [class.node-invalid]="invalidNodes().includes(node.key)"
+            [class.selected]="selected() === node.key"
+            [fNodeDraggingDisabled]="disabled() || readOnly()"
+            [fNodeId]="node.key"
+            [fNodePosition]="node.position"
+            (fNodePositionChange)="!readOnly() && moveNode()(node.key, $event)"
+            (keydown)="keyMove($event, node)"
           >
-            {{ port.key }} · {{ port.direction }}
+            <button
+              class="node-handle"
+              fDragHandle
+              type="button"
+              [attr.aria-pressed]="selected() === node.key"
+              (click)="selectNode()(node.key)"
+            >
+              <span aria-hidden="true" class="node-icon"
+                ><i class="pi pi-sitemap"></i
+              ></span>
+              <span class="node-title"
+                ><strong>{{ node.title }}</strong
+                ><small>{{ node.key }}</small></span
+              >
+            </button>
+            <div class="control-port">
+              <span
+                class="port-socket input-socket"
+                fConnector
+                fConnectorConnectableSide="left"
+                fConnectorType="target"
+                [fConnectorDisabled]="disabled() || readOnly()"
+                [fConnectorId]="'control:' + node.key + ':in'"
+              ></span>
+              {{ "Control in" | localize }}
+            </div>
+            <div class="control-port output-port">
+              {{ "Control out" | localize }}
+              <span
+                class="port-socket output-socket"
+                fConnector
+                fConnectorConnectableSide="right"
+                fConnectorType="source"
+                [fConnectorDisabled]="disabled() || readOnly()"
+                [fConnectorId]="'control:' + node.key + ':out'"
+              ></span>
+            </div>
+            @for (port of node.ports; track port.direction + ":" + port.key) {
+              <div
+                class="data-port"
+                [class.output-port]="port.direction !== 'INPUT'"
+              >
+                <span
+                  class="port-socket"
+                  fConnector
+                  [class.input-socket]="port.direction === 'INPUT'"
+                  [class.output-socket]="port.direction !== 'INPUT'"
+                  [fConnectorConnectableSide]="
+                    port.direction === 'INPUT' ? 'left' : 'right'
+                  "
+                  [fConnectorDisabled]="disabled() || readOnly()"
+                  [fConnectorId]="
+                    'data:' +
+                    node.key +
+                    ':' +
+                    (port.direction === 'INPUT' ? 'in' : 'out') +
+                    ':' +
+                    port.key
+                  "
+                  [fConnectorType]="
+                    port.direction === 'INPUT' ? 'target' : 'source'
+                  "
+                ></span>
+                <bdi>{{ port.key }}</bdi
+                ><small>{{ port.direction }}</small>
+              </div>
+            }
           </div>
         }
+      </f-canvas>
+    </f-flow>
+
+    @if (!nodes().length) {
+      <div
+        class="canvas-empty absolute inset-0 flex flex-col items-center justify-center p-8 text-center pointer-events-none"
+      >
+        <i
+          aria-hidden="true"
+          class="pi pi-sitemap text-3xl text-console-accent mb-4"
+        ></i
+        ><strong class="text-base">{{
+          (readOnly() ? "Empty workflow canvas" : "Build your workflow")
+            | localize
+        }}</strong>
+        <p class="max-w-80 text-sm text-console-muted">
+          {{
+            (readOnly()
+              ? "Pan and zoom to explore the canvas."
+              : "Choose a registered step type and add your first step."
+            ) | localize
+          }}
+        </p>
       </div>
     }
-  </f-canvas>
-</f-flow>
+  </div>
+  <footer
+    class="canvas-footer flex flex-wrap items-center justify-between gap-3"
+  >
+    <span>{{
+      (readOnly()
+        ? "Read-only diagram. Pan, zoom and select steps to inspect the flow."
+        : "Drag steps to arrange them. Use arrow keys to move a focused step."
+      ) | localize
+    }}</span>
+    <div class="edge-legend">
+      <span
+        ><i aria-hidden="true" class="control-line"></i
+        >{{ "Control flow" | localize }}</span
+      ><span
+        ><i aria-hidden="true" class="data-line"></i
+        >{{ "Data binding" | localize }}</span
+      >
+    </div>
+  </footer>
+</section>

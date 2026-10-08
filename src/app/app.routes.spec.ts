@@ -44,7 +44,9 @@ describe('Workspace routes', () => {
       expect(harness.routeNativeElement?.textContent).toContain(
         url === '/administration'
           ? 'Manage the configuration and access'
-          : 'This area is being built.',
+          : url === '/operations'
+            ? 'Start requests, review assigned work, and follow case progress.'
+            : 'Design the forms and workflows used by your organization.',
       );
     },
   );

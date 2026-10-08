@@ -3,25 +3,67 @@
   <p role="alert">{{ error() | localize }}</p>
 }
 <fieldset [disabled]="editor().busy() || editor().blocked()">
-  <button type="button" (click)="resources.personal('read', true)">
+  <button
+    pButton
+    severity="secondary"
+    type="button"
+    [outlined]="true"
+    (click)="resources.personal('read', true)"
+  >
     {{ "Mark read" | localize }}
   </button>
-  <button type="button" (click)="resources.personal('pin', true)">
+  <button
+    pButton
+    severity="secondary"
+    type="button"
+    [outlined]="true"
+    (click)="resources.personal('pin', true)"
+  >
     {{ "Pin" | localize }}
   </button>
-  <button type="button" (click)="resources.personal('pin', false)">
+  <button
+    pButton
+    severity="secondary"
+    type="button"
+    [outlined]="true"
+    (click)="resources.personal('pin', false)"
+  >
     {{ "Unpin" | localize }}
   </button>
-  <button type="button" (click)="resources.personal('watch', true)">
+  <button
+    pButton
+    severity="secondary"
+    type="button"
+    [outlined]="true"
+    (click)="resources.personal('watch', true)"
+  >
     {{ "Watch" | localize }}
   </button>
-  <button type="button" (click)="resources.personal('watch', false)">
+  <button
+    pButton
+    severity="secondary"
+    type="button"
+    [outlined]="true"
+    (click)="resources.personal('watch', false)"
+  >
     {{ "Unwatch" | localize }}
   </button>
-  <button type="button" (click)="resources.personal('archive', true)">
+  <button
+    pButton
+    severity="secondary"
+    type="button"
+    [outlined]="true"
+    (click)="resources.personal('archive', true)"
+  >
     {{ "Archive" | localize }}
   </button>
-  <button type="button" (click)="resources.personal('archive', false)">
+  <button
+    pButton
+    severity="secondary"
+    type="button"
+    [outlined]="true"
+    (click)="resources.personal('archive', false)"
+  >
     {{ "Unarchive" | localize }}
   </button>
   <label for="additional-comment">{{ "Add comment" | localize }}</label>
@@ -31,7 +73,13 @@
     [ngModel]="comment()"
     (ngModelChange)="comment.set($event)"
   ></textarea>
-  <button type="button" (click)="resources.comment(comment()); comment.set('')">
+  <button
+    pButton
+    severity="secondary"
+    type="button"
+    [outlined]="true"
+    (click)="resources.comment(comment()); comment.set('')"
+  >
     {{ "Post comment" | localize }}
   </button>
 </fieldset>
@@ -48,7 +96,13 @@
         <dd>{{ entry.prior | valueText }}</dd>
       </dl>
       @if (entry.status === "OPEN" && editor().canEdit()) {
-        <button type="button" (click)="resolve(entry.key)">
+        <button
+          pButton
+          severity="secondary"
+          type="button"
+          [outlined]="true"
+          (click)="resolve(entry.key)"
+        >
           {{ "Resolve" | localize }}
         </button>
       }
@@ -81,7 +135,13 @@
       [ngModel]="reason()"
       (ngModelChange)="reason.set($event)"
     ></textarea>
-    <button type="button" (click)="forward()">
+    <button
+      pButton
+      severity="secondary"
+      type="button"
+      [outlined]="true"
+      (click)="forward()"
+    >
       {{ "Forward" | localize }}
     </button>
   </fieldset>
@@ -100,15 +160,21 @@
       }}
     </p>
     <button
+      pButton
+      severity="secondary"
       type="button"
       [disabled]="editor().busy() || editor().blocked()"
+      [outlined]="true"
       (click)="resources.administrative('cancel')"
     >
       {{ "Cancel task" | localize }}
     </button>
     <button
+      pButton
+      severity="secondary"
       type="button"
       [disabled]="editor().busy() || editor().blocked()"
+      [outlined]="true"
       (click)="resources.administrative('expire')"
     >
       {{ "Expire overdue task" | localize }}

@@ -1,3 +1,4 @@
+import { ButtonDirective } from 'primeng/button';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -17,8 +18,9 @@ import {
   RuntimeDocument,
 } from '../../domain/runtime-document';
 @Component({
+  host: { class: 'console-fragment' },
   selector: 'app-attachment-control',
-  imports: [FormsModule, LocalizePipe],
+  imports: [ButtonDirective, FormsModule, LocalizePipe],
   templateUrl: './attachment-control.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

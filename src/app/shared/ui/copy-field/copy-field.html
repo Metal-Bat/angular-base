@@ -1,0 +1,43 @@
+<label [for]="controlId()">{{ label() | localize }}</label>
+<div class="copy-control">
+  <input
+    autocomplete="off"
+    class="copy-value"
+    dir="ltr"
+    pInputText
+    readonly
+    spellcheck="false"
+    [attr.aria-describedby]="controlId() + '-hint'"
+    [id]="controlId()"
+    [value]="value()"
+    (click)="copy()"
+    (keydown.enter)="copy()"
+  />
+  <button
+    class="copy-button"
+    pButton
+    severity="secondary"
+    type="button"
+    [attr.aria-label]="'Copy password' | localize"
+    [attr.title]="'Copy password' | localize"
+    [disabled]="!value() || copying()"
+    [text]="true"
+    (click)="copy()"
+  >
+    <i
+      aria-hidden="true"
+      [class]="
+        status() === 'Copied to clipboard' ? 'pi pi-check' : 'pi pi-copy'
+      "
+    ></i>
+  </button>
+</div>
+<p
+  aria-live="polite"
+  class="copy-hint"
+  role="status"
+  [class.sr-only]="!status()"
+  [id]="controlId() + '-hint'"
+>
+  {{ status() | localize }}
+</p>

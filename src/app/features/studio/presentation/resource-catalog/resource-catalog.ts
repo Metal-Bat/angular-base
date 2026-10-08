@@ -1,257 +1,114 @@
-import { displayValue, initialValue, resourceLabel } from './resource-values';
+import { SelectModule } from 'primeng/select';
+import { NgTemplateOutlet } from '@angular/common';
+import { TabsModule } from 'primeng/tabs';
+import { ControlField } from '../../../../shared/ui/control-field/control-field';
+import { RecordSummary } from '../../../../shared/ui/record-summary/record-summary';
 import {
   ChangeDetectionStrategy,
   Component,
   computed,
-  DestroyRef,
   inject,
-  signal,
 } from '@angular/core';
+import { Locale } from '../../../../core/localization/locale';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, RouterLink } from '@angular/router';
-import { ActorState } from '../../../../core/auth/actor-state';
-import { Feedback } from '../../../../core/feedback/feedback';
+import { RouterLink } from '@angular/router';
+import { ButtonDirective } from 'primeng/button';
+import { DialogModule } from 'primeng/dialog';
+import { InputTextModule } from 'primeng/inputtext';
+import { ListQueryEditor } from '../../../../shared/ui/list-query/list-query';
+import { RecordTable } from '../../../../shared/ui/record-table/record-table';
 import { ApiFailure } from '../../../../core/transport/api-failure';
 import { LocalizePipe } from '../../../../shared/ui/localize-pipe';
 import { JsonObject, JsonValue } from '../../../forms/domain/runtime-document';
-import { FieldSpec, parseDocument, ResourceKey } from '../../domain/authoring';
-import { STUDIO_API } from '../../bindings';
+import { parseDocument } from '../../domain/authoring';
+import { resourceLabel } from './resource-values';
+import { WorkflowDiagram } from '../workflow-diagram/workflow-diagram';
+import { CatalogParents } from './catalog-parents';
 @Component({
+  host: { class: 'console-page' },
   selector: 'app-resource-catalog',
-  imports: [FormsModule, RouterLink, LocalizePipe],
+  imports: [
+    ControlField,
+    SelectModule,
+    NgTemplateOutlet,
+    TabsModule,
+    RecordSummary,
+    WorkflowDiagram,
+    DialogModule,
+    InputTextModule,
+    ListQueryEditor,
+    RecordTable,
+    ButtonDirective,
+    FormsModule,
+    RouterLink,
+    LocalizePipe,
+  ],
   templateUrl: './resource-catalog.html',
   styleUrl: './resource-catalog.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ResourceCatalog {
-  private readonly api = inject(STUDIO_API);
-  private readonly route = inject(ActivatedRoute);
-  private readonly feedback = inject(Feedback);
-  readonly key = this.route.snapshot.data['resourceKey'] as ResourceKey;
-  readonly spec = this.api.spec(this.key);
-  readonly items = signal<readonly JsonObject[]>([]);
-  readonly selected = signal<JsonObject | null>(null);
-  readonly values = signal<JsonObject>({});
-  readonly query = signal<JsonObject>({});
-  readonly page = signal(1);
-  readonly totalPages = signal(0);
-  readonly busy = signal(false);
-  readonly dirty = signal(false);
-  readonly invalid = signal<readonly string[]>([]);
-  readonly error = signal('');
-  readonly notice = signal('');
-  readonly secret = signal('');
-  readonly audit = signal<readonly JsonObject[]>([]);
-  readonly auditPage = signal(1);
-  readonly auditPages = signal(0);
-  readonly grants = signal('');
-  readonly grantPage = signal(1);
-  readonly grantPages = signal(0);
-  readonly fields = computed(() =>
-    this.selected() ? this.spec.fields : this.spec.createFields,
+export class ResourceCatalog extends CatalogParents {
+  private readonly locale = inject(Locale);
+  readonly enumChoices = computed(() =>
+    Object.fromEntries(
+      this.fields().map((field) => [
+        field.key,
+        field.options.map((value) => ({
+          value,
+          label: this.locale.text(
+            field.key === 'access_mode'
+              ? ((
+                  {
+                    OPEN: 'Open access',
+                    RESTRICTED: 'Restricted access',
+                  } as Record<string, string>
+                )[value] ?? value)
+              : value,
+          ),
+        })),
+      ]),
+    ),
   );
-  readonly immutable = computed(() =>
-    ['PUBLISHED', 'RETIRED'].includes(String(this.selected()?.['status'])),
-  );
-  readonly canSave = computed(
-    () =>
-      !this.busy() &&
-      !this.invalid().length &&
-      !this.immutable() &&
-      (!this.selected() || this.spec.actions.includes('update')),
-  );
-  readonly reference = computed(() =>
-    String(this.selected()?.['ref_id'] ?? ''),
-  );
-  readonly versionCatalog: string | null =
-    (
-      {
-        forms: 'form-versions',
-        workflows: 'workflow-versions',
-        clients: 'client-releases',
-        'form-components': 'form-component-versions',
-        'form-data-types': 'form-data-type-versions',
-      } as Record<string, string>
-    )[this.key] ?? null;
-  readonly json = JSON.stringify;
-  grantBody = '{}';
-  grantTarget = '';
-  private generation = 0;
-  constructor() {
-    const release = inject(ActorState).register(() => this.clear());
-    inject(DestroyRef).onDestroy(() => {
-      this.clear();
-      release();
-    });
-    const parent = this.route.snapshot.queryParamMap.get('parent');
-    if (parent && this.spec.queryFields[0]) {
-      this.query.set({ [this.spec.queryFields[0].key]: parent });
-    }
-    this.reset();
-    if (!this.spec.queryFields.length || parent) {
-      void this.load();
-    }
-  }
-  private clear(): void {
-    this.generation++;
-    this.items.set([]);
-    this.query.set({});
-    this.selected.set(null);
-    this.values.set({});
-    this.audit.set([]);
-    this.secret.set('');
-    this.grants.set('');
-    this.grantBody = '{}';
-    this.grantTarget = '';
-    this.dirty.set(false);
-    this.invalid.set([]);
-  }
-  async canLeave(): Promise<boolean> {
-    return (
-      !this.dirty() ||
-      this.feedback.confirm('Discard unsaved authoring changes?')
-    );
-  }
-  reset(): void {
-    this.selected.set(null);
-    this.audit.set([]);
-    this.secret.set('');
-    this.grants.set('');
-    this.grantBody = '{}';
-    this.grantTarget = '';
-    this.error.set('');
-    this.dirty.set(false);
-    this.invalid.set([]);
-    const values: Record<string, JsonValue> = {};
-    for (const field of this.spec.createFields) {
-      const value = this.query()[field.key] ?? initialValue(field);
-      if (value !== undefined) {
-        values[field.key] = value;
-      }
-    }
-    this.values.set(values);
-  }
-  async create(): Promise<void> {
-    if (await this.canLeave()) {
-      this.reset();
-    }
-  }
-  display(field: FieldSpec, query = false): string {
-    return displayValue(field, query ? this.query() : this.values());
-  }
-  change(field: FieldSpec, raw: string | boolean, query = false): void {
-    if (!query) {
-      this.dirty.set(true);
-    }
-    try {
-      let value: JsonValue | undefined;
-      if (raw === '' && !field.required) {
-        value = undefined;
-      } else if (field.type === 'boolean') {
-        value = Boolean(raw);
-      } else if (field.type === 'number') {
-        value = Number(raw);
-        if (!Number.isFinite(value)) {
-          throw Error('Invalid number');
-        }
-      } else if (field.type === 'json') {
-        if (String(raw).length > 262144) {
-          throw Error('Document too large');
-        }
-        value = JSON.parse(String(raw)) as JsonValue;
-        parseDocument(JSON.stringify({ value }));
-      } else {
-        value = String(raw);
-      }
-      const state = query ? this.query : this.values;
-      const next = { ...state() };
-      if (value === undefined) {
-        delete next[field.key];
-      } else {
-        next[field.key] = value;
-      }
-      state.set(next);
-      if (!query) {
-        this.dirty.set(true);
-      }
-      this.invalid.update((keys) => keys.filter((key) => key !== field.key));
-      this.error.set(
-        this.invalid().length ? 'Correct all invalid fields before saving' : '',
-      );
-    } catch {
-      this.invalid.update((keys) => [...new Set([...keys, field.key])]);
-      this.error.set('Invalid value: ' + field.title);
-    }
-  }
-  async load(page = 1, report = false): Promise<void> {
-    const generation = ++this.generation;
-    this.busy.set(true);
-    this.error.set('');
-    try {
-      const result = await this.api.search(
-        this.key,
-        page,
-        this.query(),
-        report,
-      );
-      if (generation === this.generation) {
-        this.items.set(result.items);
-        this.page.set(result.page);
-        this.totalPages.set(result.totalPages);
-      }
-    } catch {
-      if (generation === this.generation) {
-        this.error.set(
-          'The catalog is unavailable. Check required filters and permissions.',
-        );
-      }
-    } finally {
-      if (generation === this.generation) {
-        this.busy.set(false);
-      }
-    }
-  }
-  async open(reference: string): Promise<void> {
-    if (!(await this.canLeave())) {
+
+  readonly canEditRow = (row: Record<string, unknown>): boolean =>
+    this.spec.actions.includes('update') &&
+    !['PUBLISHED', 'RETIRED'].includes(String(row['status']));
+  readonly rowActions = (): { key: string; label: string; icon: string }[] =>
+    this.spec.actions.includes('history')
+      ? [{ key: 'history', label: 'History', icon: 'pi pi-history' }]
+      : [];
+  async editRow(row: Record<string, unknown>): Promise<void> {
+    if (this.busy() || !this.canEditRow(row)) {
       return;
     }
-    const generation = ++this.generation;
-    this.busy.set(true);
-    this.secret.set('');
-    this.grants.set('');
-    this.grantBody = '{}';
-    this.grantTarget = '';
-    this.error.set('');
-    try {
-      const row = await this.api.get(this.key, reference);
-      if (generation === this.generation) {
-        this.accept(row);
-      }
-    } catch {
-      if (generation === this.generation) {
-        this.error.set('This definition is unavailable.');
-      }
-    } finally {
-      if (generation === this.generation) {
-        this.busy.set(false);
-      }
+    const epoch = this.actor.epoch;
+    await this.open(this.ref(row as JsonObject));
+    if (
+      epoch === this.actor.epoch &&
+      !this.error() &&
+      this.selected() &&
+      !this.immutable()
+    ) {
+      this.edit();
     }
   }
-  private accept(row: JsonObject): void {
-    const nested = row['client'];
-    this.secret.set(typeof row['secret'] === 'string' ? row['secret'] : '');
-    const value: JsonObject =
-      nested && typeof nested === 'object' && !Array.isArray(nested)
-        ? (nested as JsonObject)
-        : row;
-    this.selected.set(value);
-    this.values.set({ ...value });
-    this.dirty.set(false);
-    this.invalid.set([]);
-    this.audit.set([]);
-    this.notice.set('Saved');
+  async rowAction(event: {
+    key: string;
+    row: Record<string, unknown>;
+  }): Promise<void> {
+    if (event.key !== 'history' || !this.rowActions().length || this.busy()) {
+      return;
+    }
+    const epoch = this.actor.epoch;
+    await this.open(this.ref(event.row as JsonObject));
+    if (epoch === this.actor.epoch && !this.error() && this.selected()) {
+      await this.history();
+    }
   }
   async save(): Promise<void> {
+    const reference = this.reference();
+    const values = structuredClone(this.values());
+    const epoch = this.actor.epoch;
     if (!this.canSave() || this.error()) {
       return;
     }
@@ -259,16 +116,19 @@ export class ResourceCatalog {
       this.key === 'request-types' &&
       Array.isArray(this.selected()?.['client_targets']) &&
       (this.selected()!['client_targets'] as JsonValue[]).length &&
-      Array.isArray(this.values()['client_targets']) &&
-      !(this.values()['client_targets'] as JsonValue[]).length &&
+      Array.isArray(values['client_targets']) &&
+      !(values['client_targets'] as JsonValue[]).length &&
       !(await this.feedback.confirm(
         'Remove all confidential-client restrictions from this request type?',
       ))
     ) {
       return;
     }
+    if (epoch !== this.actor.epoch) {
+      return;
+    }
     await this.command(() =>
-      this.api.write(this.key, this.reference() || null, this.values()),
+      this.api.write(this.key, reference || null, values),
     );
   }
   async command(send: () => Promise<JsonObject>): Promise<void> {
@@ -283,6 +143,7 @@ export class ResourceCatalog {
       if (generation === this.generation) {
         if (result['ref_id'] || result['client']) {
           this.accept(result);
+          this.notice.set('Saved');
         } else {
           this.notice.set('Command completed. Refresh current state.');
         }
@@ -302,6 +163,8 @@ export class ResourceCatalog {
     }
   }
   async act(action: string): Promise<void> {
+    const reference = this.reference();
+    const epoch = this.actor.epoch;
     if (!this.reference() || this.dirty() || this.busy()) {
       return;
     }
@@ -312,24 +175,39 @@ export class ResourceCatalog {
     ) {
       return;
     }
-    await this.command(() =>
-      this.api.action(this.key, this.reference(), action),
-    );
+    if (epoch !== this.actor.epoch) {
+      return;
+    }
+    await this.command(() => this.api.action(this.key, reference, action));
     if (action === 'remove' && !this.error()) {
       this.reset();
       await this.load(this.page());
     }
   }
-  async history(page = 1): Promise<void> {
+  async history(page = 1, size = this.auditQuery().size): Promise<void> {
+    if (page === 1) {
+      this.historyDetail.set(null);
+    }
+    this.historyOpen.set(true);
     if (!this.reference() || this.busy()) {
       return;
     }
     const generation = ++this.generation;
     this.busy.set(true);
     try {
-      const result = await this.api.history(this.key, this.reference(), page);
+      const result = await this.api.history(
+        this.key,
+        this.reference(),
+        page,
+        size,
+      );
       if (generation === this.generation) {
         this.audit.set(result.items);
+        this.auditQuery.update((query) => ({
+          ...query,
+          page: result.page,
+          size,
+        }));
         this.auditPage.set(result.page);
         this.auditPages.set(result.totalPages);
       }
@@ -365,28 +243,36 @@ export class ResourceCatalog {
     }
   }
   async grant(remove = false): Promise<void> {
+    if (this.dirty() || this.busy()) {
+      return;
+    }
+    const reference = this.reference();
+    const target = this.grantTarget;
+    const epoch = this.actor.epoch;
+    let body: JsonObject | undefined;
+    try {
+      body = remove ? undefined : parseDocument(this.grantBody);
+    } catch {
+      this.error.set('Invalid grant document');
+      return;
+    }
     if (
-      this.dirty() ||
       !(await this.feedback.confirm(
         remove ? 'Revoke this exact grant?' : 'Add this access grant?',
-      ))
+      )) ||
+      epoch !== this.actor.epoch
     ) {
       return;
     }
-    try {
-      const body = remove ? undefined : parseDocument(this.grantBody);
-      await this.command(() =>
-        this.api.action(
-          this.key,
-          this.reference(),
-          remove ? 'revoke' : 'grant',
-          body,
-          remove ? this.grantTarget : undefined,
-        ),
-      );
-    } catch {
-      this.error.set('Invalid grant document');
-    }
+    await this.command(() =>
+      this.api.action(
+        this.key,
+        reference,
+        remove ? 'revoke' : 'grant',
+        body,
+        remove ? target : undefined,
+      ),
+    );
   }
   label(row: JsonObject): string {
     return resourceLabel(row);

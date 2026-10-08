@@ -1,3 +1,4 @@
+import { ButtonDirective } from 'primeng/button';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -9,9 +10,11 @@ import {
 import { Feedback, fieldId } from '../../../core/feedback/feedback';
 import { LocalizePipe } from '../localize-pipe';
 @Component({
+  host: { class: 'console-fragment' },
   selector: 'app-command-feedback',
-  imports: [LocalizePipe],
+  imports: [ButtonDirective, LocalizePipe],
   templateUrl: './command-feedback.html',
+  styleUrl: './command-feedback.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CommandFeedback {

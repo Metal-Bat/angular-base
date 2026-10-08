@@ -1,5 +1,9 @@
-<section class="grid gap-4 max-w-3xl">
-  <h1 tabindex="-1">{{ "Form controls" | localize }}</h1>
+<section
+  class="mx-auto grid w-full max-w-3xl gap-5 rounded-2xl border border-console-border bg-console-surface p-6"
+>
+  <h1 class="text-3xl font-bold tracking-tight" tabindex="-1">
+    {{ "Form controls" | localize }}
+  </h1>
   <app-field-wrapper
     #nameField
     pointer="/sample/name"
@@ -53,6 +57,8 @@
     >
   </p-table>
   <p-dialog
+    appendTo="body"
+    position="center"
     [closeAriaLabel]="'Close' | localize"
     [header]="'Preview' | localize"
     [modal]="true"

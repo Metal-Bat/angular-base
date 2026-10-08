@@ -1,5 +1,7 @@
-<h1 tabindex="-1">{{ kind | localize }}</h1>
-<a routerLink="/operations">{{ "Workspace" | localize }}</a>
+<header class="console-page-header">
+  <h1 tabindex="-1">{{ kind | localize }}</h1>
+  <a routerLink="/operations">{{ "Workspace" | localize }}</a>
+</header>
 @if (error()) {
   <p role="alert">{{ error() | localize }}</p>
 }
@@ -9,18 +11,43 @@
 @if (polling.paused()) {
   <p role="status">{{ "Updates paused while offline or hidden" | localize }}</p>
 }
-<button type="button" [disabled]="busy()" (click)="load(page())">
-  {{ "Refresh" | localize }}
+<button
+  class="reload-control"
+  pButton
+  severity="secondary"
+  type="button"
+  [attr.aria-label]="'Refresh' | localize"
+  [attr.title]="'Refresh' | localize"
+  [disabled]="busy()"
+  [text]="true"
+  (click)="load(page())"
+>
+  <i aria-hidden="true" class="pi pi-refresh"></i
+  ><span class="sr-only">{{ "Refresh" | localize }}</span>
 </button>
 @if (notifications) {
-  <button type="button" [disabled]="busy()" (click)="load(page(), true)">
+  <button
+    pButton
+    severity="secondary"
+    type="button"
+    [disabled]="busy()"
+    [outlined]="true"
+    (click)="load(page(), true)"
+  >
     {{ "Notification report" | localize }}
   </button>
 }
 <ul>
   @for (item of items(); track item.ref) {
     <li>
-      <button type="button" [disabled]="busy()" (click)="open(item.ref)">
+      <button
+        pButton
+        severity="secondary"
+        type="button"
+        [disabled]="busy()"
+        [outlined]="true"
+        (click)="open(item.ref)"
+      >
         {{ item.title }}
       </button>
       · {{ item.status | localize }}
@@ -30,13 +57,23 @@
   }
 </ul>
 <button
+  pButton
+  severity="secondary"
   type="button"
   [disabled]="previousDisabled()"
+  [outlined]="true"
   (click)="load(page() - 1)"
 >
   {{ "Previous" | localize }}
 </button>
-<button type="button" [disabled]="nextDisabled()" (click)="load(page() + 1)">
+<button
+  pButton
+  severity="secondary"
+  type="button"
+  [disabled]="nextDisabled()"
+  [outlined]="true"
+  (click)="load(page() + 1)"
+>
   {{ "Next" | localize }}
 </button>
 @if (detail(); as item) {
@@ -44,13 +81,22 @@
     <h2>{{ item.title }}</h2>
     <p>{{ item.status | localize }}</p>
     <p class="whitespace-pre-wrap">{{ item.content }}</p>
-    <button type="button" (click)="detail.set(null)">
+    <button
+      pButton
+      severity="secondary"
+      type="button"
+      [outlined]="true"
+      (click)="detail.set(null)"
+    >
       {{ "Close" | localize }}
     </button>
     @if (notifications) {
       <button
+        pButton
+        severity="secondary"
         type="button"
         [disabled]="busy() || item.read"
+        [outlined]="true"
         (click)="open(item.ref, true)"
       >
         {{ "Mark read" | localize }}
@@ -67,7 +113,14 @@
       }
     } @else {
       @if (readyReport()) {
-        <button type="button" [disabled]="transfer.busy()" (click)="download()">
+        <button
+          pButton
+          severity="secondary"
+          type="button"
+          [disabled]="transfer.busy()"
+          [outlined]="true"
+          (click)="download()"
+        >
           {{ "Download" | localize }}
         </button>
         @if (item.password) {
@@ -78,8 +131,11 @@
         }
       }
       <button
+        pButton
+        severity="secondary"
         type="button"
         [disabled]="busy() || transfer.busy()"
+        [outlined]="true"
         (click)="remove()"
       >
         {{ "Delete report" | localize }}
@@ -92,7 +148,13 @@
   <p role="status">
     {{ "Transfer in progress" | localize }} {{ transfer.progress() }}%
   </p>
-  <button type="button" (click)="transfer.cancel()">
+  <button
+    pButton
+    severity="secondary"
+    type="button"
+    [outlined]="true"
+    (click)="transfer.cancel()"
+  >
     {{ "Cancel transfer" | localize }}
   </button>
 }

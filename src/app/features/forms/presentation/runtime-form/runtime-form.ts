@@ -1,3 +1,4 @@
+import { ButtonDirective } from 'primeng/button';
 import { formPages, pageRender } from '../../domain/form-pages';
 import { validateRuntime } from '../../domain/runtime-validation';
 import { effectiveRequired } from '../../domain/resolved-behavior';
@@ -17,8 +18,9 @@ import { RuntimeNode } from '../runtime-node/runtime-node';
 import { ValueTextPipe } from '../value-text-pipe';
 import { LocalizePipe } from '../../../../shared/ui/localize-pipe';
 @Component({
+  host: { class: 'console-fragment' },
   selector: 'app-runtime-form',
-  imports: [RuntimeNode, ValueTextPipe, LocalizePipe],
+  imports: [ButtonDirective, RuntimeNode, ValueTextPipe, LocalizePipe],
   templateUrl: './runtime-form.html',
   styleUrl: './runtime-form.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

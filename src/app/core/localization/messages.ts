@@ -1,5 +1,102 @@
+import { crudMessages } from './crud-messages';
 // Keys are the English source strings. Canonical backend keys/references are never translated.
 export const persianMessages: Readonly<Record<string, string>> = {
+  ...crudMessages,
+  'Add value': 'افزودن مقدار',
+  'Correct this field before saving': 'این فیلد را پیش از ذخیره اصلاح کنید',
+  'Request failed': 'درخواست ناموفق بود',
+  'Error code': 'کد خطا',
+  'Copy error code': 'کپی کد خطا',
+  'Copied to clipboard': 'در حافظه موقت کپی شد',
+  'Could not copy. Select the code and copy it manually.':
+    'کپی انجام نشد. کد را انتخاب و به صورت دستی کپی کنید.',
+  'Review dependencies and plan version upgrades.':
+    'وابستگی\u200cها را بررسی و ارتقای نسخه\u200cها را برنامه\u200cریزی کنید.',
+  'Define consistent data across your forms.':
+    'داده\u200cهای یکپارچه را برای فرم\u200cهای خود تعریف کنید.',
+  'Build reusable pieces for your forms.':
+    'اجزای قابل استفاده مجدد برای فرم\u200cها بسازید.',
+  'Configure how requests start and run.':
+    'نحوه آغاز و اجرای درخواست\u200cها را تنظیم کنید.',
+  'Administration resources': 'منابع مدیریت',
+  'Studio catalogs': 'فهرست\u200cهای طراحی',
+  'Manage your workspace': 'فضای کاری خود را مدیریت کنید',
+  'Design your workspace': 'فضای کاری خود را طراحی کنید',
+  'Operations workspace': 'فضای کاری عملیات',
+  'Open a request to follow its timeline and outcome.':
+    'درخواست را برای پیگیری رویدادها و نتیجه آن باز کنید.',
+  'Follow progress': 'پیگیری پیشرفت',
+  'Open your task inbox to see what needs your attention.':
+    'کارتابل را برای مشاهده کارهای نیازمند توجه باز کنید.',
+  'Review assigned work': 'بررسی کارهای واگذارشده',
+  'Choose a request type and complete its form.':
+    'نوع درخواست را انتخاب و فرم آن را تکمیل کنید.',
+  'Review your profile and active sessions.':
+    'پروفایل و نشست\u200cهای فعال خود را بررسی کنید.',
+  'Manage files for your requests and tasks.':
+    'فایل\u200cهای درخواست\u200cها و کارهای خود را مدیریت کنید.',
+  'Stay up to date with your work.': 'از آخرین وضعیت کارهای خود آگاه شوید.',
+  'Review the reports available to your account.':
+    'گزارش\u200cهای در دسترس حساب خود را بررسی کنید.',
+  'Explore request types': 'مشاهده انواع درخواست',
+  'Workflow canvas': 'بوم گردش کار',
+  Reload: 'بارگذاری دوباره',
+  'Workspace changes are separate from executable versions. Save, validate, promote, then publish.':
+    'تغییرات فضای کاری از نسخه‌های اجرایی جدا هستند. ابتدا ذخیره و اعتبارسنجی کنید، سپس گراف را ارتقا دهید و منتشر کنید.',
+  'Arrow keys move focused nodes; buttons select nodes. Control and data ports remain separate.':
+    'گام دارای تمرکز را با کلیدهای جهت جابه‌جا کنید و با دکمه‌ها انتخاب کنید. درگاه‌های کنترل و داده جدا هستند.',
+  'Workflow commands': 'فرمان‌های گردش کار',
+  'Step palette': 'فهرست گام‌ها',
+  'Step inspector': 'بررسی گام',
+  'Connections and graph': 'اتصال‌ها و گراف',
+  'Control in': 'ورودی کنترل',
+  'Control out': 'خروجی کنترل',
+  'Zoom in': 'بزرگ‌نمایی',
+  'Zoom out': 'کوچک‌نمایی',
+  'Fit to view': 'نمایش همه گام‌ها',
+  'Reset view': 'بازنشانی نما',
+  steps: 'گام',
+  connections: 'اتصال',
+  'Control flow': 'جریان کنترل',
+  'Data binding': 'اتصال داده',
+  'Build your workflow': 'گردش کار خود را بسازید',
+  'Choose a registered step type and add your first step.':
+    'یک نوع گام ثبت‌شده انتخاب کنید و اولین گام خود را اضافه کنید.',
+  'Drag steps to arrange them. Use arrow keys to move a focused step.':
+    'برای چیدمان، گام‌ها را بکشید. گام دارای تمرکز را با کلیدهای جهت جابه‌جا کنید.',
+  'Add a step': 'افزودن گام',
+  'Select a step on the canvas to inspect its configuration.':
+    'برای بررسی تنظیمات، یک گام را روی بوم انتخاب کنید.',
+  'A clear path forward': 'مسیری روشن برای پیشرفت',
+  'Manage user accounts and access.':
+    'حساب‌های کاربری و دسترسی را مدیریت کنید.',
+  'Organize roles and their permissions.':
+    'نقش‌ها و مجوزهای آن‌ها را سازمان‌دهی کنید.',
+  'Review available access permissions.': 'مجوزهای دسترسی موجود را بررسی کنید.',
+  'Organize people into work groups.':
+    'افراد را در گروه‌های کاری سازمان‌دهی کنید.',
+  'Manage connections to external services.':
+    'اتصال به سرویس‌های خارجی را مدیریت کنید.',
+  'Configure AI agents and their tools.':
+    'عامل‌های هوش مصنوعی و ابزارهای آن‌ها را پیکربندی کنید.',
+  'Inspect and manage background tasks.':
+    'وظایف پس‌زمینه را بررسی و مدیریت کنید.',
+  'Review and control running processes.':
+    'فرایندهای در حال اجرا را بررسی و کنترل کنید.',
+  'Review recorded workspace activity.':
+    'فعالیت‌های ثبت‌شده فضای کاری را بررسی کنید.',
+  'Inspect changes to workspace records.':
+    'تغییرات سوابق فضای کاری را بررسی کنید.',
+  'Everything you need, close at hand.': 'هر آنچه نیاز دارید، در دسترس شما.',
+  'Workspace essentials': 'ابزارهای فضای کاری',
+  'Open workspace': 'باز کردن فضای کاری',
+  'Choose your next step': 'گام بعدی خود را انتخاب کنید',
+  'Your workspace, at a glance': 'فضای کاری شما در یک نگاه',
+  'One workspace. Clear next steps.': 'یک فضای کاری. گام\u200cهای بعدی روشن.',
+  'Keep work moving.': 'کارها را پیش ببرید.',
+  'Your work': 'کارهای شما',
+  Workspace: 'فضای کاری',
+  'Workspace console': 'کنسول فضای کاری',
   Operation: 'عملیات',
   'No permitted operations.': 'عملیات مجازی در دسترس نیست.',
   'Current target': 'هدف فعلی',
@@ -20,12 +117,17 @@ export const persianMessages: Readonly<Record<string, string>> = {
   Studio: 'طراحی',
   Administration: 'مدیریت',
   'Sign in': 'ورود',
+  'Access your requests, tasks, and workflows.':
+    'به درخواست‌ها، کارها و گردش‌کارهای خود دسترسی داشته باشید.',
+  'Enter your username': 'نام کاربری خود را وارد کنید',
+  'Forgot password / reset token': 'فراموشی رمز عبور / کد بازنشانی',
   'Sign out': 'خروج',
   'Signing in…': 'در حال ورود…',
   Username: 'نام کاربری',
-  Password: 'گذرواژه',
-  'Enter a username and password.': 'نام کاربری و گذرواژه را وارد کنید.',
-  'The username or password is incorrect.': 'نام کاربری یا گذرواژه نادرست است.',
+  Password: 'رمز عبور',
+  'Enter a username and password.': 'نام کاربری و رمز عبور را وارد کنید.',
+  'The username or password is incorrect.':
+    'نام کاربری یا رمز عبور نادرست است.',
   'This account or application release cannot sign in.':
     'این حساب یا نسخه برنامه اجازه ورود ندارد.',
   'Sign-in is unavailable. Try again later.':

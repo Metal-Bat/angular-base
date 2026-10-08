@@ -1,6 +1,8 @@
-<h1 tabindex="-1">
-  {{ (kind === "request" ? "Request detail" : "Task detail") | localize }}
-</h1>
+<header class="console-page-header">
+  <h1 tabindex="-1">
+    {{ (kind === "request" ? "Request detail" : "Task detail") | localize }}
+  </h1>
+</header>
 <a
   [routerLink]="
     kind === 'request' ? '/operations/requests' : '/operations/tasks'
@@ -21,8 +23,19 @@
     }}
   </p>
 }
-<button type="button" [disabled]="editor.busy()" (click)="editor.refresh()">
-  {{ "Check current state" | localize }}
+<button
+  class="reload-control"
+  pButton
+  severity="secondary"
+  type="button"
+  [attr.aria-label]="'Check current state' | localize"
+  [attr.title]="'Check current state' | localize"
+  [disabled]="editor.busy()"
+  [text]="true"
+  (click)="editor.refresh()"
+>
+  <i aria-hidden="true" class="pi pi-refresh"></i
+  ><span class="sr-only">{{ "Check current state" | localize }}</span>
 </button>
 @if (editor.item(); as item) {
   <app-case-summary [item]="item" [kind]="kind" />
@@ -48,16 +61,22 @@
     />
     @if (editor.canEdit()) {
       <button
+        pButton
+        severity="secondary"
         type="button"
         [disabled]="resources.transferBusy()"
+        [outlined]="true"
         (click)="editor.save()"
       >
         {{ "Save" | localize }}
       </button>
       @if (canSubmit()) {
         <button
+          pButton
+          severity="secondary"
           type="button"
           [disabled]="resources.transferBusy()"
+          [outlined]="true"
           (click)="editor.submit()"
         >
           {{ "Submit" | localize }}

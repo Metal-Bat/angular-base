@@ -17,6 +17,23 @@ const json = (status, value, headers = {}) =>
       ...headers,
     },
   });
+// Forward only the public application code, never upstream messages or token data.
+async function publicError(response, error) {
+  let body;
+  try {
+    body = await response.json();
+  } catch {
+    return { error };
+  }
+  const code = body?.code;
+  return {
+    error,
+    ...((typeof code === "string" && code.trim() && code.length <= 512) ||
+    (typeof code === "number" && Number.isFinite(code))
+      ? { code }
+      : {}),
+  };
+}
 const equal = (left, right) => {
   const a = Buffer.from(left ?? "");
   const b = Buffer.from(right ?? "");
@@ -217,7 +234,7 @@ export function createSessionBoundary(
           [401, 403, 422, 423, 429].includes(response.status)
             ? response.status
             : 503,
-          { error: "sign_in_failed" },
+          await publicError(response, "sign_in_failed"),
         );
       }
       let result;
@@ -258,21 +275,6 @@ export function createSessionBoundary(
         { "set-cookie": cookie(sessionId, lifetime) },
       );
     }
-    if (["/health", "/ready"].includes(path) && request.method === "GET") {
-      try {
-        const response = await call(path, { method: "GET" });
-        return new Response(await response.arrayBuffer(), {
-          status: response.status,
-          headers: {
-            "content-type":
-              response.headers.get("content-type") ?? "application/json",
-            "cache-control": "no-store",
-          },
-        });
-      } catch {
-        return json(503, { error: "upstream_unavailable" });
-      }
-    }
     if (path === "/session/reset-password" && request.method === "POST") {
       if (
         !(request.headers.get("content-type") ?? "").startsWith(
@@ -305,9 +307,10 @@ export function createSessionBoundary(
           }),
         });
         if (!response.ok)
-          return json(response.status >= 500 ? 503 : 400, {
-            error: "reset_failed",
-          });
+          return json(
+            response.status >= 500 ? 503 : 400,
+            await publicError(response, "reset_failed"),
+          );
         if (session) {
           session.closed = true;
           sessions.delete(id);

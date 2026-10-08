@@ -1,0 +1,41 @@
+<p-dialog
+  [closeAriaLabel]="'Close' | localize"
+  [draggable]="false"
+  [header]="'Select' | localize"
+  [modal]="true"
+  [resizable]="false"
+  [style]="{ width: '48rem', maxWidth: 'calc(100vw - 2rem)' }"
+  [visible]="visible()"
+  (visibleChange)="clear()"
+>
+  <form class="flex items-end gap-2 mb-4" (ngSubmit)="load()">
+    <app-control-field
+      class="flex-1"
+      controlId="reference-search"
+      label="Search"
+      ><input
+        id="reference-search"
+        name="search"
+        pInputText
+        [(ngModel)]="search"
+    /></app-control-field>
+    <button pButton type="submit" [disabled]="busy()">
+      {{ "Search" | localize }}
+    </button>
+  </form>
+  @if (error()) {
+    <p role="alert">{{ error() | localize }}</p>
+  }
+  <app-record-table
+    actionLabel="Select"
+    [busy]="busy()"
+    [columns]="[{ key: 'value', label: 'Name' }]"
+    [page]="page()"
+    [pages]="pages()"
+    [query]="{ ...query(), size: size() }"
+    [rows]="rows()"
+    (opened)="choose($event)"
+    (pageChanged)="load($event)"
+    (queried)="load(1, $event.size)"
+  />
+</p-dialog>

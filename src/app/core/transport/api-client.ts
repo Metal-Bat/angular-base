@@ -1,3 +1,4 @@
+import { RequestErrors } from '../feedback/request-errors';
 import { ActorState } from '../auth/actor-state';
 import {
   HttpClient,
@@ -28,6 +29,7 @@ import type { endpoints } from './generated/operations';
 export class ApiClient {
   private readonly http = inject(HttpClient);
   private readonly actor = inject(ActorState);
+  private readonly errors = inject(RequestErrors);
   private bindActor<T>(
     work: Observable<T>,
     signal = this.actor.abortSignal,
@@ -157,6 +159,7 @@ export class ApiClient {
     operation: (typeof endpoints)[I],
     input: RequestInput<I>,
   ): Observable<HttpResponse<SuccessBody<I>>> {
+    const epoch = this.actor.epoch;
     const { url, body } = this.requestData(operation, input);
     return this.http
       .request(operation.method, url, {
@@ -177,6 +180,13 @@ export class ApiClient {
               : text
                 ? JSON.parse(text)
                 : null;
+          if (this.actor.epoch === epoch) {
+            this.errors.envelope(
+              response.status,
+              value,
+              response.headers.get('x-request-id'),
+            );
+          }
           return response.clone({ body: value as SuccessBody<I> });
         }),
         catchError((error: unknown) => {

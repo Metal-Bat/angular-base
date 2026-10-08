@@ -1,0 +1,125 @@
+:host {
+  display: block;
+}
+.query-panel {
+  display: block;
+  margin-block-end: 0.75rem;
+}
+.query-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+.query-form {
+  display: grid;
+  gap: 1.25rem;
+}
+.query-section {
+  display: grid;
+  gap: 0.85rem;
+  min-inline-size: 0;
+}
+.query-section + .query-section {
+  border-top: 1px solid var(--console-border);
+  padding-block-start: 1rem;
+}
+.query-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+}
+.query-section h3 {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+.query-empty {
+  margin: 0;
+  color: var(--console-muted);
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+.filter-row,
+.sort-row {
+  display: grid;
+  gap: 0.75rem;
+  align-items: start;
+}
+.filter-row {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.5fr) 2.5rem;
+}
+.sort-row {
+  grid-template-columns: minmax(0, 1fr) 10rem 2.5rem;
+}
+.filter-values {
+  min-inline-size: 0;
+}
+.range-values {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+.remove-control {
+  margin-block-start: 1.55rem;
+}
+.query-actions,
+.query-extras {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+.query-settings {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 1rem;
+}
+.page-size-field {
+  inline-size: 8rem;
+}
+.query-extras {
+  flex: 1;
+  min-block-size: 2.5rem;
+  gap: 1rem;
+}
+.query-extra {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  font-size: 0.875rem;
+}
+.query-extra input {
+  margin: 0;
+}
+.query-panel button {
+  margin: 0;
+}
+@media (max-width: 48rem) {
+  .filter-row,
+  .sort-row {
+    grid-template-columns: minmax(0, 1fr) 2.5rem;
+  }
+  .filter-row app-control-field,
+  .filter-values,
+  .sort-row app-control-field {
+    grid-column: 1;
+  }
+  .remove-control {
+    grid-column: 2;
+    grid-row: 1;
+  }
+  .query-actions {
+    margin-inline-start: auto;
+  }
+}
+
+.query-heading > button {
+  min-block-size: 2.25rem;
+  padding: 0.35rem 0.5rem;
+}

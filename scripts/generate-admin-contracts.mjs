@@ -74,7 +74,7 @@ for (const [group, [title, base, defaultPermission]] of Object.entries(
         permission = "processes.recover";
       const read =
         method === "get" ||
-        /\/(search|select|report|history|suggestions)$/.test(suffix);
+        /\/(search|select|history|suggestions|timeline)$/.test(suffix);
       const body = expand(
         op.requestBody?.content?.["application/json"]?.schema,
       );

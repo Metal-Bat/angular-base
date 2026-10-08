@@ -1,0 +1,298 @@
+@if (branches().length > 1) {
+  <app-control-field
+    label="Configuration type"
+    [controlId]="controlId() + '-kind'"
+  >
+    <app-select-control
+      [ariaLabel]="'Configuration type' | localize"
+      [disabled]="disabled()"
+      [inputId]="controlId() + '-kind'"
+      [value]="'' + branches().indexOf(shape())"
+      (selectionChanged)="selectBranch($any($event.target.value))"
+    >
+      @for (option of branches(); track $index) {
+        <option [value]="$index">
+          {{ $any(option["title"] || option["type"]) | localize }}
+        </option>
+      }
+    </app-select-control>
+  </app-control-field>
+}
+@if (!shape()["type"] && !shape()["properties"] && !choices().length) {
+  <app-control-field label="Value type" [controlId]="controlId() + '-type'">
+    <app-select-control
+      [ariaLabel]="'Value type' | localize"
+      [disabled]="disabled()"
+      [inputId]="controlId() + '-type'"
+      [value]="type()"
+      (selectionChanged)="selectKind($any($event.target.value))"
+    >
+      @for (kind of kinds; track kind) {
+        <option [value]="kind">{{ kind | localize }}</option>
+      }
+    </app-select-control>
+  </app-control-field>
+}
+@if (type() === "object") {
+  <fieldset
+    class="object-fields"
+    tabindex="-1"
+    [attr.aria-describedby]="errors()[path()] ? controlId() + '-error' : null"
+    [attr.aria-invalid]="errors()[path()] ? 'true' : null"
+    [disabled]="disabled()"
+    [id]="controlId()"
+  >
+    @if (title()) {
+      <legend>
+        {{ title() | localize }}
+        @if (required()) {
+          <span aria-hidden="true">*</span>
+        }
+      </legend>
+    }
+    @for (field of properties(); track field.key) {
+      <app-schema-input
+        [controlId]="childId(field.key)"
+        [disabled]="disabled()"
+        [errors]="errors()"
+        [label]="field.label"
+        [path]="childPath(field.key)"
+        [required]="field.required"
+        [schema]="field.schema"
+        [value]="object()[field.key]"
+        (referenceRequested)="referenceRequested.emit($event)"
+        (valueChange)="setChild(field.key, $event)"
+      />
+    }
+    @if (shape()["additionalProperties"] !== false) {
+      @for (key of extras(); track key) {
+        <div class="map-entry">
+          <app-schema-input
+            [controlId]="childId(key)"
+            [disabled]="disabled()"
+            [errors]="errors()"
+            [label]="key"
+            [path]="childPath(key)"
+            [schema]="extraSchema()"
+            [value]="object()[key]"
+            (valueChange)="setChild(key, $event)"
+          />
+          <button
+            pButton
+            severity="secondary"
+            type="button"
+            [attr.aria-label]="('Remove' | localize) + ' ' + key"
+            [text]="true"
+            (click)="setChild(key, undefined)"
+          >
+            <i aria-hidden="true" class="pi pi-times"></i>
+          </button>
+        </div>
+      }
+      @if (!properties().length || shape()["additionalProperties"]) {
+        <div class="map-entry">
+          <app-control-field
+            label="Field"
+            [controlId]="controlId() + '-new-key'"
+            ><input
+              pInputText
+              [id]="controlId() + '-new-key'"
+              [ngModelOptions]="{ standalone: true }"
+              [(ngModel)]="newKey"
+          /></app-control-field>
+          <button
+            pButton
+            severity="secondary"
+            type="button"
+            [disabled]="disabled() || !newKey.trim()"
+            [outlined]="true"
+            (click)="addProperty()"
+          >
+            <i aria-hidden="true" class="pi pi-plus"></i>{{ "Add" | localize }}
+          </button>
+        </div>
+      }
+    }
+    @if (errors()[path()]) {
+      <p class="field-error" role="alert" [id]="controlId() + '-error'">
+        {{ errors()[path()] | localize }}
+      </p>
+    }
+  </fieldset>
+} @else if (type() === "array") {
+  <fieldset
+    class="array-fields"
+    tabindex="-1"
+    [attr.aria-describedby]="errors()[path()] ? controlId() + '-error' : null"
+    [attr.aria-invalid]="errors()[path()] ? 'true' : null"
+    [disabled]="disabled()"
+    [id]="controlId()"
+  >
+    <legend>
+      {{ title() | localize }}
+      @if (required()) {
+        <span aria-hidden="true">*</span>
+      }
+    </legend>
+    @for (item of items(); track $index; let index = $index) {
+      <div class="map-entry">
+        <app-schema-input
+          [controlId]="childId(index)"
+          [disabled]="disabled()"
+          [errors]="errors()"
+          [label]="('Value' | localize) + ' ' + (index + 1)"
+          [path]="childPath(index)"
+          [schema]="$any(shape()['items'] || {})"
+          [value]="item"
+          (valueChange)="setItem(index, $event)"
+        />
+        <button
+          pButton
+          severity="secondary"
+          type="button"
+          [attr.aria-label]="('Remove' | localize) + ' ' + (index + 1)"
+          [text]="true"
+          (click)="removeItem(index)"
+        >
+          <i aria-hidden="true" class="pi pi-times"></i>
+        </button>
+      </div>
+    }
+    <button
+      pButton
+      severity="secondary"
+      type="button"
+      [outlined]="true"
+      (click)="addItem()"
+    >
+      <i aria-hidden="true" class="pi pi-plus"></i>{{ "Add value" | localize }}
+    </button>
+    @if (errors()[path()]) {
+      <p class="field-error" role="alert" [id]="controlId() + '-error'">
+        {{ errors()[path()] | localize }}
+      </p>
+    }
+  </fieldset>
+} @else {
+  <app-control-field
+    [controlId]="controlId()"
+    [error]="errors()[path()] || ''"
+    [label]="title()"
+    [required]="required()"
+  >
+    @if (choices().length) {
+      <app-select-control
+        [ariaLabel]="title() | localize"
+        [describedBy]="errors()[path()] ? controlId() + '-error' : null"
+        [disabled]="disabled()"
+        [inputId]="controlId()"
+        [invalid]="!!errors()[path()]"
+        [ngModel]="text()"
+        [ngModelOptions]="{ standalone: true }"
+        [required]="required()"
+        (ngModelChange)="changeText($event)"
+      >
+        <option value="">{{ "Choose a value" | localize }}</option>
+        @for (choice of choices(); track $index) {
+          <option [value]="choice">{{ $any(choice) | localize }}</option>
+        }
+      </app-select-control>
+    } @else if (type() === "boolean") {
+      <input
+        type="checkbox"
+        [attr.aria-describedby]="
+          errors()[path()] ? controlId() + '-error' : null
+        "
+        [attr.aria-invalid]="errors()[path()] ? 'true' : null"
+        [disabled]="disabled()"
+        [id]="controlId()"
+        [ngModel]="draft() === true"
+        [ngModelOptions]="{ standalone: true }"
+        (ngModelChange)="set($event)"
+      />
+    } @else if (type() === "null") {
+      <span>{{ "No value" | localize }}</span>
+    } @else if (type() === "number" || type() === "integer") {
+      <input
+        pInputText
+        type="number"
+        [attr.aria-describedby]="
+          errors()[path()] ? controlId() + '-error' : null
+        "
+        [attr.aria-invalid]="errors()[path()] ? 'true' : null"
+        [disabled]="disabled()"
+        [id]="controlId()"
+        [max]="
+          shape()['maximum'] === undefined ? null : Number(shape()['maximum'])
+        "
+        [min]="
+          shape()['minimum'] === undefined ? null : Number(shape()['minimum'])
+        "
+        [ngModel]="draft()"
+        [ngModelOptions]="{ standalone: true }"
+        [step]="type() === 'integer' ? 1 : 'any'"
+        (ngModelChange)="changeNumber($event)"
+      />
+    } @else if (Number(shape()["maxLength"] || 0) > 1024) {
+      <textarea
+        rows="4"
+        [attr.aria-describedby]="
+          errors()[path()] ? controlId() + '-error' : null
+        "
+        [attr.aria-invalid]="errors()[path()] ? 'true' : null"
+        [disabled]="disabled()"
+        [id]="controlId()"
+        [ngModel]="text()"
+        [ngModelOptions]="{ standalone: true }"
+        (ngModelChange)="changeText($event)"
+      ></textarea>
+    } @else {
+      <div class="reference-control">
+        <input
+          autocomplete="off"
+          pInputText
+          [attr.aria-describedby]="
+            errors()[path()] ? controlId() + '-error' : null
+          "
+          [attr.aria-invalid]="errors()[path()] ? 'true' : null"
+          [disabled]="disabled()"
+          [id]="controlId()"
+          [ngModel]="text()"
+          [ngModelOptions]="{ standalone: true }"
+          [placeholder]="
+            shape()['format'] === 'date-time' ? 'YYYY-MM-DDTHH:mm:ssZ' : ''
+          "
+          [required]="required()"
+          [type]="
+            secret()
+              ? 'password'
+              : shape()['format'] === 'email'
+                ? 'email'
+                : 'text'
+          "
+          (ngModelChange)="changeText($event)"
+        />
+        @if (canPick()) {
+          <button
+            pButton
+            severity="secondary"
+            type="button"
+            [attr.aria-label]="
+              ('Select' | localize) + ' ' + (title() | localize)
+            "
+            [disabled]="disabled()"
+            [outlined]="true"
+            (click)="pick()"
+          >
+            <i aria-hidden="true" class="pi pi-search"></i>
+          </button>
+        }
+      </div>
+    }
+    @if (shape()["format"] === "date-time") {
+      <small fieldHint>{{
+        "Use a datetime with a timezone." | localize
+      }}</small>
+    }
+  </app-control-field>
+}

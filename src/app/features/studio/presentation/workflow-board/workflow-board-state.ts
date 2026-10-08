@@ -43,7 +43,7 @@ export abstract class WorkflowBoardState {
     }
   });
   readonly readonly = computed(() => this.busy() || this.status() !== 'DRAFT');
-  selected = '';
+  readonly selected = signal('');
   selectedJson = '{}';
   graphJson = '{}';
   stepKey = 'step';
@@ -71,7 +71,7 @@ export abstract class WorkflowBoardState {
   protected clear(): void {
     this.generation++;
     this.reference.set('');
-    this.selected = '';
+    this.selected.set('');
     this.source = '';
     this.target = '';
     this.requestType = '';
@@ -118,6 +118,8 @@ export abstract class WorkflowBoardState {
       this.reference.set(state.version);
       this.state.set(state);
       this.document.set(state.document);
+      this.selected.set('');
+      this.selectedJson = '{}';
       this.graphJson = JSON.stringify(state.document.graph, null, 2);
       this.collapsedJson = JSON.stringify(state.document.collapsed);
       this.routingJson = JSON.stringify(state.document.routing, null, 2);
@@ -270,7 +272,7 @@ export abstract class WorkflowBoardState {
               : {
                   workflow_version_ref_id: this.reference(),
                   request_type_ref_id: this.requestType,
-                  current_step_key: this.selected,
+                  current_step_key: this.selected(),
                   page,
                   size: 20,
                 };

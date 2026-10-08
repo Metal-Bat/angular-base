@@ -1,3 +1,4 @@
+import { computed } from '@angular/core';
 import {
   HttpClient,
   provideHttpClient,
@@ -71,5 +72,55 @@ describe('Locale and shared theme', () => {
     );
     await locale.set('fa');
     expect(locale.number(125)).not.toBe('125');
+  });
+});
+
+describe('Extensible language selection', () => {
+  afterEach(() => {
+    document.documentElement.lang = 'en';
+    document.documentElement.dir = 'ltr';
+  });
+  it('provides English, Persian and Arabic with native names and correct directions', async () => {
+    const locale = TestBed.inject(Locale);
+    expect(locale.languages.map((language) => language.code)).toEqual([
+      'en',
+      'fa',
+      'ar',
+    ]);
+    await locale.set('ar');
+    expect(document.documentElement.lang).toBe('ar');
+    expect(document.documentElement.dir).toBe('rtl');
+    expect(locale.text('Language')).toBe('اللغة');
+    expect(locale.text('Sign in')).toBe('تسجيل الدخول');
+    expect(locale.text('Username')).toBe('اسم المستخدم');
+    expect(locale.text('opaque/option')).toBe('opaque/option');
+    expect(locale.contentLanguage()).toBe('en');
+    await locale.set('fa');
+    expect(locale.text('Username')).toBe('نام کاربری');
+    expect(locale.contentLanguage()).toBe('fa');
+    await locale.set('en');
+    expect(locale.text('Username')).toBe('Username');
+    expect(document.documentElement.dir).toBe('ltr');
+  });
+  it('updates reactive labels when the selected catalog changes', async () => {
+    const locale = TestBed.inject(Locale);
+    const label = computed(() => locale.text('Username'));
+    expect(label()).toBe('Username');
+    await locale.set('fa');
+    expect(label()).toBe('نام کاربری');
+    await locale.set('ar');
+    expect(label()).toBe('اسم المستخدم');
+    await locale.set('en');
+    expect(label()).toBe('Username');
+  });
+  it('keeps the latest language and catalog when asynchronous switches overlap', async () => {
+    const locale = TestBed.inject(Locale);
+    await Promise.all([locale.set('fa'), locale.set('ar'), locale.set('en')]);
+    expect(locale.language()).toBe('en');
+    expect(locale.text('Sign in')).toBe('Sign in');
+    await Promise.all([locale.set('fa'), locale.set('ar')]);
+    expect(locale.language()).toBe('ar');
+    expect(locale.text('Sign in')).toBe('تسجيل الدخول');
+    expect(locale.changing()).toBe(false);
   });
 });

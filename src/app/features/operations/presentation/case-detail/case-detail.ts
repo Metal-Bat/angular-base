@@ -1,3 +1,4 @@
+import { ButtonDirective } from 'primeng/button';
 import { RequestActions } from '../request-actions/request-actions';
 import { BoundedPolling } from '../../../../core/transport/bounded-polling';
 import {
@@ -29,6 +30,7 @@ import { CaseHistory } from '../case-history/case-history';
 import { AiApproval } from '../ai-approval/ai-approval';
 import { AdvancedTask } from '../advanced-task/advanced-task';
 @Component({
+  host: { class: 'console-page' },
   selector: 'app-case-detail',
   providers: [
     BinaryTransfer,
@@ -44,6 +46,7 @@ import { AdvancedTask } from '../advanced-task/advanced-task';
     },
   ],
   imports: [
+    ButtonDirective,
     CaseSummary,
     RequestActions,
     TaskControls,

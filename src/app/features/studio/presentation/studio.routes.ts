@@ -1,6 +1,7 @@
 import { areaPermissions } from '../../../core/permissions/area-access';
 import { StudioApi } from '../infrastructure/studio-api';
-import { STUDIO_API } from '../bindings';
+import { CANVAS_LOADER, STUDIO_API } from '../bindings';
+import { loadWorkflowCanvas } from './workflow-diagram.routes';
 import { ResourceKey } from '../domain/authoring';
 import { Routes } from '@angular/router';
 
@@ -9,7 +10,10 @@ import { routeAccessGuard } from '../../../core/permissions/route-access-guard';
 export const studioRoutes: Routes = [
   {
     path: '',
-    providers: [{ provide: STUDIO_API, useExisting: StudioApi }],
+    providers: [
+      { provide: STUDIO_API, useExisting: StudioApi },
+      { provide: CANVAS_LOADER, useValue: loadWorkflowCanvas },
+    ],
     canActivateChild: [routeAccessGuard],
     children: [
       ...(

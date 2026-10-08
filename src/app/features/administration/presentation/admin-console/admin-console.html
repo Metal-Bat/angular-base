@@ -1,8 +1,8 @@
 <section aria-labelledby="admin-title" class="admin-console">
-  <h1 id="admin-title">{{ title | localize }}</h1>
+  <h1 id="admin-title" tabindex="-1">{{ title | localize }}</h1>
   <label for="admin-command">{{ "Operation" | localize }}</label>
-  <select
-    id="admin-command"
+  <app-select-control
+    inputId="admin-command"
     [disabled]="busy()"
     [ngModel]="selected()?.id"
     (ngModelChange)="choose($event)"
@@ -10,7 +10,7 @@
     @for (command of commands(); track command.id) {
       <option [value]="command.id">{{ command.title | localize }}</option>
     }
-  </select>
+  </app-select-control>
   @if (!commands().length) {
     <p role="status">{{ "No permitted operations." | localize }}</p>
   }
@@ -68,18 +68,18 @@
                   (ngModelChange)="change(field, location, $event)"
                 />
               } @else if (field.options.length) {
-                <select
-                  [attr.aria-describedby]="
+                <app-select-control
+                  [describedBy]="
                     invalid().includes(location + '.' + field.key)
                       ? location + '-' + field.key + '-error'
                       : null
                   "
-                  [attr.aria-invalid]="
+                  [inputId]="location + '-' + field.key"
+                  [invalid]="
                     invalid().includes(location + '.' + field.key)
                       ? 'true'
                       : null
                   "
-                  [id]="location + '-' + field.key"
                   [name]="location + '-' + field.key"
                   [ngModel]="display(field, location)"
                   [required]="field.required"
@@ -89,7 +89,7 @@
                   @for (option of field.options; track option) {
                     <option [value]="option">{{ option }}</option>
                   }
-                </select>
+                </app-select-control>
               } @else if (field.type === "json") {
                 <textarea
                   autocomplete="off"
@@ -147,7 +147,7 @@
           </fieldset>
         }
       }
-      <button type="submit" [disabled]="busy() || invalid().length > 0">
+      <button pButton type="submit" [disabled]="busy() || invalid().length > 0">
         {{ (command.mutation ? "Review command" : "Load") | localize }}
       </button>
     </form>
@@ -169,7 +169,13 @@
         <p>{{ "Request ID" | localize }}: {{ response.requestId }}</p>
       }
       @for (row of rows(); track $index) {
-        <button type="button" (click)="use(row)">
+        <button
+          pButton
+          severity="secondary"
+          type="button"
+          [outlined]="true"
+          (click)="use(row)"
+        >
           {{ "Use current row" | localize }}:
           {{
             row["name"] ||
@@ -183,16 +189,22 @@
       @if (response.totalPages > 1) {
         <nav aria-label="Result pages">
           <button
+            pButton
+            severity="secondary"
             type="button"
             [disabled]="busy() || response.page <= 1"
+            [outlined]="true"
             (click)="execute(response.page - 1)"
           >
             {{ "Previous" | localize }}
           </button>
           <span>{{ response.page }} / {{ response.totalPages }}</span>
           <button
+            pButton
+            severity="secondary"
             type="button"
             [disabled]="busy() || response.page >= response.totalPages"
+            [outlined]="true"
             (click)="execute(response.page + 1)"
           >
             {{ "Next" | localize }}

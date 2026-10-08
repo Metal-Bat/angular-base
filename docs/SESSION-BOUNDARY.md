@@ -2,7 +2,9 @@
 
 Accepted implementation decision, October 2, 2026: use a same-origin Node session boundary for production confidential-client identity. The Angular bundle receives public configuration only. The FastAPI session binds client identity and release during authenticated login; browser headers cannot establish confidential identity.
 
-`server/main.mjs` listens on loopback:3000. In development, Angular proxies `/session/**`, `/api/**`, `/health` and `/ready` there. Run `mise run session` in another terminal alongside `mise run dev`. FastAPI must be reachable at the configured upstream origin. The area pages still describe planned business features. Steps 11–13 now provide login, account bootstrap, permissions and server renewal; see [API-CLIENT.md](API-CLIENT.md).
+`server/main.mjs` listens on loopback:3000. In development, Angular proxies `/session/**`, `/api/**`, `/health` and `/ready` there; the boundary forwards backend calls to `http://127.0.0.1:8000` by default. `mise run dev` or `npm start` starts the boundary first and then Angular on `http://localhost:4200`. Stopping the command stops both owned processes. An already-running boundary is reused and remains running when the command stops. FastAPI must already be running at the configured upstream origin. For separate terminals, use `mise run session` and `npm run start:angular`. Steps 11–13 provide login, account bootstrap, permissions and server renewal; see [API-CLIENT.md](API-CLIENT.md).
+
+An `ECONNREFUSED 127.0.0.1:3000` error means the session boundary is missing, even if the backend is healthy on port 8000. FastAPI does not implement `/session/status`; pointing that route directly at port 8000 would break the browser authentication contract. Restart the development command after updating to the combined launcher. Keep `BOUNDARY_PORT=3000` for this launcher to match `src/proxy.conf.json`; `BOUNDARY_UPSTREAM_ORIGIN` selects the backend independently.
 
 ## Server configuration
 

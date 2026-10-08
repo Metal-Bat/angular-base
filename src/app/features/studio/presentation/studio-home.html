@@ -1,17 +1,41 @@
-<app-area-overview
-  description="Design the forms and workflows used by your organization."
-  heading="Studio"
-  [capabilities]="capabilities"
-/>
-
-<nav aria-label="Studio catalogs">
-  <a routerLink="/studio/forms">{{ "Forms" | localize }}</a> ·
-  <a routerLink="/studio/workflows">{{ "Workflows" | localize }}</a> ·
-  <a routerLink="/studio/request-types">{{ "Request types" | localize }}</a> ·
-  <a routerLink="/studio/clients">{{ "Clients and releases" | localize }}</a> ·
-  <a routerLink="/studio/form-components">{{
-    "Reusable components" | localize
-  }}</a>
-  · <a routerLink="/studio/form-data-types">{{ "Data types" | localize }}</a> ·
-  <a routerLink="/studio/library">{{ "Library and upgrades" | localize }}</a>
+<header class="console-page-header">
+  <div>
+    <span class="console-eyebrow">{{ "Studio catalogs" | localize }}</span>
+    <h1 tabindex="-1">{{ "Studio" | localize }}</h1>
+    <p class="console-description">
+      {{
+        "Design the forms and workflows used by your organization." | localize
+      }}
+    </p>
+  </div>
+</header>
+<nav class="console-card-grid" [attr.aria-label]="'Studio catalogs' | localize">
+  @for (card of catalogs(); track card.path) {
+    <a class="console-card" [routerLink]="['/studio', card.path]">
+      <span aria-hidden="true" class="console-card-icon"
+        ><i [class]="card.icon"></i
+      ></span>
+      <strong>{{ card.title | localize }}</strong>
+      <p>{{ card.description | localize }}</p>
+      <span class="console-card-action"
+        >{{ "Open workspace" | localize
+        }}<i aria-hidden="true" class="pi pi-arrow-right"></i
+      ></span>
+    </a>
+  } @empty {
+    <p role="status">{{ "No permitted operations." | localize }}</p>
+  }
 </nav>
+<section aria-labelledby="publication-heading" class="console-panel">
+  <h2 id="publication-heading">{{ "Publication" | localize }}</h2>
+  <p class="console-description">
+    {{ "Publish immutable versions for execution." | localize }}
+  </p>
+  <div class="flex flex-wrap gap-3 text-sm text-console-muted">
+    <span>{{ "Save draft" | localize }}</span
+    ><i aria-hidden="true" class="pi pi-angle-right"></i>
+    <span>{{ "Validate" | localize }}</span
+    ><i aria-hidden="true" class="pi pi-angle-right"></i>
+    <span>{{ "Publish" | localize }}</span>
+  </div>
+</section>

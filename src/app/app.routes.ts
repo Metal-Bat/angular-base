@@ -2,12 +2,11 @@ import { routeAccessGuard } from './core/permissions/route-access-guard';
 import { previewRoutes } from './core/development/preview-routes';
 import { Routes } from '@angular/router';
 
-import { AppShell } from './core/layout/app-shell';
-
 export const routes: Routes = [
   {
     path: '',
-    component: AppShell,
+    loadComponent: () =>
+      import('./core/layout/app-shell').then((m) => m.AppShell),
     children: [
       {
         path: 'login',
@@ -24,11 +23,26 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'account/profile',
+        title: 'My information | Workflow workspace',
+        canActivate: [routeAccessGuard],
+        data: { access: 'authenticated', requiredPermissions: [] },
+        loadComponent: () =>
+          import('./core/auth/profile/profile').then((m) => m.Profile),
+      },
+      {
         path: 'account',
         canActivate: [routeAccessGuard],
         data: { access: 'authenticated', requiredPermissions: [] },
         loadComponent: () =>
           import('./core/auth/account/account').then((m) => m.Account),
+      },
+      {
+        path: 'users',
+        loadChildren: () =>
+          import('./features/users/presentation/users.routes').then(
+            (m) => m.usersRoutes,
+          ),
       },
       { path: '', pathMatch: 'full', redirectTo: 'operations' },
       {

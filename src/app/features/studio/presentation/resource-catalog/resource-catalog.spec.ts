@@ -23,16 +23,41 @@ const targets: FieldSpec = {
   required: false,
 };
 describe('Definition command protection', () => {
+  it('opens direct editing from refreshed detail and blocks freshly published versions', async () => {
+    const fixture = TestBed.createComponent(ResourceCatalog);
+    const editor = fixture.componentInstance;
+    await fixture.whenStable();
+    await editor.editRow({ ref_id: 'listed', name: 'Old name' });
+    expect(editor.formOpen()).toBe(true);
+    expect(editor.values()['name']).toBe('Original');
+    await editor.closeForm();
+    get.mockResolvedValue({
+      ref_id: 'published',
+      name: 'Published',
+      status: 'PUBLISHED',
+    });
+    await editor.editRow({ ref_id: 'listed', name: 'Old name' });
+    expect(editor.formOpen()).toBe(false);
+  });
   const write = vi.fn();
   const get = vi.fn();
-  beforeEach(() => {
+  const search = vi.fn();
+  const action = vi.fn();
+  beforeEach(async () => {
     write.mockReset();
+    action.mockReset().mockResolvedValue({});
+    search.mockReset().mockResolvedValue({
+      items: [{ ref_id: 'listed', name: 'Listed' }],
+      page: 1,
+      totalPages: 2,
+    });
     get.mockResolvedValue({
       ref_id: 'current',
       name: 'Original',
       client_targets: [{ client_ref_id: 'protected-client' }],
     });
     TestBed.configureTestingModule({
+      imports: [ResourceCatalog],
       providers: [
         provideRouter([]),
         {
@@ -55,17 +80,15 @@ describe('Definition command protection', () => {
               queryFields: [],
               actions: ['update'],
             }),
-            search: async (): Promise<unknown> => ({
-              items: [],
-              page: 1,
-              totalPages: 0,
-            }),
+            search,
             get,
             write,
+            action,
           },
         },
       ],
     });
+    await TestBed.compileComponents();
   });
   it('preserves restrictions on rename and blocks invalid JSON even after another edit', async () => {
     const fixture = TestBed.createComponent(ResourceCatalog);
@@ -107,5 +130,125 @@ describe('Definition command protection', () => {
     expect(editor.secret()).toBe('');
     expect(editor.selected()).toBeNull();
     expect(editor.values()).toEqual({});
+  });
+  it('reports the successfully applied list and keeps the table after queuing', async () => {
+    const fixture = TestBed.createComponent(ResourceCatalog);
+    await fixture.whenStable();
+    const editor = fixture.componentInstance;
+    const filters = [
+      { field_name: 'name', operation: 'contains', value: 'applied' },
+    ];
+    await editor.load(1, false, {
+      size: 35,
+      filters,
+      sort_orders: [{ field_name: 'name', operation: 'desc' }],
+    });
+    const table = editor.items();
+    editor.query.set({
+      filters: [{ field_name: 'name', operation: 'equal', value: 'draft' }],
+    });
+    search.mockResolvedValueOnce({
+      items: [{ ref_id: 'report', status: 'QUEUED' }],
+      page: 1,
+      totalPages: 1,
+    });
+    const report = editor.load(editor.page(), true);
+    TestBed.inject(Feedback).answer(true);
+    await report;
+    expect(search).toHaveBeenLastCalledWith(
+      'request-types',
+      1,
+      {
+        size: 35,
+        filters,
+        sort_orders: [{ field_name: 'name', operation: 'desc' }],
+        page: 1,
+      },
+      true,
+    );
+    expect(editor.items()).toBe(table);
+    expect(editor.queuedReport()?.['status']).toBe('QUEUED');
+  });
+  it('retains the applied query and rows when a new search fails', async () => {
+    const fixture = TestBed.createComponent(ResourceCatalog);
+    await fixture.whenStable();
+    const editor = fixture.componentInstance;
+    const applied = editor.appliedQuery();
+    const rows = editor.items();
+    search.mockRejectedValueOnce(Error('offline'));
+    await editor.load(1, false, {
+      filters: [{ field_name: 'name', operation: 'equal', value: 'failed' }],
+    });
+    expect(editor.appliedQuery()).toBe(applied);
+    expect(editor.items()).toBe(rows);
+    await editor.load(2);
+    expect(search).toHaveBeenLastCalledWith(
+      'request-types',
+      2,
+      { ...applied, page: 2 },
+      false,
+    );
+  });
+  it('keeps invalid JSON editable and cancels without persisting changes', async () => {
+    const fixture = TestBed.createComponent(ResourceCatalog);
+    await fixture.whenStable();
+    const editor = fixture.componentInstance;
+    await editor.open('current');
+    editor.edit();
+    editor.change(targets, '{');
+    expect(editor.controlsDisabled()).toBe(false);
+    editor.change(targets, '[]');
+    expect(editor.canSave()).toBe(true);
+    const closing = editor.closeForm();
+    TestBed.inject(Feedback).answer(true);
+    await closing;
+    expect(editor.formOpen()).toBe(false);
+    expect(editor.values()['client_targets']).toEqual([
+      { client_ref_id: 'protected-client' },
+    ]);
+    expect(write).not.toHaveBeenCalled();
+  });
+  it('prevents editing published and retired versions', async () => {
+    get.mockResolvedValue({
+      ref_id: 'published',
+      name: 'Published',
+      status: 'PUBLISHED',
+    });
+    const fixture = TestBed.createComponent(ResourceCatalog);
+    await fixture.whenStable();
+    await fixture.componentInstance.open('published');
+    expect(fixture.componentInstance.immutable()).toBe(true);
+    expect(fixture.componentInstance.canSave()).toBe(false);
+  });
+  it('freezes a grant target and document while confirmation is pending', async () => {
+    const fixture = TestBed.createComponent(ResourceCatalog);
+    await fixture.whenStable();
+    const editor = fixture.componentInstance;
+    await editor.open('current');
+    editor.grantBody = '{"target":"reviewer"}';
+    const granting = editor.grant();
+    editor.grantBody = '{"target":"other"}';
+    editor.selected.set({ ref_id: 'other' });
+    TestBed.inject(Feedback).answer(true);
+    await granting;
+    expect(action).toHaveBeenCalledWith(
+      'request-types',
+      'current',
+      'grant',
+      { target: 'reviewer' },
+      undefined,
+    );
+  });
+  it('does not send a confirmed grant after the actor changes', async () => {
+    const fixture = TestBed.createComponent(ResourceCatalog);
+    await fixture.whenStable();
+    const editor = fixture.componentInstance;
+    await editor.open('current');
+    editor.grantBody = '{"target":"reviewer"}';
+    const granting = editor.grant();
+    TestBed.inject(ActorState).reset();
+    TestBed.inject(Feedback).answer(true);
+    await granting;
+    expect(action).not.toHaveBeenCalled();
   });
 });

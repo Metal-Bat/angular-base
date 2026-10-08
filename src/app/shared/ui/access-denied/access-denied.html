@@ -5,8 +5,18 @@
       "Your session could not be verified. Try checking it again." | localize
     }}
   </p>
-  <button type="button" (click)="retry()">
-    {{ "Retry session check" | localize }}
+  <button
+    class="reload-control"
+    pButton
+    severity="secondary"
+    type="button"
+    [attr.aria-label]="'Retry session check' | localize"
+    [attr.title]="'Retry session check' | localize"
+    [text]="true"
+    (click)="retry()"
+  >
+    <i aria-hidden="true" class="pi pi-refresh"></i
+    ><span class="sr-only">{{ "Retry session check" | localize }}</span>
   </button>
 } @else {
   <h1 tabindex="-1">{{ "Access denied" | localize }}</h1>

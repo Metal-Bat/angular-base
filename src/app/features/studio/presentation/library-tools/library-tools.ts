@@ -1,6 +1,13 @@
+import { emptyQuery } from '../../../../shared/domain/list-query';
+import { SelectControl } from '../../../../shared/ui/select-control/select-control';
+import { DialogModule } from 'primeng/dialog';
+import { Locale } from '../../../../core/localization/locale';
+import { RecordTable } from '../../../../shared/ui/record-table/record-table';
+import { ButtonDirective } from 'primeng/button';
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   DestroyRef,
   inject,
   signal,
@@ -14,20 +21,50 @@ import { JsonObject } from '../../../forms/domain/runtime-document';
 import { parseDocument } from '../../domain/authoring';
 import { STUDIO_API } from '../../bindings';
 @Component({
+  host: { class: 'console-page' },
   selector: 'app-library-tools',
-  imports: [FormsModule, RouterLink, LocalizePipe],
+  imports: [
+    SelectControl,
+    DialogModule,
+    RecordTable,
+    ButtonDirective,
+    FormsModule,
+    RouterLink,
+    LocalizePipe,
+  ],
   templateUrl: './library-tools.html',
   styleUrl: './library-tools.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LibraryTools {
   private readonly api = inject(STUDIO_API);
+  private readonly actor = inject(ActorState);
+  private readonly locale = inject(Locale);
+  readonly templateOpen = signal(false);
+  readonly selectedName = signal('');
+  readonly tableQuery = computed(() => ({
+    ...emptyQuery(),
+    size: Number(this.appliedQuery()?.['size'] ?? 20),
+  }));
+  readonly appliedQuery = signal<JsonObject | null>(null);
   private readonly feedback = inject(Feedback);
+  readonly selection = signal(false);
+  readonly columns = computed(() =>
+    this.selection()
+      ? [{ key: 'value', label: 'Name' }]
+      : [
+          { key: 'code', label: 'Code' },
+          { key: 'title', label: 'Name' },
+          { key: 'number', label: 'Version' },
+          { key: 'status', label: 'Status' },
+        ],
+  );
   readonly items = signal<readonly JsonObject[]>([]);
   readonly page = signal(1);
   readonly totalPages = signal(0);
   readonly busy = signal(false);
   readonly error = signal('');
+  readonly notice = signal('');
   readonly result = signal('');
   readonly upgradeReady = signal(false);
   search = '';
@@ -43,7 +80,7 @@ export class LibraryTools {
   private previewPayload = '';
   private generation = 0;
   constructor() {
-    const release = inject(ActorState).register(() => this.clear());
+    const release = this.actor.register(() => this.clear());
     inject(DestroyRef).onDestroy(() => {
       this.clear();
       release();
@@ -52,12 +89,17 @@ export class LibraryTools {
   }
   private clear(): void {
     this.generation++;
+    this.templateOpen.set(false);
+    this.selectedName.set('');
+    this.appliedQuery.set(null);
     this.items.set([]);
+    this.selection.set(false);
     this.search = '';
     this.templateCode = '';
     this.templateName = '';
     this.busy.set(false);
     this.error.set('');
+    this.notice.set('');
     this.reference = '';
     this.otherReference = '';
     this.formReference = '';
@@ -66,18 +108,27 @@ export class LibraryTools {
     this.upgrades = '';
     this.upgradeReady.set(false);
   }
-  async load(page = 1, selection = false): Promise<void> {
+  async load(
+    page = 1,
+    selection = this.selection(),
+    apply = false,
+    size?: number,
+  ): Promise<void> {
     await this.run(async (generation) => {
+      const query: JsonObject =
+        !apply && this.appliedQuery()
+          ? { ...this.appliedQuery()!, page, ...(size ? { size } : {}) }
+          : {
+              page,
+              size: size ?? 20,
+              kind: this.kind,
+              locale: this.locale.contentLanguage(),
+              capabilities: [],
+              ...(this.search ? { search: this.search } : {}),
+            };
       const value = await this.api.auxiliary(
         selection ? 'selection' : 'library',
-        {
-          page,
-          size: 20,
-          kind: this.kind,
-          locale: 'en',
-          capabilities: [],
-          ...(this.search ? { search: this.search } : {}),
-        },
+        query,
       );
       if (generation !== this.generation) {
         return;
@@ -90,6 +141,8 @@ export class LibraryTools {
         this.items.set(result.items);
         this.totalPages.set(result.totalPages);
       }
+      this.appliedQuery.set(structuredClone(query));
+      this.selection.set(selection);
       this.page.set(page);
     });
   }
@@ -120,7 +173,23 @@ export class LibraryTools {
       }
     });
   }
+  closeTemplate(): void {
+    if (this.busy()) {
+      return;
+    }
+    this.templateOpen.set(false);
+    this.templateCode = '';
+    this.templateName = '';
+  }
   async createTemplate(): Promise<void> {
+    const epoch = this.actor.epoch;
+    const body: JsonObject = {
+      kind: this.templateKind,
+      source_ref_id: this.reference,
+      code: this.templateCode,
+      name: this.templateName,
+      mode: this.templateMode,
+    };
     if (
       !(await this.feedback.confirm(
         'Create an explicit template draft from this exact source version?',
@@ -128,15 +197,16 @@ export class LibraryTools {
     ) {
       return;
     }
+    if (epoch !== this.actor.epoch) {
+      return;
+    }
     await this.run(async (generation) => {
-      const result = await this.api.auxiliary('template', {
-        kind: this.templateKind,
-        source_ref_id: this.reference,
-        code: this.templateCode,
-        name: this.templateName,
-        mode: this.templateMode,
-      });
+      const result = await this.api.auxiliary('template', body);
       if (generation === this.generation) {
+        this.notice.set('Template draft created.');
+        this.templateOpen.set(false);
+        this.templateCode = '';
+        this.templateName = '';
         this.result.set(JSON.stringify(result, null, 2));
       }
     });
@@ -194,8 +264,10 @@ export class LibraryTools {
   }
   choose(item: JsonObject): void {
     this.reference = this.ref(item);
-    if (typeof item['kind'] === 'string') {
-      this.kind = item['kind'];
+    this.selectedName.set(this.label(item));
+    const kind = item['kind'] ?? this.appliedQuery()?.['kind'];
+    if (typeof kind === 'string') {
+      this.kind = kind;
     }
     this.result.set(JSON.stringify(item, null, 2));
   }

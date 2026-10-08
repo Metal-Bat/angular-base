@@ -1,3 +1,4 @@
+import { ButtonDirective } from 'primeng/button';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -12,8 +13,9 @@ import { RouterLink } from '@angular/router';
 import { LocalizePipe } from '../../../shared/ui/localize-pipe';
 import { AuthSession } from '../auth-session';
 @Component({
+  host: { class: 'console-page console-auth' },
   selector: 'app-password-reset',
-  imports: [FormsModule, RouterLink, LocalizePipe],
+  imports: [ButtonDirective, FormsModule, RouterLink, LocalizePipe],
   templateUrl: './password-reset.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

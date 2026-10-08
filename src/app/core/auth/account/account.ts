@@ -1,3 +1,4 @@
+import { ButtonDirective } from 'primeng/button';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -21,8 +22,9 @@ type SessionRow = {
   expires: string;
 };
 @Component({
+  host: { class: 'console-page' },
   selector: 'app-account',
-  imports: [FormsModule, LocalizePipe],
+  imports: [ButtonDirective, FormsModule, LocalizePipe],
   templateUrl: './account.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

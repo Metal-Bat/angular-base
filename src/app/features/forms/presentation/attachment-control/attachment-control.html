@@ -21,8 +21,11 @@
           {{ attachment.caption || ("Attachment" | localize) }} ·
           {{ attachment.contentType }} · {{ attachment.size }}
           <button
+            pButton
+            severity="secondary"
             type="button"
             [disabled]="resources.transferBusy()"
+            [outlined]="true"
             (click)="download(attachment.ref)"
           >
             {{ "Download" | localize }}
@@ -30,8 +33,11 @@
           @if (writable()) {
             @if (options()["allow_remove"] !== false) {
               <button
+                pButton
+                severity="secondary"
                 type="button"
                 [disabled]="busy()"
+                [outlined]="true"
                 (click)="remove(attachment.ref)"
               >
                 {{ "Remove" | localize }}
@@ -39,15 +45,21 @@
             }
             @if (options()["allow_reorder"] === true) {
               <button
+                pButton
+                severity="secondary"
                 type="button"
                 [disabled]="busy() || index === 0"
+                [outlined]="true"
                 (click)="move(index, -1)"
               >
                 {{ "Move up" | localize }}
               </button>
               <button
+                pButton
+                severity="secondary"
                 type="button"
                 [disabled]="busy() || index + 1 >= attachments().length"
+                [outlined]="true"
                 (click)="move(index, 1)"
               >
                 {{ "Move down" | localize }}
@@ -93,7 +105,13 @@
       <p role="status">
         {{ "Transfer in progress" | localize }} {{ resources.progress() }}%
       </p>
-      <button type="button" (click)="resources.cancelTransfer()">
+      <button
+        pButton
+        severity="secondary"
+        type="button"
+        [outlined]="true"
+        (click)="resources.cancelTransfer()"
+      >
         {{ "Cancel" | localize }}
       </button>
     }

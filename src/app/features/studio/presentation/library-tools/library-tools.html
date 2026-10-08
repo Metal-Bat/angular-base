@@ -1,144 +1,271 @@
-<h1 tabindex="-1">{{ "Reusable library" | localize }}</h1>
-<a routerLink="/studio">{{ "Studio" | localize }}</a>
-<p>
-  {{
-    "Published reuse is pinned. Preview affected consumers before applying an upgrade; publication never rewrites running versions."
-      | localize
-  }}
-</p>
+<header class="console-page-header">
+  <div>
+    <span class="console-eyebrow">{{ "Studio catalogs" | localize }}</span>
+    <h1 tabindex="-1">{{ "Reusable library" | localize }}</h1>
+    <p class="console-description">
+      {{
+        "Browse published versions and reuse them in new definitions."
+          | localize
+      }}
+    </p>
+  </div>
+  <button
+    pButton
+    type="button"
+    [disabled]="busy() || !reference"
+    (click)="templateOpen.set(true)"
+  >
+    <i aria-hidden="true" class="pi pi-plus"></i
+    >{{ "Create template" | localize }}
+  </button>
+</header>
 @if (error()) {
   <p role="alert">{{ error() | localize }}</p>
+}
+@if (notice()) {
+  <p role="status">{{ notice() | localize }}</p>
 }
 @if (busy()) {
   <p role="status">{{ "Loading…" | localize }}</p>
 }
-<nav>
-  <a routerLink="/studio/form-components">{{ "Components" | localize }}</a
-  ><a routerLink="/studio/form-data-types">{{ "Data types" | localize }}</a
-  ><a routerLink="/studio/workflows">{{ "Subprocess workflows" | localize }}</a>
+<nav class="library-links" [attr.aria-label]="'Library catalogs' | localize">
+  <a routerLink="/studio/form-components">{{ "Components" | localize }}</a>
+  <a routerLink="/studio/form-data-types">{{ "Data types" | localize }}</a>
+  <a routerLink="/studio/workflows">{{ "Subprocess workflows" | localize }}</a>
 </nav>
-<label for="library-kind">{{ "Kind" | localize }}</label
-><select id="library-kind" [(ngModel)]="kind">
-  <option>component</option>
-  <option>data_type</option>
-  <option>subprocess</option></select
-><label for="library-search">{{ "Search" | localize }}</label
-><input id="library-search" [(ngModel)]="search" /><button
-  type="button"
-  [disabled]="busy()"
-  (click)="load()"
->
-  {{ "Search library" | localize }}</button
-><button type="button" [disabled]="busy()" (click)="load(1, true)">
-  {{ "Select compatible versions" | localize }}
-</button>
-<ul>
-  @for (item of items(); track ref(item)) {
-    <li>
-      <button type="button" (click)="choose(item)">{{ label(item) }}</button
-      ><code>{{ ref(item) }}</code>
-    </li>
-  } @empty {
-    <li>{{ "No items" | localize }}</li>
-  }
-</ul>
-<button
-  type="button"
-  [disabled]="busy() || page() <= 1"
-  (click)="load(page() - 1)"
->
-  {{ "Previous" | localize }}</button
-><button
-  type="button"
-  [disabled]="busy() || page() >= totalPages()"
-  (click)="load(page() + 1)"
->
-  {{ "Next" | localize }}
-</button>
-<section>
-  <label for="library-ref">{{
-    "Exact source version reference" | localize
-  }}</label
-  ><input id="library-ref" [(ngModel)]="reference" /><label for="compare-ref">{{
-    "Compare with version reference" | localize
-  }}</label
-  ><input id="compare-ref" [(ngModel)]="otherReference" />
-  @for (tool of ["dependencies", "usage", "compare", "guidance"]; track tool) {
-    <button type="button" [disabled]="busy()" (click)="inspect(tool)">
-      {{ tool | localize }}
-    </button>
-  }
-  <button
-    type="button"
-    [disabled]="busy() || usagePage() <= 1"
-    (click)="inspect('usage', usagePage() - 1)"
-  >
-    {{ "Previous" | localize }}</button
-  ><button
-    type="button"
-    [disabled]="busy() || usagePage() >= usagePages()"
-    (click)="inspect('usage', usagePage() + 1)"
-  >
-    {{ "Next" | localize }}
+<form class="library-search" (ngSubmit)="load(1, false, true)">
+  <div>
+    <label for="library-kind">{{ "Kind" | localize }}</label
+    ><app-select-control
+      inputId="library-kind"
+      name="kind"
+      [disabled]="busy()"
+      [(ngModel)]="kind"
+    >
+      <option value="component">{{ "Components" | localize }}</option>
+      <option value="data_type">{{ "Data types" | localize }}</option>
+      <option value="subprocess">
+        {{ "Subprocess workflows" | localize }}
+      </option>
+    </app-select-control>
+  </div>
+  <div class="search-term">
+    <label for="library-search">{{ "Search" | localize }}</label
+    ><input id="library-search" name="search" [(ngModel)]="search" />
+  </div>
+  <button pButton type="submit" [disabled]="busy()">
+    <i aria-hidden="true" class="pi pi-search"></i
+    >{{ "Search library" | localize }}
   </button>
-  <label for="explain-ref">{{ "Form version to explain" | localize }}</label
-  ><input id="explain-ref" [(ngModel)]="formReference" /><button
+  <button
+    pButton
+    severity="secondary"
     type="button"
     [disabled]="busy()"
-    (click)="inspect('explanation')"
+    [outlined]="true"
+    (click)="load(1, true, true)"
   >
-    {{ "Explain resolved form" | localize }}
+    {{ "Select compatible versions" | localize }}
   </button>
+</form>
+<section
+  class="rounded-xl border border-console-border bg-console-surface p-5 mt-5"
+>
+  <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+    <h2>{{ "Published versions" | localize }}</h2>
+  </div>
+  @if (!reference) {
+    <p class="text-sm text-console-muted">
+      {{ "Select a version to create a template." | localize }}
+    </p>
+  }
+  <app-record-table
+    actionLabel="Select"
+    [busy]="busy()"
+    [columns]="columns()"
+    [page]="page()"
+    [pages]="totalPages()"
+    [query]="tableQuery()"
+    [rows]="items()"
+    (opened)="choose($any($event))"
+    (pageChanged)="load($event)"
+    (queried)="load(1, selection(), false, $event.size)"
+  />
 </section>
-<section>
-  <h2>{{ "Create template draft" | localize }}</h2>
-  <label for="template-kind">{{ "Target kind" | localize }}</label
-  ><select id="template-kind" [(ngModel)]="templateKind">
-    <option>form</option>
-    <option>workflow</option></select
-  ><label for="template-code">{{ "Code" | localize }}</label
-  ><input id="template-code" [(ngModel)]="templateCode" /><label
-    for="template-name"
-    >{{ "Name" | localize }}</label
-  ><input id="template-name" [(ngModel)]="templateName" /><label
-    for="template-mode"
-    >{{ "Copy or reference" | localize }}</label
-  ><select id="template-mode" [(ngModel)]="templateMode">
-    <option>COPY</option>
-    <option>REFERENCE</option></select
-  ><button type="button" [disabled]="busy()" (click)="createTemplate()">
-    {{ "Create template" | localize }}
-  </button>
-</section>
-<section>
-  <h2>{{ "Review explicit upgrade" | localize }}</h2>
-  <p>
-    {{
-      "Targets identify draft form/workflow versions and old-to-new exact dependency references."
-        | localize
-    }}
+@if (selectedName()) {
+  <p class="library-selection" role="status">
+    <i aria-hidden="true" class="pi pi-check-circle"></i
+    >{{ "Selected version" | localize }}: <bdi>{{ selectedName() }}</bdi>
   </p>
-  <label for="upgrade-document">{{
-    "Upgrade targets and replacements" | localize
-  }}</label
-  ><textarea
-    id="upgrade-document"
-    rows="8"
-    [ngModel]="upgrades"
-    (ngModelChange)="changed($event)"
-  ></textarea
-  ><button type="button" [disabled]="busy()" (click)="previewUpgrade()">
-    {{ "Preview upgrade" | localize }}</button
-  ><button
-    type="button"
-    [disabled]="busy() || !upgradeReady()"
-    (click)="applyUpgrade()"
-  >
-    {{ "Apply reviewed upgrade" | localize }}
-  </button>
-</section>
-@if (result()) {
-  <section aria-label="Library diagnostics">
-    <pre>{{ result() }}</pre>
-  </section>
 }
+<details class="library-advanced">
+  <summary>{{ "Advanced library tools" | localize }}</summary>
+  <section>
+    <label for="library-ref">{{
+      "Exact source version reference" | localize
+    }}</label
+    ><input id="library-ref" [(ngModel)]="reference" /><label
+      for="compare-ref"
+      >{{ "Compare with version reference" | localize }}</label
+    ><input id="compare-ref" [(ngModel)]="otherReference" />
+    @for (
+      tool of ["dependencies", "usage", "compare", "guidance"];
+      track tool
+    ) {
+      <button
+        pButton
+        severity="secondary"
+        type="button"
+        [disabled]="busy()"
+        [outlined]="true"
+        (click)="inspect(tool)"
+      >
+        {{ tool | localize }}
+      </button>
+    }
+    <button
+      pButton
+      severity="secondary"
+      type="button"
+      [disabled]="busy() || usagePage() <= 1"
+      [outlined]="true"
+      (click)="inspect('usage', usagePage() - 1)"
+    >
+      {{ "Previous" | localize }}</button
+    ><button
+      pButton
+      severity="secondary"
+      type="button"
+      [disabled]="busy() || usagePage() >= usagePages()"
+      [outlined]="true"
+      (click)="inspect('usage', usagePage() + 1)"
+    >
+      {{ "Next" | localize }}
+    </button>
+    <label for="explain-ref">{{ "Form version to explain" | localize }}</label
+    ><input id="explain-ref" [(ngModel)]="formReference" /><button
+      pButton
+      severity="secondary"
+      type="button"
+      [disabled]="busy()"
+      [outlined]="true"
+      (click)="inspect('explanation')"
+    >
+      {{ "Explain resolved form" | localize }}
+    </button>
+  </section>
+  <section>
+    <h2>{{ "Review explicit upgrade" | localize }}</h2>
+    <p>
+      {{
+        "Targets identify draft form/workflow versions and old-to-new exact dependency references."
+          | localize
+      }}
+    </p>
+    <label for="upgrade-document">{{
+      "Upgrade targets and replacements" | localize
+    }}</label
+    ><textarea
+      class="font-mono"
+      id="upgrade-document"
+      rows="8"
+      [ngModel]="upgrades"
+      (ngModelChange)="changed($event)"
+    ></textarea
+    ><button
+      pButton
+      severity="secondary"
+      type="button"
+      [disabled]="busy()"
+      [outlined]="true"
+      (click)="previewUpgrade()"
+    >
+      {{ "Preview upgrade" | localize }}</button
+    ><button
+      pButton
+      severity="secondary"
+      type="button"
+      [disabled]="busy() || !upgradeReady()"
+      [outlined]="true"
+      (click)="applyUpgrade()"
+    >
+      {{ "Apply reviewed upgrade" | localize }}
+    </button>
+  </section>
+  @if (result()) {
+    <section aria-label="Library diagnostics">
+      <pre>{{ result() }}</pre>
+    </section>
+  }
+</details>
+<p-dialog
+  appendTo="body"
+  position="center"
+  [closable]="false"
+  [draggable]="false"
+  [header]="'Create template draft' | localize"
+  [modal]="true"
+  [resizable]="false"
+  [style]="{ width: '36rem', maxWidth: 'calc(100vw - 2rem)' }"
+  [visible]="templateOpen()"
+>
+  @if (templateOpen()) {
+    <p class="text-sm text-console-muted">
+      {{ "Selected version" | localize }}:
+      <bdi>{{ selectedName() || reference }}</bdi>
+    </p>
+    <form (ngSubmit)="createTemplate()">
+      <label for="template-kind">{{ "Target kind" | localize }}</label
+      ><app-select-control
+        inputId="template-kind"
+        name="kind"
+        [disabled]="busy()"
+        [(ngModel)]="templateKind"
+      >
+        <option>form</option>
+        <option>workflow</option></app-select-control
+      ><label for="template-code">{{ "Code" | localize }}</label
+      ><input
+        id="template-code"
+        name="code"
+        required
+        [disabled]="busy()"
+        [(ngModel)]="templateCode"
+      /><label for="template-name">{{ "Name" | localize }}</label
+      ><input
+        id="template-name"
+        name="name"
+        required
+        [disabled]="busy()"
+        [(ngModel)]="templateName"
+      /><label for="template-mode">{{ "Copy or reference" | localize }}</label
+      ><app-select-control
+        inputId="template-mode"
+        name="mode"
+        [disabled]="busy()"
+        [(ngModel)]="templateMode"
+      >
+        <option>COPY</option>
+        <option>REFERENCE</option>
+      </app-select-control>
+      <div class="flex justify-end gap-3 mt-5">
+        <button
+          pButton
+          severity="secondary"
+          type="button"
+          [disabled]="busy()"
+          [outlined]="true"
+          (click)="closeTemplate()"
+        >
+          {{ "Cancel" | localize }}
+        </button>
+        <button pButton type="submit" [disabled]="busy()">
+          {{ "Create template" | localize }}
+        </button>
+      </div>
+    </form>
+    @if (error()) {
+      <p role="alert">{{ error() | localize }}</p>
+    }
+  }
+</p-dialog>

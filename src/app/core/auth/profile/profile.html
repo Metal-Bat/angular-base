@@ -1,0 +1,48 @@
+<header class="console-page-header">
+  <div>
+    <h1 tabindex="-1">{{ "My information" | localize }}</h1>
+    <p class="console-description">
+      {{ "Your personal account information." | localize }}
+    </p>
+  </div>
+  <a pButton routerLink="/account" severity="secondary" [outlined]="true">
+    <i aria-hidden="true" class="pi pi-shield"></i
+    >{{ "Account and sessions" | localize }}
+  </a>
+</header>
+@if (busy()) {
+  <p role="status">{{ "Loading…" | localize }}</p>
+}
+@if (error()) {
+  <p role="alert">{{ error() | localize }}</p>
+  <button
+    class="reload-control"
+    pButton
+    severity="secondary"
+    type="button"
+    [attr.aria-label]="'Retry' | localize"
+    [attr.title]="'Retry' | localize"
+    [disabled]="busy()"
+    [text]="true"
+    (click)="load()"
+  >
+    <i aria-hidden="true" class="pi pi-refresh"></i
+    ><span class="sr-only">{{ "Retry" | localize }}</span>
+  </button>
+}
+@if (profile(); as user) {
+  <section class="profile-card">
+    <app-record-summary
+      caption="My information"
+      icon="pi pi-user"
+      [record]="user"
+      [title]="name()"
+    />
+    <dl class="account-kind">
+      <dt>{{ "Account type" | localize }}</dt>
+      <dd>
+        {{ (user["is_superuser"] ? "Administrator" : "User") | localize }}
+      </dd>
+    </dl>
+  </section>
+}

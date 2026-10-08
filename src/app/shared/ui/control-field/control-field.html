@@ -1,0 +1,20 @@
+<label class="field-label" [for]="controlId()" [id]="controlId() + '-label'">
+  <span>{{ label() | localize }}</span>
+  @if (required()) {
+    <span aria-hidden="true" class="text-red-600 dark:text-red-400">*</span>
+    <span class="sr-only">{{ "Required" | localize }}</span>
+  }
+</label>
+<div class="field-control"><ng-content /></div>
+@if (hint()) {
+  <small class="field-hint" [id]="controlId() + '-hint'">{{
+    hint() | localize
+  }}</small>
+}
+<div class="field-hint"><ng-content select="[fieldHint]" /></div>
+
+@if (error()) {
+  <small class="field-error" role="alert" [id]="controlId() + '-error'">{{
+    error() | localize
+  }}</small>
+}

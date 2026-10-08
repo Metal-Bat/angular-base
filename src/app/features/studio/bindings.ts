@@ -4,3 +4,7 @@ export const STUDIO_API = new InjectionToken<StudioPort>('Authoring API');
 export const CANVAS_VIEW = new InjectionToken<Type<unknown>>(
   'Workflow canvas adapter',
 );
+
+export const CANVAS_LOADER = new InjectionToken<() => Promise<Type<unknown>>>(
+  'Workflow canvas loader',
+);

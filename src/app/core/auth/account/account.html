@@ -1,4 +1,6 @@
-<h1 tabindex="-1">{{ "Account and sessions" | localize }}</h1>
+<header class="console-page-header">
+  <h1 tabindex="-1">{{ "Account and sessions" | localize }}</h1>
+</header>
 @if (error()) {
   <p role="alert">{{ error() | localize }}</p>
 }
@@ -26,7 +28,7 @@
     [ngModel]="newPassword()"
     (ngModelChange)="newPassword.set($event)"
   />
-  <button type="submit" [disabled]="busy()">
+  <button pButton type="submit" [disabled]="busy()">
     {{ "Change password" | localize }}
   </button>
 </form>
@@ -43,13 +45,23 @@
       {{ session.device }} · <time>{{ session.lastUsed }}</time> ·
       <time>{{ session.expires }}</time>
       <button
+        pButton
+        severity="secondary"
         type="button"
         [disabled]="busy()"
+        [outlined]="true"
         (click)="sessionDetail(session.ref)"
       >
         {{ "Details" | localize }}
       </button>
-      <button type="button" [disabled]="busy()" (click)="revoke(session.ref)">
+      <button
+        pButton
+        severity="secondary"
+        type="button"
+        [disabled]="busy()"
+        [outlined]="true"
+        (click)="revoke(session.ref)"
+      >
         {{ "Revoke" | localize }}
       </button>
     </li>
@@ -58,23 +70,47 @@
   }
 </ul>
 <button
+  pButton
+  severity="secondary"
   type="button"
   [disabled]="busy() || page() <= 1"
+  [outlined]="true"
   (click)="load(page() - 1)"
 >
   {{ "Previous" | localize }}
 </button>
 <button
+  pButton
+  severity="secondary"
   type="button"
   [disabled]="busy() || page() >= totalPages()"
+  [outlined]="true"
   (click)="load(page() + 1)"
 >
   {{ "Next" | localize }}
 </button>
-<button type="button" [disabled]="busy()" (click)="load(page())">
-  {{ "Refresh" | localize }}
+<button
+  class="reload-control"
+  pButton
+  severity="secondary"
+  type="button"
+  [attr.aria-label]="'Refresh' | localize"
+  [attr.title]="'Refresh' | localize"
+  [disabled]="busy()"
+  [text]="true"
+  (click)="load(page())"
+>
+  <i aria-hidden="true" class="pi pi-refresh"></i
+  ><span class="sr-only">{{ "Refresh" | localize }}</span>
 </button>
-<button type="button" [disabled]="busy()" (click)="logoutAll()">
+<button
+  pButton
+  severity="secondary"
+  type="button"
+  [disabled]="busy()"
+  [outlined]="true"
+  (click)="logoutAll()"
+>
   {{ "Sign out all sessions" | localize }}
 </button>
 
@@ -82,7 +118,13 @@
   <section>
     <h2>{{ session.device }}</h2>
     <time>{{ session.lastUsed }}</time> · <time>{{ session.expires }}</time
-    ><button type="button" (click)="selectedSession.set(null)">
+    ><button
+      pButton
+      severity="secondary"
+      type="button"
+      [outlined]="true"
+      (click)="selectedSession.set(null)"
+    >
       {{ "Close" | localize }}
     </button>
   </section>
@@ -100,7 +142,14 @@
     (ngModelChange)="resetToken.set($event)"
   />
   <p>{{ "Enter the new password above, then reset it here." | localize }}</p>
-  <button type="button" [disabled]="busy()" (click)="resetPassword()">
+  <button
+    pButton
+    severity="secondary"
+    type="button"
+    [disabled]="busy()"
+    [outlined]="true"
+    (click)="resetPassword()"
+  >
     {{ "Reset password" | localize }}
   </button>
 </details>

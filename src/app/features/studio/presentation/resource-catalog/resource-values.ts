@@ -32,6 +32,6 @@ export function resourceLabel(row: JsonObject): string {
       row['code'] ??
       row['version'] ??
       row['number'] ??
-      row['ref_id'],
+      'Record detail',
   );
 }

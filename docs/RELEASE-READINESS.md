@@ -8,7 +8,7 @@ Steps 34–35 are implemented locally. Step 36 has local evidence but remains in
 
 The refreshed npm audit reports zero production vulnerabilities and 13 high-severity development-tool entries with the unchanged lockfile; advisory metadata has changed since the October 3 report. A fresh compatible lockfile-only fix dry-run proposes zero changes. The [dependency review](reference/release-dependency-review.json) records the current snapshot and retains the earlier counts for comparison. Maintainer disposition remains open.
 
-GitHub CI now includes the serial Chromium browser quality suite on every push and pull request and uploads browser/release/dependency evidence. The supplied `localhost:8000` staging address refused both HTTP and HTTPS connections. An active backend, exact HTTPS browser origin/proxy, client/release registration, worker/storage infrastructure and release signoffs remain needed before integrated staging acceptance.
+GitHub CI now includes the serial Chromium browser quality suite on every push and pull request and uploads browser/release/dependency evidence. Initial checks of `localhost:8000` refused HTTP and HTTPS connections. A subsequent development startup check confirmed the backend is running over HTTP: health/readiness passed, PostgreSQL/cache/broker/storage reported ready, and all 314 operation IDs matched the pinned frontend contract. The missing session boundary now starts with the normal development command; session status, health and readiness passed through Angular. Exact HTTPS browser origin/proxy, client/release registration, actual worker execution/fault checks and release signoffs remain needed before integrated staging acceptance.
 
 ## Local evidence, October 3, 2026
 

@@ -1,3 +1,4 @@
+import { ButtonDirective } from 'primeng/button';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -12,9 +13,10 @@ import { record } from '../../../../core/transport/api-failure';
 import { ActorState } from '../../../../core/auth/actor-state';
 import { LocalizePipe } from '../../../../shared/ui/localize-pipe';
 @Component({
+  host: { class: 'console-page' },
   selector: 'app-generic-media',
   providers: [BinaryTransfer],
-  imports: [RouterLink, LocalizePipe],
+  imports: [ButtonDirective, RouterLink, LocalizePipe],
   templateUrl: './generic-media.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

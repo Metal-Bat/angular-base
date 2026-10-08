@@ -1,19 +1,122 @@
-<app-area-overview
-  description="Start requests, review assigned work, and follow case progress."
-  heading="Operations"
-  [capabilities]="capabilities"
-/>
+<div class="dashboard mx-auto w-full max-w-7xl">
+  <header
+    class="overview-header flex flex-wrap items-center justify-between gap-6 mb-8"
+  >
+    <div>
+      <span class="eyebrow">{{
+        "Your workspace, at a glance" | localize
+      }}</span>
+      <h1 tabindex="-1">{{ "Operations" | localize }}</h1>
+      <p class="page-description">
+        {{
+          "Start requests, review assigned work, and follow case progress."
+            | localize
+        }}
+      </p>
+    </div>
+    <div class="flex flex-wrap items-center gap-3">
+      <a class="new-request" pButton routerLink="/operations/catalog">
+        <i aria-hidden="true" class="pi pi-plus"></i>
+        <span>{{ "Start a request" | localize }}</span>
+      </a>
+      <a
+        pButton
+        routerLink="/operations/tasks"
+        severity="secondary"
+        [outlined]="true"
+      >
+        <i aria-hidden="true" class="pi pi-inbox"></i>
+        <span>{{ "Task inbox" | localize }}</span>
+      </a>
+    </div>
+  </header>
 
-<nav aria-label="Operations workspace" class="flex flex-wrap gap-4">
-  <a routerLink="/operations/catalog">{{ "Start a request" | localize }}</a
-  ><a routerLink="/operations/requests">{{ "My requests" | localize }}</a
-  ><a routerLink="/operations/tasks">{{ "Task inbox" | localize }}</a>
-  <a routerLink="/account">{{ "Account and sessions" | localize }}</a>
-</nav>
+  <section aria-labelledby="work-heading">
+    <div class="section-heading flex items-center justify-between gap-4 mb-4">
+      <h2 id="work-heading">{{ "Your work" | localize }}</h2>
+      <span>{{ "Choose your next step" | localize }}</span>
+    </div>
+    <nav
+      class="grid grid-cols-1 gap-5 lg:grid-cols-3"
+      [attr.aria-label]="'Operations workspace' | localize"
+    >
+      @for (item of workspaces; track item.path) {
+        <a
+          class="work-card"
+          [attr.data-tone]="item.tone"
+          [routerLink]="item.path"
+        >
+          <div class="flex items-center justify-between mb-6">
+            <span class="card-icon"
+              ><i aria-hidden="true" [class]="item.icon"></i
+            ></span>
+            <i aria-hidden="true" class="pi pi-arrow-up-right card-arrow"></i>
+          </div>
+          <h3>{{ item.label | localize }}</h3>
+          <p>{{ item.description | localize }}</p>
+          <span class="card-link"
+            >{{ "Open workspace" | localize
+            }}<i aria-hidden="true" class="pi pi-arrow-right"></i
+          ></span>
+        </a>
+      }
+    </nav>
+  </section>
 
-<nav>
-  <a routerLink="/operations/notifications">{{ "Notifications" | localize }}</a>
-  · <a routerLink="/operations/reports">{{ "My reports" | localize }}</a>
-</nav>
-
-<a routerLink="/operations/media">{{ "Private uploads" | localize }}</a>
+  <div class="grid grid-cols-1 gap-6 mt-8 xl:grid-cols-5">
+    <section
+      aria-labelledby="resources-heading"
+      class="surface-panel xl:col-span-3"
+    >
+      <div class="panel-heading">
+        <h2 id="resources-heading">{{ "Workspace essentials" | localize }}</h2>
+        <p>{{ "Everything you need, close at hand." | localize }}</p>
+      </div>
+      <nav [attr.aria-label]="'Workspace essentials' | localize">
+        @for (item of resources; track item.path) {
+          <a class="resource-row" [routerLink]="item.path">
+            <span class="resource-icon"
+              ><i aria-hidden="true" [class]="item.icon"></i
+            ></span>
+            <span class="min-w-0 flex-1"
+              ><strong>{{ item.label | localize }}</strong
+              ><span class="resource-description">{{
+                item.description | localize
+              }}</span></span
+            >
+            <i aria-hidden="true" class="pi pi-angle-right"></i>
+          </a>
+        }
+      </nav>
+    </section>
+    <section
+      aria-labelledby="guide-heading"
+      class="surface-panel guide-panel xl:col-span-2"
+    >
+      <div class="panel-heading">
+        <span class="eyebrow">{{ "A clear path forward" | localize }}</span>
+        <h2 id="guide-heading">{{ "Keep work moving." | localize }}</h2>
+      </div>
+      <ol class="workflow-steps">
+        @for (step of steps; track step.title; let index = $index) {
+          <li>
+            <a class="step-action" [routerLink]="step.path">
+              <span aria-hidden="true" class="step-number">{{
+                index + 1
+              }}</span>
+              <div class="min-w-0 flex-1">
+                <h3>{{ step.title | localize }}</h3>
+                <p>{{ step.description | localize }}</p>
+              </div>
+              <i aria-hidden="true" class="pi pi-angle-right"></i>
+            </a>
+          </li>
+        }
+      </ol>
+      <a class="guide-link" routerLink="/operations/catalog"
+        >{{ "Explore request types" | localize
+        }}<i aria-hidden="true" class="pi pi-arrow-right"></i
+      ></a>
+    </section>
+  </div>
+</div>

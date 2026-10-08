@@ -1,3 +1,4 @@
+import { languageDirection } from './app/core/localization/languages';
 import { bootstrapApplication } from '@angular/platform-browser';
 import { App } from './app/app';
 import { appConfig } from './app/app.config';
@@ -9,7 +10,7 @@ import {
 async function start(): Promise<void> {
   const config = await loadRuntimeConfig();
   document.documentElement.lang = config.locale;
-  document.documentElement.dir = config.locale === 'fa' ? 'rtl' : 'ltr';
+  document.documentElement.dir = languageDirection(config.locale);
   await bootstrapApplication(App, {
     ...appConfig,
     providers: [

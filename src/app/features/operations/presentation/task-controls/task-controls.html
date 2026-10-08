@@ -7,7 +7,13 @@
     (ngModelChange)="editor().comment.set($event)"
   ></textarea>
   @for (action of editor().document()?.actions ?? []; track action.key) {
-    <button type="button" (click)="editor().decide(action)">
+    <button
+      pButton
+      severity="secondary"
+      type="button"
+      [outlined]="true"
+      (click)="editor().decide(action)"
+    >
       {{ action.title }}
     </button>
   }
@@ -19,8 +25,11 @@
   ) {
     @if (item.status === "OPEN") {
       <button
+        pButton
+        severity="secondary"
         type="button"
         [disabled]="editor().busy() || editor().blocked()"
+        [outlined]="true"
         (click)="editor().lifecycle('claim')"
       >
         {{ "Claim" | localize }}
@@ -29,16 +38,22 @@
     @if (editor().ownTask()) {
       @if (item.status === "CLAIMED") {
         <button
+          pButton
+          severity="secondary"
           type="button"
           [disabled]="editor().busy() || editor().blocked()"
+          [outlined]="true"
           (click)="editor().lifecycle('start')"
         >
           {{ "Start work" | localize }}
         </button>
       }
       <button
+        pButton
+        severity="secondary"
         type="button"
         [disabled]="editor().busy() || editor().blocked()"
+        [outlined]="true"
         (click)="editor().lifecycle('release')"
       >
         {{ "Release" | localize }}

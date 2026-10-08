@@ -11,6 +11,7 @@ import { JsonObject } from '../../domain/runtime-document';
 import { LocalizePipe } from '../../../../shared/ui/localize-pipe';
 import { Locale } from '../../../../core/localization/locale';
 @Component({
+  host: { class: 'console-page' },
   selector: 'app-runtime-preview',
   imports: [RuntimeForm, LocalizePipe],
   templateUrl: './runtime-preview.html',

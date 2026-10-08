@@ -2,6 +2,8 @@
 
 `/administration` links only groups with permitted operations. The ten groups expose 101 operations declared in the platform OpenAPI. Generated controls cover target parameters, filters and writable values, with JSON inputs for nested configuration. Operation selection is permission-aware; the backend independently checks resource access and lifecycle. Clients/releases retain their existing studio-backed administration screens.
 
+Users now opens separately at `/users` through Select Users; `/administration/admin-users` holds the administrator directory. Roles, permissions, audit, entity history and My Reports use shared list-first tables, typed filters/sorts and detail flows. Create/Edit, role selection and history use dialogs; reports preserve the applied query. See the [CRUD specification](design/BACKEND-CRUD.md). The former generic user command screen remains available at `/administration/commands/users` for diagnostic checks.
+
 | Group                 | Principal authority                                                       | Scope                                                                                                           |
 | --------------------- | ------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
 | Users                 | `admin.users.manage`; role assignment requires `admin.permissions.manage` | Search/select, CRUD, history/report, restore, roles and administrator password reset                            |
@@ -33,3 +35,5 @@ The Firefox synthetic administration journey verifies confirmation, transient pa
 `npm run test:backend-admin` runs actual HTTP checks plus 17 existing PostgreSQL integration tests for membership, connection grants/rotation, restriction preservation, scheduler leadership/one-off occurrence, durable outbox/retry and process recovery. It requires a **fresh migrated disposable database** and cache, `DISPOSABLE_BACKEND=1`, `BACKEND_ROOT`, and the backend test environment. `BACKEND_PYTHON`/`BACKEND_PYTEST` override virtualenv executables. Scheduler tests run first; each module runs in a separate process because the existing shared async pool can retain connections from a previous event loop. Scheduler publication tests mock broker delivery; they do not prove a running Celery broker/worker.
 
 See [quality evidence and remaining release gates](RELEASE-READINESS.md).
+
+October 4 CRUD browser verification uses disposable local users and proves create/edit/cancel, role selection before Save, current-reference password reset, delete/restore, history redaction, applied report snapshots and all six resource lists. Eight Chromium accessibility contexts report no violations or incomplete results. These are frontend fixture results; the historical actual HTTP checks above were not rerun for this redesign.

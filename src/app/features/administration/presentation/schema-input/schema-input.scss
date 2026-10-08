@@ -1,0 +1,60 @@
+:host {
+  display: block;
+  min-inline-size: 0;
+}
+fieldset {
+  margin: 0;
+  padding: 1rem;
+  border: 1px solid var(--console-border);
+  border-radius: 0.75rem;
+  min-inline-size: 0;
+  background: var(--console-surface);
+}
+legend {
+  padding-inline: 0.4rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.object-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+.object-fields > app-schema-input:has(fieldset),
+.object-fields > .map-entry,
+.object-fields > .field-error {
+  grid-column: 1/-1;
+}
+.array-fields {
+  display: grid;
+  gap: 0.75rem;
+}
+.reference-control,
+.map-entry {
+  display: flex;
+  align-items: end;
+  gap: 0.5rem;
+  min-inline-size: 0;
+}
+.reference-control > input,
+.map-entry > app-schema-input,
+.map-entry > app-control-field {
+  flex: 1;
+  min-inline-size: 0;
+}
+.field-error {
+  color: var(--mat-sys-error);
+  font-size: 0.8rem;
+}
+@media (max-width: 40rem) {
+  .object-fields {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+fieldset[aria-invalid="true"] {
+  border-color: var(--mat-sys-error);
+}
+fieldset[aria-invalid="true"] > legend {
+  color: var(--mat-sys-error);
+}

@@ -1,43 +1,30 @@
-:host {
-  display: block;
-}
 .admin-console {
-  max-width: 70rem;
+  max-inline-size: 70rem;
   margin-inline: auto;
 }
-form,
+.admin-console > form {
+  padding: 1.5rem;
+  border: 1px solid var(--console-border);
+  border-radius: 1rem;
+  background: var(--console-surface);
+  margin-block: 1.5rem;
+}
 fieldset {
   display: grid;
-  gap: 0.7rem;
-  margin-block: 1rem;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.4rem;
 }
-input,
-select,
-textarea,
-button {
-  padding: 0.6rem;
-  border: 1px solid var(--mat-sys-outline);
-  border-radius: 0.4rem;
-  background: var(--mat-sys-surface);
-  color: var(--mat-sys-on-surface);
+fieldset label {
+  margin-block-start: 0.75rem;
 }
-input[type="checkbox"] {
+fieldset input[type="checkbox"] {
   justify-self: start;
 }
-pre {
-  overflow: auto;
-  max-height: 32rem;
-  padding: 1rem;
-  border: 1px solid var(--mat-sys-outline);
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
+fieldset input,
+fieldset select,
+fieldset textarea {
+  max-inline-size: none;
 }
-nav {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-:focus-visible {
-  outline: 3px solid var(--mat-sys-primary);
-  outline-offset: 3px;
+#admin-command {
+  max-inline-size: 32rem;
 }

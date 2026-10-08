@@ -1,3 +1,5 @@
+import { SelectControl } from '../../../../shared/ui/select-control/select-control';
+import { ButtonDirective } from 'primeng/button';
 import { AttachmentControl } from '../attachment-control/attachment-control';
 import { FORM_RESOURCES } from '../../bindings';
 import {
@@ -34,8 +36,11 @@ import {
 } from '../../domain/canonical-values';
 import { isLayout } from '../../domain/primitive-registry';
 @Component({
+  host: { class: 'console-fragment' },
   selector: 'app-runtime-node',
   imports: [
+    SelectControl,
+    ButtonDirective,
     forwardRef(() => RuntimeNode),
     ValueTextPipe,
     FieldWrapper,

@@ -1,0 +1,33 @@
+dialog {
+  box-sizing: border-box;
+  inline-size: min(28rem, calc(100vw - 2rem));
+  max-block-size: calc(100dvh - 2rem);
+  padding: 1.5rem;
+  background: var(--console-surface);
+  color: var(--console-text);
+  border: 1px solid var(--console-border);
+  border-radius: 0.85rem;
+  box-shadow: var(--console-shadow);
+  text-align: start;
+  h2 {
+    margin: 0;
+    font-size: 1.15rem;
+    line-height: 1.4;
+  }
+  p {
+    margin: 1rem 0 0;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+  }
+}
+.confirmation-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.75rem;
+  margin-block-start: 1.5rem;
+  button {
+    margin: 0;
+  }
+}

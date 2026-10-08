@@ -41,7 +41,8 @@ export async function createStaticAssets(directory) {
       pathname.startsWith("/session/")
     )
       return null;
-    if (pathname === "/health" || pathname === "/ready") return null;
+    if (pathname === "/health" || pathname === "/ready")
+      return new Response(null, { status: 404 });
     if (
       pathname.includes("\\") ||
       pathname.includes("\0") ||

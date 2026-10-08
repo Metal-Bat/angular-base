@@ -1,3 +1,4 @@
+import { fieldLabel } from '../../../shared/domain/field-label';
 import { ApiOperationId } from '../../../core/transport/api-types';
 import { endpoints } from '../../../core/transport/generated/operations';
 import { JsonObject } from '../../forms/domain/runtime-document';
@@ -5,6 +6,7 @@ import { FieldSpec, ResourceKey, ResourceSpec } from '../domain/authoring';
 import contracts from './resource-contracts.json';
 export type Contract = {
   title: string;
+  list?: NonNullable<ResourceSpec['list']>;
   permission: string;
   editor: ResourceSpec['editor'];
   operations: Record<string, string>;
@@ -34,7 +36,7 @@ export function fieldSpecs(contract: Contract, kind: string): FieldSpec[] {
     const type = schema['type'];
     return {
       key,
-      title: String(source['title'] ?? key),
+      title: fieldLabel(key, String(source['title'] ?? '')),
       type:
         type === 'boolean'
           ? 'boolean'

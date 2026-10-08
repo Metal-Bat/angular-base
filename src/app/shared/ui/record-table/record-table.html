@@ -1,0 +1,407 @@
+<p-table
+  size="small"
+  [rowHover]="true"
+  [scrollable]="true"
+  [tableStyle]="{ 'min-width': columns().length <= 2 ? '100%' : '36rem' }"
+  [value]="$any(rows())"
+>
+  <ng-template #header
+    ><tr>
+      @for (column of columns(); track column.key) {
+        <th
+          scope="col"
+          [attr.aria-sort]="
+            direction(column.key) === 'asc'
+              ? 'ascending'
+              : direction(column.key) === 'desc'
+                ? 'descending'
+                : 'none'
+          "
+        >
+          <div class="flex items-center gap-2">
+            @if (field(column.key); as field) {
+              <button
+                class="column-sort"
+                type="button"
+                [attr.aria-label]="'Sort ' + column.label | localize"
+                [disabled]="busy()"
+                (click)="sort(column.key)"
+              >
+                {{ column.label | localize
+                }}<i
+                  aria-hidden="true"
+                  [class]="
+                    direction(column.key) === 'asc'
+                      ? 'pi pi-sort-amount-up-alt'
+                      : direction(column.key) === 'desc'
+                        ? 'pi pi-sort-amount-down'
+                        : 'pi pi-sort-alt'
+                  "
+                ></i>
+              </button>
+              <button
+                #filterTrigger
+                pButton
+                severity="secondary"
+                type="button"
+                [attr.aria-label]="'Filter ' + column.label | localize"
+                [class.filter-active]="filtered(column.key)"
+                [disabled]="busy()"
+                [rounded]="true"
+                [text]="true"
+                (click)="startFilter(field); filter.toggle($event)"
+              >
+                <i aria-hidden="true" class="pi pi-filter"></i>
+              </button>
+              <p-popover
+                #filter
+                appendTo="body"
+                [ariaLabel]="'Filter ' + column.label | localize"
+                (onShow)="condition.focus()"
+              >
+                <form
+                  class="column-filter"
+                  (keydown.escape)="filterTrigger.focus()"
+                  (ngSubmit)="
+                    applyFilter() && filter.hide();
+                    !error && filterTrigger.focus()
+                  "
+                >
+                  <strong>{{ column.label | localize }}</strong>
+                  <app-control-field
+                    label="Condition"
+                    [controlId]="
+                      filterValueId + '-' + column.key + '-condition'
+                    "
+                    ><app-select-control
+                      #condition
+                      name="operation"
+                      [inputId]="
+                        filterValueId + '-' + column.key + '-condition'
+                      "
+                      [(ngModel)]="draft.operation"
+                    >
+                      @for (
+                        operation of operationsFor(field);
+                        track operation
+                      ) {
+                        <option [value]="operation">
+                          {{ operators[operation] | localize }}
+                        </option>
+                      }
+                    </app-select-control></app-control-field
+                  >
+                  @if (
+                    draft.operation !== "isNull" &&
+                    draft.operation !== "isNotNull"
+                  ) {
+                    <app-control-field
+                      label="Value"
+                      [controlId]="filterValueId"
+                      [error]="error"
+                    >
+                      @if (
+                        draft.operation === "in" || draft.operation === "nin"
+                      ) {
+                        <app-list-values
+                          [controlId]="filterValueId"
+                          [disabled]="busy()"
+                          [type]="field.type"
+                          [(value)]="draft.value"
+                        />
+                      } @else if (field.type === "boolean") {
+                        <app-select-control
+                          name="value"
+                          [inputId]="filterValueId"
+                          [(ngModel)]="draft.value"
+                        >
+                          <option value="">
+                            {{ "Choose a value" | localize }}
+                          </option>
+                          <option value="true">{{ "Yes" | localize }}</option>
+                          <option value="false">{{ "No" | localize }}</option>
+                        </app-select-control>
+                      } @else {
+                        <input
+                          name="value"
+                          pInputText
+                          [id]="filterValueId"
+                          [placeholder]="
+                            field.type === 'datetime'
+                              ? '2026-10-04T00:00:00Z'
+                              : ''
+                          "
+                          [type]="
+                            field.type === 'number'
+                              ? 'number'
+                              : field.type === 'date'
+                                ? 'date'
+                                : 'text'
+                          "
+                          [(ngModel)]="draft.value"
+                        />
+                      }
+                    </app-control-field>
+                    @if (draft.operation === "between") {
+                      <app-control-field
+                        label="To"
+                        [controlId]="filterValueId + '-end'"
+                        ><input
+                          name="end"
+                          pInputText
+                          [id]="filterValueId + '-end'"
+                          [type]="
+                            field.type === 'number'
+                              ? 'number'
+                              : field.type === 'date'
+                                ? 'date'
+                                : 'text'
+                          "
+                          [(ngModel)]="draft.end"
+                      /></app-control-field>
+                    }
+                  }
+                  @if (error) {
+                    <p role="alert">{{ error | localize }}</p>
+                  }
+                  <div class="flex justify-end gap-2">
+                    <button
+                      pButton
+                      severity="secondary"
+                      type="button"
+                      [text]="true"
+                      (click)="
+                        applyFilter(true); filter.hide(); filterTrigger.focus()
+                      "
+                    >
+                      {{ "Clear" | localize }}</button
+                    ><button pButton type="submit">
+                      {{ "Apply" | localize }}
+                    </button>
+                  </div>
+                </form>
+              </p-popover>
+            } @else {
+              {{ column.label | localize }}
+            }
+          </div>
+        </th>
+      }
+      <th scope="col">{{ "Actions" | localize }}</th>
+    </tr></ng-template
+  >
+  <ng-template #body let-row
+    ><tr>
+      @for (column of columns(); track column.key) {
+        <td>
+          @if (column.key === "status" && row[column.key]) {
+            <span
+              class="rounded-md bg-console-accent-soft text-console-accent px-2 py-1 text-xs font-semibold"
+              ><bdi>{{
+                value(row[column.key], column.key) | localize
+              }}</bdi></span
+            >
+          } @else {
+            <bdi>{{ value(row[column.key], column.key) | localize }}</bdi>
+          }
+        </td>
+      }
+      <td class="row-actions-cell">
+        <div class="flex items-center justify-end gap-1">
+          <p-button
+            severity="secondary"
+            size="small"
+            type="button"
+            [ariaLabel]="actionLabel() | localize"
+            [disabled]="busy()"
+            [icon]="actionLabel() === 'Select' ? 'pi pi-check' : 'pi pi-eye'"
+            [pTooltip]="
+              (actionLabel() === 'Open' ? 'Details' : actionLabel()) | localize
+            "
+            [rounded]="true"
+            [style]="actionButtonStyles"
+            [text]="true"
+            (onClick)="opened.emit(row)"
+            ><ng-template #icon
+              ><i
+                aria-hidden="true"
+                [class]="
+                  'row-action-icon ' +
+                  (actionLabel() === 'Select' ? 'pi pi-check' : 'pi pi-eye')
+                "
+              ></i></ng-template
+          ></p-button>
+          @if (canEdit()(row)) {
+            <p-button
+              icon="pi pi-pencil"
+              severity="secondary"
+              size="small"
+              type="button"
+              [ariaLabel]="'Edit' | localize"
+              [disabled]="busy()"
+              [pTooltip]="'Edit' | localize"
+              [rounded]="true"
+              [style]="actionButtonStyles"
+              [text]="true"
+              (onClick)="edited.emit(row)"
+              ><ng-template #icon
+                ><i
+                  aria-hidden="true"
+                  class="row-action-icon pi pi-pencil"
+                ></i></ng-template
+            ></p-button>
+          }
+          @if (moreActions()(row).length) {
+            <p-button
+              icon="pi pi-ellipsis-v"
+              severity="secondary"
+              size="small"
+              type="button"
+              [ariaLabel]="'More actions' | localize"
+              [disabled]="busy()"
+              [pTooltip]="'More actions' | localize"
+              [pt]="{
+                root: {
+                  'aria-controls':
+                    menuRow() === row ? menuId + '_list' : undefined,
+                  'aria-haspopup': 'menu',
+                  'aria-expanded': menuRow() === row,
+                },
+              }"
+              [rounded]="true"
+              [style]="actionButtonStyles"
+              [text]="true"
+              (onClick)="showActions($event, row, rowMenu)"
+              ><ng-template #icon
+                ><i
+                  aria-hidden="true"
+                  class="row-action-icon pi pi-ellipsis-v"
+                ></i></ng-template
+            ></p-button>
+          }
+        </div>
+      </td></tr
+  ></ng-template>
+  <ng-template #emptymessage
+    ><tr>
+      <td
+        class="py-12 text-center text-console-muted"
+        [attr.colspan]="columns().length + 1"
+      >
+        {{ "No records match this query." | localize }}
+      </td>
+    </tr></ng-template
+  >
+</p-table>
+<p-menu
+  #rowMenu
+  appendTo="body"
+  [ariaLabel]="'More actions' | localize"
+  [id]="menuId"
+  [model]="menuItems"
+  [popup]="true"
+  (onHide)="closeActions()"
+/>
+
+@if (pages() !== null) {
+  <nav
+    class="table-pagination"
+    [attr.aria-label]="'List pagination' | localize"
+  >
+    <span class="sr-only"
+      >{{ "Page" | localize }} {{ page() }} {{ "of" | localize }}
+      {{ pages() || 1 }}</span
+    >
+    <div class="pagination-controls">
+      @for (
+        control of [
+          { label: "First", target: 1, icon: "pi pi-angle-double-left" },
+          { label: "Previous", target: page() - 1, icon: "pi pi-angle-left" },
+          { label: "Next", target: page() + 1, icon: "pi pi-angle-right" },
+          {
+            label: "Last",
+            target: pages() || 1,
+            icon: "pi pi-angle-double-right",
+          },
+        ];
+        track control.label
+      ) {
+        <button
+          pButton
+          severity="secondary"
+          type="button"
+          [attr.aria-label]="control.label | localize"
+          [disabled]="
+            busy() ||
+            control.target < 1 ||
+            control.target > (pages() || 1) ||
+            control.target === page()
+          "
+          [pTooltip]="control.label | localize"
+          [text]="true"
+          (click)="go(control.target)"
+        >
+          <i aria-hidden="true" [class]="control.icon + ' rtl:rotate-180'"></i
+          ><span class="sr-only">{{ control.label | localize }}</span>
+        </button>
+        @if (control.label === "Previous") {
+          <form
+            class="page-jump"
+            (submit)="$event.preventDefault(); go(pageInput.value)"
+          >
+            <app-control-field
+              label="Rows per page"
+              [compact]="true"
+              [controlId]="filterValueId + '-size'"
+              [inline]="true"
+            >
+              <p-select
+                appendTo="body"
+                [ariaLabelledBy]="filterValueId + '-size-label'"
+                [checkmark]="true"
+                [disabled]="busy()"
+                [inputId]="filterValueId + '-size'"
+                [ngModel]="query().size"
+                [ngModelOptions]="{ standalone: true }"
+                [options]="[10, 20, 50, 100]"
+                (ngModelChange)="resize($event)"
+              />
+            </app-control-field>
+            <app-control-field
+              class="page-field"
+              label="Page"
+              [compact]="true"
+              [controlId]="filterValueId + '-page'"
+              [inline]="true"
+            >
+              <input
+                #pageInput
+                class="page-input"
+                min="1"
+                pInputText
+                step="1"
+                type="number"
+                [disabled]="busy()"
+                [id]="filterValueId + '-page'"
+                [max]="pages() || 1"
+                [value]="page()"
+              />
+            </app-control-field>
+            <span class="page-total"
+              >{{ "of" | localize }} {{ pages() || 1 }}</span
+            >
+            <button
+              pButton
+              severity="secondary"
+              type="submit"
+              [disabled]="busy()"
+              [outlined]="true"
+            >
+              {{ "Go" | localize }}
+            </button>
+          </form>
+        }
+      }
+    </div>
+  </nav>
+}

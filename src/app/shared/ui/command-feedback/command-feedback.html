@@ -18,7 +18,13 @@
       </ul>
     }
     @if (state.reconcile) {
-      <button type="button" (click)="state.reconcile()">
+      <button
+        pButton
+        severity="secondary"
+        type="button"
+        [outlined]="true"
+        (click)="state.reconcile()"
+      >
         {{ "Check current state" | localize }}
       </button>
     }
@@ -26,16 +32,26 @@
 </div>
 <dialog
   #confirmation
+  aria-describedby="confirmation-message"
   aria-labelledby="confirmation-title"
   (cancel)="cancel($event)"
 >
   <h2 id="confirmation-title">{{ "Confirm action" | localize }}</h2>
-  <p>{{ feedback.confirmation()?.message ?? "" | localize }}</p>
-  <div class="flex flex-wrap gap-3">
-    <button autofocus type="button" (click)="feedback.answer(false)">
+  <p id="confirmation-message">
+    {{ feedback.confirmation()?.message ?? "" | localize }}
+  </p>
+  <div class="confirmation-actions">
+    <button
+      autofocus
+      pButton
+      severity="secondary"
+      type="button"
+      [outlined]="true"
+      (click)="feedback.answer(false)"
+    >
       {{ "Cancel" | localize }}
     </button>
-    <button type="button" (click)="feedback.answer(true)">
+    <button pButton type="button" (click)="feedback.answer(true)">
       {{ "Continue" | localize }}
     </button>
   </div>

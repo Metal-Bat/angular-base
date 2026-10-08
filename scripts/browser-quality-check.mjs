@@ -15,6 +15,21 @@ for (const [scope, file, flags] of [
     { WORKSPACE_BROWSER_CHECKS: "1" },
   ],
   [
+    "canvas",
+    "server/browser-auth.spec.mjs",
+    { CANVAS_BROWSER_CHECKS: "1", ACCESSIBILITY_CHECKS: "1" },
+  ],
+  [
+    "studio-catalogs",
+    "server/browser-auth.spec.mjs",
+    { STUDIO_CATALOG_BROWSER_CHECKS: "1", ACCESSIBILITY_CHECKS: "1" },
+  ],
+  [
+    "records",
+    "server/browser-auth.spec.mjs",
+    { RECORD_BROWSER_CHECKS: "1", ACCESSIBILITY_CHECKS: "1" },
+  ],
+  [
     "admin",
     "server/browser-auth.spec.mjs",
     { ADMIN_BROWSER_CHECKS: "1", ACCESSIBILITY_CHECKS: "1" },
@@ -37,6 +52,9 @@ for (const [scope, file, flags] of [
   const env = { ...process.env };
   for (const key of [
     "ACCESSIBILITY_CHECKS",
+    "CANVAS_BROWSER_CHECKS",
+    "RECORD_BROWSER_CHECKS",
+    "STUDIO_CATALOG_BROWSER_CHECKS",
     "UI_BROWSER_CHECKS",
     "WORKSPACE_BROWSER_CHECKS",
     "ADMIN_BROWSER_CHECKS",

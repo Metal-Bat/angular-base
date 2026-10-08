@@ -1,154 +1,271 @@
-<h1 tabindex="-1">{{ spec.title | localize }}</h1>
-<a routerLink="/studio">{{ "Studio" | localize }}</a>
+<header class="console-page-header">
+  <div>
+    <span class="console-eyebrow">{{ "Studio catalogs" | localize }}</span>
+    <h1 tabindex="-1">{{ spec.title | localize }}</h1>
+    <p class="console-description">
+      {{ "Manage definitions, versions and their lifecycle." | localize }}
+    </p>
+  </div>
+  <div class="flex flex-wrap gap-2 items-center">
+    @if (selected()) {
+      @if (spec.actions.includes("update") && !immutable()) {
+        <button pButton type="button" [disabled]="busy()" (click)="edit()">
+          {{ "Edit" | localize }}
+        </button>
+      }
+
+      @if (spec.actions.includes("history")) {
+        <button
+          pButton
+          severity="secondary"
+          type="button"
+          [disabled]="busy()"
+          [outlined]="true"
+          (click)="history()"
+        >
+          <i aria-hidden="true" class="pi pi-history"></i
+          >{{ "History" | localize }}
+        </button>
+      }
+    } @else {
+      @if (spec.actions.includes("report")) {
+        <button
+          pButton
+          severity="secondary"
+          type="button"
+          [disabled]="busy() || !appliedQuery()"
+          [outlined]="true"
+          (click)="load(page(), true)"
+        >
+          <i aria-hidden="true" class="pi pi-file-export"></i
+          >{{ "Request report" | localize }}
+        </button>
+      }
+      @if (spec.actions.includes("create")) {
+        <button
+          pButton
+          type="button"
+          [disabled]="busy() || !canScope()"
+          (click)="create()"
+        >
+          <i aria-hidden="true" class="pi pi-plus"></i>{{ "Create" | localize }}
+        </button>
+      }
+    }
+  </div>
+</header>
 @if (error()) {
   <p role="alert">{{ error() | localize }}</p>
 }
 @if (notice()) {
-  <p role="status">{{ notice() | localize }}</p>
+  <p role="status">
+    {{ notice() | localize }}
+    @if (queuedReport()) {
+      <a routerLink="/operations/reports">{{ "My Reports" | localize }}</a>
+    }
+  </p>
 }
 @if (busy()) {
   <p role="status">{{ "Loading…" | localize }}</p>
 }
-<form (ngSubmit)="load()">
-  @for (field of spec.queryFields; track field.key) {
-    <label [for]="'query-' + field.key">{{ field.title }}</label>
-    <input
-      required
-      [id]="'query-' + field.key"
-      [name]="field.key"
-      [ngModel]="display(field, true)"
-      (ngModelChange)="change(field, $event, true)"
-    />
-  }
-  <button type="submit" [disabled]="busy()">{{ "Search" | localize }}</button>
-  <button type="button" [disabled]="busy()" (click)="load(page(), true)">
-    {{ "Report" | localize }}
-  </button>
-  <button type="button" [disabled]="busy()" (click)="create()">
-    {{ "Create" | localize }}
-  </button>
-</form>
-<ul>
-  @for (row of items(); track ref(row)) {
-    <li>
-      <button type="button" [disabled]="busy()" (click)="open(ref(row))">
-        {{ label(row) }}
+@if (selected(); as row) {
+  <section class="catalog-detail">
+    <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
+      <button
+        pButton
+        severity="secondary"
+        type="button"
+        [disabled]="busy()"
+        [text]="true"
+        (click)="back()"
+      >
+        {{ "Back to list" | localize }}
       </button>
-      {{ row["status"] ?? "" }}
-    </li>
-  } @empty {
-    <li>{{ "No items" | localize }}</li>
-  }
-</ul>
-<button
-  type="button"
-  [disabled]="busy() || page() <= 1"
-  (click)="load(page() - 1)"
->
-  {{ "Previous" | localize }}
-</button>
-<button
-  type="button"
-  [disabled]="busy() || page() >= totalPages()"
-  (click)="load(page() + 1)"
->
-  {{ "Next" | localize }}
-</button>
-<section aria-label="Definition editor">
-  <h2>{{ selected() ? ("Edit" | localize) : ("Create" | localize) }}</h2>
-  @if (selected(); as row) {
-    <details>
-      <summary>{{ "Definition details" | localize }}</summary>
-      <pre>{{ json(row, null, 2) }}</pre>
-    </details>
-    <p>
-      {{ row["status"] ?? "" }} ·
-      {{ row["checksum"] ?? row["graph_checksum"] ?? "" }}
-    </p>
-  }
-  @if (immutable()) {
-    <p>
-      {{
-        "Published versions are immutable. Create a new draft version."
-          | localize
-      }}
-    </p>
-  }
-  <form (ngSubmit)="save()">
-    @for (field of fields(); track field.key) {
-      <div class="field">
-        <label [for]="'author-' + field.key"
-          >{{ field.title }} {{ field.required ? "*" : "" }}</label
-        >
-        @switch (field.type) {
-          @case ("json") {
-            <textarea
-              rows="6"
-              spellcheck="false"
-              [disabled]="!canSave()"
-              [id]="'author-' + field.key"
-              [name]="field.key"
-              [ngModel]="display(field)"
-              (ngModelChange)="change(field, $event)"
-            ></textarea>
-          }
-          @case ("boolean") {
-            <input
-              type="checkbox"
-              [disabled]="!canSave()"
-              [id]="'author-' + field.key"
-              [name]="field.key"
-              [ngModel]="values()[field.key] === true"
-              (ngModelChange)="change(field, $event)"
-            />
-          }
-          @default {
-            @if (field.options.length) {
-              <select
-                [disabled]="!canSave()"
-                [id]="'author-' + field.key"
-                [name]="field.key"
-                [ngModel]="display(field)"
-                (ngModelChange)="change(field, $event)"
-              >
-                <option value="">—</option>
-                @for (option of field.options; track option) {
-                  <option [value]="option">{{ option }}</option>
-                }
-              </select>
-            } @else {
-              <input
-                [disabled]="!canSave()"
-                [id]="'author-' + field.key"
-                [name]="field.key"
-                [ngModel]="display(field)"
-                [required]="field.required"
-                [type]="field.type === 'number' ? 'number' : 'text'"
-                (ngModelChange)="change(field, $event)"
-              />
-            }
-          }
-        }
-      </div>
+      <button
+        class="reload-control"
+        pButton
+        severity="secondary"
+        type="button"
+        [attr.aria-label]="'Reload record' | localize"
+        [attr.title]="'Reload record' | localize"
+        [disabled]="busy()"
+        [text]="true"
+        (click)="open(reference())"
+      >
+        <i aria-hidden="true" class="pi pi-refresh"></i
+        ><span class="sr-only">{{ "Reload record" | localize }}</span>
+      </button>
+    </div>
+    @if (immutable()) {
+      <p>
+        {{
+          "Published versions are immutable. Create a new draft version."
+            | localize
+        }}
+      </p>
     }
-    <button type="submit" [disabled]="!canSave()">
-      {{ "Save" | localize }}
-    </button>
-  </form>
-</section>
+    <ng-template #overview>
+      <app-record-summary
+        [caption]="spec.title"
+        [icon]="
+          key.startsWith('workflow')
+            ? 'pi pi-sitemap'
+            : key.startsWith('form')
+              ? 'pi pi-file-edit'
+              : 'pi pi-box'
+        "
+        [record]="row"
+        [title]="label(row)"
+      />
+    </ng-template>
+    @if (key === "workflows" || key === "workflow-versions") {
+      <p-tabs value="overview" [lazy]="true">
+        <p-tablist>
+          <p-tab value="overview">{{ "Overview" | localize }}</p-tab>
+          <p-tab value="display"
+            ><i aria-hidden="true" class="pi pi-sitemap"></i>
+            {{ "Display" | localize }}</p-tab
+          >
+        </p-tablist>
+        <p-tabpanels>
+          <p-tabpanel value="overview"
+            ><ng-container [ngTemplateOutlet]="overview"
+          /></p-tabpanel>
+          <p-tabpanel value="display">
+            <ng-template #content>
+              @defer (when reference()) {
+                <app-workflow-diagram
+                  [version]="key === 'workflow-versions' ? reference() : ''"
+                  [workflow]="key === 'workflows' ? reference() : ''"
+                />
+              } @placeholder {
+                <p role="status">
+                  {{ "Loading workflow diagram…" | localize }}
+                </p>
+              }
+            </ng-template>
+          </p-tabpanel>
+        </p-tabpanels>
+      </p-tabs>
+    } @else {
+      <ng-container [ngTemplateOutlet]="overview" />
+    }
+  </section>
+} @else {
+  @if (parentSpec) {
+    <div
+      class="scope-toolbar flex flex-wrap items-center justify-between gap-3 mb-5"
+    >
+      <div>
+        <strong>{{ parentSpec.title | localize }}</strong>
+        <p>
+          {{
+            parentLabel() || "Choose a parent definition to show its versions."
+              | localize
+          }}
+        </p>
+      </div>
+      <button
+        pButton
+        severity="secondary"
+        type="button"
+        [disabled]="busy()"
+        [outlined]="true"
+        (click)="chooseParents()"
+      >
+        {{ (canScope() ? "Change parent" : "Choose parent") | localize }}
+      </button>
+    </div>
+  } @else {
+    @if (spec.queryFields.length) {
+      <form
+        class="scope-toolbar flex flex-wrap items-end gap-3 mb-5"
+        (ngSubmit)="applyScope()"
+      >
+        @for (field of spec.queryFields; track field.key) {
+          <label class="grid gap-2" [for]="'query-' + field.key"
+            >{{ field.title | localize
+            }}<input
+              pInputText
+              [id]="'query-' + field.key"
+              [name]="field.key"
+              [ngModel]="display(field, true)"
+              [required]="field.required"
+              (ngModelChange)="change(field, $event, true)"
+          /></label>
+        }
+        <button pButton type="submit" [disabled]="busy()">
+          {{ "Show versions" | localize }}
+        </button>
+      </form>
+    }
+  }
+
+  <section class="catalog-list">
+    <div class="flex flex-wrap justify-between items-center gap-3 mb-4">
+      <div>
+        <strong>{{ spec.title | localize }}</strong>
+      </div>
+      <button
+        class="reload-control"
+        pButton
+        severity="secondary"
+        type="button"
+        [attr.aria-label]="'Refresh' | localize"
+        [attr.title]="'Refresh' | localize"
+        [disabled]="busy() || !appliedQuery()"
+        [text]="true"
+        (click)="load(page())"
+      >
+        <i aria-hidden="true" class="pi pi-refresh"></i
+        ><span class="sr-only">{{ "Refresh" | localize }}</span>
+      </button>
+    </div>
+    @if (spec.list) {
+      <app-list-query
+        [busy]="busy() || !canScope()"
+        [fields]="spec.list.queryFields"
+        [query]="listQuery()"
+        (applied)="applyList($event)"
+      />
+    }
+    <app-record-table
+      [busy]="busy() || !canScope()"
+      [canEdit]="canEditRow"
+      [columns]="columns()"
+      [fields]="spec.list?.queryFields ?? []"
+      [moreActions]="rowActions"
+      [page]="page()"
+      [pages]="totalPages()"
+      [query]="listQuery()"
+      [rows]="items()"
+      (actionRequested)="rowAction($event)"
+      (edited)="editRow($event)"
+      (opened)="open(ref($any($event)))"
+      (pageChanged)="load($event)"
+      (queried)="applyList($event)"
+    />
+  </section>
+}
 @if (selected()) {
-  <nav aria-label="Definition actions">
+  <nav
+    class="catalog-actions"
+    [attr.aria-label]="'Definition actions' | localize"
+  >
     @if (versionCatalog) {
       <a
+        class="p-button p-button-outlined"
         [queryParams]="{ parent: reference() }"
         [routerLink]="['/studio', versionCatalog]"
         >{{ "Versions" | localize }}</a
       >
     }
     @if (spec.editor) {
-      <a [routerLink]="['/studio', key, reference(), 'edit']">{{
-        "Open designer" | localize
-      }}</a>
+      <a
+        class="p-button p-button-outlined"
+        [routerLink]="['/studio', key, reference(), 'edit']"
+        >{{ "Open designer" | localize }}</a
+      >
     }
     @for (
       action of ["publish", "retire", "disable", "rotate", "remove"];
@@ -156,35 +273,48 @@
     ) {
       @if (spec.actions.includes(action)) {
         <button
+          pButton
+          severity="secondary"
           type="button"
           [disabled]="busy() || dirty()"
+          [outlined]="true"
           (click)="act(action)"
         >
           {{ action | localize }}
         </button>
       }
     }
-    <button type="button" [disabled]="busy()" (click)="history()">
-      {{ "History" | localize }}
-    </button>
   </nav>
   @if (spec.actions.includes("grant")) {
     <details>
       <summary>{{ "Access grants" | localize }}</summary>
       @if (spec.actions.includes("grants")) {
-        <button type="button" [disabled]="busy()" (click)="loadGrants()">
+        <button
+          pButton
+          severity="secondary"
+          type="button"
+          [disabled]="busy()"
+          [outlined]="true"
+          (click)="loadGrants()"
+        >
           {{ "Current grants" | localize }}
         </button>
         <pre>{{ grants() }}</pre>
         <button
+          pButton
+          severity="secondary"
           type="button"
           [disabled]="grantPage() <= 1"
+          [outlined]="true"
           (click)="loadGrants(grantPage() - 1)"
         >
           {{ "Previous" | localize }}</button
         ><button
+          pButton
+          severity="secondary"
           type="button"
           [disabled]="grantPage() >= grantPages()"
+          [outlined]="true"
           (click)="loadGrants(grantPage() + 1)"
         >
           {{ "Next" | localize }}
@@ -193,15 +323,30 @@
       <label for="grant-body">{{
         "Grant target and capabilities" | localize
       }}</label
-      ><textarea id="grant-body" rows="4" [(ngModel)]="grantBody"></textarea
-      ><button type="button" [disabled]="busy() || dirty()" (click)="grant()">
+      ><textarea
+        class="font-mono"
+        id="grant-body"
+        rows="4"
+        [(ngModel)]="grantBody"
+      ></textarea
+      ><button
+        pButton
+        severity="secondary"
+        type="button"
+        [disabled]="busy() || dirty()"
+        [outlined]="true"
+        (click)="grant()"
+      >
         {{ "Add grant" | localize }}</button
       ><label for="grant-reference">{{
         "Grant reference to revoke" | localize
       }}</label
       ><input id="grant-reference" [(ngModel)]="grantTarget" /><button
+        pButton
+        severity="secondary"
         type="button"
         [disabled]="busy() || dirty()"
+        [outlined]="true"
         (click)="grant(true)"
       >
         {{ "Revoke grant" | localize }}
@@ -221,26 +366,218 @@
       <summary>{{ "Reveal secret" | localize }}</summary>
       <code>{{ secret() }}</code>
     </details>
-    <button type="button" (click)="secret.set('')">
+    <button
+      pButton
+      severity="secondary"
+      type="button"
+      [outlined]="true"
+      (click)="secret.set('')"
+    >
       {{ "Dismiss secret" | localize }}
     </button>
   </aside>
 }
-@if (audit().length) {
-  <section aria-label="History">
-    <pre>{{ json(audit(), null, 2) }}</pre>
-    <button
-      type="button"
-      [disabled]="busy() || auditPage() <= 1"
-      (click)="history(auditPage() - 1)"
-    >
-      {{ "Previous" | localize }}</button
-    ><button
-      type="button"
-      [disabled]="busy() || auditPage() >= auditPages()"
-      (click)="history(auditPage() + 1)"
-    >
-      {{ "Next" | localize }}
-    </button>
-  </section>
-}
+<p-dialog
+  appendTo="body"
+  position="center"
+  [closable]="false"
+  [draggable]="false"
+  [header]="(selected() ? 'Edit' : 'Create') | localize"
+  [modal]="true"
+  [resizable]="false"
+  [style]="{ width: '56rem', maxWidth: 'calc(100vw - 2rem)' }"
+  [visible]="formOpen()"
+>
+  @if (formOpen()) {
+    <p class="text-sm text-console-muted">
+      {{ "Required fields are marked with *." | localize }}
+    </p>
+    <form class="editor-form" (ngSubmit)="save()">
+      @for (field of fields(); track field.key) {
+        <app-control-field
+          [controlId]="'author-' + field.key"
+          [error]="
+            invalid().includes(field.key)
+              ? 'Correct this field before saving'
+              : ''
+          "
+          [label]="field.title"
+          [required]="field.required"
+        >
+          @switch (field.type) {
+            @case ("json") {
+              <textarea
+                class="font-mono"
+                rows="6"
+                spellcheck="false"
+                [disabled]="controlsDisabled()"
+                [id]="'author-' + field.key"
+                [name]="field.key"
+                [ngModel]="display(field)"
+                [required]="field.required"
+                (ngModelChange)="change(field, $event)"
+              ></textarea>
+            }
+            @case ("boolean") {
+              <input
+                class="size-4 justify-self-start accent-console-accent"
+                type="checkbox"
+                [disabled]="controlsDisabled()"
+                [id]="'author-' + field.key"
+                [name]="field.key"
+                [ngModel]="values()[field.key] === true"
+                (ngModelChange)="change(field, $event)"
+              />
+            }
+            @default {
+              @if (field.options.length) {
+                <p-select
+                  appendTo="body"
+                  optionLabel="label"
+                  optionValue="value"
+                  scrollHeight="20rem"
+                  [ariaLabelledBy]="'author-' + field.key + '-label'"
+                  [checkmark]="true"
+                  [disabled]="controlsDisabled()"
+                  [inputId]="'author-' + field.key"
+                  [name]="field.key"
+                  [ngModel]="display(field) || null"
+                  [options]="enumChoices()[field.key]"
+                  [placeholder]="'Choose a value' | localize"
+                  [required]="field.required"
+                  [showClear]="!field.required"
+                  [style]="{ width: '100%' }"
+                  (ngModelChange)="change(field, $event ?? '')"
+                />
+              } @else {
+                <input
+                  [attr.maxlength]="field.schema['maxLength'] ?? null"
+                  [attr.minlength]="field.schema['minLength'] ?? null"
+                  [disabled]="controlsDisabled()"
+                  [id]="'author-' + field.key"
+                  [name]="field.key"
+                  [ngModel]="display(field)"
+                  [required]="field.required"
+                  [type]="field.type === 'number' ? 'number' : 'text'"
+                  (ngModelChange)="change(field, $event)"
+                />
+              }
+            }
+          }
+          @if (field.schema["minLength"]) {
+            <small class="text-console-muted" fieldHint
+              >{{ "Minimum characters" | localize }}:
+              {{ field.schema["minLength"] }}</small
+            >
+          }
+          @if (field.schema["maxLength"]) {
+            <small class="text-console-muted" fieldHint
+              >{{ "Maximum characters" | localize }}:
+              {{ field.schema["maxLength"] }}</small
+            >
+          }
+          @if (field.type === "json") {
+            <small class="text-console-muted" fieldHint>{{
+              "JSON document" | localize
+            }}</small>
+          }
+          @if (field.key === "code") {
+            <small class="text-console-muted" fieldHint>{{
+              "Use letters, numbers, dots, underscores or hyphens." | localize
+            }}</small>
+          }
+        </app-control-field>
+      }
+      <div class="flex justify-end gap-3 mt-5">
+        <button
+          pButton
+          severity="secondary"
+          type="button"
+          [disabled]="busy()"
+          [outlined]="true"
+          (click)="closeForm()"
+        >
+          {{ "Cancel" | localize }}</button
+        ><button pButton type="submit" [disabled]="!canSave()">
+          {{ "Save" | localize }}
+        </button>
+      </div>
+    </form>
+    @if (error()) {
+      <p role="alert">{{ error() | localize }}</p>
+    }
+  }
+</p-dialog>
+<p-dialog
+  appendTo="body"
+  position="center"
+  [closable]="!busy()"
+  [closeAriaLabel]="'Close' | localize"
+  [draggable]="false"
+  [header]="'History' | localize"
+  [modal]="true"
+  [resizable]="false"
+  [style]="{ width: '60rem', maxWidth: 'calc(100vw - 2rem)' }"
+  [visible]="historyOpen()"
+  (visibleChange)="historyOpen.set($event)"
+>
+  <app-record-table
+    [busy]="busy()"
+    [columns]="historyColumns"
+    [page]="auditPage()"
+    [pages]="auditPages()"
+    [query]="auditQuery()"
+    [rows]="audit()"
+    (opened)="historyDetail.set($any($event))"
+    (pageChanged)="history($event)"
+    (queried)="history(1, $event.size)"
+  />
+  @if (historyDetail()) {
+    <app-record-summary
+      caption="History"
+      icon="pi pi-history"
+      [record]="historyDetail()!"
+      [title]="$any(historyDetail()!['operation'] || ('History' | localize))"
+    />
+  }
+</p-dialog>
+
+<p-dialog
+  appendTo="body"
+  position="center"
+  [closable]="!parentBusy()"
+  [draggable]="false"
+  [header]="'Choose parent' | localize"
+  [modal]="true"
+  [resizable]="false"
+  [style]="{ width: '60rem', maxWidth: 'calc(100vw - 2rem)' }"
+  [visible]="parentModal()"
+  (visibleChange)="parentModal.set($event)"
+>
+  @if (parentModal() && parentSpec; as parent) {
+    @if (parent.list) {
+      <app-list-query
+        [busy]="parentBusy()"
+        [fields]="parent.list.queryFields"
+        [query]="parentQuery()"
+        (applied)="loadParents($event)"
+      />
+    }
+    <app-record-table
+      actionLabel="Select"
+      [busy]="parentBusy()"
+      [columns]="parent.list?.columns ?? columns()"
+      [fields]="parent.list?.queryFields ?? []"
+      [page]="parentQuery().page"
+      [pages]="parentPages()"
+      [query]="parentQuery()"
+      [rows]="parentItems()"
+      (opened)="chooseParent($event)"
+      (pageChanged)="parentPageTo($event)"
+      (queried)="loadParents($event)"
+    />
+  }
+  @if (parentError()) {
+    <p role="alert">{{ parentError() | localize }}</p>
+  }
+</p-dialog>

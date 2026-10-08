@@ -1,3 +1,4 @@
+import { ButtonDirective } from 'primeng/button';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -11,8 +12,9 @@ import { FORM_RESOURCES } from '../../../forms/bindings';
 import { Approval } from '../../../forms/application/form-resources';
 import { EditorPort } from '../../application/workspace-ports';
 @Component({
+  host: { class: 'console-fragment' },
   selector: 'app-ai-approval',
-  imports: [LocalizePipe],
+  imports: [ButtonDirective, LocalizePipe],
   templateUrl: './ai-approval.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

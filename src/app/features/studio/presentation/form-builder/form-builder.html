@@ -1,21 +1,44 @@
-<h1 tabindex="-1">{{ "Form designer" | localize }}</h1>
-<a routerLink="/studio/form-versions">{{ "Form versions" | localize }}</a>
-<p>{{ status() }} · {{ reference() }}</p>
+<header class="console-page-header">
+  <h1 tabindex="-1">{{ "Form designer" | localize }}</h1>
+  <a routerLink="/studio/form-versions">{{ "Form versions" | localize }}</a>
+</header>
+<p class="console-record-status">{{ status() }}</p>
 @if (error()) {
   <p role="alert">{{ error() | localize }}</p>
 }
 @if (busy()) {
   <p role="status">{{ "Loading…" | localize }}</p>
 }
-<button type="button" [disabled]="busy()" (click)="load()">
-  {{ "Reload" | localize }}</button
+<button
+  class="reload-control"
+  pButton
+  severity="secondary"
+  type="button"
+  [attr.aria-label]="'Reload' | localize"
+  [attr.title]="'Reload' | localize"
+  [disabled]="busy()"
+  [text]="true"
+  (click)="load()"
+>
+  <i aria-hidden="true" class="pi pi-refresh"></i
+  ><span class="sr-only">{{ "Reload" | localize }}</span></button
 ><button
+  pButton
+  severity="secondary"
   type="button"
   [disabled]="readonly() || pending().length > 0"
+  [outlined]="true"
   (click)="save()"
 >
   {{ "Save draft" | localize }}</button
-><button type="button" [disabled]="busy()" (click)="validate()">
+><button
+  pButton
+  severity="secondary"
+  type="button"
+  [disabled]="busy()"
+  [outlined]="true"
+  (click)="validate()"
+>
   {{ "Validate" | localize }}
 </button>
 @if (pending().length) {
@@ -27,14 +50,17 @@
   <section aria-label="Component palette">
     <h2>{{ "Components" | localize }}</h2>
     <label for="primitive">{{ "Component" | localize }}</label
-    ><select id="primitive" [(ngModel)]="primitive">
+    ><app-select-control inputId="primitive" [(ngModel)]="primitive">
       @for (kind of palette; track kind) {
         <option [value]="kind">{{ kind }}</option>
-      }</select
+      }</app-select-control
     ><label for="property-name">{{ "Property name / label" | localize }}</label
     ><input id="property-name" [(ngModel)]="propertyName" /><button
+      pButton
+      severity="secondary"
       type="button"
       [disabled]="readonly()"
+      [outlined]="true"
       (click)="add()"
     >
       {{ "Add to selected layout" | localize }}
@@ -43,15 +69,35 @@
     <ul>
       @for (item of outline(); track item.path.join(".")) {
         <li [style.padding-inline-start.rem]="item.path.length">
-          <button type="button" (click)="select(item.path)">
+          <button
+            pButton
+            severity="secondary"
+            type="button"
+            [outlined]="true"
+            (click)="select(item.path)"
+          >
             {{ item.label }}</button
           ><small>{{ item.scope }}</small>
         </li>
       }
     </ul>
-    <button type="button" [disabled]="readonly()" (click)="move(-1)">
+    <button
+      pButton
+      severity="secondary"
+      type="button"
+      [disabled]="readonly()"
+      [outlined]="true"
+      (click)="move(-1)"
+    >
       {{ "Move up" | localize }}</button
-    ><button type="button" [disabled]="readonly()" (click)="move(1)">
+    ><button
+      pButton
+      severity="secondary"
+      type="button"
+      [disabled]="readonly()"
+      [outlined]="true"
+      (click)="move(1)"
+    >
       {{ "Move down" | localize }}
     </button>
   </section>
@@ -61,6 +107,7 @@
       "Binding, options, calculation and supported behavior" | localize
     }}</label
     ><textarea
+      class="font-mono"
       id="node-json"
       rows="14"
       spellcheck="false"
@@ -68,20 +115,35 @@
       [(ngModel)]="selectedJson"
       (ngModelChange)="markPending('node')"
     ></textarea
-    ><button type="button" [disabled]="readonly()" (click)="applyNode()">
+    ><button
+      pButton
+      severity="secondary"
+      type="button"
+      [disabled]="readonly()"
+      [outlined]="true"
+      (click)="applyNode()"
+    >
       {{ "Apply component" | localize }}
     </button>
     <details>
       <summary>{{ "Data schema" | localize }}</summary>
       <label for="schema-json">{{ "Canonical data schema" | localize }}</label
       ><textarea
+        class="font-mono"
         id="schema-json"
         rows="10"
         [disabled]="readonly()"
         [(ngModel)]="schemaJson"
         (ngModelChange)="markPending('schema')"
       ></textarea
-      ><button type="button" [disabled]="readonly()" (click)="applySchema()">
+      ><button
+        pButton
+        severity="secondary"
+        type="button"
+        [disabled]="readonly()"
+        [outlined]="true"
+        (click)="applySchema()"
+      >
         {{ "Apply schema" | localize }}
       </button>
     </details>
@@ -91,13 +153,21 @@
         "Versioned presentation settings" | localize
       }}</label
       ><textarea
+        class="font-mono"
         id="behavior-json"
         rows="10"
         [disabled]="readonly()"
         [(ngModel)]="behaviorJson"
         (ngModelChange)="markPending('settings')"
       ></textarea
-      ><button type="button" [disabled]="readonly()" (click)="applyBehavior()">
+      ><button
+        pButton
+        severity="secondary"
+        type="button"
+        [disabled]="readonly()"
+        [outlined]="true"
+        (click)="applyBehavior()"
+      >
         {{ "Apply settings" | localize }}
       </button>
     </details>
@@ -112,24 +182,40 @@
     }}
   </p>
   <label for="preview-purpose">{{ "Purpose" | localize }}</label
-  ><select id="preview-purpose" [(ngModel)]="purpose">
+  ><app-select-control inputId="preview-purpose" [(ngModel)]="purpose">
     <option>edit</option>
     <option>summary</option>
     <option>print</option>
-    <option>correction</option></select
+    <option>correction</option></app-select-control
   ><label for="preview-locale">{{ "Locale" | localize }}</label
-  ><select id="preview-locale" [(ngModel)]="locale">
+  ><app-select-control inputId="preview-locale" [(ngModel)]="locale">
     <option>en</option>
-    <option>fa</option></select
+    <option>fa</option></app-select-control
   ><label for="sample-json">{{ "Synthetic sample values" | localize }}</label
-  ><textarea id="sample-json" rows="5" [(ngModel)]="sampleJson"></textarea
-  ><button type="button" [disabled]="busy()" (click)="renderPreview()">
+  ><textarea
+    class="font-mono"
+    id="sample-json"
+    rows="5"
+    [(ngModel)]="sampleJson"
+  ></textarea
+  ><button
+    pButton
+    severity="secondary"
+    type="button"
+    [disabled]="busy()"
+    [outlined]="true"
+    (click)="renderPreview()"
+  >
     {{ "Preview" | localize }}
   </button>
   <label for="preview-context">{{
     "Simulated policy, prior values and stable row identities" | localize
   }}</label
-  ><textarea id="preview-context" [(ngModel)]="previewContextJson"></textarea>
+  ><textarea
+    class="font-mono"
+    id="preview-context"
+    [(ngModel)]="previewContextJson"
+  ></textarea>
   @if (runtime(); as document) {
     <app-runtime-form
       [busy]="busy()"
@@ -139,11 +225,32 @@
     />
   }
 </section>
-<button type="button" [disabled]="busy()" (click)="inspect('schema')">
+<button
+  pButton
+  severity="secondary"
+  type="button"
+  [disabled]="busy()"
+  [outlined]="true"
+  (click)="inspect('schema')"
+>
   {{ "Render contract" | localize }}</button
-><button type="button" [disabled]="busy()" (click)="inspect('fields')">
+><button
+  pButton
+  severity="secondary"
+  type="button"
+  [disabled]="busy()"
+  [outlined]="true"
+  (click)="inspect('fields')"
+>
   {{ "Field catalog" | localize }}</button
-><button type="button" [disabled]="busy()" (click)="inspect('behavior')">
+><button
+  pButton
+  severity="secondary"
+  type="button"
+  [disabled]="busy()"
+  [outlined]="true"
+  (click)="inspect('behavior')"
+>
   {{ "Evaluate behavior" | localize }}
 </button>
 <details>
@@ -151,10 +258,28 @@
   <label for="interaction-json">{{
     "Node pointer and synthetic query" | localize
   }}</label
-  ><textarea id="interaction-json" [(ngModel)]="interactionJson"></textarea
-  ><button type="button" [disabled]="busy()" (click)="inspect('options')">
+  ><textarea
+    class="font-mono"
+    id="interaction-json"
+    [(ngModel)]="interactionJson"
+  ></textarea
+  ><button
+    pButton
+    severity="secondary"
+    type="button"
+    [disabled]="busy()"
+    [outlined]="true"
+    (click)="inspect('options')"
+  >
     {{ "Preview options" | localize }}</button
-  ><button type="button" [disabled]="busy()" (click)="inspect('navigation')">
+  ><button
+    pButton
+    severity="secondary"
+    type="button"
+    [disabled]="busy()"
+    [outlined]="true"
+    (click)="inspect('navigation')"
+  >
     {{ "Preview navigation" | localize }}
   </button>
 </details>
@@ -165,7 +290,13 @@
       @for (issue of issues(); track $index) {
         <li>
           @if (issue.path) {
-            <button type="button" (click)="select(issue.path)">
+            <button
+              pButton
+              severity="secondary"
+              type="button"
+              [outlined]="true"
+              (click)="select(issue.path)"
+            >
               {{ issue.pointer }} · {{ issue.code }} {{ issue.edge }}
             </button>
           } @else {

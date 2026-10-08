@@ -1,10 +1,11 @@
+import { isSupportedLocale, SupportedLocale } from '../localization/languages';
 import { implementedRendererCapabilities } from '../../contracts/renderer-capabilities';
 import { InjectionToken } from '@angular/core';
 
 export type RuntimeConfig = {
   readonly apiBasePath: '/api/v1';
   readonly sessionBasePath: '/session';
-  readonly locale: 'en' | 'fa';
+  readonly locale: SupportedLocale;
   readonly rendererCapabilities: readonly string[];
 };
 
@@ -39,7 +40,7 @@ export function readRuntimeConfig(value: unknown): RuntimeConfig {
     Object.keys(config).some((key) => !keys.includes(key)) ||
     config['apiBasePath'] !== '/api/v1' ||
     config['sessionBasePath'] !== '/session' ||
-    !['en', 'fa'].includes(String(config['locale'])) ||
+    !isSupportedLocale(String(config['locale'])) ||
     !Array.isArray(config['rendererCapabilities']) ||
     config['rendererCapabilities'].length > 32 ||
     !config['rendererCapabilities'].every(
@@ -54,7 +55,7 @@ export function readRuntimeConfig(value: unknown): RuntimeConfig {
   return Object.freeze({
     apiBasePath: '/api/v1',
     sessionBasePath: '/session',
-    locale: config['locale'] as 'en' | 'fa',
+    locale: config['locale'] as SupportedLocale,
     rendererCapabilities: Object.freeze([
       ...config['rendererCapabilities'],
     ] as string[]),

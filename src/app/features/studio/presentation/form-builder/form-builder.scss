@@ -1,44 +1,37 @@
-:host {
-  display: block;
-  padding: 1rem;
-  max-width: 85rem;
-  margin: auto;
-}
-.designer {
+.designer,
+.inspectors {
   display: grid;
-  grid-template-columns: minmax(14rem, 1fr) minmax(20rem, 2fr);
-  gap: 1rem;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+  gap: 1.5rem;
+  margin-block: 1.5rem;
 }
-section {
-  padding: 1rem;
-  border: 1px solid var(--p-content-border-color);
-  margin-block: 1rem;
-}
-label,
-textarea,
-select,
-input {
-  display: block;
-  margin-block: 0.5rem;
+.designer > section,
+.inspectors > section {
+  min-inline-size: 0;
+  padding: 1.5rem;
+  border: 1px solid var(--console-border);
+  border-radius: 1rem;
+  background: var(--console-surface);
 }
 textarea {
-  width: 100%;
-  border: 1px solid var(--p-content-border-color);
+  max-inline-size: none;
+}
+.designer ul {
+  gap: 0.35rem;
+}
+.designer li {
   padding: 0.5rem;
+  background: var(--console-canvas);
 }
-button {
-  padding: 0.4rem;
-  margin: 0.3rem;
-  border: 1px solid var(--p-content-border-color);
+.designer small {
+  display: block;
+  padding-inline: 0.5rem;
+  color: var(--console-muted);
+  overflow-wrap: anywhere;
 }
-pre {
-  overflow: auto;
-}
-button:disabled {
-  opacity: 0.5;
-}
-@media (max-width: 50rem) {
-  .designer {
-    grid-template-columns: 1fr;
+@media (max-width: 60rem) {
+  .designer,
+  .inspectors {
+    grid-template-columns: minmax(0, 1fr);
   }
 }

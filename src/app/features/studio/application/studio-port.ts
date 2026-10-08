@@ -39,6 +39,7 @@ export type StudioPort = {
     key: ResourceKey,
     reference: string,
     page: number,
+    size?: number,
   ): Promise<AuthorPage>;
   auxiliary(
     key: string,

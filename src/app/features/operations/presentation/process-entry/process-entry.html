@@ -1,5 +1,7 @@
-<h1 tabindex="-1">{{ "Process tracking" | localize }}</h1>
-<a routerLink="/operations/requests">{{ "My requests" | localize }}</a>
+<header class="console-page-header">
+  <h1 tabindex="-1">{{ "Process tracking" | localize }}</h1>
+  <a routerLink="/operations/requests">{{ "My requests" | localize }}</a>
+</header>
 @if (busy()) {
   <p role="status">{{ "Loading…" | localize }}</p>
 }
@@ -9,8 +11,19 @@
 @if (status()) {
   <p>{{ "Status" | localize }}: {{ status() | localize }}</p>
 }
-<button type="button" [disabled]="busy()" (click)="load()">
-  {{ "Refresh" | localize }}
+<button
+  class="reload-control"
+  pButton
+  severity="secondary"
+  type="button"
+  [attr.aria-label]="'Refresh' | localize"
+  [attr.title]="'Refresh' | localize"
+  [disabled]="busy()"
+  [text]="true"
+  (click)="load()"
+>
+  <i aria-hidden="true" class="pi pi-refresh"></i
+  ><span class="sr-only">{{ "Refresh" | localize }}</span>
 </button>
 @if (snapshot(); as process) {
   <p>
@@ -69,21 +82,34 @@
     }
   </ol>
   <button
+    pButton
+    severity="secondary"
     type="button"
     [disabled]="busy() || process.page <= 1"
+    [outlined]="true"
     (click)="load(process.page - 1)"
   >
     {{ "Previous" | localize }}
   </button>
   <span>{{ process.page }} / {{ process.totalPages }}</span>
   <button
+    pButton
+    severity="secondary"
     type="button"
     [disabled]="busy() || process.page >= process.totalPages"
+    [outlined]="true"
     (click)="load(process.page + 1)"
   >
     {{ "Next" | localize }}
   </button>
-  <button type="button" [disabled]="busy()" (click)="load(process.page, true)">
+  <button
+    pButton
+    severity="secondary"
+    type="button"
+    [disabled]="busy()"
+    [outlined]="true"
+    (click)="load(process.page, true)"
+  >
     {{ "Timeline report" | localize }}
   </button>
 }

@@ -12,6 +12,7 @@ export type CanvasEdge = {
   source: string;
   target: string;
   kind: 'control' | 'data';
+  label?: string;
 };
 export function graphSteps(graph: JsonObject): readonly JsonObject[] {
   if (!Array.isArray(graph['steps']) || graph['steps'].length > 256) {
@@ -48,6 +49,7 @@ export function canvasEdges(
         source: 'control:' + edge['source'] + ':out',
         target: 'control:' + edge['target'] + ':in',
         kind: 'control' as const,
+        label: String(edge['outcome'] ?? ''),
       })),
     ...bindings
       .filter(

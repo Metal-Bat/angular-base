@@ -1,3 +1,4 @@
+import { ButtonDirective } from 'primeng/button';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -10,8 +11,9 @@ import { EditorPort } from '../../application/workspace-ports';
 import { FORM_RESOURCES } from '../../../forms/bindings';
 import { LocalizePipe } from '../../../../shared/ui/localize-pipe';
 @Component({
+  host: { class: 'console-fragment' },
   selector: 'app-request-actions',
-  imports: [RouterLink, LocalizePipe],
+  imports: [ButtonDirective, RouterLink, LocalizePipe],
   templateUrl: './request-actions.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

@@ -1,3 +1,5 @@
+import { SelectControl } from '../../../../shared/ui/select-control/select-control';
+import { ButtonDirective } from 'primeng/button';
 import { fieldSchema, keysAt, rowValue } from '../../domain/row-values';
 import {
   ChangeDetectionStrategy,
@@ -28,8 +30,9 @@ import {
   RuntimeDocument,
 } from '../../domain/runtime-document';
 @Component({
+  host: { class: 'console-fragment' },
   selector: 'app-choice-control',
-  imports: [FormsModule, LocalizePipe],
+  imports: [SelectControl, ButtonDirective, FormsModule, LocalizePipe],
   templateUrl: './choice-control.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -131,7 +134,7 @@ export class ChoiceControl {
       const queryInput = {
         data: this.data(),
         indices: this.indices(),
-        locale: this.locale.language(),
+        locale: this.locale.contentLanguage(),
         search: this.search(),
         page: this.page(),
         selected:

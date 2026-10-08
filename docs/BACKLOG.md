@@ -20,7 +20,7 @@ Priority: P0 blocks safe integration; P1 delivers the first usable journey; P2 c
 
 Use these stable numbers in requests, for example **“do Step 9”** or **“continue Step 2”**. Each step points to the detailed tickets below; their acceptance criteria and dependencies remain authoritative. Numbers identify delivery slices, not a requirement to wait for every earlier slice: independent work can proceed in parallel. Do not renumber existing steps; append new steps or split them into suffixes such as 9a/9b.
 
-**Current position: Steps 2–35 implemented locally.** Steps 34–35 add [administration](ADMINISTRATION.md). Steps 36–37 have [local QA evidence](RELEASE-READINESS.md) and a [deployment/rollback rehearsal](DEPLOYMENT.md), with external release gates still pending. Step 38 awaits a search/bulk or push/collaboration [choice and contracts](EXPANSION-DECISIONS.md); offline drafts were deferred on October 4. The latest follow-up batch is [36a–36d and 37a](#release-follow-up-substeps). Next: finish Step 36 release signoff. October 4 verification passed the full local check and both browser-engine suites. GitHub CI now includes Chromium quality checks for every push/PR. The supplied `localhost:8000` staging address is not running; hosted CI and integrated staging remain unverified.
+**Current position: Steps 2–35 implemented locally.** Steps 34–35 add [administration](ADMINISTRATION.md). Steps 36–37 have [local QA evidence](RELEASE-READINESS.md) and a [deployment/rollback rehearsal](DEPLOYMENT.md), with external release gates still pending. Step 38 awaits a search/bulk or push/collaboration [choice and contracts](EXPANSION-DECISIONS.md); offline drafts were deferred on October 4. The latest follow-up batch is [36a–36d and 37a](#release-follow-up-substeps). Next: finish Step 36 release signoff. October 4 verification passed the full local check and both browser-engine suites. GitHub CI now includes Chromium quality checks for every push/PR. The local backend on port 8000 is now reachable: health/readiness and all 314 operation IDs match the frontend contract. The development launcher starts the missing session boundary automatically; hosted CI and integrated staging release acceptance remain unverified.
 
 Status **Done** applies to the exact scope of the step, not an entire milestone. **Open · backend** requires backend work/evidence outside this frontend repository. Fixtures may support frontend development while contracts are pending; they do not satisfy integrated acceptance. Update this table and its current-position paragraph after each step, recording validation and remaining gates before marking anything done.
 
@@ -684,7 +684,7 @@ Implement reusable authorized history/report entry points and generic file/image
 
 ### STUDIO-01 Manage form definitions and version lifecycle
 
-**Progress (October 3, 2026):** Implemented locally in Steps 29–33; see [authoring contracts and verification](STUDIO.md) and [canvas evidence/QA limits](CANVAS-ADR.md).
+**Progress (October 4, 2026):** All 11 Studio catalogs now use shared query/table CRUD with Create/Edit dialogs, searchable parent selection, preserved lifecycle rules and applied-query reports. See [authoring verification](STUDIO.md) and [shared CRUD design](design/BACKEND-CRUD.md).
 
 **P2 · L · FE · Depends on:** AUTH-03, API-01, UI-02.
 
@@ -808,7 +808,7 @@ Build request-type management linking form/workflow definitions and current clie
 
 ### ADMIN-01 Manage users roles and permissions
 
-**Progress (October 3, 2026):** Implemented locally in Steps 34–35; see [administration contracts, checks and validation limits](ADMINISTRATION.md).
+**Progress (October 4, 2026):** Shared list-first CRUD implemented for Users, separate Admin Users, roles, permissions, audit, history and My Reports, with applied-query reports, modal role selection and delete/restore. See [CRUD design and evidence](design/BACKEND-CRUD.md) and [validation limits](ADMINISTRATION.md).
 
 **P2 · L · FE · Depends on:** AUTH-03, API-02, OPS-03.
 

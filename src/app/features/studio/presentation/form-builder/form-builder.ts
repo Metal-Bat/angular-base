@@ -1,3 +1,5 @@
+import { SelectControl } from '../../../../shared/ui/select-control/select-control';
+import { ButtonDirective } from 'primeng/button';
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -17,6 +19,7 @@ import {
 } from '../../domain/form-authoring';
 import { FormBuilderCommands } from './form-builder-commands';
 @Component({
+  host: { class: 'console-page' },
   selector: 'app-form-builder',
   providers: [
     {
@@ -36,7 +39,14 @@ import { FormBuilderCommands } from './form-builder-commands';
       },
     },
   ],
-  imports: [FormsModule, RouterLink, RuntimeForm, LocalizePipe],
+  imports: [
+    SelectControl,
+    ButtonDirective,
+    FormsModule,
+    RouterLink,
+    RuntimeForm,
+    LocalizePipe,
+  ],
   templateUrl: './form-builder.html',
   styleUrl: './form-builder.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

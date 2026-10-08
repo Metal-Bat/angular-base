@@ -1,11 +1,13 @@
+import { ButtonDirective } from 'primeng/button';
 import { AuthSession } from '../../../core/auth/auth-session';
 import { LocalizePipe } from '../localize-pipe';
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
 @Component({
+  host: { class: 'console-page console-error' },
   selector: 'app-access-denied',
-  imports: [LocalizePipe, RouterLink],
+  imports: [ButtonDirective, LocalizePipe, RouterLink],
   templateUrl: './access-denied.html',
   styleUrl: './access-denied.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

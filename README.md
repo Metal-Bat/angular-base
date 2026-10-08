@@ -15,7 +15,7 @@ mise run install
 mise run dev
 ```
 
-The development server runs at http://localhost:4200. `mise.toml` pins Node 24.21.0, npm 12.2.0, RTK 0.47.0, graphifyy 0.9.53, and Husky 9.1.7. Husky is also a local development dependency so installation configures the repository hooks.
+The development command starts Angular at http://localhost:4200 and its session boundary on port 3000. The boundary forwards backend calls to http://127.0.0.1:8000; start the FastAPI backend first. Both frontend processes stop when you exit the command. Use `BOUNDARY_UPSTREAM_ORIGIN` to select another backend origin. `mise.toml` pins Node 24.21.0, npm 12.2.0, RTK 0.47.0, graphifyy 0.9.53, and Husky 9.1.7. Husky is also a local development dependency so installation configures the repository hooks.
 
 ## Stack and checks
 

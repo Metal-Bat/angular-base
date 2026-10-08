@@ -10,6 +10,22 @@ const config = {
   clientSecret: "synthetic-server-secret",
   clientRelease: "1.0.0",
 };
+test("unused health and readiness routes never contact the upstream service", async () => {
+  let calls = 0;
+  const boundary = createSessionBoundary(config, {
+    fetcher: async () => {
+      calls++;
+      throw Error("Unexpected upstream request");
+    },
+  });
+  for (const path of ["/health", "/ready"]) {
+    assert.equal(
+      (await boundary(new Request(config.browserOrigin + path))).status,
+      401,
+    );
+  }
+  assert.equal(calls, 0);
+});
 const request = (path, body, headers = {}, method = body ? "POST" : "GET") =>
   new Request(config.browserOrigin + path, {
     method,
@@ -512,4 +528,54 @@ test("password reset works before login, requires the same origin, and never ret
   assert.equal(response.status, 200);
   assert.deepEqual(await response.json(), { reset: true });
   assert.equal(response.headers.get("cache-control"), "private, no-store");
+});
+
+test("authentication failures expose the public code without upstream secrets", async () => {
+  const handle = createSessionBoundary(config, {
+    fetcher: async () =>
+      new Response(
+        JSON.stringify({
+          success: false,
+          code: 1001,
+          message: "private upstream diagnostic",
+          data: { access_token: "private token" },
+        }),
+        { status: 401, headers: { "content-type": "application/json" } },
+      ),
+  });
+  const response = await handle(
+    request("/session/login", {
+      username: "fixture",
+      password: "fixture-password",
+    }),
+  );
+  assert.equal(response.status, 401);
+  assert.deepEqual(await response.json(), {
+    error: "sign_in_failed",
+    code: 1001,
+  });
+});
+
+test("password reset failures retain a string code without upstream details", async () => {
+  const handle = createSessionBoundary(config, {
+    fetcher: async () =>
+      new Response(
+        JSON.stringify({
+          code: "RESET_EXPIRED",
+          data: { token: "private token" },
+        }),
+        { status: 400 },
+      ),
+  });
+  const response = await handle(
+    request("/session/reset-password", {
+      token: "fixture-reset-token",
+      new_password: "fixture-new-password",
+    }),
+  );
+  assert.equal(response.status, 400);
+  assert.deepEqual(await response.json(), {
+    error: "reset_failed",
+    code: "RESET_EXPIRED",
+  });
 });

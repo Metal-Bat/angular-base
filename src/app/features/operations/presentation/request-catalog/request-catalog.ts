@@ -1,3 +1,4 @@
+import { ButtonDirective } from 'primeng/button';
 import { PagesPort } from '../../application/workspace-ports';
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
@@ -5,6 +6,7 @@ import { LocalizePipe } from '../../../../shared/ui/localize-pipe';
 import { WORKSPACE_PAGES, WORKSPACE_PAGES_FACTORY } from '../../bindings';
 import { REQUEST_CREATION } from '../../bindings';
 @Component({
+  host: { class: 'console-page' },
   providers: [
     {
       provide: WORKSPACE_PAGES,
@@ -13,7 +15,7 @@ import { REQUEST_CREATION } from '../../bindings';
   ],
   selector: 'app-request-catalog',
 
-  imports: [LocalizePipe, RouterLink],
+  imports: [ButtonDirective, LocalizePipe, RouterLink],
   templateUrl: './request-catalog.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

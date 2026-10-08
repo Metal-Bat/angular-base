@@ -2,14 +2,32 @@
   [disabled]="editor().busy() || editor().blocked() || resources.transferBusy()"
 >
   @if (editor().item()?.status === "DRAFT") {
-    <button type="button" (click)="resources.cancelRequest()">
+    <button
+      pButton
+      severity="secondary"
+      type="button"
+      [outlined]="true"
+      (click)="resources.cancelRequest()"
+    >
       {{ "Cancel draft" | localize }}
     </button>
-    <button type="button" (click)="resources.resume()">
+    <button
+      pButton
+      severity="secondary"
+      type="button"
+      [outlined]="true"
+      (click)="resources.resume()"
+    >
       {{ "Resume presentation" | localize }}
     </button>
   }
-  <button type="button" (click)="report()">
+  <button
+    pButton
+    severity="secondary"
+    type="button"
+    [outlined]="true"
+    (click)="report()"
+  >
     {{ "Request report" | localize }}
   </button>
 </fieldset>

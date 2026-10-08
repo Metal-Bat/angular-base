@@ -21,6 +21,8 @@ Server diagnostics map to stable nodes/edges or remain in a visible summary. Mal
 
 ## Measured local prototype
 
+These measurements describe the original prototype before the October 4 canvas presentation refinement below; they are not new measurements of the refined interface.
+
 The headless Firefox production-build journey measured one run on this development machine. Mount measurements include the runner's 75 ms click wait and rendering frames; keyboard timings include two animation frames. They are reproducible smoke measurements, not agreed device/service budgets.
 
 | Nodes | Mount (ms) | Keyboard move (ms) | Canvas DOM node count |
@@ -34,3 +36,11 @@ The headless Firefox production-build journey measured one run on this developme
 The same run verified actual registered transform input/output ports and distinct data-edge rendering, arrow-key movement, persisted/reopened node positions, incomplete WIP, rejected invalid promotion, accepted valid promotion and immutable publication. Unit tests cover edge role/type checks, stable keys, bounded undo, diagnostics and layout decoding. Integration tests verify independent workspace revisions, direct graph edits invalidating promotion, history and permission denial.
 
 The journey dispatches a wheel interaction and saves/reloads workspace, but does not establish a quantitative pan/zoom accuracy budget. It verifies DOM teardown and cleared browser storage; it does not measure heap retention. Native pointer/touch gestures, screen-reader usability, full canvas RTL behavior, multiple supported browsers and sustained memory/interaction budgets need QA-04/QA-05. Farsi read-only runtime preview is covered separately. These limits remain explicit rather than treating a library's supported APIs as acceptance evidence.
+
+## Canvas presentation refinement — October 4, 2026
+
+The designer groups workspace commands, the step palette, the canvas and the selected-step inspector into a responsive work area. Advanced graph editing, assistance and visual routing remain available in collapsible panels. Nodes show readable type/key labels with separate control/data sockets; control links are solid and data links dashed. Node spacing accommodates the port rows. The canvas background uses shared console colors and a dotted grid; Foblex's canvas background token is transparent so it does not cover the grid.
+
+Zoom, fit-to-view and reset use the installed [Foblex canvas APIs](https://flow.foblex.com/docs/f-canvas-component). Explicit scale changes redraw and emit a canvas-change event so the percentage, bounded viewport, history and saved document stay synchronized. Fit/reset avoid animation and selection is reactive. Reload or removal through undo clears a stale selected step. Pending JSON edits disable canvas mutations until applied; existing draft/read-only and publication rules remain in place.
+
+`ACCESSIBILITY_CHECKS=1 npm run test:browser-canvas` runs a disposable synthetic-account fixture covering selection, keyboard movement, zoom, fit/reset, add/undo/redo, save/reload positions, stale-selection cleanup and pending-edit guards. It audits light, dark and Persian RTL views. The browser quality batch includes this scope, so the existing GitHub CI job runs it for pushed changes. The local Chromium fixture reported zero accessibility violations or incomplete checks; desktop/mobile previews had no horizontal overflow. The production build remains within unchanged size budgets. These checks do not replace real-backend publication, pointer/touch, screen-reader or large-graph release acceptance.

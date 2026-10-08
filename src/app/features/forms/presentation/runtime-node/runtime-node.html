@@ -21,22 +21,40 @@
             />
           }
           @if (writable() && resources) {
-            <button type="button" (click)="rowCommand('remove', key)">
+            <button
+              pButton
+              severity="secondary"
+              type="button"
+              [outlined]="true"
+              (click)="rowCommand('remove', key)"
+            >
               {{ "Remove row" | localize }}
             </button>
-            <button type="button" (click)="rowCommand('duplicate', key)">
+            <button
+              pButton
+              severity="secondary"
+              type="button"
+              [outlined]="true"
+              (click)="rowCommand('duplicate', key)"
+            >
               {{ "Duplicate row" | localize }}
             </button>
             <button
+              pButton
+              severity="secondary"
               type="button"
               [disabled]="index === 0"
+              [outlined]="true"
               (click)="rowCommand('reorder', key, index - 1)"
             >
               {{ "Move up" | localize }}
             </button>
             <button
+              pButton
+              severity="secondary"
               type="button"
               [disabled]="index + 1 >= rows().length"
+              [outlined]="true"
               (click)="rowCommand('reorder', key, index + 1)"
             >
               {{ "Move down" | localize }}
@@ -46,8 +64,11 @@
       }
       @if (writable() && resources) {
         <button
+          pButton
+          severity="secondary"
           type="button"
           [disabled]="!validRows() || rows().length >= 256"
+          [outlined]="true"
           (click)="rowCommand('add')"
         >
           {{ "Add row" | localize }}
@@ -111,17 +132,17 @@
           (edit)="edit.emit($event)"
         />
       } @else if (node().component === "boolean") {
-        <select
-          [attr.aria-describedby]="field.describedBy()"
-          [attr.aria-invalid]="errors().length > 0"
-          [id]="field.id()"
+        <app-select-control
+          [describedBy]="field.describedBy()"
+          [inputId]="field.id()"
+          [invalid]="errors().length > 0"
           [value]="text()"
-          (change)="bool($any($event.target).value)"
+          (selectionChanged)="bool($any($event.target).value)"
         >
           <option value="">{{ "Not provided" | localize }}</option>
           <option value="true">{{ "Yes" | localize }}</option>
           <option value="false">{{ "No" | localize }}</option>
-        </select>
+        </app-select-control>
       } @else if (node().component === "textarea") {
         <textarea
           [attr.aria-describedby]="field.describedBy()"
@@ -142,11 +163,23 @@
       }
       @if (writable()) {
         @if (nullable()) {
-          <button type="button" (click)="set(null)">
+          <button
+            pButton
+            severity="secondary"
+            type="button"
+            [outlined]="true"
+            (click)="set(null)"
+          >
             {{ "Set null" | localize }}
           </button>
         }
-        <button type="button" (click)="clear()">
+        <button
+          pButton
+          severity="secondary"
+          type="button"
+          [outlined]="true"
+          (click)="clear()"
+        >
           {{ "Remove value" | localize }}
         </button>
       }

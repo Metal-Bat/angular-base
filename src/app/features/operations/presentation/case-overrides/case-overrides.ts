@@ -1,3 +1,5 @@
+import { SelectControl } from '../../../../shared/ui/select-control/select-control';
+import { ButtonDirective } from 'primeng/button';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -8,8 +10,9 @@ import { FormsModule } from '@angular/forms';
 import { LocalizePipe } from '../../../../shared/ui/localize-pipe';
 import { EditorPort } from '../../application/workspace-ports';
 @Component({
+  host: { class: 'console-fragment' },
   selector: 'app-case-overrides',
-  imports: [FormsModule, LocalizePipe],
+  imports: [SelectControl, ButtonDirective, FormsModule, LocalizePipe],
   templateUrl: './case-overrides.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

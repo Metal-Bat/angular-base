@@ -10,7 +10,13 @@ describe('Public runtime configuration', () => {
       defaultRuntimeConfig,
     );
   });
+  it('accepts Arabic as the initial UI language', () => {
+    expect(
+      readRuntimeConfig({ ...defaultRuntimeConfig, locale: 'ar' }).locale,
+    ).toBe('ar');
+  });
   it.each([
+    { ...defaultRuntimeConfig, locale: 'unknown' },
     { ...defaultRuntimeConfig, client_secret: 'fixture-secret' },
     { ...defaultRuntimeConfig, apiBasePath: 'https://other.example/api/v1' },
     { ...defaultRuntimeConfig, rendererCapabilities: ['javascript:alert(1)'] },

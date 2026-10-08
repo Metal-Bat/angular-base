@@ -1,49 +1,48 @@
-:host {
-  display: block;
-  max-width: 75rem;
-  margin: auto;
+.editor-form {
+  display: grid;
+  gap: 1rem;
+  max-inline-size: 48rem;
+}
+@media (min-width: 64rem) {
+  .editor-form {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem 1.25rem;
+  }
+  .editor-form > app-control-field:has(textarea),
+  .editor-form > div:last-child {
+    grid-column: 1 / -1;
+  }
+  .editor-form > div:last-child {
+    justify-self: start;
+  }
+}
+
+.catalog-list,
+.scope-toolbar {
+  border: 1px solid var(--console-border);
+  border-radius: 1rem;
+  background: var(--console-surface);
   padding: 1rem;
 }
-form,
-nav {
+.scope-toolbar p {
+  margin: 0.35rem 0 0;
+  color: var(--console-muted);
+  font-size: 0.85rem;
+}
+.catalog-list small {
+  font-size: 0.75rem;
+  margin-block-start: 0.3rem;
+}
+
+.console-page-header h1:focus {
+  outline: none;
+}
+
+.catalog-actions {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: 0.75rem;
-  margin-block: 1rem;
-}
-section form {
-  display: block;
-}
-.field {
-  display: grid;
-  gap: 0.4rem;
-  margin-block: 1rem;
-}
-input,
-select,
-textarea {
-  border: 1px solid var(--p-content-border-color);
-  border-radius: 0.3rem;
-  padding: 0.5rem;
-}
-textarea,
-pre {
-  max-width: 100%;
-  overflow: auto;
-}
-button,
-a {
-  margin-inline-end: 0.5rem;
-}
-button {
-  border: 1px solid var(--p-content-border-color);
-  padding: 0.4rem 0.8rem;
-  border-radius: 0.3rem;
-}
-button:disabled {
-  opacity: 0.5;
-}
-aside {
-  border: 1px solid var(--p-primary-color);
-  padding: 1rem;
+  margin-block: 1.25rem;
 }

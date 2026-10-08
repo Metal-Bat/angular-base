@@ -1,3 +1,4 @@
+import { ButtonDirective } from 'primeng/button';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -9,8 +10,9 @@ import {
 import { PERSONAL_SERVICES } from '../../bindings';
 import { LocalizePipe } from '../../../../shared/ui/localize-pipe';
 @Component({
+  host: { class: 'console-fragment' },
   selector: 'app-case-history',
-  imports: [LocalizePipe],
+  imports: [ButtonDirective, LocalizePipe],
   templateUrl: './case-history.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

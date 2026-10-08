@@ -1,3 +1,4 @@
+import { QueryField } from '../../../shared/domain/list-query';
 import { JsonObject, JsonValue } from '../../forms/domain/runtime-document';
 export type ResourceKey =
   | 'forms'
@@ -30,6 +31,10 @@ export type ResourceSpec = {
   createFields: readonly FieldSpec[];
   queryFields: readonly FieldSpec[];
   actions: readonly string[];
+  list?: {
+    queryFields: readonly QueryField[];
+    columns: readonly { key: string; label: string }[];
+  };
 };
 export type Point = { x: number; y: number };
 export type Workspace = {

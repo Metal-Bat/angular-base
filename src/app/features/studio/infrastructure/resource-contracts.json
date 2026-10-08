@@ -1,6 +1,30 @@
 {
   "forms": {
     "title": "Forms",
+    "list": {
+      "queryFields": [
+        { "key": "code", "label": "Code", "type": "text", "nullable": false },
+        { "key": "name", "label": "Name", "type": "text", "nullable": false },
+        {
+          "key": "is_active",
+          "label": "Active",
+          "type": "boolean",
+          "nullable": false
+        },
+        {
+          "key": "created_at",
+          "label": "Created At",
+          "type": "datetime",
+          "nullable": false
+        }
+      ],
+      "columns": [
+        { "key": "code", "label": "Code" },
+        { "key": "name", "label": "Name" },
+        { "key": "is_active", "label": "Active" },
+        { "key": "created_at", "label": "Created At" }
+      ]
+    },
     "permission": "forms.manage",
     "operations": {
       "search": "search_forms_api_v1_forms_search_post",
@@ -91,6 +115,26 @@
   },
   "form-versions": {
     "title": "Form versions",
+    "list": {
+      "queryFields": [
+        {
+          "key": "number",
+          "label": "Version Number",
+          "type": "number",
+          "nullable": false
+        },
+        {
+          "key": "status",
+          "label": "Status",
+          "type": "text",
+          "nullable": false
+        }
+      ],
+      "columns": [
+        { "key": "number", "label": "Version Number" },
+        { "key": "status", "label": "Status" }
+      ]
+    },
     "permission": "forms.manage",
     "operations": {
       "search": "search_versions_api_v1_form_versions_search_post",
@@ -266,6 +310,37 @@
   },
   "workflows": {
     "title": "Workflows",
+    "list": {
+      "queryFields": [
+        { "key": "code", "label": "Code", "type": "text", "nullable": false },
+        { "key": "name", "label": "Name", "type": "text", "nullable": false },
+        {
+          "key": "access_mode",
+          "label": "Access Mode",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "key": "is_active",
+          "label": "Active",
+          "type": "boolean",
+          "nullable": false
+        },
+        {
+          "key": "created_at",
+          "label": "Created At",
+          "type": "datetime",
+          "nullable": false
+        }
+      ],
+      "columns": [
+        { "key": "code", "label": "Code" },
+        { "key": "name", "label": "Name" },
+        { "key": "access_mode", "label": "Access Mode" },
+        { "key": "is_active", "label": "Active" },
+        { "key": "created_at", "label": "Created At" }
+      ]
+    },
     "permission": "workflows.manage",
     "operations": {
       "search": "search_workflows_api_v1_workflows_search_post",
@@ -394,6 +469,33 @@
   },
   "workflow-versions": {
     "title": "Workflow versions",
+    "list": {
+      "queryFields": [
+        {
+          "key": "number",
+          "label": "Version Number",
+          "type": "number",
+          "nullable": false
+        },
+        {
+          "key": "status",
+          "label": "Status",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "key": "default_priority",
+          "label": "Default Priority",
+          "type": "number",
+          "nullable": false
+        }
+      ],
+      "columns": [
+        { "key": "number", "label": "Version Number" },
+        { "key": "status", "label": "Status" },
+        { "key": "default_priority", "label": "Default Priority" }
+      ]
+    },
     "permission": "workflows.manage",
     "operations": {
       "search": "search_versions_api_v1_workflow_versions_search_post",
@@ -466,6 +568,32 @@
   },
   "clients": {
     "title": "Clients",
+    "list": {
+      "queryFields": [
+        { "key": "code", "label": "Code", "type": "text", "nullable": false },
+        { "key": "name", "label": "Name", "type": "text", "nullable": false },
+        { "key": "kind", "label": "Type", "type": "text", "nullable": false },
+        {
+          "key": "platform",
+          "label": "Platform",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "key": "is_active",
+          "label": "Active",
+          "type": "boolean",
+          "nullable": false
+        }
+      ],
+      "columns": [
+        { "key": "code", "label": "Code" },
+        { "key": "name", "label": "Name" },
+        { "key": "kind", "label": "Type" },
+        { "key": "platform", "label": "Platform" },
+        { "key": "is_active", "label": "Active" }
+      ]
+    },
     "permission": "forms.manage",
     "operations": {
       "search": "search_clients_api_v1_clients_search_post",
@@ -593,6 +721,32 @@
   },
   "client-releases": {
     "title": "Client releases",
+    "list": {
+      "queryFields": [
+        {
+          "key": "release_version",
+          "label": "Release Version",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "key": "api_version",
+          "label": "API Version",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "key": "is_enabled",
+          "label": "Enabled",
+          "type": "boolean",
+          "nullable": false
+        }
+      ],
+      "columns": [
+        { "key": "version", "label": "Version" },
+        { "key": "is_enabled", "label": "Enabled" }
+      ]
+    },
     "permission": "forms.manage",
     "operations": {
       "search": "search_releases_api_v1_client_releases_search_post",
@@ -687,6 +841,49 @@
   },
   "request-types": {
     "title": "Request types",
+    "list": {
+      "queryFields": [
+        { "key": "code", "label": "Code", "type": "text", "nullable": false },
+        { "key": "name", "label": "Name", "type": "text", "nullable": false },
+        {
+          "key": "is_active",
+          "label": "Active",
+          "type": "boolean",
+          "nullable": false
+        },
+        {
+          "key": "default_priority",
+          "label": "Default Priority",
+          "type": "number",
+          "nullable": true
+        },
+        {
+          "key": "allow_cross_client_resume",
+          "label": "Resume Across Clients",
+          "type": "boolean",
+          "nullable": false
+        },
+        {
+          "key": "extension_contract",
+          "label": "Extension Contract",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "key": "created_at",
+          "label": "Created At",
+          "type": "datetime",
+          "nullable": false
+        }
+      ],
+      "columns": [
+        { "key": "code", "label": "Code" },
+        { "key": "name", "label": "Name" },
+        { "key": "default_priority", "label": "Default Priority" },
+        { "key": "is_active", "label": "Active" },
+        { "key": "created_at", "label": "Created At" }
+      ]
+    },
     "permission": "requests.manage",
     "operations": {
       "search": "search_types_api_v1_request_types_search_post",
@@ -845,6 +1042,24 @@
   },
   "form-components": {
     "title": "Reusable components",
+    "list": {
+      "queryFields": [
+        { "key": "code", "label": "Code", "type": "text", "nullable": false },
+        { "key": "name", "label": "Name", "type": "text", "nullable": false },
+        {
+          "key": "is_active",
+          "label": "Active",
+          "type": "boolean",
+          "nullable": false
+        }
+      ],
+      "columns": [
+        { "key": "code", "label": "Code" },
+        { "key": "name", "label": "Name" },
+        { "key": "is_active", "label": "Active" },
+        { "key": "created_at", "label": "Created At" }
+      ]
+    },
     "permission": "forms.manage",
     "operations": {
       "search": "search_api_v1_form_components_search_post",
@@ -950,6 +1165,26 @@
   },
   "form-component-versions": {
     "title": "Component versions",
+    "list": {
+      "queryFields": [
+        {
+          "key": "number",
+          "label": "Version Number",
+          "type": "number",
+          "nullable": false
+        },
+        {
+          "key": "status",
+          "label": "Status",
+          "type": "text",
+          "nullable": false
+        }
+      ],
+      "columns": [
+        { "key": "number", "label": "Version Number" },
+        { "key": "status", "label": "Status" }
+      ]
+    },
     "permission": "forms.manage",
     "operations": {
       "search": "search_versions_api_v1_form_component_versions_search_post",
@@ -1019,6 +1254,24 @@
   },
   "form-data-types": {
     "title": "Reusable data types",
+    "list": {
+      "queryFields": [
+        { "key": "code", "label": "Code", "type": "text", "nullable": false },
+        { "key": "name", "label": "Name", "type": "text", "nullable": false },
+        {
+          "key": "is_active",
+          "label": "Active",
+          "type": "boolean",
+          "nullable": false
+        }
+      ],
+      "columns": [
+        { "key": "code", "label": "Code" },
+        { "key": "name", "label": "Name" },
+        { "key": "is_active", "label": "Active" },
+        { "key": "created_at", "label": "Created At" }
+      ]
+    },
     "permission": "forms.manage",
     "operations": {
       "search": "search_api_v1_form_data_types_search_post",
@@ -1124,6 +1377,26 @@
   },
   "form-data-type-versions": {
     "title": "Data type versions",
+    "list": {
+      "queryFields": [
+        {
+          "key": "number",
+          "label": "Version Number",
+          "type": "number",
+          "nullable": false
+        },
+        {
+          "key": "status",
+          "label": "Status",
+          "type": "text",
+          "nullable": false
+        }
+      ],
+      "columns": [
+        { "key": "number", "label": "Version Number" },
+        { "key": "status", "label": "Status" }
+      ]
+    },
     "permission": "forms.manage",
     "operations": {
       "search": "search_versions_api_v1_form_data_type_versions_search_post",

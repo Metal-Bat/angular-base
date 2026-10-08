@@ -1,0 +1,41 @@
+<p-toast
+  key="request-error"
+  position="top-right"
+  [baseZIndex]="6000"
+  [style]="{ width: 'min(24rem, calc(100vw - 2rem))' }"
+  (onClose)="close($event.message.data)"
+>
+  <ng-template #message let-message>
+    <div class="error-content">
+      <strong>{{ "Request failed" | localize }}</strong>
+      <p>{{ message.data.message | localize }}</p>
+      <div class="error-code">
+        <span>{{ "Error code" | localize }}</span>
+        <button
+          pButton
+          severity="secondary"
+          size="small"
+          type="button"
+          [attr.aria-label]="
+            ('Copy error code' | localize) + ': ' + message.data.code
+          "
+          [disabled]="copying()"
+          [outlined]="true"
+          (click)="copy(message.data)"
+        >
+          <span class="code-value" dir="ltr">{{ message.data.code }}</span>
+          <i
+            aria-hidden="true"
+            [class]="copied() ? 'pi pi-check' : 'pi pi-copy'"
+          ></i>
+        </button>
+      </div>
+      <small
+        class="copy-status"
+        role="status"
+        [class.sr-only]="!copyStatus()"
+        >{{ copyStatus() | localize }}</small
+      >
+    </div>
+  </ng-template>
+</p-toast>

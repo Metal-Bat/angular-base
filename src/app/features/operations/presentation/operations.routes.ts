@@ -1,3 +1,4 @@
+import { recordRoute } from '../../records/presentation/record.routes';
 import { PersonalServices } from '../infrastructure/personal-services';
 import { CaseResources } from '../infrastructure/case-resources';
 import { EditorPort } from '../application/workspace-ports';
@@ -45,7 +46,8 @@ export const operationsRoutes: Routes = [
         loadComponent: () =>
           import('./generic-media/generic-media').then((m) => m.GenericMedia),
       },
-      ...(['notifications', 'reports'] as const).map((kind) => ({
+      recordRoute('reports'),
+      ...(['notifications'] as const).map((kind) => ({
         path: kind,
         data: {
           access: 'authenticated',

@@ -66,8 +66,8 @@ test("local release switch and rollback preserve SPA/cache policy and API separa
     );
     assert.equal((await load("/api/v1/processes/pin")).status, 418);
     assert.equal((await load("/session/status")).status, 418);
-    assert.equal((await load("/health")).status, 418);
-    assert.equal((await load("/ready")).status, 418);
+    assert.equal((await load("/health")).status, 404);
+    assert.equal((await load("/ready")).status, 404);
     assert.equal((await load("/api%2fv1/processes/pin")).status, 418);
     assert.equal((await load("/session%2fstatus")).status, 418);
     assert.equal((await load("/missing.js")).status, 404);

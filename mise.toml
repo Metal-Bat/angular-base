@@ -13,7 +13,7 @@ description = "Install the exact dependency tree"
 run = "npm ci"
 
 [tasks.dev]
-description = "Start Angular on localhost:4200"
+description = "Start Angular on localhost:4200 and its session boundary on localhost:3000 (backend:8000)"
 run = "npm start"
 
 [tasks.build]

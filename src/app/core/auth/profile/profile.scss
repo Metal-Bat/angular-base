@@ -1,0 +1,20 @@
+:host {
+  display: block;
+}
+.profile-card {
+  padding: clamp(1rem, 3vw, 1.5rem);
+  border: 1px solid var(--console-border);
+  border-radius: 1rem;
+  background: var(--console-surface);
+}
+.account-kind {
+  margin-block: 1rem 0;
+  dt {
+    color: var(--console-muted);
+    font-size: 0.8rem;
+  }
+  dd {
+    margin: 0.3rem 0 0;
+    font-weight: 600;
+  }
+}

@@ -1,0 +1,25 @@
+.resource-actions {
+  padding: 1rem;
+  border: 1px solid var(--console-border);
+  border-radius: 1rem;
+  background: var(--console-surface);
+  margin-block: 1rem;
+}
+h3 {
+  margin: 0 0 0.75rem;
+  font-size: 0.95rem;
+}
+.action-buttons,
+.dialog-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.action-form {
+  display: grid;
+  gap: 1rem;
+}
+.dialog-actions {
+  justify-content: flex-end;
+  margin-block: 1.25rem;
+}
