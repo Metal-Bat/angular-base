@@ -1,0 +1,53 @@
+@let vm = view();
+@if (vm.result(); as response) {
+  <section aria-label="Result">
+    <h2>{{ "Result" | localize }}</h2>
+    <pre dir="ltr">{{ vm.json(response.value, null, 2) }}</pre>
+    @if (response.requestId) {
+      <p>{{ "Request ID" | localize }}: {{ response.requestId }}</p>
+    }
+    @for (row of vm.rows(); track $index) {
+      <button
+        pButton
+        severity="secondary"
+        type="button"
+        [outlined]="true"
+        (click)="vm.use(row)"
+      >
+        {{ "Use current row" | localize }}:
+        {{
+          row["name"] ||
+            row["username"] ||
+            row["task_id"] ||
+            row["ref_id"] ||
+            $index + 1
+        }}
+      </button>
+    }
+    @if (response.totalPages > 1) {
+      <nav aria-label="Result pages">
+        <button
+          pButton
+          severity="secondary"
+          type="button"
+          [disabled]="vm.busy() || response.page <= 1"
+          [outlined]="true"
+          (click)="vm.execute(response.page - 1)"
+        >
+          {{ "Previous" | localize }}
+        </button>
+        <span>{{ response.page }} / {{ response.totalPages }}</span>
+        <button
+          pButton
+          severity="secondary"
+          type="button"
+          [disabled]="vm.busy() || response.page >= response.totalPages"
+          [outlined]="true"
+          (click)="vm.execute(response.page + 1)"
+        >
+          {{ "Next" | localize }}
+        </button>
+      </nav>
+    }
+  </section>
+}

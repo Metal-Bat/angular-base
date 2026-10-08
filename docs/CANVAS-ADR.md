@@ -1,0 +1,46 @@
+# Workflow canvas decision: Step 29
+
+Status: Foblex Flow selected for the local authoring implementation; broader accessibility/browser and performance release gates remain in Steps 36–37.
+
+## Candidates and decision
+
+| Candidate             | Integration and license                                                                    | Evidence                                                                |
+| --------------------- | ------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------- |
+| Foblex Flow 19.3.0    | Angular-native components/directives; MIT; installed Angular-compatible companion packages | Implemented adapter and actual Firefox/backend prototype below          |
+| Rete Angular renderer | MIT Angular plugin; official renderer documentation includes Angular 21                    | Documentation/source comparison only; not installed or benchmarked here |
+
+Foblex fits the project's existing Angular standalone composition and renders typed ports, separate edge kinds and viewport/waypoint interactions without owning executable business rules. Rete remains an alternative if later interaction/accessibility requirements require its plugin architecture. The comparison does not claim equivalent measured performance. Sources: [Foblex installation](https://flow.foblex.com/docs/get-started), [compatibility](https://flow.foblex.com/docs/angular-version-compatibility), [MIT source](https://github.com/Foblex/f-flow), [Rete Angular renderer](https://retejs.org/docs/guides/renderers/angular/), [Rete MIT plugin](https://github.com/retejs/angular-plugin).
+
+## Adapter and persistence
+
+Only studio infrastructure imports Foblex. The lazy workflow route supplies the canvas port; domain/application and presentation state use owned graph/layout types. Step keys identify nodes. Input/output direction qualifies data connector keys, including identically named ports. Separate stable control/data edge identities keep routing independent of incidental row order. Trusted server catalog supplies port direction/schema; local compatibility feedback precedes authoritative server validation.
+
+`bpms.workspace/1` stores incomplete authored graph separately from executable version rows, with independently checked revision and explicit promotion. Positions, viewport, collapsed keys and waypoints are visual metadata. Selection and undo stay in memory. History is capped at 20 snapshots; catalog loading and auxiliary pages are bounded. The backend bounds graph JSON to 256 KiB and workspace JSON to 1 MiB, with at most 256 position/collapse keys and 2,048 routes of 64 points. The frontend JSON decoder imposes a stricter 256 KiB author-document limit, finite coordinates, depth/node limits and forbidden object keys.
+
+Server diagnostics map to stable nodes/edges or remain in a visible summary. Malformed graph entries remain editable in raw WIP. Promote/publication are separate deliberate commands. Stale revisions keep local edits, while actor changes clear them and fence late responses. Canvas destruction removes its DOM on route change.
+
+## Measured local prototype
+
+These measurements describe the original prototype before the October 4 canvas presentation refinement below; they are not new measurements of the refined interface.
+
+The headless Firefox production-build journey measured one run on this development machine. Mount measurements include the runner's 75 ms click wait and rendering frames; keyboard timings include two animation frames. They are reproducible smoke measurements, not agreed device/service budgets.
+
+| Nodes | Mount (ms) | Keyboard move (ms) | Canvas DOM node count |
+| ----- | ---------: | -----------------: | --------------------: |
+| 16    |         93 |                 35 |                    68 |
+| 64    |         82 |                 34 |                   260 |
+| 256   |        200 |                 32 |                 1,028 |
+
+[Machine-readable measurements](reference/studio-canvas-measurements.json) retain these values. `server/browser-studio.spec.mjs` logs only timings and request method/path/status; it does not log authored data or secrets.
+
+The same run verified actual registered transform input/output ports and distinct data-edge rendering, arrow-key movement, persisted/reopened node positions, incomplete WIP, rejected invalid promotion, accepted valid promotion and immutable publication. Unit tests cover edge role/type checks, stable keys, bounded undo, diagnostics and layout decoding. Integration tests verify independent workspace revisions, direct graph edits invalidating promotion, history and permission denial.
+
+The journey dispatches a wheel interaction and saves/reloads workspace, but does not establish a quantitative pan/zoom accuracy budget. It verifies DOM teardown and cleared browser storage; it does not measure heap retention. Native pointer/touch gestures, screen-reader usability, full canvas RTL behavior, multiple supported browsers and sustained memory/interaction budgets need QA-04/QA-05. Farsi read-only runtime preview is covered separately. These limits remain explicit rather than treating a library's supported APIs as acceptance evidence.
+
+## Canvas presentation refinement — October 4, 2026
+
+The designer groups workspace commands, the step palette, the canvas and the selected-step inspector into a responsive work area. Advanced graph editing, assistance and visual routing remain available in collapsible panels. Nodes show readable type/key labels with separate control/data sockets; control links are solid and data links dashed. Node spacing accommodates the port rows. The canvas background uses shared console colors and a dotted grid; Foblex's canvas background token is transparent so it does not cover the grid.
+
+Zoom, fit-to-view and reset use the installed [Foblex canvas APIs](https://flow.foblex.com/docs/f-canvas-component). Explicit scale changes redraw and emit a canvas-change event so the percentage, bounded viewport, history and saved document stay synchronized. Fit/reset avoid animation and selection is reactive. Reload or removal through undo clears a stale selected step. Pending JSON edits disable canvas mutations until applied; existing draft/read-only and publication rules remain in place.
+
+`ACCESSIBILITY_CHECKS=1 npm run test:browser-canvas` runs a disposable synthetic-account fixture covering selection, keyboard movement, zoom, fit/reset, add/undo/redo, save/reload positions, stale-selection cleanup and pending-edit guards. It audits light, dark and Persian RTL views. The browser quality batch includes this scope, so the existing GitHub CI job runs it for pushed changes. The local Chromium fixture reported zero accessibility violations or incomplete checks; desktop/mobile previews had no horizontal overflow. The production build remains within unchanged size budgets. These checks do not replace real-backend publication, pointer/touch, screen-reader or large-graph release acceptance.

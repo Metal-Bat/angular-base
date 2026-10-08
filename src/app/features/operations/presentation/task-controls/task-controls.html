@@ -1,0 +1,63 @@
+@if (editor().canEdit() && editor().ownTask()) {
+  <label for="task-comment">{{ "Comment" | localize }}</label
+  ><textarea
+    id="task-comment"
+    maxlength="4000"
+    [ngModel]="editor().comment()"
+    (ngModelChange)="editor().comment.set($event)"
+  ></textarea>
+  @for (action of editor().document()?.actions ?? []; track action.key) {
+    <button
+      pButton
+      severity="secondary"
+      type="button"
+      [outlined]="true"
+      (click)="editor().decide(action)"
+    >
+      {{ action.title }}
+    </button>
+  }
+}
+@if (editor().item(); as item) {
+  @if (
+    kind === "task" &&
+    (item.kind === "HUMAN_TASK" || item.kind === "AI_APPROVAL")
+  ) {
+    @if (item.status === "OPEN") {
+      <button
+        pButton
+        severity="secondary"
+        type="button"
+        [disabled]="editor().busy() || editor().blocked()"
+        [outlined]="true"
+        (click)="editor().lifecycle('claim')"
+      >
+        {{ "Claim" | localize }}
+      </button>
+    }
+    @if (editor().ownTask()) {
+      @if (item.status === "CLAIMED") {
+        <button
+          pButton
+          severity="secondary"
+          type="button"
+          [disabled]="editor().busy() || editor().blocked()"
+          [outlined]="true"
+          (click)="editor().lifecycle('start')"
+        >
+          {{ "Start work" | localize }}
+        </button>
+      }
+      <button
+        pButton
+        severity="secondary"
+        type="button"
+        [disabled]="editor().busy() || editor().blocked()"
+        [outlined]="true"
+        (click)="editor().lifecycle('release')"
+      >
+        {{ "Release" | localize }}
+      </button>
+    }
+  }
+}

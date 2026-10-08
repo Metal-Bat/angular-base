@@ -1,0 +1,32 @@
+<dl class="grid gap-2">
+  <dt>{{ "Status" | localize }}</dt>
+  <dd>{{ item().status | localize }}</dd>
+  <dt>{{ "Pinned form" | localize }}</dt>
+  <dd>
+    <bdi>{{ item().form }}</bdi>
+  </dd>
+  @if (item().workflow) {
+    <dt>{{ "Pinned workflow" | localize }}</dt>
+    <dd>
+      <bdi>{{ item().workflow }}</bdi>
+    </dd>
+  }
+</dl>
+@if (kind() === "task" && item().kind !== "HUMAN_TASK") {
+  <p role="status">
+    {{
+      (item().kind === "AI_APPROVAL"
+        ? "This task requires the dedicated AI approval flow"
+        : "Unsupported task"
+      ) | localize
+    }}
+  </p>
+}
+@if (item().process) {
+  <p>
+    {{ "Process tracking reference" | localize }}:
+    <a [routerLink]="['/operations/processes', item().process]"
+      ><bdi>{{ item().process }}</bdi></a
+    >
+  </p>
+}

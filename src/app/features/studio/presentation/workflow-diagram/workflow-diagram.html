@@ -1,0 +1,101 @@
+<section class="mt-2" [attr.aria-label]="'Workflow diagram' | localize">
+  <header class="flex flex-wrap items-end justify-between gap-4 mb-4">
+    <div>
+      <h2>{{ "Workflow diagram" | localize }}</h2>
+      <p class="text-console-muted text-sm">
+        {{
+          "View the saved version graph. Select a step to inspect its transitions."
+            | localize
+        }}
+      </p>
+    </div>
+    <div class="flex flex-wrap items-end gap-2">
+      @if (workflow() && versions().length) {
+        <div>
+          <label for="diagram-version">{{ "Version" | localize }}</label>
+          <app-select-control
+            inputId="diagram-version"
+            [disabled]="busy()"
+            [ngModel]="current()?.['ref_id'] ?? ''"
+            (ngModelChange)="show($event)"
+          >
+            @for (row of versions(); track row["ref_id"]) {
+              <option [value]="row['ref_id']">
+                {{ "Version" | localize }} {{ row["number"] }} ·
+                {{ row["status"] }}
+              </option>
+            }
+          </app-select-control>
+        </div>
+      }
+      @if (pages() > 1) {
+        <button
+          pButton
+          severity="secondary"
+          type="button"
+          [disabled]="busy() || page() <= 1"
+          [outlined]="true"
+          (click)="loadVersions(page() - 1)"
+        >
+          {{ "Previous" | localize }}
+        </button>
+        <button
+          pButton
+          severity="secondary"
+          type="button"
+          [disabled]="busy() || page() >= pages()"
+          [outlined]="true"
+          (click)="loadVersions(page() + 1)"
+        >
+          {{ "Next" | localize }}
+        </button>
+      }
+      @if (current(); as row) {
+        <span class="console-record-status">{{ row["status"] }}</span>
+        <a
+          class="p-button p-button-outlined"
+          [routerLink]="['/studio/workflow-versions', row['ref_id'], 'edit']"
+          >{{ "Open designer" | localize }}</a
+        >
+      }
+    </div>
+  </header>
+  @if (busy()) {
+    <p role="status">{{ "Loading…" | localize }}</p>
+  }
+  @if (error()) {
+    <p role="alert">{{ error() | localize }}</p>
+    <button
+      class="reload-control"
+      pButton
+      severity="secondary"
+      type="button"
+      [attr.aria-label]="'Retry' | localize"
+      [attr.title]="'Retry' | localize"
+      [disabled]="busy()"
+      [text]="true"
+      (click)="version() ? show(version()) : loadVersions(page())"
+    >
+      <i aria-hidden="true" class="pi pi-refresh"></i
+      ><span class="sr-only">{{ "Retry" | localize }}</span>
+    </button>
+  } @else if (!busy()) {
+    @if (!current()) {
+      <p class="text-console-muted text-sm">
+        {{ "This workflow has no versions yet." | localize }}
+      </p>
+      @if (workflow()) {
+        <a
+          class="p-button p-button-outlined mb-3"
+          routerLink="/studio/workflow-versions"
+          [queryParams]="{ parent: workflow() }"
+          >{{ "Create version" | localize }}</a
+        >
+      }
+    }
+    @if (canvas(); as adapter) {
+      <ng-container *ngComponentOutlet="adapter; inputs: canvasInputs()" />
+    }
+    <app-workflow-step-inspector [view]="this" />
+  }
+</section>

@@ -1,0 +1,57 @@
+:host {
+  display: grid;
+  gap: 0.4rem;
+  min-inline-size: 0;
+}
+.field-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin: 0;
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+.field-control {
+  min-inline-size: 0;
+}
+.field-hint {
+  display: grid;
+  gap: 0.25rem;
+  color: var(--console-muted);
+  font-size: 0.75rem;
+  line-height: 1.5;
+}
+.field-hint:empty {
+  display: none;
+}
+
+:host(.ui-field-inline) {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  .field-label {
+    margin: 0;
+    white-space: nowrap;
+  }
+  .field-control {
+    flex: 1;
+    min-inline-size: 0;
+  }
+  .field-hint:empty {
+    display: none;
+  }
+}
+
+.field-error {
+  color: var(--mat-sys-error);
+  font-size: 0.8rem;
+}
+:host:has(.field-error) .field-label {
+  color: var(--mat-sys-error);
+}
+:host:has(.field-error) .field-control {
+  outline: 2px solid var(--mat-sys-error);
+  outline-offset: 2px;
+  border-radius: 0.5rem;
+}

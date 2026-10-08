@@ -1,0 +1,108 @@
+@let vm = view();
+@if (vm.selected()) {
+  <nav
+    class="catalog-actions"
+    [attr.aria-label]="'Definition actions' | localize"
+  >
+    @if (vm.versionCatalog) {
+      <a
+        class="p-button p-button-outlined"
+        [queryParams]="{ parent: vm.reference() }"
+        [routerLink]="['/studio', vm.versionCatalog]"
+        >{{ "Versions" | localize }}</a
+      >
+    }
+    @if (vm.spec.editor) {
+      <a
+        class="p-button p-button-outlined"
+        [routerLink]="['/studio', vm.key, vm.reference(), 'edit']"
+        >{{ "Open designer" | localize }}</a
+      >
+    }
+    @for (
+      action of ["publish", "retire", "disable", "rotate", "remove"];
+      track action
+    ) {
+      @if (vm.spec.actions.includes(action)) {
+        <button
+          pButton
+          severity="secondary"
+          type="button"
+          [disabled]="vm.busy() || vm.dirty()"
+          [outlined]="true"
+          (click)="vm.act(action)"
+        >
+          {{ action | localize }}
+        </button>
+      }
+    }
+  </nav>
+  @if (vm.spec.actions.includes("grant")) {
+    <details>
+      <summary>{{ "Access grants" | localize }}</summary>
+      @if (vm.spec.actions.includes("grants")) {
+        <button
+          pButton
+          severity="secondary"
+          type="button"
+          [disabled]="vm.busy()"
+          [outlined]="true"
+          (click)="vm.loadGrants()"
+        >
+          {{ "Current grants" | localize }}
+        </button>
+        <pre>{{ vm.grants() }}</pre>
+        <button
+          pButton
+          severity="secondary"
+          type="button"
+          [disabled]="vm.grantPage() <= 1"
+          [outlined]="true"
+          (click)="vm.loadGrants(vm.grantPage() - 1)"
+        >
+          {{ "Previous" | localize }}</button
+        ><button
+          pButton
+          severity="secondary"
+          type="button"
+          [disabled]="vm.grantPage() >= vm.grantPages()"
+          [outlined]="true"
+          (click)="vm.loadGrants(vm.grantPage() + 1)"
+        >
+          {{ "Next" | localize }}
+        </button>
+      }
+      <label for="grant-body">{{
+        "Grant target and capabilities" | localize
+      }}</label
+      ><textarea
+        class="font-mono"
+        id="grant-body"
+        rows="4"
+        [(ngModel)]="vm.grantBody"
+      ></textarea
+      ><button
+        pButton
+        severity="secondary"
+        type="button"
+        [disabled]="vm.busy() || vm.dirty()"
+        [outlined]="true"
+        (click)="vm.grant()"
+      >
+        {{ "Add grant" | localize }}</button
+      ><label for="grant-reference">{{
+        "Grant reference to revoke" | localize
+      }}</label
+      ><input id="grant-reference" [(ngModel)]="vm.grantTarget" /><button
+        pButton
+        severity="secondary"
+        type="button"
+        [disabled]="vm.busy() || vm.dirty()"
+        [outlined]="true"
+        (click)="vm.grant(true)"
+      >
+        {{ "Revoke grant" | localize }}
+      </button>
+    </details>
+  }
+}

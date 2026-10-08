@@ -1,0 +1,310 @@
+<header class="console-page-header">
+  <h1 tabindex="-1">{{ "Form designer" | localize }}</h1>
+  <a routerLink="/studio/form-versions">{{ "Form versions" | localize }}</a>
+</header>
+<p class="console-record-status">{{ status() }}</p>
+@if (error()) {
+  <p role="alert">{{ error() | localize }}</p>
+}
+@if (busy()) {
+  <p role="status">{{ "Loading…" | localize }}</p>
+}
+<button
+  class="reload-control"
+  pButton
+  severity="secondary"
+  type="button"
+  [attr.aria-label]="'Reload' | localize"
+  [attr.title]="'Reload' | localize"
+  [disabled]="busy()"
+  [text]="true"
+  (click)="load()"
+>
+  <i aria-hidden="true" class="pi pi-refresh"></i
+  ><span class="sr-only">{{ "Reload" | localize }}</span></button
+><button
+  pButton
+  severity="secondary"
+  type="button"
+  [disabled]="readonly() || pending().length > 0"
+  [outlined]="true"
+  (click)="save()"
+>
+  {{ "Save draft" | localize }}</button
+><button
+  pButton
+  severity="secondary"
+  type="button"
+  [disabled]="busy()"
+  [outlined]="true"
+  (click)="validate()"
+>
+  {{ "Validate" | localize }}
+</button>
+@if (pending().length) {
+  <p role="status">
+    {{ "Apply each edited JSON panel before saving." | localize }}
+  </p>
+}
+<div class="designer">
+  <section aria-label="Component palette">
+    <h2>{{ "Components" | localize }}</h2>
+    <label for="primitive">{{ "Component" | localize }}</label
+    ><app-select-control inputId="primitive" [(ngModel)]="primitive">
+      @for (kind of palette; track kind) {
+        <option [value]="kind">{{ kind }}</option>
+      }</app-select-control
+    ><label for="property-name">{{ "Property name / label" | localize }}</label
+    ><input id="property-name" [(ngModel)]="propertyName" /><button
+      pButton
+      severity="secondary"
+      type="button"
+      [disabled]="readonly()"
+      [outlined]="true"
+      (click)="add()"
+    >
+      {{ "Add to selected layout" | localize }}
+    </button>
+    <h2>{{ "Outline" | localize }}</h2>
+    <ul>
+      @for (item of outline(); track item.path.join(".")) {
+        <li [style.padding-inline-start.rem]="item.path.length">
+          <button
+            pButton
+            severity="secondary"
+            type="button"
+            [outlined]="true"
+            (click)="select(item.path)"
+          >
+            {{ item.label }}</button
+          ><small>{{ item.scope }}</small>
+        </li>
+      }
+    </ul>
+    <button
+      pButton
+      severity="secondary"
+      type="button"
+      [disabled]="readonly()"
+      [outlined]="true"
+      (click)="move(-1)"
+    >
+      {{ "Move up" | localize }}</button
+    ><button
+      pButton
+      severity="secondary"
+      type="button"
+      [disabled]="readonly()"
+      [outlined]="true"
+      (click)="move(1)"
+    >
+      {{ "Move down" | localize }}
+    </button>
+  </section>
+  <section aria-label="Component inspector">
+    <h2>{{ "Selected component" | localize }}</h2>
+    <label for="node-json">{{
+      "Binding, options, calculation and supported behavior" | localize
+    }}</label
+    ><textarea
+      class="font-mono"
+      id="node-json"
+      rows="14"
+      spellcheck="false"
+      [disabled]="readonly()"
+      [(ngModel)]="selectedJson"
+      (ngModelChange)="markPending('node')"
+    ></textarea
+    ><button
+      pButton
+      severity="secondary"
+      type="button"
+      [disabled]="readonly()"
+      [outlined]="true"
+      (click)="applyNode()"
+    >
+      {{ "Apply component" | localize }}
+    </button>
+    <details>
+      <summary>{{ "Data schema" | localize }}</summary>
+      <label for="schema-json">{{ "Canonical data schema" | localize }}</label
+      ><textarea
+        class="font-mono"
+        id="schema-json"
+        rows="10"
+        [disabled]="readonly()"
+        [(ngModel)]="schemaJson"
+        (ngModelChange)="markPending('schema')"
+      ></textarea
+      ><button
+        pButton
+        severity="secondary"
+        type="button"
+        [disabled]="readonly()"
+        [outlined]="true"
+        (click)="applySchema()"
+      >
+        {{ "Apply schema" | localize }}
+      </button>
+    </details>
+    <details>
+      <summary>{{ "Pages, variants and localization" | localize }}</summary>
+      <label for="behavior-json">{{
+        "Versioned presentation settings" | localize
+      }}</label
+      ><textarea
+        class="font-mono"
+        id="behavior-json"
+        rows="10"
+        [disabled]="readonly()"
+        [(ngModel)]="behaviorJson"
+        (ngModelChange)="markPending('settings')"
+      ></textarea
+      ><button
+        pButton
+        severity="secondary"
+        type="button"
+        [disabled]="readonly()"
+        [outlined]="true"
+        (click)="applyBehavior()"
+      >
+        {{ "Apply settings" | localize }}
+      </button>
+    </details>
+  </section>
+</div>
+<section aria-label="Simulated runtime preview">
+  <h2>{{ "Runtime preview" | localize }}</h2>
+  <p>
+    {{
+      "Simulated author context. No request is created; uploads and structural case commands are unavailable."
+        | localize
+    }}
+  </p>
+  <label for="preview-purpose">{{ "Purpose" | localize }}</label
+  ><app-select-control inputId="preview-purpose" [(ngModel)]="purpose">
+    <option>edit</option>
+    <option>summary</option>
+    <option>print</option>
+    <option>correction</option></app-select-control
+  ><label for="preview-locale">{{ "Locale" | localize }}</label
+  ><app-select-control inputId="preview-locale" [(ngModel)]="locale">
+    <option>en</option>
+    <option>fa</option></app-select-control
+  ><label for="sample-json">{{ "Synthetic sample values" | localize }}</label
+  ><textarea
+    class="font-mono"
+    id="sample-json"
+    rows="5"
+    [(ngModel)]="sampleJson"
+  ></textarea
+  ><button
+    pButton
+    severity="secondary"
+    type="button"
+    [disabled]="busy()"
+    [outlined]="true"
+    (click)="renderPreview()"
+  >
+    {{ "Preview" | localize }}
+  </button>
+  <label for="preview-context">{{
+    "Simulated policy, prior values and stable row identities" | localize
+  }}</label
+  ><textarea
+    class="font-mono"
+    id="preview-context"
+    [(ngModel)]="previewContextJson"
+  ></textarea>
+  @if (runtime(); as document) {
+    <app-runtime-form
+      [busy]="busy()"
+      [data]="data()"
+      [document]="document"
+      (edit)="editSample($event)"
+    />
+  }
+</section>
+<button
+  pButton
+  severity="secondary"
+  type="button"
+  [disabled]="busy()"
+  [outlined]="true"
+  (click)="inspect('schema')"
+>
+  {{ "Render contract" | localize }}</button
+><button
+  pButton
+  severity="secondary"
+  type="button"
+  [disabled]="busy()"
+  [outlined]="true"
+  (click)="inspect('fields')"
+>
+  {{ "Field catalog" | localize }}</button
+><button
+  pButton
+  severity="secondary"
+  type="button"
+  [disabled]="busy()"
+  [outlined]="true"
+  (click)="inspect('behavior')"
+>
+  {{ "Evaluate behavior" | localize }}
+</button>
+<details>
+  <summary>{{ "Options and navigation preview" | localize }}</summary>
+  <label for="interaction-json">{{
+    "Node pointer and synthetic query" | localize
+  }}</label
+  ><textarea
+    class="font-mono"
+    id="interaction-json"
+    [(ngModel)]="interactionJson"
+  ></textarea
+  ><button
+    pButton
+    severity="secondary"
+    type="button"
+    [disabled]="busy()"
+    [outlined]="true"
+    (click)="inspect('options')"
+  >
+    {{ "Preview options" | localize }}</button
+  ><button
+    pButton
+    severity="secondary"
+    type="button"
+    [disabled]="busy()"
+    [outlined]="true"
+    (click)="inspect('navigation')"
+  >
+    {{ "Preview navigation" | localize }}
+  </button>
+</details>
+@if (diagnostics()) {
+  <section aria-label="Validation diagnostics">
+    <h2>{{ "Diagnostics" | localize }}</h2>
+    <ul>
+      @for (issue of issues(); track $index) {
+        <li>
+          @if (issue.path) {
+            <button
+              pButton
+              severity="secondary"
+              type="button"
+              [outlined]="true"
+              (click)="select(issue.path)"
+            >
+              {{ issue.pointer }} · {{ issue.code }} {{ issue.edge }}
+            </button>
+          } @else {
+            {{ issue.pointer }} · {{ issue.code }}
+          }
+        </li>
+      }
+    </ul>
+    <pre>{{ diagnostics() }}</pre>
+  </section>
+}

@@ -1,0 +1,119 @@
+<header class="console-page-header">
+  <h1 tabindex="-1">{{ "Process tracking" | localize }}</h1>
+  <a routerLink="/operations/requests">{{ "My requests" | localize }}</a>
+</header>
+@if (busy()) {
+  <p role="status">{{ "Loading…" | localize }}</p>
+}
+@if (error()) {
+  <p role="alert">{{ error() | localize }}</p>
+}
+@if (status()) {
+  <p>{{ "Status" | localize }}: {{ status() | localize }}</p>
+}
+<button
+  class="reload-control"
+  pButton
+  severity="secondary"
+  type="button"
+  [attr.aria-label]="'Refresh' | localize"
+  [attr.title]="'Refresh' | localize"
+  [disabled]="busy()"
+  [text]="true"
+  (click)="load()"
+>
+  <i aria-hidden="true" class="pi pi-refresh"></i
+  ><span class="sr-only">{{ "Refresh" | localize }}</span>
+</button>
+@if (snapshot(); as process) {
+  <p>
+    {{ "Pinned workflow" | localize }}: <bdi>{{ process.workflow }}</bdi>
+  </p>
+  <a [routerLink]="['/operations/requests', process.request]">{{
+    "Request detail" | localize
+  }}</a>
+  <h2>{{ "Current positions" | localize }}</h2>
+  <ul>
+    @for (position of process.positions; track $index) {
+      <li>
+        <bdi>{{ position.step }}</bdi> · {{ position.status | localize }} ·
+        {{ position.wait }}
+      </li>
+    } @empty {
+      <li>{{ "No active positions" | localize }}</li>
+    }
+  </ul>
+  <h2>{{ "Execution path" | localize }}</h2>
+  <ul>
+    @for (step of process.steps; track step.key) {
+      <li>
+        <bdi>{{ step.key }}</bdi> · {{ step.status | localize }}
+      </li>
+    }
+  </ul>
+  <h2>{{ "Child processes" | localize }}</h2>
+  <ul>
+    @for (child of process.children; track child.reference) {
+      <li>
+        <a [routerLink]="['/operations/processes', child.reference]"
+          ><bdi>{{ child.reference }}</bdi></a
+        >
+        · {{ child.status | localize }}
+      </li>
+    }
+  </ul>
+  <h2>{{ "Timeline" | localize }}</h2>
+  <p>
+    {{ "Coverage started" | localize }}:
+    {{ process.coverage ?? ("Unavailable" | localize) }}
+  </p>
+  <ol>
+    @for (event of process.events; track event.sequence) {
+      <li>
+        <time>{{ event.occurred }}</time> · {{ event.kind | localize }}
+        @if (event.task) {
+          <a [routerLink]="['/operations/tasks', event.task]">{{
+            "Task detail" | localize
+          }}</a>
+        }
+      </li>
+    } @empty {
+      <li>{{ "No timeline events" | localize }}</li>
+    }
+  </ol>
+  <button
+    pButton
+    severity="secondary"
+    type="button"
+    [disabled]="busy() || process.page <= 1"
+    [outlined]="true"
+    (click)="load(process.page - 1)"
+  >
+    {{ "Previous" | localize }}
+  </button>
+  <span>{{ process.page }} / {{ process.totalPages }}</span>
+  <button
+    pButton
+    severity="secondary"
+    type="button"
+    [disabled]="busy() || process.page >= process.totalPages"
+    [outlined]="true"
+    (click)="load(process.page + 1)"
+  >
+    {{ "Next" | localize }}
+  </button>
+  <button
+    pButton
+    severity="secondary"
+    type="button"
+    [disabled]="busy()"
+    [outlined]="true"
+    (click)="load(process.page, true)"
+  >
+    {{ "Timeline report" | localize }}
+  </button>
+}
+
+@if (polling.paused()) {
+  <p role="status">{{ "Updates paused while offline or hidden" | localize }}</p>
+}

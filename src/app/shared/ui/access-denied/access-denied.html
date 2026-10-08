@@ -1,0 +1,31 @@
+@if (unavailable) {
+  <h1 tabindex="-1">{{ "Access unavailable" | localize }}</h1>
+  <p>
+    {{
+      "Your session could not be verified. Try checking it again." | localize
+    }}
+  </p>
+  <button
+    class="reload-control"
+    pButton
+    severity="secondary"
+    type="button"
+    [attr.aria-label]="'Retry session check' | localize"
+    [attr.title]="'Retry session check' | localize"
+    [text]="true"
+    (click)="retry()"
+  >
+    <i aria-hidden="true" class="pi pi-refresh"></i
+    ><span class="sr-only">{{ "Retry session check" | localize }}</span>
+  </button>
+} @else {
+  <h1 tabindex="-1">{{ "Access denied" | localize }}</h1>
+  <p>
+    {{
+      "You need a signed-in session with the required permissions to open this page."
+        | localize
+    }}
+  </p>
+}
+<a routerLink="/operations">{{ "Return to Operations" | localize }}</a>
+<a routerLink="/login">{{ "Return to sign in" | localize }}</a>

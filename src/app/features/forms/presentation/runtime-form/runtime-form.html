@@ -1,0 +1,64 @@
+<section
+  [attr.dir]="document().locale.direction"
+  [attr.lang]="document().locale.language"
+>
+  @if (pages().length > 1 && document().purpose !== "print") {
+    <nav [attr.aria-label]="'Form pages' | localize">
+      <h2>{{ pages()[page()].title }}</h2>
+      <span>{{ page() + 1 }} / {{ pages().length }}</span>
+      <button
+        pButton
+        severity="secondary"
+        type="button"
+        [disabled]="busy() || page() === 0"
+        [outlined]="true"
+        (click)="page.set(page() - 1); pageError.set('')"
+      >
+        {{ "Previous page" | localize }}
+      </button>
+      <button
+        pButton
+        severity="secondary"
+        type="button"
+        [disabled]="busy() || page() + 1 >= pages().length"
+        [outlined]="true"
+        (click)="next()"
+      >
+        {{ "Next page" | localize }}
+      </button>
+    </nav>
+    @if (pageError()) {
+      <p role="alert">{{ pageError() | localize }}</p>
+    }
+  }
+  @if (unsupported().length) {
+    <p role="alert">
+      {{ "This form requires unsupported controls" | localize }}:
+      {{ unsupported().join(", ") }}
+    </p>
+  } @else {
+    <app-runtime-node
+      [busy]="busy()"
+      [data]="data()"
+      [document]="document()"
+      [issues]="issues()"
+      [node]="root()"
+      (edit)="edit.emit($event)"
+    />
+  }
+  @if (document().before; as before) {
+    <details>
+      <summary>{{ "Previous submission" | localize }}</summary>
+      <dl>
+        @for (field of document().fields; track field.scope) {
+          @if (!field.scope.includes("/items")) {
+            <dt>{{ field.scope }}</dt>
+            <dd>
+              <bdi>{{ fieldValue(before, field.scope) | valueText }}</bdi>
+            </dd>
+          }
+        }
+      </dl>
+    </details>
+  }
+</section>

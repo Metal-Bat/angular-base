@@ -1,0 +1,71 @@
+:host {
+  display: block;
+}
+.row-actions-cell {
+  width: 1%;
+  white-space: nowrap;
+}
+.table-pagination {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  border-top: 1px solid var(--p-content-border-color);
+  padding: 0.75rem 0.25rem;
+}
+.page-field {
+  inline-size: auto;
+  .page-input {
+    inline-size: 4rem;
+  }
+}
+.page-jump {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
+  gap: 0.5rem;
+}
+.page-input {
+  text-align: center;
+}
+.table-pagination button {
+  margin: 0;
+  min-inline-size: 2.25rem;
+  block-size: 2.25rem;
+  padding: 0.4rem 0.5rem;
+  flex-shrink: 0;
+}
+.page-total {
+  white-space: nowrap;
+  color: var(--console-muted);
+  font-size: 0.8rem;
+}
+
+.pagination-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: safe center;
+  gap: 0.25rem;
+  max-inline-size: 100%;
+  overflow-x: auto;
+  padding: 0.25rem;
+}
+@media (max-width: 30rem) {
+  .pagination-controls {
+    gap: 0;
+  }
+  .page-jump {
+    gap: 0.25rem;
+  }
+  .page-field .page-input {
+    inline-size: 3.25rem;
+  }
+}
+
+.row-action-icon {
+  font-size: 1rem;
+  line-height: 1;
+}

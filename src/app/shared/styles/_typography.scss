@@ -1,0 +1,44 @@
+// One language-aware family for page headings, data, controls and body overlays.
+:root {
+  --workspace-font-family: Inter, ui-sans-serif, system-ui, Tahoma, sans-serif;
+  --workspace-font-mono: ui-monospace, monospace;
+}
+:root:lang(fa) {
+  --workspace-font-family: "Yekan Bakh", YekanBakh, Tahoma, sans-serif;
+}
+:root:lang(ar) {
+  --workspace-font-family: "Noto Sans Arabic", Tahoma, Arial, sans-serif;
+}
+@layer components {
+  :where(
+    html,
+    body,
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    table,
+    caption,
+    th,
+    td,
+    label,
+    summary,
+    button,
+    input,
+    select,
+    textarea,
+    dialog,
+    .p-component
+  ) {
+    font-family: var(--workspace-font-family);
+  }
+  :where(code, pre, kbd, samp) {
+    font-family: var(--workspace-font-mono);
+  }
+}
+// Latin display tracking makes joined Arabic/Persian headings look inconsistent.
+:root:is(:lang(fa), :lang(ar)) :where(h1, h2, h3, h4, h5, h6) {
+  letter-spacing: normal;
+}

@@ -1,0 +1,56 @@
+@let vm = view();
+<fieldset
+  class="array-fields"
+  tabindex="-1"
+  [attr.aria-describedby]="
+    vm.errors()[vm.path()] ? vm.controlId() + '-error' : null
+  "
+  [attr.aria-invalid]="vm.errors()[vm.path()] ? 'true' : null"
+  [disabled]="vm.disabled()"
+  [id]="vm.controlId()"
+>
+  <legend>
+    {{ vm.title() | localize }}
+    @if (vm.required()) {
+      <span aria-hidden="true">*</span>
+    }
+  </legend>
+  @for (item of vm.items(); track $index; let index = $index) {
+    <div class="map-entry">
+      <app-schema-input
+        [controlId]="vm.childId(index)"
+        [disabled]="vm.disabled()"
+        [errors]="vm.errors()"
+        [label]="('Value' | localize) + ' ' + (index + 1)"
+        [path]="vm.childPath(index)"
+        [schema]="$any(vm.shape()['items'] || {})"
+        [value]="item"
+        (valueChange)="vm.setItem(index, $event)"
+      />
+      <button
+        pButton
+        severity="secondary"
+        type="button"
+        [attr.aria-label]="('Remove' | localize) + ' ' + (index + 1)"
+        [text]="true"
+        (click)="vm.removeItem(index)"
+      >
+        <i aria-hidden="true" class="pi pi-times"></i>
+      </button>
+    </div>
+  }
+  <button
+    pButton
+    severity="secondary"
+    type="button"
+    [outlined]="true"
+    (click)="vm.addItem()"
+  >
+    <i aria-hidden="true" class="pi pi-plus"></i>{{ "Add value" | localize }}
+  </button>
+  @if (vm.errors()[vm.path()]) {
+    <p class="field-error" role="alert" [id]="vm.controlId() + '-error'">
+      {{ vm.errors()[vm.path()] | localize }}
+    </p>
+  }
+</fieldset>

@@ -1,0 +1,104 @@
+<section
+  animate.enter="login-enter"
+  aria-labelledby="login-title"
+  class="login-card w-full max-w-md rounded-2xl border border-console-border bg-console-surface p-6 text-console-text shadow-console sm:p-9"
+>
+  <div
+    aria-hidden="true"
+    class="mb-6 grid size-12 place-items-center rounded-xl bg-console-accent-soft text-console-accent"
+  >
+    <i class="pi pi-sitemap text-xl"></i>
+  </div>
+  <h1
+    class="m-0 text-3xl font-semibold tracking-tight"
+    id="login-title"
+    tabindex="-1"
+    [textContent]="'Sign in' | localize"
+  ></h1>
+  <p class="mb-8 mt-3 text-sm leading-6 text-console-muted">
+    {{ "Access your requests, tasks, and workflows." | localize }}
+  </p>
+  <form
+    class="grid gap-5"
+    [attr.aria-busy]="busy()"
+    [formGroup]="form"
+    (ngSubmit)="submit()"
+  >
+    <div class="grid gap-2">
+      <label class="text-sm font-medium" for="username">{{
+        "Username" | localize
+      }}</label>
+      <input
+        aria-describedby="login-errors"
+        autocomplete="username"
+        class="min-h-12 w-full transition-colors duration-200"
+        formControlName="username"
+        id="username"
+        pInputText
+        required
+        [attr.aria-invalid]="
+          form.controls.username.touched && form.controls.username.invalid
+        "
+        [attr.placeholder]="'Enter your username' | localize"
+        [invalid]="
+          form.controls.username.touched && form.controls.username.invalid
+        "
+      />
+    </div>
+    <div class="grid gap-2">
+      <label class="text-sm font-medium" for="password">{{
+        "Password" | localize
+      }}</label>
+      <input
+        aria-describedby="login-errors"
+        autocomplete="current-password"
+        class="min-h-12 w-full transition-colors duration-200"
+        formControlName="password"
+        id="password"
+        pInputText
+        required
+        type="password"
+        [attr.aria-invalid]="
+          form.controls.password.touched && form.controls.password.invalid
+        "
+        [invalid]="
+          form.controls.password.touched && form.controls.password.invalid
+        "
+      />
+    </div>
+    <div
+      class="empty:hidden text-sm leading-6 text-[var(--mat-sys-error)]"
+      id="login-errors"
+    >
+      @if (form.touched && form.invalid) {
+        <p class="m-0" role="alert">
+          {{ "Enter a username and password." | localize }}
+        </p>
+      }
+      @if (error()) {
+        <p class="m-0" role="alert">{{ error() | localize }}</p>
+      }
+    </div>
+    <button
+      class="min-h-12 w-full justify-center transition-colors duration-200"
+      pButton
+      type="submit"
+      [disabled]="busy()"
+      [loading]="busy()"
+    >
+      <span pButtonLabel>{{
+        (busy() ? "Signing in…" : "Sign in") | localize
+      }}</span>
+      @if (!busy()) {
+        <i aria-hidden="true" class="pi pi-arrow-right rtl:rotate-180"></i>
+      }
+    </button>
+  </form>
+  <div class="mt-7 border-t border-console-border pt-6 text-center">
+    <a
+      class="inline-flex min-h-8 items-center text-sm font-medium text-console-accent underline-offset-4 transition-colors duration-200 hover:underline"
+      routerLink="/reset-password"
+      >{{ "Forgot password / reset token" | localize }}</a
+    >
+  </div>
+</section>

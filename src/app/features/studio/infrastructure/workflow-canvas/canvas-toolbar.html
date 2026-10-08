@@ -1,0 +1,42 @@
+@let vm = view();
+<header
+  class="canvas-toolbar flex flex-wrap items-center justify-between gap-3"
+>
+  <div class="canvas-summary">
+    <strong>{{ "Workflow canvas" | localize }}</strong
+    ><span
+      >{{ vm.nodes().length }} {{ "steps" | localize }} ·
+      {{ vm.edges().length }} {{ "connections" | localize }}</span
+    >
+  </div>
+  <div class="canvas-tools flex flex-wrap items-center gap-1">
+    <button
+      type="button"
+      [attr.aria-label]="'Zoom out' | localize"
+      [disabled]="vm.disabled() || vm.viewport().zoom <= 0.1"
+      (click)="vm.zoom(-0.1)"
+    >
+      <i aria-hidden="true" class="pi pi-minus"></i>
+    </button>
+    <span class="zoom-value">{{ vm.zoomPercent() }}%</span>
+    <button
+      type="button"
+      [attr.aria-label]="'Zoom in' | localize"
+      [disabled]="vm.disabled() || vm.viewport().zoom >= 4"
+      (click)="vm.zoom(0.1)"
+    >
+      <i aria-hidden="true" class="pi pi-plus"></i>
+    </button>
+    <button
+      type="button"
+      [disabled]="vm.disabled() || !vm.nodes().length"
+      (click)="vm.fit()"
+    >
+      <i aria-hidden="true" class="pi pi-expand"></i
+      ><span>{{ "Fit to view" | localize }}</span>
+    </button>
+    <button type="button" [disabled]="vm.disabled()" (click)="vm.reset()">
+      <span>{{ "Reset view" | localize }}</span>
+    </button>
+  </div>
+</header>

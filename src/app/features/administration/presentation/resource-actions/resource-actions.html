@@ -1,0 +1,104 @@
+@if (actions().length) {
+  <section class="resource-actions" [attr.aria-label]="'Actions' | localize">
+    <h3>{{ (tools() ? "Additional tools" : "Actions") | localize }}</h3>
+    <div class="action-buttons">
+      @for (action of actions(); track action.id) {
+        <button
+          pButton
+          severity="secondary"
+          type="button"
+          [disabled]="disabled() || busy()"
+          [outlined]="true"
+          (click)="open(action)"
+        >
+          <i
+            aria-hidden="true"
+            [class]="action.mutation ? 'pi pi-bolt' : 'pi pi-eye'"
+          ></i
+          >{{ action.title | localize }}
+        </button>
+      }
+    </div>
+  </section>
+}
+<p-dialog
+  [closable]="!busy()"
+  [closeAriaLabel]="'Close' | localize"
+  [draggable]="false"
+  [header]="command()?.title || '' | localize"
+  [modal]="true"
+  [resizable]="false"
+  [style]="{ width: '56rem', maxWidth: 'calc(100vw - 2rem)' }"
+  [visible]="!!command()"
+  (visibleChange)="close()"
+>
+  @if (command(); as action) {
+    <p class="text-console-muted text-sm">{{ targetTitle() | localize }}</p>
+    @if (error()) {
+      <p role="alert">{{ error() | localize }}</p>
+    }
+    @if (notice()) {
+      <p role="status">{{ notice() | localize }}</p>
+    }
+    <form (ngSubmit)="execute()">
+      <div class="action-form">
+        @for (location of locations; track location) {
+          @if (
+            $any(schema(location)["properties"]) &&
+            Object.keys($any(schema(location)["properties"])).length
+          ) {
+            <app-schema-input
+              [controlId]="'action-' + location"
+              [disabled]="busy() || disabled()"
+              [errors]="errors()"
+              [label]="labels[location]"
+              [path]="location"
+              [schema]="schema(location)"
+              [value]="input()[location]"
+              (referenceRequested)="picker().open($event)"
+              (valueChange)="change(location, $event)"
+            />
+          }
+        }
+      </div>
+      <div class="dialog-actions">
+        <button
+          pButton
+          severity="secondary"
+          type="button"
+          [disabled]="busy()"
+          [text]="true"
+          (click)="close()"
+        >
+          {{ "Cancel" | localize }}
+        </button>
+        <button pButton type="submit" [disabled]="busy() || disabled()">
+          {{ (action.mutation ? "Review command" : "Load") | localize }}
+        </button>
+      </div>
+    </form>
+    @if (response(); as result) {
+      @if (resultRows().length || result.totalPages > 1) {
+        <app-record-table
+          actionLabel="Select"
+          [busy]="busy()"
+          [columns]="columns()"
+          [page]="result.page"
+          [pages]="result.totalPages"
+          [query]="query()"
+          [rows]="resultRows()"
+          (opened)="selectResult($event)"
+          (pageChanged)="execute($event)"
+          (queried)="execute(1, $event.size)"
+        />
+      } @else if (resultRecord(); as record) {
+        <app-record-summary [record]="record" [title]="action.title" />
+      }
+    }
+  }
+</p-dialog>
+<app-reference-picker
+  #references
+  [context]="bodyContext()"
+  (picked)="pick($event.path, $event.value)"
+/>

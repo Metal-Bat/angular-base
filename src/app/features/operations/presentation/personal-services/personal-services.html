@@ -1,0 +1,93 @@
+<header class="console-page-header">
+  <h1 tabindex="-1">{{ kind | localize }}</h1>
+  <a routerLink="/operations">{{ "Workspace" | localize }}</a>
+</header>
+@if (error()) {
+  <p role="alert">{{ error() | localize }}</p>
+}
+@if (busy()) {
+  <p role="status">{{ "Loading…" | localize }}</p>
+}
+@if (polling.paused()) {
+  <p role="status">{{ "Updates paused while offline or hidden" | localize }}</p>
+}
+<button
+  class="reload-control"
+  pButton
+  severity="secondary"
+  type="button"
+  [attr.aria-label]="'Refresh' | localize"
+  [attr.title]="'Refresh' | localize"
+  [disabled]="busy()"
+  [text]="true"
+  (click)="load(page())"
+>
+  <i aria-hidden="true" class="pi pi-refresh"></i
+  ><span class="sr-only">{{ "Refresh" | localize }}</span>
+</button>
+@if (notifications) {
+  <button
+    pButton
+    severity="secondary"
+    type="button"
+    [disabled]="busy()"
+    [outlined]="true"
+    (click)="load(page(), true)"
+  >
+    {{ "Notification report" | localize }}
+  </button>
+}
+<ul>
+  @for (item of items(); track item.ref) {
+    <li>
+      <button
+        pButton
+        severity="secondary"
+        type="button"
+        [disabled]="busy()"
+        [outlined]="true"
+        (click)="open(item.ref)"
+      >
+        {{ item.title }}
+      </button>
+      · {{ item.status | localize }}
+    </li>
+  } @empty {
+    <li>{{ "No items" | localize }}</li>
+  }
+</ul>
+<button
+  pButton
+  severity="secondary"
+  type="button"
+  [disabled]="previousDisabled()"
+  [outlined]="true"
+  (click)="load(page() - 1)"
+>
+  {{ "Previous" | localize }}
+</button>
+<button
+  pButton
+  severity="secondary"
+  type="button"
+  [disabled]="nextDisabled()"
+  [outlined]="true"
+  (click)="load(page() + 1)"
+>
+  {{ "Next" | localize }}
+</button>
+<app-personal-service-detail [view]="this" />
+@if (transfer.busy()) {
+  <p role="status">
+    {{ "Transfer in progress" | localize }} {{ transfer.progress() }}%
+  </p>
+  <button
+    pButton
+    severity="secondary"
+    type="button"
+    [outlined]="true"
+    (click)="transfer.cancel()"
+  >
+    {{ "Cancel transfer" | localize }}
+  </button>
+}

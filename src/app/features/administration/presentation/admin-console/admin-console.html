@@ -1,0 +1,52 @@
+<section aria-labelledby="admin-title" class="admin-console">
+  <h1 id="admin-title" tabindex="-1">{{ title | localize }}</h1>
+  <label for="admin-command">{{ "Operation" | localize }}</label>
+  <app-select-control
+    inputId="admin-command"
+    [disabled]="busy()"
+    [ngModel]="selected()?.id"
+    (ngModelChange)="choose($event)"
+  >
+    @for (command of commands(); track command.id) {
+      <option [value]="command.id">{{ command.title | localize }}</option>
+    }
+  </app-select-control>
+  @if (!commands().length) {
+    <p role="status">{{ "No permitted operations." | localize }}</p>
+  }
+  @if (currentRow(); as row) {
+    <p>
+      {{ "Current target" | localize }}:
+      {{ row["username"] || row["name"] || row["ref_id"] }}
+    </p>
+  }
+  @if (selected(); as command) {
+    @if (group === "processes") {
+      <p>
+        {{
+          "Process controls require the requester or server recovery authority and a valid lifecycle state."
+            | localize
+        }}
+      </p>
+    }
+    @if (group === "tasks") {
+      <p>
+        {{
+          "Queued work is not completed work. Retry and revoke use the exact task ID."
+            | localize
+        }}
+      </p>
+    }
+    <app-admin-command-form [view]="this" />
+  }
+  @if (busy()) {
+    <p role="status">{{ "Loading…" | localize }}</p>
+  }
+  @if (error()) {
+    <p role="alert">{{ error() | localize }}</p>
+  }
+  @if (notice()) {
+    <p role="status">{{ notice() | localize }}</p>
+  }
+  <app-admin-command-result [view]="this" />
+</section>

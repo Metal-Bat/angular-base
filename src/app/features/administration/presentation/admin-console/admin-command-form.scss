@@ -1,0 +1,23 @@
+form {
+  padding: 1.5rem;
+  border: 1px solid var(--console-border);
+  border-radius: 1rem;
+  background: var(--console-surface);
+  margin-block: 1.5rem;
+}
+fieldset {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.4rem;
+}
+fieldset label {
+  margin-block-start: 0.75rem;
+}
+fieldset input[type="checkbox"] {
+  justify-self: start;
+}
+fieldset input,
+fieldset select,
+fieldset textarea {
+  max-inline-size: none;
+}

@@ -1,0 +1,114 @@
+<app-catalog-header [view]="this" />
+@if (error()) {
+  <p role="alert">{{ error() | localize }}</p>
+}
+@if (notice()) {
+  <p role="status">
+    {{ notice() | localize }}
+    @if (queuedReport()) {
+      <a routerLink="/operations/reports">{{ "My Reports" | localize }}</a>
+    }
+  </p>
+}
+@if (busy()) {
+  <p role="status">{{ "Loading…" | localize }}</p>
+}
+<app-catalog-content [view]="this" />
+<app-catalog-actions [view]="this" />
+@if (secret()) {
+  <aside>
+    <p>
+      {{
+        "One-time confidential client secret. Transfer it to the server operator; never put it in browser configuration."
+          | localize
+      }}
+    </p>
+    <details>
+      <summary>{{ "Reveal secret" | localize }}</summary>
+      <code>{{ secret() }}</code>
+    </details>
+    <button
+      pButton
+      severity="secondary"
+      type="button"
+      [outlined]="true"
+      (click)="secret.set('')"
+    >
+      {{ "Dismiss secret" | localize }}
+    </button>
+  </aside>
+}
+<app-catalog-editor [view]="this" />
+<p-dialog
+  appendTo="body"
+  position="center"
+  [closable]="!busy()"
+  [closeAriaLabel]="'Close' | localize"
+  [draggable]="false"
+  [header]="'History' | localize"
+  [modal]="true"
+  [resizable]="false"
+  [style]="{ width: '60rem', maxWidth: 'calc(100vw - 2rem)' }"
+  [visible]="historyOpen()"
+  (visibleChange)="historyOpen.set($event)"
+>
+  <app-record-table
+    [busy]="busy()"
+    [columns]="historyColumns"
+    [page]="auditPage()"
+    [pages]="auditPages()"
+    [query]="auditQuery()"
+    [rows]="audit()"
+    (opened)="historyDetail.set($any($event))"
+    (pageChanged)="history($event)"
+    (queried)="history(1, $event.size)"
+  />
+  @if (historyDetail()) {
+    <app-record-summary
+      caption="History"
+      icon="pi pi-history"
+      [record]="historyDetail()!"
+      [title]="$any(historyDetail()!['operation'] || ('History' | localize))"
+    />
+  }
+</p-dialog>
+
+<p-dialog
+  appendTo="body"
+  position="center"
+  [closable]="!parentBusy()"
+  [draggable]="false"
+  [header]="'Choose parent' | localize"
+  [modal]="true"
+  [resizable]="false"
+  [style]="{ width: '60rem', maxWidth: 'calc(100vw - 2rem)' }"
+  [visible]="parentModal()"
+  (visibleChange)="parentModal.set($event)"
+>
+  @if (parentModal() && parentSpec; as parent) {
+    @if (parent.list) {
+      <app-list-query
+        [busy]="parentBusy()"
+        [fields]="parent.list.queryFields"
+        [query]="parentQuery()"
+        (applied)="loadParents($event)"
+      />
+    }
+    <app-record-table
+      actionLabel="Select"
+      [busy]="parentBusy()"
+      [columns]="parent.list?.columns ?? columns()"
+      [fields]="parent.list?.queryFields ?? []"
+      [page]="parentQuery().page"
+      [pages]="parentPages()"
+      [query]="parentQuery()"
+      [rows]="parentItems()"
+      (opened)="chooseParent($event)"
+      (pageChanged)="parentPageTo($event)"
+      (queried)="loadParents($event)"
+    />
+  }
+  @if (parentError()) {
+    <p role="alert">{{ parentError() | localize }}</p>
+  }
+</p-dialog>

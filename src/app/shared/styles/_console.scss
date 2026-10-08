@@ -1,0 +1,434 @@
+// Scoped to workspace pages; PrimeNG widgets retain their public theme tokens.
+@layer components {
+  button.reload-control {
+    inline-size: 2.5rem;
+    block-size: 2.5rem;
+    min-block-size: 2.5rem;
+    padding: 0;
+    flex-shrink: 0;
+    .pi {
+      font-size: 1rem;
+      line-height: 1;
+    }
+  }
+
+  .console-page {
+    display: block;
+    max-inline-size: 80rem;
+    min-inline-size: 0;
+    margin-inline: auto;
+    color: var(--console-text);
+  }
+  :where(.console-page, .console-fragment) {
+    h1 {
+      margin: 0 0 0.75rem;
+      font-size: clamp(1.75rem, 3vw, 2.25rem);
+      font-weight: 700;
+      line-height: 1.3;
+      letter-spacing: -0.04em;
+    }
+    h2 {
+      margin: 0 0 1rem;
+      font-size: 1.1rem;
+      font-weight: 650;
+      line-height: 1.4;
+    }
+    h3 {
+      margin: 0 0 0.5rem;
+      font-size: 0.95rem;
+      font-weight: 650;
+    }
+    p {
+      margin-block: 0.75rem 1.25rem;
+      line-height: 1.75;
+      overflow-wrap: anywhere;
+    }
+    a:not(.p-button):not(.console-card) {
+      color: var(--console-accent);
+      text-underline-offset: 0.25rem;
+    }
+    label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin-block: 1rem 0.4rem;
+    }
+    :where(input, select, textarea):not([type="checkbox"]):not(
+        [type="radio"]
+      ):not(.p-inputtext):not(.p-textarea) {
+      display: block;
+      inline-size: 100%;
+      max-inline-size: 38rem;
+      min-block-size: 2.75rem;
+      padding: 0.7rem 0.85rem;
+      border: 1px solid var(--console-input-border);
+      border-radius: 0.6rem;
+      background: var(--console-surface);
+      color: var(--console-text);
+      transition:
+        border-color 160ms ease,
+        box-shadow 160ms ease;
+      &:focus {
+        border-color: var(--console-accent);
+      }
+    }
+    input[type="checkbox"],
+    input[type="radio"] {
+      inline-size: 1.15rem;
+      block-size: 1.15rem;
+      accent-color: var(--console-accent);
+    }
+    textarea {
+      resize: vertical;
+      font-size: 0.8rem;
+      line-height: 1.65;
+    }
+    input[type="file"] {
+      border-style: dashed;
+      background: var(--console-canvas);
+      padding: 1rem;
+    }
+    button {
+      margin-block: 0.35rem;
+      margin-inline-end: 0.5rem;
+    }
+    .p-button {
+      font-size: 0.8rem;
+      min-block-size: 2.75rem;
+    }
+    .p-button[aria-pressed="true"] {
+      background: var(--console-accent-soft);
+      border-color: var(--console-accent);
+      color: var(--console-accent);
+    }
+    fieldset,
+    details,
+    aside,
+    .console-panel {
+      min-inline-size: 0;
+      padding: 1.5rem;
+      margin-block: 1.25rem;
+      border: 1px solid var(--console-border);
+      border-radius: 1rem;
+      background: var(--console-surface);
+    }
+    fieldset {
+      display: block;
+    }
+    legend {
+      font-weight: 650;
+      font-size: 0.9rem;
+      padding-inline: 0.5rem;
+    }
+    details {
+      padding: 0;
+      overflow: clip;
+    }
+    details > :not(summary) {
+      margin-inline: 1.25rem;
+    }
+    details > :last-child {
+      margin-block-end: 1.25rem;
+    }
+    summary {
+      padding: 1rem 1.25rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      transition: background 160ms ease;
+    }
+    summary:hover {
+      background: var(--console-accent-soft);
+    }
+    details[open] > summary {
+      border-block-end: 1px solid var(--console-border);
+      margin-block-end: 1rem;
+    }
+    ul,
+    ol {
+      padding: 0;
+      list-style: none;
+      display: grid;
+      gap: 0.75rem;
+      margin-block: 1.25rem;
+    }
+    li {
+      padding: 1rem 1.25rem;
+      border: 1px solid var(--console-border);
+      border-radius: 0.75rem;
+      background: var(--console-surface);
+      overflow-wrap: anywhere;
+    }
+    li a {
+      font-weight: 600;
+    }
+    nav:not(.console-card-grid) {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.65rem;
+      margin-block: 1.25rem;
+    }
+    dl {
+      display: grid;
+      grid-template-columns: minmax(7rem, 1fr) minmax(0, 3fr);
+      gap: 0.75rem 1.5rem;
+      padding: 1.25rem;
+      border: 1px solid var(--console-border);
+      border-radius: 0.75rem;
+      background: var(--console-surface);
+    }
+    dt {
+      color: var(--console-muted);
+      font-size: 0.8rem;
+    }
+    dd {
+      margin: 0;
+      overflow-wrap: anywhere;
+      font-size: 0.85rem;
+    }
+    pre {
+      max-inline-size: 100%;
+      max-block-size: 30rem;
+      overflow: auto;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      padding: 1.25rem;
+      border: 1px solid var(--console-border);
+      border-radius: 0.75rem;
+      background: var(--console-canvas);
+      font-size: 0.8rem;
+    }
+    code,
+    bdi {
+      overflow-wrap: anywhere;
+    }
+    p[role="alert"] {
+      border-inline-start: 3px solid var(--mat-sys-error);
+      background: var(--mat-sys-error-container);
+      color: var(--mat-sys-on-error-container);
+      padding: 1rem 1.25rem;
+      border-radius: 0.6rem;
+    }
+    p[role="status"] {
+      padding: 1rem 1.25rem;
+      border: 1px solid var(--console-border);
+      border-radius: 0.6rem;
+      background: var(--console-accent-soft);
+      color: var(--console-text);
+    }
+    :where(input, select, textarea)[aria-invalid="true"] {
+      border-color: var(--mat-sys-error);
+    }
+    table {
+      inline-size: 100%;
+      border-collapse: collapse;
+      background: var(--console-surface);
+    }
+    th,
+    td {
+      padding: 0.5rem 0.75rem;
+      text-align: start;
+      border-block-end: 1px solid var(--console-border);
+    }
+    th {
+      font-size: 0.75rem;
+      color: var(--console-muted);
+      background: var(--console-canvas);
+    }
+  }
+  :where(.console-page, .console-fragment) app-record-table {
+    button {
+      margin: 0;
+    }
+    .p-button {
+      min-block-size: 2rem;
+      min-inline-size: 2rem;
+    }
+  }
+  .console-page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+    margin-block-end: 0.75rem;
+    padding-block: 0.25rem;
+    > div:first-child {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      gap: 0.35rem 0.75rem;
+      min-inline-size: 0;
+      flex: 1;
+    }
+    h1 {
+      margin: 0;
+      font-size: 1.25rem;
+      line-height: 1.4;
+    }
+    .console-eyebrow {
+      display: inline;
+      margin: 0;
+      padding-inline-end: 0.75rem;
+      border-inline-end: 1px solid var(--console-border);
+      font-size: 0.75rem;
+      font-weight: 500;
+      letter-spacing: normal;
+      text-transform: none;
+    }
+    .console-description {
+      margin: 0;
+      font-size: 0.875rem;
+      line-height: 1.5;
+    }
+    > div:last-child:not(:first-child) {
+      flex-shrink: 0;
+    }
+    button,
+    .p-button {
+      margin: 0;
+    }
+  }
+  @media (max-width: 48rem) {
+    .console-page-header > div:first-child {
+      flex-basis: 100%;
+    }
+  }
+  .console-description {
+    color: var(--console-muted);
+    max-inline-size: 46rem;
+  }
+  .console-eyebrow {
+    display: block;
+    margin-block-end: 0.75rem;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--console-muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .console-card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+    gap: 1.25rem;
+    margin-block: 1.5rem;
+  }
+  .console-card {
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+    gap: 0.75rem;
+    padding: 1.5rem;
+    border: 1px solid var(--console-border);
+    border-radius: 1rem;
+    background: var(--console-surface);
+    color: var(--console-text);
+    text-decoration: none;
+    transition:
+      border-color 180ms ease,
+      transform 180ms ease,
+      box-shadow 180ms ease;
+  }
+  .console-card:hover,
+  .console-card:focus-visible {
+    border-color: var(--console-accent);
+    transform: translateY(-3px);
+    box-shadow: var(--console-shadow);
+  }
+  .console-card-icon {
+    display: grid;
+    place-items: center;
+    inline-size: 2.75rem;
+    block-size: 2.75rem;
+    border-radius: 0.75rem;
+    background: var(--console-accent-soft);
+    color: var(--console-accent);
+    margin-block-end: 0.5rem;
+  }
+  .console-card:hover .console-card-icon,
+  .console-card:focus-visible .console-card-icon {
+    background: var(--console-accent);
+    color: var(--console-on-accent);
+  }
+  .console-card strong {
+    font-size: 1rem;
+    font-weight: 650;
+  }
+  .console-card p {
+    margin: 0;
+    color: var(--console-muted);
+    font-size: 0.85rem;
+  }
+  .console-card-action {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    margin-block-start: auto;
+    padding-block-start: 1rem;
+    font-size: 0.75rem;
+    color: var(--console-accent);
+    font-weight: 600;
+  }
+  .console-record-status {
+    display: inline-flex;
+    padding: 0.25rem 0.6rem;
+    border-radius: 0.4rem;
+    background: var(--console-accent-soft);
+    color: var(--console-accent);
+    font-size: 0.7rem;
+    font-weight: 600;
+    margin-inline-start: 0.75rem;
+  }
+  .console-page > form {
+    padding: 1.5rem;
+    margin-block: 1.25rem;
+    border: 1px solid var(--console-border);
+    border-radius: 1rem;
+    background: var(--console-surface);
+  }
+  .console-page > section:not(.admin-console),
+  .admin-console > section {
+    padding: 1.5rem;
+    margin-block: 1.25rem;
+    border: 1px solid var(--console-border);
+    border-radius: 1rem;
+    background: var(--console-surface);
+  }
+  .console-fragment {
+    display: block;
+    min-inline-size: 0;
+  }
+  .console-page.console-auth,
+  .console-page.console-error {
+    max-inline-size: 42rem;
+    padding: 2rem;
+    margin-block: clamp(2rem, 8vh, 6rem);
+    border: 1px solid var(--console-border);
+    border-radius: 1.25rem;
+    background: var(--console-surface);
+  }
+  [dir="rtl"] .console-card-action .pi-arrow-right {
+    transform: scaleX(-1);
+  }
+  @media (max-width: 48rem) {
+    :where(.console-page, .console-fragment) dl {
+      grid-template-columns: 1fr;
+      gap: 0.3rem;
+      dd {
+        margin-block-end: 0.65rem;
+      }
+    }
+    .console-page.console-auth,
+    .console-page.console-error {
+      margin: 1rem;
+      padding: 1.5rem;
+    }
+    .console-page-header {
+      align-items: start;
+    }
+    .console-page > form,
+    .console-page > section:not(.admin-console) {
+      padding: 1.25rem;
+    }
+  }
+}

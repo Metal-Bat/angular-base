@@ -1,0 +1,78 @@
+<label [for]="controlId() + '-search'">{{ "Search options" | localize }}</label>
+<input
+  type="search"
+  [id]="controlId() + '-search'"
+  [ngModel]="search()"
+  (ngModelChange)="search.set($event); page.set(1)"
+/>
+<app-select-control
+  [describedBy]="describedBy()"
+  [disabled]="disabled()"
+  [inputId]="controlId()"
+  [invalid]="invalid()"
+  [multiple]="multiple()"
+  [ngModel]="multiple() ? selectedKeys() : selected()"
+  (ngModelChange)="choose($event)"
+>
+  <option value="">{{ "Choose a value" | localize }}</option>
+  @for (key of missingOptions(); track key) {
+    <option [value]="key">
+      {{ key }} ({{ "Check selection" | localize }})
+    </option>
+  }
+  @for (option of options()?.items ?? []; track option.key) {
+    <option [value]="option.key">{{ option.value }}</option>
+  }
+</app-select-control>
+<p aria-live="polite" role="status">
+  @if (optionState() === "loading") {
+    {{ "Loading…" | localize }}
+  }
+  @if (optionState() === "error") {
+    {{ "The service is unavailable." | localize }}
+  }
+  @if (options()?.state === "BLOCKED") {
+    {{ "Complete the dependent fields first" | localize }}
+  }
+  @if (options()?.state === "EMPTY") {
+    {{ "No options" | localize }}
+  }
+  @if (options()?.state === "CLIENT_FETCH") {
+    {{ "This option source is not supported" | localize }}
+  }
+</p>
+<button
+  pButton
+  severity="secondary"
+  type="button"
+  [disabled]="page() <= 1 || optionState() === 'loading'"
+  [outlined]="true"
+  (click)="page.set(page() - 1)"
+>
+  {{ "Previous" | localize }}
+</button>
+<button
+  pButton
+  severity="secondary"
+  type="button"
+  [disabled]="
+    page() >= (options()?.totalPages ?? 0) || optionState() === 'loading'
+  "
+  [outlined]="true"
+  (click)="page.set(page() + 1)"
+>
+  {{ "Next" | localize }}
+</button>
+<button
+  class="reload-control"
+  pButton
+  severity="secondary"
+  type="button"
+  [attr.aria-label]="'Retry' | localize"
+  [attr.title]="'Retry' | localize"
+  [text]="true"
+  (click)="search.set(''); page.set(1); reloadOptions()"
+>
+  <i aria-hidden="true" class="pi pi-refresh"></i
+  ><span class="sr-only">{{ "Retry" | localize }}</span>
+</button>

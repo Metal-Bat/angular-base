@@ -1,0 +1,37 @@
+.designer,
+.inspectors {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+  gap: 1.5rem;
+  margin-block: 1.5rem;
+}
+.designer > section,
+.inspectors > section {
+  min-inline-size: 0;
+  padding: 1.5rem;
+  border: 1px solid var(--console-border);
+  border-radius: 1rem;
+  background: var(--console-surface);
+}
+textarea {
+  max-inline-size: none;
+}
+.designer ul {
+  gap: 0.35rem;
+}
+.designer li {
+  padding: 0.5rem;
+  background: var(--console-canvas);
+}
+.designer small {
+  display: block;
+  padding-inline: 0.5rem;
+  color: var(--console-muted);
+  overflow-wrap: anywhere;
+}
+@media (max-width: 60rem) {
+  .designer,
+  .inspectors {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

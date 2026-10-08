@@ -1,0 +1,65 @@
+@layer components {
+  // Public PrimeNG hosts share the same size in headers, forms and pagination.
+  p-select,
+  p-multiselect {
+    box-sizing: border-box;
+    min-inline-size: 0;
+    max-inline-size: 100%;
+    block-size: var(--workspace-control-height, 2.5rem);
+    min-block-size: var(--workspace-control-height, 2.5rem);
+    align-items: center;
+    font-size: 0.875rem;
+  }
+
+  .ui-field {
+    --workspace-control-height: 2.5rem;
+    .field-control > .reference-control > input,
+    .field-control
+      > :where(input, select, textarea):not([type="checkbox"]):not(
+        [type="radio"]
+      ) {
+      box-sizing: border-box;
+      display: block;
+      inline-size: 100%;
+      max-inline-size: none;
+      min-inline-size: 0;
+      min-block-size: var(--workspace-control-height);
+      padding: 0.5rem 0.75rem;
+      border: 1px solid var(--console-input-border);
+      border-radius: 0.5rem;
+      background: var(--console-surface);
+      color: var(--console-text);
+      font: inherit;
+      font-size: 0.875rem;
+    }
+    .field-control > textarea {
+      min-block-size: 6rem;
+      resize: vertical;
+    }
+    .field-control > p-select,
+    .field-control > app-select-control {
+      inline-size: 100%;
+      min-inline-size: 0;
+      min-block-size: var(--workspace-control-height);
+    }
+    .field-control > .reference-control > input:focus-visible,
+    .field-control > input:focus-visible,
+    .field-control > select:focus-visible,
+    .field-control > textarea:focus-visible {
+      outline: 2px solid var(--console-accent);
+      outline-offset: 2px;
+    }
+  }
+  .ui-field-compact {
+    --workspace-control-height: 2.25rem;
+  }
+}
+
+@layer components {
+  :where(input, textarea, app-select-control).ng-invalid.ng-touched,
+  form.ng-submitted :where(input, textarea, app-select-control).ng-invalid,
+  :where(input, textarea, app-select-control)[aria-invalid="true"] {
+    outline: 2px solid var(--mat-sys-error);
+    outline-offset: 2px;
+  }
+}

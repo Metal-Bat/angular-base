@@ -1,0 +1,35 @@
+.error-content {
+  color: var(--console-text);
+  display: grid;
+  gap: 0.5rem;
+  min-inline-size: 0;
+  inline-size: 100%;
+}
+.error-content strong {
+  font-size: 0.875rem;
+}
+.error-content p {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+.error-code {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem;
+  font-size: 0.75rem;
+}
+.error-code button {
+  margin: 0;
+  max-inline-size: 100%;
+}
+.code-value {
+  font-family: ui-monospace, monospace;
+  overflow-wrap: anywhere;
+  user-select: text;
+}
+.copy-status {
+  font-size: 0.75rem;
+  line-height: 1.5;
+}

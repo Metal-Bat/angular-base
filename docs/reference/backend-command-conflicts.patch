@@ -1,0 +1,480 @@
+--- a/src/utils/exceptions.py
++++ b/src/utils/exceptions.py
+@@ -20,7 +20,14 @@
+ 
+ 
+ class VersionConflictException(Exception):
+-    """Raised when an optimistic-lock version is stale."""
++    """Safe category for revision, lifecycle, or command identity conflicts."""
++
++    def __init__(self, message: str = "Conflict", *, conflict_kind: str = "revision") -> None:
++        """Validate the safe conflict category without exposing private details."""
++        super().__init__(message)
++        if conflict_kind not in {"revision", "lifecycle", "idempotency", "unknown"}:
++            raise ValueError("Invalid conflict category")
++        self.conflict_kind = conflict_kind
+ 
+ 
+ class InvalidReferenceException(Exception):
+--- a/src/utils/exception_handlers.py
++++ b/src/utils/exception_handlers.py
+@@ -68,6 +68,13 @@
+ 
+ async def application_exception_handler(request: Request, exc: Exception) -> JSONResponse:
+     """Map application exceptions to a safe enum identity and HTTP status."""
++    if isinstance(exc, exceptions.VersionConflictException):
++        return error_response(
++            request,
++            CommonError.VERSION_CONFLICT,
++            status_code=409,
++            data={"conflict_kind": exc.conflict_kind},
++        )
+     if isinstance(exc, exceptions.ValidationDetailsException):
+         return error_response(
+             request, CommonError.VALIDATION_FAILED, status_code=422, data={"issues": exc.issues}
+--- a/src/apps/requests/application/service.py
++++ b/src/apps/requests/application/service.py
+@@ -70,7 +70,7 @@
+         if row is None or row.deleted_at:
+             raise NotFoundException("Request type not found")
+         if update and row.version != expected:
+-            raise VersionConflictException("Request type is stale")
++            raise VersionConflictException("Request type is stale", conflict_kind="revision")
+         return row
+ 
+     async def create_type(self, data: RequestTypeCreateDTO) -> RequestTypeEntity:
+@@ -120,7 +120,9 @@
+         self._require_origin_client(row, client_context, submission)
+         form = await self.session.get(FormVersionEntity, submission.form_version_id)
+         if form is None or form.render_dialect != "bpms.render/1":
+-            raise VersionConflictException("Runtime form dialect is incompatible")
++            raise VersionConflictException(
++                "Runtime form dialect is incompatible", conflict_kind="lifecycle"
++            )
+         snapshot = (
+             localize_snapshot(
+                 submission.design_snapshot, FormDocuments.model_validate(form, from_attributes=True)
+@@ -216,7 +218,7 @@
+         self, request_type: RequestTypeEntity, actor: UserEntity, context: ClientContext
+     ):
+         if not request_type.is_active or request_type.deleted_at:
+-            raise VersionConflictException("Request type is inactive")
++            raise VersionConflictException("Request type is inactive", conflict_kind="lifecycle")
+         workflow = await self.session.get(
+             WorkflowDefinitionEntity, request_type.workflow_definition_id
+         )
+@@ -229,7 +231,9 @@
+             or not form.is_active
+             or form.deleted_at
+         ):
+-            raise VersionConflictException("Request type dependencies are inactive")
++            raise VersionConflictException(
++                "Request type dependencies are inactive", conflict_kind="lifecycle"
++            )
+         if not await WorkflowService(self.session, get_registry()).can_access(
+             workflow, actor, "start"
+         ):
+@@ -353,7 +357,9 @@
+                 or client.version != expected
+                 or client.secret_hash is None
+             ):
+-                raise VersionConflictException("Restricted client must be active and confidential")
++                raise VersionConflictException(
++                    "Restricted client must be active and confidential", conflict_kind="lifecycle"
++                )
+             if client_id in seen:
+                 raise ValueError("Duplicate restricted client target")
+             seen.add(client_id)
+@@ -441,7 +447,7 @@
+         if row is None or row.deleted_at or not await self.can_view(row, actor):
+             raise NotFoundException("Business request not found")
+         if update and row.version != expected:
+-            raise VersionConflictException("Business request is stale")
++            raise VersionConflictException("Business request is stale", conflict_kind="revision")
+         return row
+ 
+     async def resume_presentation(
+@@ -469,7 +475,9 @@
+             raise NotAllowedException("Cross-client resume is not enabled for this request")
+         form = await self.session.get(FormVersionEntity, submission.form_version_id)
+         if form is None or form.status not in {"PUBLISHED", "RETIRED"}:
+-            raise VersionConflictException("Pinned form version is unavailable")
++            raise VersionConflictException(
++                "Pinned form version is unavailable", conflict_kind="lifecycle"
++            )
+         try:
+             design = resolve_form_documents(
+                 FormDocuments.model_validate(form, from_attributes=True), context
+@@ -552,7 +560,9 @@
+         self._require_origin_client(row, client_context, submission)
+         form = await self.session.get(FormVersionEntity, submission.form_version_id)
+         if form is None or form.status not in {"PUBLISHED", "RETIRED"}:
+-            raise VersionConflictException("Pinned form version is unavailable")
++            raise VersionConflictException(
++                "Pinned form version is unavailable", conflict_kind="lifecycle"
++            )
+         try:
+             result = await edit_submission_collection(
+                 self.session, submission, form, data, actor.id
+@@ -581,7 +591,9 @@
+         self._require_origin_client(row, client_context, submission)
+         form = await self.session.get(FormVersionEntity, submission.form_version_id)
+         if form is None or form.status not in {"PUBLISHED", "RETIRED"}:
+-            raise VersionConflictException("Pinned form version is unavailable")
++            raise VersionConflictException(
++                "Pinned form version is unavailable", conflict_kind="lifecycle"
++            )
+         try:
+             changed, provenance = apply_manual_override(
+                 pinned_behavior_documents(
+@@ -637,12 +649,16 @@
+         payload_hash = self._payload_hash(submission.data)
+         if row.submit_key == data.submit_key:
+             if row.submit_payload_hash != payload_hash:
+-                raise VersionConflictException("Submit key payload mismatch")
++                raise VersionConflictException(
++                    "Submit key payload mismatch", conflict_kind="idempotency"
++                )
+             return row, submission
+         if row.status != "DRAFT":
+-            raise VersionConflictException("Only drafts can be submitted")
++            raise VersionConflictException(
++                "Only drafts can be submitted", conflict_kind="lifecycle"
++            )
+         if row.version != expected:
+-            raise VersionConflictException("Business request is stale")
++            raise VersionConflictException("Business request is stale", conflict_kind="revision")
+         from apps.forms.application.attachments import AttachmentService
+ 
+         await AttachmentService(self.session).materialize(submission)
+@@ -656,10 +672,14 @@
+             )
+         ).first()
+         if duplicate is not None:
+-            raise VersionConflictException("Submit key is already used")
++            raise VersionConflictException(
++                "Submit key is already used", conflict_kind="idempotency"
++            )
+         form = await self.session.get(FormVersionEntity, submission.form_version_id)
+         if form is None or form.status not in {"PUBLISHED", "RETIRED"}:
+-            raise VersionConflictException("Pinned form version is unavailable")
++            raise VersionConflictException(
++                "Pinned form version is unavailable", conflict_kind="lifecycle"
++            )
+         validation = FormValidator().validate(
+             pinned_behavior_documents(
+                 FormDocuments.model_validate(form, from_attributes=True),
+@@ -828,7 +848,7 @@
+         if row.requester_user_id != actor.id:
+             raise NotAllowedException("Only the requester can change a draft")
+         if row.status != "DRAFT":
+-            raise VersionConflictException("Only drafts can be changed")
++            raise VersionConflictException("Only drafts can be changed", conflict_kind="lifecycle")
+ 
+     async def _definition_roots(
+         self, workflow_ref: str, form_ref: str
+@@ -854,7 +874,9 @@
+             )
+         ).one_or_none()
+         if row is None:
+-            raise VersionConflictException("Published workflow version not found")
++            raise VersionConflictException(
++                "Published workflow version not found", conflict_kind="lifecycle"
++            )
+         return row
+ 
+     async def _published_form(self, definition_id: UUID) -> FormVersionEntity:
+@@ -870,7 +892,9 @@
+             )
+         ).one_or_none()
+         if row is None:
+-            raise VersionConflictException("Published form version not found")
++            raise VersionConflictException(
++                "Published form version not found", conflict_kind="lifecycle"
++            )
+         return row
+ 
+     @staticmethod
+--- a/src/apps/work_items/application/service.py
++++ b/src/apps/work_items/application/service.py
+@@ -84,9 +84,13 @@
+         if existing is not None:
+             return existing
+         if not targets:
+-            raise VersionConflictException("Human task has no eligible candidates")
++            raise VersionConflictException(
++                "Human task has no eligible candidates", conflict_kind="lifecycle"
++            )
+         if step.form_version_id is None:
+-            raise VersionConflictException("Human task has no pinned form")
++            raise VersionConflictException(
++                "Human task has no pinned form", conflict_kind="lifecycle"
++            )
+         now = get_datetime_utc()
+         item = WorkItemEntity(
+             step_execution_id=execution.id,
+@@ -110,7 +114,9 @@
+             )
+         form = await self.session.get(FormVersionEntity, step.form_version_id)
+         if form is None:
+-            raise VersionConflictException("Human form version is unavailable")
++            raise VersionConflictException(
++                "Human form version is unavailable", conflict_kind="lifecycle"
++            )
+         correction_source = None
+         if step.task_contract and step.task_contract.get("correction_entry"):
+             prior = (
+@@ -139,7 +145,9 @@
+                     )
+                 ).first()
+                 if consumed is not None:
+-                    raise VersionConflictException("Correction source is already consumed")
++                    raise VersionConflictException(
++                        "Correction source is already consumed", conflict_kind="lifecycle"
++                    )
+                 correction_source = prior
+                 initial_data = deepcopy(prior.data)
+         inherited_source = None
+@@ -170,7 +178,9 @@
+                 FormDocuments.model_validate(form, from_attributes=True), context
+             )
+         except ValueError:
+-            raise VersionConflictException("Origin client cannot render the human form") from None
++            raise VersionConflictException(
++                "Origin client cannot render the human form", conflict_kind="lifecycle"
++            ) from None
+         item_identity = None
+         if form.behavior_dialect is not None:
+             from apps.forms.application.behavior import BehaviorError, evaluate_behavior
+@@ -263,7 +273,7 @@
+         if item is None or item.deleted_at is not None or not await self.can_view(item, actor):
+             raise NotFoundException("Work item not found")
+         if update_row and item.version != expected:
+-            raise VersionConflictException("Work item is stale")
++            raise VersionConflictException("Work item is stale", conflict_kind="revision")
+         return item
+ 
+     async def can_view(self, item: WorkItemEntity, actor: UserEntity) -> bool:
+@@ -326,7 +336,9 @@
+             .returning(col(WorkItemEntity.id))
+         )
+         if result.first() is None:
+-            raise VersionConflictException("Work item is no longer available")
++            raise VersionConflictException(
++                "Work item is no longer available", conflict_kind="lifecycle"
++            )
+         item = await self.session.get(
+             WorkItemEntity, item_id, populate_existing=True, with_for_update=True
+         )
+@@ -357,7 +369,7 @@
+         try:
+             item.status = transition(item.status, action)  # ty:ignore[invalid-argument-type]
+         except ValueError as exc:
+-            raise VersionConflictException(str(exc)) from exc
++            raise VersionConflictException(str(exc), conflict_kind="lifecycle") from exc
+         now = get_datetime_utc()
+         if action == "release":
+             item.claimed_by_user_id = None
+@@ -395,11 +407,15 @@
+         item = await self.get(ref_id, actor, update_row=True)
+         self._require_claimant(item, actor)
+         if item.status not in {"CLAIMED", "IN_PROGRESS"}:
+-            raise VersionConflictException("Work item cannot save a form in this state")
++            raise VersionConflictException(
++                "Work item cannot save a form in this state", conflict_kind="lifecycle"
++            )
+         submission = await self.submission(item, update_row=True)
+         form = await self.session.get(FormVersionEntity, submission.form_version_id)
+         if form is None:
+-            raise VersionConflictException("Pinned form version is unavailable")
++            raise VersionConflictException(
++                "Pinned form version is unavailable", conflict_kind="lifecycle"
++            )
+ 
+         step = await self._step(item)
+         scopes = self._mutation_scopes(step, view_key)
+@@ -492,11 +508,13 @@
+         try:
+             target = transition(item.status, action)  # ty:ignore[invalid-argument-type]
+         except ValueError as exc:
+-            raise VersionConflictException(str(exc)) from exc
++            raise VersionConflictException(str(exc), conflict_kind="lifecycle") from exc
+         submission = await self.submission(item, update_row=True)
+         form = await self.session.get(FormVersionEntity, submission.form_version_id)
+         if form is None or form.status not in {"PUBLISHED", "RETIRED"}:
+-            raise VersionConflictException("Pinned form version is unavailable")
++            raise VersionConflictException(
++                "Pinned form version is unavailable", conflict_kind="lifecycle"
++            )
+         step = await self._step(item)
+         from apps.work_items.application.task_views import (
+             action_for,
+@@ -609,7 +627,9 @@
+         if await self._idempotent(item_id, data.command_key, actor.id, payload_hash):
+             prior = await self._prior(item_id, data.command_key, actor.id)
+             if prior is None:
+-                raise VersionConflictException("Forward command state is inconsistent")
++                raise VersionConflictException(
++                    "Forward command state is inconsistent", conflict_kind="idempotency"
++                )
+             forwarded_id = UUID(str(prior.details["forwarded_work_item_id"]))
+             forwarded = await self.session.get(WorkItemEntity, forwarded_id)
+             if forwarded is None:
+@@ -618,9 +638,13 @@
+         item = await self.get(ref_id, actor, update_row=True)
+         self._require_claimant(item, actor)
+         if item.form_version_id is None:
+-            raise VersionConflictException("AI tool approvals cannot be forwarded")
++            raise VersionConflictException(
++                "AI tool approvals cannot be forwarded", conflict_kind="lifecycle"
++            )
+         if item.status not in {"CLAIMED", "IN_PROGRESS"}:
+-            raise VersionConflictException("Work item cannot be forwarded in this state")
++            raise VersionConflictException(
++                "Work item cannot be forwarded in this state", conflict_kind="lifecycle"
++            )
+         principals = await self._forward_principals(data)
+         now = get_datetime_utc()
+         item.status = "RETURNED"
+@@ -680,7 +704,7 @@
+             raise NotAllowedException("Only the requester or an administrator can close this item")
+         now = get_datetime_utc()
+         if action == "expire" and (item.due_at is None or item.due_at > now):
+-            raise VersionConflictException("Work item has not expired")
++            raise VersionConflictException("Work item has not expired", conflict_kind="lifecycle")
+         execution = await self.session.get(StepExecutionEntity, item.step_execution_id)
+         process = (
+             await self.session.get(ProcessInstanceEntity, execution.process_instance_id)
+@@ -710,7 +734,7 @@
+         try:
+             item.status = transition(item.status, action)  # ty:ignore[invalid-argument-type]
+         except ValueError as exc:
+-            raise VersionConflictException(str(exc)) from exc
++            raise VersionConflictException(str(exc), conflict_kind="lifecycle") from exc
+         item.closed_at = now
+         item.updated_at = item.closed_at
+         await self._record(
+@@ -866,7 +890,9 @@
+             if target.get("scope") not in allowed_view_scopes(view, step.field_policy or {}):
+                 raise NotFoundException("Correction feedback not found")
+         if target.get("status") != "OPEN":
+-            raise VersionConflictException("Correction feedback is already resolved")
++            raise VersionConflictException(
++                "Correction feedback is already resolved", conflict_kind="lifecycle"
++            )
+         target["status"] = "RESOLVED"
+         target["resolved_at"] = get_datetime_utc().isoformat()
+         target["resolved_by_ref_id"] = create_ref_id(actor.id, actor.version)
+@@ -1063,7 +1089,9 @@
+         submission = await self.submission(item)
+         form = await self.session.get(FormVersionEntity, submission.form_version_id)
+         if form is None or form.render_dialect != "bpms.render/1":
+-            raise VersionConflictException("Runtime form dialect is incompatible")
++            raise VersionConflictException(
++                "Runtime form dialect is incompatible", conflict_kind="lifecycle"
++            )
+         step = await self._step(item)
+         editable = (
+             item.claimed_by_user_id == actor.id
+@@ -1154,7 +1182,9 @@
+             else None
+         )
+         if step is None:
+-            raise VersionConflictException("Pinned workflow step is unavailable")
++            raise VersionConflictException(
++                "Pinned workflow step is unavailable", conflict_kind="lifecycle"
++            )
+         return step
+ 
+     async def submission(
+@@ -1308,7 +1338,9 @@
+             check_value(data.value, (*path, "*"))
+         form = await self.session.get(FormVersionEntity, submission.form_version_id)
+         if form is None or form.status not in {"PUBLISHED", "RETIRED"}:
+-            raise VersionConflictException("Pinned form version is unavailable")
++            raise VersionConflictException(
++                "Pinned form version is unavailable", conflict_kind="lifecycle"
++            )
+         try:
+             result = await edit_submission_collection(
+                 self.session, submission, form, data, actor.id
+@@ -1345,7 +1377,9 @@
+         await self._require_field(item, "/" + "/".join(command.scope.split("/")[2::2]), write=True)
+         form = await self.session.get(FormVersionEntity, submission.form_version_id)
+         if form is None or form.status not in {"PUBLISHED", "RETIRED"}:
+-            raise VersionConflictException("Pinned form version is unavailable")
++            raise VersionConflictException(
++                "Pinned form version is unavailable", conflict_kind="lifecycle"
++            )
+         try:
+             changed, provenance = apply_manual_override(
+                 pinned_behavior_documents(
+@@ -1397,10 +1431,14 @@
+         item = await self.get(ref_id, actor, update_row=True)
+         self._require_claimant(item, actor)
+         if item.status not in {"CLAIMED", "IN_PROGRESS"}:
+-            raise VersionConflictException("Work-item attachments are immutable in this state")
++            raise VersionConflictException(
++                "Work-item attachments are immutable in this state", conflict_kind="lifecycle"
++            )
+         submission = await self.submission(item, update_row=True)
+         if submission.status != "DRAFT":
+-            raise VersionConflictException("Work-item attachments are immutable")
++            raise VersionConflictException(
++                "Work-item attachments are immutable", conflict_kind="lifecycle"
++            )
+         return item, submission
+ 
+     async def _eligible(self, item_id: UUID, user_id: UUID, *, require_claim: bool) -> bool:
+@@ -1549,7 +1587,9 @@
+             )
+         ).one_or_none()
+         if row is not None and row.actor_user_id != actor_id:
+-            raise VersionConflictException("Command key is already used")
++            raise VersionConflictException(
++                "Command key is already used", conflict_kind="idempotency"
++            )
+         return row
+ 
+     async def _idempotent(
+@@ -1559,7 +1599,9 @@
+         if prior is None:
+             return False
+         if prior.details.get("payload_hash") != payload_hash:
+-            raise VersionConflictException("Command key payload does not match")
++            raise VersionConflictException(
++                "Command key payload does not match", conflict_kind="idempotency"
++            )
+         return True
+ 
+     @staticmethod
+--- a/tests/utils/test_exception_handlers.py
++++ b/tests/utils/test_exception_handlers.py
+@@ -129,3 +129,15 @@
+     response = await handlers.application_exception_handler(request(), error)
+     assert response.status_code == 500
+     assert json.loads(bytes(response.body))["code"] == CommonError.INTERNAL_ERROR.number
++
++
++@pytest.mark.anyio
++@pytest.mark.parametrize("kind", ["revision", "lifecycle", "idempotency", "unknown"])
++async def test_conflict_kind_is_safe_and_independent_of_localized_text(kind) -> None:
++    response = await handlers.application_exception_handler(
++        request(), VersionConflictException("private command values", conflict_kind=kind)
++    )
++    body = json.loads(bytes(response.body))
++    assert response.status_code == 409 and body["code"] == 1004
++    assert body["data"] == {"conflict_kind": kind}
++    assert b"private" not in bytes(response.body)
+--- /dev/null
++++ b/docs/COMMAND-CONFLICTS.md
+@@ -0,0 +1,9 @@
++# Mutation conflict categories
++
++Request and work-item mutations preserve HTTP 409, application code 1004, request_id and the localized error envelope. An optional data.conflict_kind carries one safe category: revision for a stale opaque reference, lifecycle for a rejected state/pin prerequisite, idempotency for command-key ownership or payload mismatch, or unknown when classification is unavailable. Clients must treat missing categories as unknown, retain their edits, perform an authorized current-state read and never automatically replay a command. Categories contain no exception text, values, hidden fields or command payload hashes.
++
++Example: {"success":false,"code":1004,"request_id":"fixture-request","error":"The resource was modified. Refresh and try again.","data":{"conflict_kind":"idempotency"}}. The actor still needs the endpoint's original authentication, role and current-resource authorization. This metadata does not grant access or make a non-idempotent row/attachment mutation replayable. Existing ErrorResponse.data already permits structured details; operation IDs, statuses and generated DTO shapes remain unchanged.
++
++## فارسی
++
++پاسخ تعارض همچنان HTTP 409، کد 1004، شناسه درخواست و پیام محلی دارد. فیلد اختیاری data.conflict_kind فقط یکی از دسته‌های revision (مرجع قدیمی)، lifecycle (وضعیت یا پیش‌نیاز نامعتبر)، idempotency (ناسازگاری مالک یا محتوای کلید فرمان) و unknown را برمی‌گرداند. نام دسته‌ها، کلیدها و مراجع ترجمه نمی‌شوند. کلاینت باید ویرایش‌ها را حفظ کند، وضعیت جاری مجاز را بخواند و فرمان را خودکار تکرار نکند. متن خطا، مقدار خصوصی و هش محتوای فرمان منتشر نمی‌شود. مجوزهای اصلی هر مسیر بدون تغییر اعمال می‌شوند.

@@ -1,0 +1,567 @@
+{
+  "username": {
+    "label": "Username",
+    "fa": "نام کاربری",
+    "ar": "اسم المستخدم"
+  },
+  "password": {
+    "label": "Password",
+    "fa": "رمز عبور",
+    "ar": "كلمة المرور"
+  },
+  "email": {
+    "label": "Email",
+    "fa": "ایمیل",
+    "ar": "البريد الإلكتروني"
+  },
+  "first_name": {
+    "label": "First Name",
+    "fa": "نام",
+    "ar": "الاسم الأول"
+  },
+  "last_name": {
+    "label": "Last Name",
+    "fa": "نام خانوادگی",
+    "ar": "اسم العائلة"
+  },
+  "name": {
+    "label": "Name",
+    "fa": "نام",
+    "ar": "الاسم"
+  },
+  "description": {
+    "label": "Description",
+    "fa": "توضیحات",
+    "ar": "الوصف"
+  },
+  "code": {
+    "label": "Code",
+    "fa": "کد",
+    "ar": "الرمز"
+  },
+  "is_active": {
+    "label": "Active",
+    "fa": "فعال",
+    "ar": "نشط"
+  },
+  "is_enabled": {
+    "label": "Enabled",
+    "fa": "فعال",
+    "ar": "مفعّل"
+  },
+  "is_superuser": {
+    "label": "Administrator",
+    "fa": "مدیر",
+    "ar": "مسؤول"
+  },
+  "created_at": {
+    "label": "Created At",
+    "fa": "زمان ایجاد",
+    "ar": "تاريخ الإنشاء"
+  },
+  "updated_at": {
+    "label": "Updated At",
+    "fa": "زمان ویرایش",
+    "ar": "تاريخ التحديث"
+  },
+  "deleted_at": {
+    "label": "Deleted At",
+    "fa": "زمان حذف",
+    "ar": "تاريخ الحذف"
+  },
+  "published_at": {
+    "label": "Published At",
+    "fa": "زمان انتشار",
+    "ar": "تاريخ النشر"
+  },
+  "changed_at": {
+    "label": "Changed At",
+    "fa": "زمان تغییر",
+    "ar": "تاريخ التغيير"
+  },
+  "expires_at": {
+    "label": "Expires At",
+    "fa": "زمان انقضا",
+    "ar": "تاريخ انتهاء الصلاحية"
+  },
+  "permissions": {
+    "label": "Permissions",
+    "fa": "مجوزها",
+    "ar": "الصلاحيات"
+  },
+  "role_name": {
+    "label": "Role",
+    "fa": "نقش",
+    "ar": "الدور"
+  },
+  "status": {
+    "label": "Status",
+    "fa": "وضعیت",
+    "ar": "الحالة"
+  },
+  "number": {
+    "label": "Version Number",
+    "fa": "شماره نسخه",
+    "ar": "رقم الإصدار"
+  },
+  "version": {
+    "label": "Version",
+    "fa": "نسخه",
+    "ar": "الإصدار"
+  },
+  "release_version": {
+    "label": "Release Version",
+    "fa": "نسخه انتشار",
+    "ar": "إصدار التطبيق"
+  },
+  "api_version": {
+    "label": "API Version",
+    "fa": "نسخه API",
+    "ar": "إصدار API"
+  },
+  "kind": {
+    "label": "Type",
+    "fa": "نوع",
+    "ar": "النوع"
+  },
+  "platform": {
+    "label": "Platform",
+    "fa": "پلتفرم",
+    "ar": "المنصة"
+  },
+  "access_mode": {
+    "label": "Access Mode",
+    "fa": "نوع دسترسی",
+    "ar": "نوع الوصول"
+  },
+  "default_priority": {
+    "label": "Default Priority",
+    "fa": "اولویت پیش‌فرض",
+    "ar": "الأولوية الافتراضية"
+  },
+  "confidential": {
+    "label": "Confidential Client",
+    "fa": "کلاینت محرمانه",
+    "ar": "عميل سري"
+  },
+  "data_dialect": {
+    "label": "Data Dialect",
+    "fa": "قالب داده",
+    "ar": "صيغة البيانات"
+  },
+  "render_dialect": {
+    "label": "Display Dialect",
+    "fa": "قالب نمایش",
+    "ar": "صيغة العرض"
+  },
+  "behavior_dialect": {
+    "label": "Behavior Dialect",
+    "fa": "قالب رفتار",
+    "ar": "صيغة السلوك"
+  },
+  "data_schema": {
+    "label": "Data Schema",
+    "fa": "ساختار داده",
+    "ar": "مخطط البيانات"
+  },
+  "render_schema": {
+    "label": "Display Schema",
+    "fa": "ساختار نمایش",
+    "ar": "مخطط العرض"
+  },
+  "page_settings": {
+    "label": "Page Settings",
+    "fa": "تنظیمات صفحه",
+    "ar": "إعدادات الصفحة"
+  },
+  "variants": {
+    "label": "Variants",
+    "fa": "گونه‌ها",
+    "ar": "المتغيرات"
+  },
+  "reuse_instances": {
+    "label": "Reusable Components",
+    "fa": "اجزای قابل استفاده مجدد",
+    "ar": "المكونات القابلة لإعادة الاستخدام"
+  },
+  "localization": {
+    "label": "Translations",
+    "fa": "ترجمه‌ها",
+    "ar": "الترجمات"
+  },
+  "renderer_capabilities": {
+    "label": "Renderer Capabilities",
+    "fa": "قابلیت‌های نمایشگر",
+    "ar": "إمكانات العرض"
+  },
+  "client_targets": {
+    "label": "Allowed Clients",
+    "fa": "کلاینت‌های مجاز",
+    "ar": "العملاء المسموح لهم"
+  },
+  "allow_cross_client_resume": {
+    "label": "Resume Across Clients",
+    "fa": "ادامه در کلاینت دیگر",
+    "ar": "المتابعة عبر العملاء"
+  },
+  "extension_contract": {
+    "label": "Extension Contract",
+    "fa": "قرارداد افزونه",
+    "ar": "عقد الامتداد"
+  },
+  "document": {
+    "label": "Document",
+    "fa": "سند",
+    "ar": "المستند"
+  },
+  "form_ref_id": {
+    "label": "Form",
+    "fa": "فرم",
+    "ar": "النموذج"
+  },
+  "workflow_ref_id": {
+    "label": "Workflow",
+    "fa": "گردش کار",
+    "ar": "سير العمل"
+  },
+  "client_ref_id": {
+    "label": "Client",
+    "fa": "کلاینت",
+    "ar": "العميل"
+  },
+  "root_ref_id": {
+    "label": "Parent Definition",
+    "fa": "تعریف اصلی",
+    "ar": "التعريف الرئيسي"
+  },
+  "ref_id": {
+    "label": "Reference",
+    "fa": "ارجاع",
+    "ar": "المرجع"
+  },
+  "user_id": {
+    "label": "User ID",
+    "fa": "شناسه کاربر",
+    "ar": "معرّف المستخدم"
+  },
+  "modifier_id": {
+    "label": "Actor ID",
+    "fa": "شناسه عامل تغییر",
+    "ar": "معرّف من أجرى التغيير"
+  },
+  "modifier_type": {
+    "label": "Actor Type",
+    "fa": "نوع عامل تغییر",
+    "ar": "نوع من أجرى التغيير"
+  },
+  "event_type": {
+    "label": "Event Type",
+    "fa": "نوع رویداد",
+    "ar": "نوع الحدث"
+  },
+  "ip_address": {
+    "label": "IP Address",
+    "fa": "نشانی IP",
+    "ar": "عنوان IP"
+  },
+  "entity_name": {
+    "label": "Entity",
+    "fa": "موجودیت",
+    "ar": "الكيان"
+  },
+  "entity_id": {
+    "label": "Entity ID",
+    "fa": "شناسه موجودیت",
+    "ar": "معرّف الكيان"
+  },
+  "file_name": {
+    "label": "File Name",
+    "fa": "نام فایل",
+    "ar": "اسم الملف"
+  },
+  "definition_key": {
+    "label": "Report Type",
+    "fa": "نوع گزارش",
+    "ar": "نوع التقرير"
+  },
+  "requested_at": {
+    "label": "Requested At",
+    "fa": "زمان درخواست",
+    "ar": "تاريخ الطلب"
+  },
+  "completed_at": {
+    "label": "Completed At",
+    "fa": "زمان تکمیل",
+    "ar": "تاريخ الإكمال"
+  },
+  "operation": {
+    "label": "Operation",
+    "fa": "عملیات",
+    "ar": "العملية"
+  },
+  "success": {
+    "label": "Successful",
+    "fa": "موفق",
+    "ar": "ناجح"
+  },
+  "reason": {
+    "label": "Reason",
+    "fa": "دلیل",
+    "ar": "السبب"
+  },
+  "zip_password": {
+    "label": "Archive Password",
+    "fa": "رمز فایل فشرده",
+    "ar": "كلمة مرور الأرشيف"
+  },
+  "size": {
+    "label": "Rows per page",
+    "fa": "ردیف در هر صفحه",
+    "ar": "عدد الصفوف في الصفحة"
+  },
+  "page": {
+    "label": "Page",
+    "fa": "صفحه",
+    "ar": "الصفحة"
+  },
+  "sort_orders": {
+    "label": "Sorts",
+    "fa": "مرتب‌سازی‌ها",
+    "ar": "الترتيب"
+  },
+  "filters": {
+    "label": "Filters",
+    "fa": "فیلترها",
+    "ar": "الفلاتر"
+  },
+  "user_agent": {
+    "label": "Browser",
+    "fa": "مرورگر",
+    "ar": "المتصفح"
+  },
+  "details": {
+    "label": "Event details",
+    "fa": "جزئیات رویداد",
+    "ar": "تفاصيل الحدث"
+  },
+  "from_values": {
+    "label": "Before change",
+    "fa": "پیش از تغییر",
+    "ar": "قبل التغيير"
+  },
+  "to_values": {
+    "label": "After change",
+    "fa": "پس از تغییر",
+    "ar": "بعد التغيير"
+  },
+  "file_size": {
+    "label": "File Size",
+    "fa": "حجم فایل",
+    "ar": "حجم الملف"
+  },
+  "id": {
+    "label": "ID",
+    "fa": "شناسه",
+    "ar": "المعرّف"
+  },
+  "request_id": {
+    "label": "Request ID",
+    "fa": "شناسه درخواست",
+    "ar": "معرّف الطلب"
+  },
+  "source_ip": {
+    "label": "Source IP",
+    "fa": "نشانی IP مبدأ",
+    "ar": "عنوان IP المصدر"
+  },
+  "started_at": {
+    "label": "Started At",
+    "fa": "زمان شروع",
+    "ar": "تاريخ البدء"
+  },
+  "trace_id": {
+    "label": "Trace ID",
+    "fa": "شناسه رهگیری",
+    "ar": "معرّف التتبع"
+  },
+  "provider": {
+    "label": "Provider",
+    "fa": "ارائه‌دهنده",
+    "ar": "المزود"
+  },
+  "non_secret_config": {
+    "label": "Connection configuration",
+    "fa": "تنظیمات اتصال",
+    "ar": "إعدادات الاتصال"
+  },
+  "secret_ref": {
+    "label": "Secret reference",
+    "fa": "شناسه راز",
+    "ar": "مرجع السر"
+  },
+  "secret_version": {
+    "label": "Secret version",
+    "fa": "نسخه راز",
+    "ar": "إصدار السر"
+  },
+  "verification_status": {
+    "label": "Verification status",
+    "fa": "وضعیت تأیید",
+    "ar": "حالة التحقق"
+  },
+  "spec": {
+    "label": "Agent configuration",
+    "fa": "تنظیمات عامل",
+    "ar": "إعدادات الوكيل"
+  },
+  "module": {
+    "label": "Module",
+    "fa": "ماژول",
+    "ar": "الوحدة"
+  },
+  "callable_name": {
+    "label": "Function name",
+    "fa": "نام تابع",
+    "ar": "اسم الدالة"
+  },
+  "signature": {
+    "label": "Signature",
+    "fa": "امضا",
+    "ar": "التوقيع"
+  },
+  "bind": {
+    "label": "Bind task",
+    "fa": "اتصال به وظیفه",
+    "ar": "ربط المهمة"
+  },
+  "queue": {
+    "label": "Queue",
+    "fa": "صف",
+    "ar": "قائمة الانتظار"
+  },
+  "max_retries": {
+    "label": "Maximum retries",
+    "fa": "حداکثر تلاش مجدد",
+    "ar": "الحد الأقصى للمحاولات"
+  },
+  "retry_backoff": {
+    "label": "Retry backoff",
+    "fa": "فاصله تلاش مجدد",
+    "ar": "تأخير إعادة المحاولة"
+  },
+  "retry_jitter": {
+    "label": "Retry jitter",
+    "fa": "تغییر تصادفی فاصله تلاش",
+    "ar": "تفاوت تأخير المحاولة"
+  },
+  "soft_time_limit": {
+    "label": "Soft time limit",
+    "fa": "محدودیت زمان نرم",
+    "ar": "الحد الزمني المرن"
+  },
+  "time_limit": {
+    "label": "Time limit",
+    "fa": "محدودیت زمان",
+    "ar": "الحد الزمني"
+  },
+  "interval_seconds": {
+    "label": "Interval (seconds)",
+    "fa": "فاصله (ثانیه)",
+    "ar": "الفاصل (ثواني)"
+  },
+  "start_at": {
+    "label": "Start at",
+    "fa": "زمان شروع",
+    "ar": "وقت البدء"
+  },
+  "task_name": {
+    "label": "Task name",
+    "fa": "نام وظیفه",
+    "ar": "اسم المهمة"
+  },
+  "schedule_type": {
+    "label": "Schedule type",
+    "fa": "نوع زمان‌بندی",
+    "ar": "نوع الجدول"
+  },
+  "cron_minute": {
+    "label": "Cron minute",
+    "fa": "دقیقه کرون",
+    "ar": "دقيقة كرون"
+  },
+  "cron_hour": {
+    "label": "Cron hour",
+    "fa": "ساعت کرون",
+    "ar": "ساعة كرون"
+  },
+  "cron_day_of_week": {
+    "label": "Cron day of week",
+    "fa": "روز هفته کرون",
+    "ar": "يوم الأسبوع لكرون"
+  },
+  "cron_day_of_month": {
+    "label": "Cron day of month",
+    "fa": "روز ماه کرون",
+    "ar": "يوم الشهر لكرون"
+  },
+  "cron_month_of_year": {
+    "label": "Cron month",
+    "fa": "ماه کرون",
+    "ar": "شهر كرون"
+  },
+  "clocked_at": {
+    "label": "Scheduled time",
+    "fa": "زمان برنامه‌ریزی‌شده",
+    "ar": "الوقت المحدد"
+  },
+  "args": {
+    "label": "Arguments",
+    "fa": "آرگومان‌ها",
+    "ar": "الوسائط"
+  },
+  "kwargs": {
+    "label": "Named arguments",
+    "fa": "آرگومان‌های نام‌دار",
+    "ar": "الوسائط المسماة"
+  },
+  "one_off": {
+    "label": "Run once",
+    "fa": "اجرای یک‌باره",
+    "ar": "تشغيل مرة واحدة"
+  },
+  "last_run_at": {
+    "label": "Last run at",
+    "fa": "آخرین اجرا",
+    "ar": "آخر تشغيل"
+  },
+  "total_run_count": {
+    "label": "Total runs",
+    "fa": "تعداد اجراها",
+    "ar": "إجمالي مرات التشغيل"
+  },
+  "task_id": {
+    "label": "Task ID",
+    "fa": "شناسه وظیفه",
+    "ar": "معرف المهمة"
+  },
+  "worker": {
+    "label": "Worker",
+    "fa": "پردازشگر",
+    "ar": "العامل"
+  },
+  "retries": {
+    "label": "Retries",
+    "fa": "تلاش‌های مجدد",
+    "ar": "المحاولات"
+  },
+  "finished_at": {
+    "label": "Finished at",
+    "fa": "زمان پایان",
+    "ar": "وقت الانتهاء"
+  },
+  "duration_seconds": {
+    "label": "Duration (seconds)",
+    "fa": "مدت (ثانیه)",
+    "ar": "المدة (ثواني)"
+  }
+}

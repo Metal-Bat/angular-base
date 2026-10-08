@@ -1,0 +1,171 @@
+<p-panel
+  class="query-panel"
+  [dt]="{ header: { padding: '0.5rem 0.75rem' } }"
+  [header]="'Advanced filters' | localize"
+  [pt]="{
+    contentContainer: {
+      hidden: collapsed,
+      'aria-labelledby': sortFieldsId + '-panel-label',
+    },
+  }"
+>
+  <ng-template #header>
+    <div class="query-heading">
+      <button
+        pButton
+        severity="secondary"
+        type="button"
+        [attr.aria-controls]="sortFieldsId + '-editor'"
+        [attr.aria-expanded]="!collapsed"
+        [attr.aria-label]="'Advanced filters' | localize"
+        [id]="sortFieldsId + '-panel-label'"
+        [text]="true"
+        (click)="collapsed = !collapsed"
+      >
+        <i aria-hidden="true" class="pi pi-sliders-h"></i>
+        <span>{{ "Advanced filters" | localize }}</span>
+        <i
+          aria-hidden="true"
+          [class]="collapsed ? 'pi pi-chevron-down' : 'pi pi-chevron-up'"
+        ></i>
+      </button>
+      @if (query()?.filters?.length) {
+        <p-tag
+          severity="secondary"
+          [value]="('Filters' | localize) + ': ' + query()!.filters.length"
+        />
+      }
+      @if (query()?.sort_orders?.length) {
+        <p-tag
+          severity="secondary"
+          [value]="('Sorts' | localize) + ': ' + query()!.sort_orders.length"
+        />
+      }
+    </div>
+  </ng-template>
+  <div [hidden]="collapsed" [id]="sortFieldsId + '-editor'">
+    @if (!collapsed) {
+      <form class="query-form" (ngSubmit)="apply()">
+        <app-query-filters [view]="this" />
+        <section
+          class="query-section"
+          [attr.aria-labelledby]="sortFieldsId + '-sorts-title'"
+        >
+          <div class="query-section-header">
+            <h3 [id]="sortFieldsId + '-sorts-title'">
+              {{ "Sorts" | localize }}
+            </h3>
+            <button
+              pButton
+              severity="secondary"
+              size="small"
+              type="button"
+              [outlined]="true"
+              (click)="addSort()"
+            >
+              <i aria-hidden="true" class="pi pi-plus"></i
+              >{{ "Add sort" | localize }}
+            </button>
+          </div>
+          @if (!sorts.length) {
+            <p class="query-empty">
+              {{ "Add a sort to choose the result order." | localize }}
+            </p>
+          }
+          @for (sort of sorts; track $index; let index = $index) {
+            <div class="sort-row">
+              <app-control-field
+                label="Sort fields in priority order"
+                [controlId]="sortFieldsId + '-sort-' + index"
+                [error]="sortErrors[index] || ''"
+                ><input
+                  pInputText
+                  [attr.data-query-sort]="index"
+                  [attr.list]="sortFieldsId"
+                  [id]="sortFieldsId + '-sort-' + index"
+                  [name]="'sort' + index"
+                  [(ngModel)]="sort.fields"
+                /><small fieldHint>{{
+                  "Separate multiple fields with commas" | localize
+                }}</small></app-control-field
+              >
+              <app-control-field
+                label="Direction"
+                [controlId]="sortFieldsId + '-direction-' + index"
+                ><app-select-control
+                  [inputId]="sortFieldsId + '-direction-' + index"
+                  [name]="'direction' + index"
+                  [(ngModel)]="sort.operation"
+                >
+                  <option value="asc">{{ "Ascending" | localize }}</option>
+                  <option value="desc">{{ "Descending" | localize }}</option>
+                </app-select-control></app-control-field
+              >
+              <button
+                class="remove-control"
+                pButton
+                severity="secondary"
+                type="button"
+                [attr.aria-label]="
+                  ('Remove sort' | localize) + ' ' + (index + 1)
+                "
+                [text]="true"
+                (click)="
+                  sorts = sorts.slice(0, index).concat(sorts.slice(index + 1))
+                "
+              >
+                <i aria-hidden="true" class="pi pi-times"></i>
+              </button>
+            </div>
+          }
+        </section>
+        <datalist [id]="sortFieldsId">
+          @for (field of fields(); track field.key) {
+            <option [value]="field.key">{{ field.label | localize }}</option>
+          }
+        </datalist>
+        <section
+          class="query-section"
+          [attr.aria-labelledby]="sortFieldsId + '-settings-title'"
+        >
+          <h3 [id]="sortFieldsId + '-settings-title'">
+            {{ "List settings" | localize }}
+          </h3>
+          <div class="query-settings">
+            <div class="query-extras">
+              @for (extra of extraFields(); track extra.key) {
+                <label class="query-extra"
+                  ><input
+                    type="checkbox"
+                    [attr.data-query-extra]="extra.key"
+                    [name]="extra.key"
+                    [(ngModel)]="extras[extra.key]"
+                  />
+                  {{ extra.label | localize }}</label
+                >
+              }
+            </div>
+            <div class="query-actions">
+              <button pButton type="submit" [disabled]="busy()">
+                {{ "Apply" | localize }}
+              </button>
+              <button
+                pButton
+                severity="secondary"
+                type="button"
+                [disabled]="busy()"
+                [text]="true"
+                (click)="reset()"
+              >
+                {{ "Clear" | localize }}
+              </button>
+            </div>
+          </div>
+        </section>
+        @if (error) {
+          <p role="alert">{{ error | localize }}</p>
+        }
+      </form>
+    }
+  </div>
+</p-panel>

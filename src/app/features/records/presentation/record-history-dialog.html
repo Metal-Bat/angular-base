@@ -1,0 +1,49 @@
+@let vm = view();
+<p-dialog
+  appendTo="body"
+  position="center"
+  [closable]="!vm.actionBusy()"
+  [closeAriaLabel]="'Close' | localize"
+  [draggable]="false"
+  [header]="'History' | localize"
+  [modal]="true"
+  [resizable]="false"
+  [style]="{ width: '64rem', maxWidth: 'calc(100vw - 2rem)' }"
+  [visible]="vm.historyModal()"
+  (visibleChange)="vm.closeHistory()"
+>
+  @if (vm.historyModal()) {
+    @if (vm.historyDefinition(); as history) {
+      <app-list-query
+        [busy]="vm.actionBusy()"
+        [fields]="history.queryFields"
+        [query]="vm.historyQuery()"
+        (applied)="vm.loadHistory($event)"
+      />
+      <app-record-table
+        [busy]="vm.actionBusy()"
+        [columns]="history.columns"
+        [fields]="history.queryFields"
+        [page]="vm.historyQuery().page"
+        [pages]="vm.historyPage()?.totalPages ?? 0"
+        [query]="vm.historyQuery()"
+        [rows]="vm.historyPage()?.items ?? []"
+        (opened)="vm.historyDetail = $any($event)"
+        (pageChanged)="vm.historyPageTo($event)"
+        (queried)="vm.loadHistory($event)"
+      />
+    }
+    @if (vm.historyDetail) {
+      <app-record-summary
+        caption="History"
+        icon="pi pi-history"
+        [record]="vm.historyDetail"
+        [title]="$any(vm.historyDetail['operation'] || ('History' | localize))"
+      />
+    }
+
+    @if (vm.modalError()) {
+      <p role="alert">{{ vm.modalError() | localize }}</p>
+    }
+  }
+</p-dialog>

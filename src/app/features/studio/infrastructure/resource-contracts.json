@@ -1,0 +1,1467 @@
+{
+  "forms": {
+    "title": "Forms",
+    "list": {
+      "queryFields": [
+        { "key": "code", "label": "Code", "type": "text", "nullable": false },
+        { "key": "name", "label": "Name", "type": "text", "nullable": false },
+        {
+          "key": "is_active",
+          "label": "Active",
+          "type": "boolean",
+          "nullable": false
+        },
+        {
+          "key": "created_at",
+          "label": "Created At",
+          "type": "datetime",
+          "nullable": false
+        }
+      ],
+      "columns": [
+        { "key": "code", "label": "Code" },
+        { "key": "name", "label": "Name" },
+        { "key": "is_active", "label": "Active" },
+        { "key": "created_at", "label": "Created At" }
+      ]
+    },
+    "permission": "forms.manage",
+    "operations": {
+      "search": "search_forms_api_v1_forms_search_post",
+      "get": "get_forms_api_v1_forms__ref_id__get",
+      "create": "create_forms_api_v1_forms_post",
+      "update": "update_forms_api_v1_forms__ref_id__put",
+      "remove": "delete_forms_api_v1_forms__ref_id__delete",
+      "history": "history_forms_api_v1_forms__ref_id__history_post",
+      "report": "report_forms_api_v1_forms_report_post"
+    },
+    "schemas": {
+      "search": {
+        "required": [],
+        "properties": {
+          "page": {
+            "type": "integer",
+            "minimum": 1,
+            "title": "Page",
+            "default": 1
+          },
+          "size": {
+            "type": "integer",
+            "maximum": 100,
+            "minimum": 1,
+            "title": "Size",
+            "default": 20
+          },
+          "filters": {
+            "items": { "$ref": "#/components/schemas/FilterCriteria" },
+            "type": "array",
+            "title": "Filters"
+          },
+          "sort_orders": {
+            "items": { "$ref": "#/components/schemas/SortOrder" },
+            "type": "array",
+            "title": "Sort Orders"
+          }
+        }
+      },
+      "create": {
+        "required": ["code", "name"],
+        "properties": {
+          "code": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]*$",
+            "title": "Code"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "is_active": {
+            "type": "boolean",
+            "title": "Is Active",
+            "default": true
+          }
+        }
+      },
+      "update": {
+        "required": ["code", "name"],
+        "properties": {
+          "code": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]*$",
+            "title": "Code"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "is_active": {
+            "type": "boolean",
+            "title": "Is Active",
+            "default": true
+          }
+        }
+      }
+    },
+    "editor": null
+  },
+  "form-versions": {
+    "title": "Form versions",
+    "list": {
+      "queryFields": [
+        {
+          "key": "number",
+          "label": "Version Number",
+          "type": "number",
+          "nullable": false
+        },
+        {
+          "key": "status",
+          "label": "Status",
+          "type": "text",
+          "nullable": false
+        }
+      ],
+      "columns": [
+        { "key": "number", "label": "Version Number" },
+        { "key": "status", "label": "Status" }
+      ]
+    },
+    "permission": "forms.manage",
+    "operations": {
+      "search": "search_versions_api_v1_form_versions_search_post",
+      "get": "get_versions_api_v1_form_versions__ref_id__get",
+      "create": "create_versions_api_v1_form_versions_post",
+      "update": "update_versions_api_v1_form_versions__ref_id__put",
+      "remove": "delete_versions_api_v1_form_versions__ref_id__delete",
+      "history": "history_versions_api_v1_form_versions__ref_id__history_post",
+      "report": "report_versions_api_v1_form_versions_report_post",
+      "publish": "publish_form_api_v1_form_versions__ref_id__publish_post",
+      "retire": "retire_form_api_v1_form_versions__ref_id__retire_post"
+    },
+    "schemas": {
+      "search": {
+        "required": ["form_ref_id"],
+        "properties": {
+          "page": {
+            "type": "integer",
+            "minimum": 1,
+            "title": "Page",
+            "default": 1
+          },
+          "size": {
+            "type": "integer",
+            "maximum": 100,
+            "minimum": 1,
+            "title": "Size",
+            "default": 20
+          },
+          "filters": {
+            "items": { "$ref": "#/components/schemas/FilterCriteria" },
+            "type": "array",
+            "title": "Filters"
+          },
+          "sort_orders": {
+            "items": { "$ref": "#/components/schemas/SortOrder" },
+            "type": "array",
+            "title": "Sort Orders"
+          },
+          "form_ref_id": { "type": "string", "title": "Form Ref Id" }
+        }
+      },
+      "create": {
+        "required": ["data_schema", "render_schema", "form_ref_id", "number"],
+        "properties": {
+          "data_dialect": {
+            "type": "string",
+            "title": "Data Dialect",
+            "default": "https://json-schema.org/draft/2020-12/schema"
+          },
+          "render_dialect": {
+            "type": "string",
+            "title": "Render Dialect",
+            "default": "bpms.render/1"
+          },
+          "data_schema": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Data Schema"
+          },
+          "behavior_dialect": {
+            "anyOf": [
+              { "type": "string", "const": "bpms.behavior/1" },
+              { "type": "null" }
+            ],
+            "title": "Behavior Dialect"
+          },
+          "render_schema": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Render Schema",
+            "description": "Bounded bpms.render/1 document; POST /forms/render-schema returns its complete typed JSON Schema including messages, option_messages and bpms.format/1 field formatting. Message roles resolve to localized_text, localized_options and compatibility label/placeholder/accessibility fields in runtime views."
+          },
+          "page_settings": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Page Settings"
+          },
+          "variants": {
+            "items": { "$ref": "#/components/schemas/FormDesignVariantDTO" },
+            "type": "array",
+            "maxItems": 32,
+            "title": "Variants"
+          },
+          "reuse_instances": {
+            "anyOf": [
+              {
+                "items": { "$ref": "#/components/schemas/ComponentUse" },
+                "type": "array",
+                "maxItems": 100
+              },
+              { "type": "null" }
+            ],
+            "title": "Reuse Instances",
+            "description": "Exact authored component version references placed in empty render placeholders. Published versions pin fully resolved data/render snapshots and their transitive manifest."
+          },
+          "localization": {
+            "anyOf": [
+              { "$ref": "#/components/schemas/FormLocalization" },
+              { "type": "null" }
+            ],
+            "description": "Optional bpms.messages/1 catalog pinned with this exact version. Null preserves legacy reads and checksums. Draft gaps are warnings; required translations and matching parameters are mandatory at publication."
+          },
+          "form_ref_id": { "type": "string", "title": "Form Ref Id" },
+          "number": { "type": "integer", "minimum": 1, "title": "Number" }
+        }
+      },
+      "update": {
+        "required": ["data_schema", "render_schema"],
+        "properties": {
+          "data_dialect": {
+            "type": "string",
+            "title": "Data Dialect",
+            "default": "https://json-schema.org/draft/2020-12/schema"
+          },
+          "render_dialect": {
+            "type": "string",
+            "title": "Render Dialect",
+            "default": "bpms.render/1"
+          },
+          "data_schema": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Data Schema"
+          },
+          "behavior_dialect": {
+            "anyOf": [
+              { "type": "string", "const": "bpms.behavior/1" },
+              { "type": "null" }
+            ],
+            "title": "Behavior Dialect"
+          },
+          "render_schema": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Render Schema",
+            "description": "Bounded bpms.render/1 document; POST /forms/render-schema returns its complete typed JSON Schema including messages, option_messages and bpms.format/1 field formatting. Message roles resolve to localized_text, localized_options and compatibility label/placeholder/accessibility fields in runtime views."
+          },
+          "page_settings": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Page Settings"
+          },
+          "variants": {
+            "items": { "$ref": "#/components/schemas/FormDesignVariantDTO" },
+            "type": "array",
+            "maxItems": 32,
+            "title": "Variants"
+          },
+          "reuse_instances": {
+            "anyOf": [
+              {
+                "items": { "$ref": "#/components/schemas/ComponentUse" },
+                "type": "array",
+                "maxItems": 100
+              },
+              { "type": "null" }
+            ],
+            "title": "Reuse Instances",
+            "description": "Exact authored component version references placed in empty render placeholders. Published versions pin fully resolved data/render snapshots and their transitive manifest."
+          },
+          "localization": {
+            "anyOf": [
+              { "$ref": "#/components/schemas/FormLocalization" },
+              { "type": "null" }
+            ],
+            "description": "Optional bpms.messages/1 catalog pinned with this exact version. Null preserves legacy reads and checksums. Draft gaps are warnings; required translations and matching parameters are mandatory at publication."
+          }
+        }
+      }
+    },
+    "editor": "form"
+  },
+  "workflows": {
+    "title": "Workflows",
+    "list": {
+      "queryFields": [
+        { "key": "code", "label": "Code", "type": "text", "nullable": false },
+        { "key": "name", "label": "Name", "type": "text", "nullable": false },
+        {
+          "key": "access_mode",
+          "label": "Access Mode",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "key": "is_active",
+          "label": "Active",
+          "type": "boolean",
+          "nullable": false
+        },
+        {
+          "key": "created_at",
+          "label": "Created At",
+          "type": "datetime",
+          "nullable": false
+        }
+      ],
+      "columns": [
+        { "key": "code", "label": "Code" },
+        { "key": "name", "label": "Name" },
+        { "key": "access_mode", "label": "Access Mode" },
+        { "key": "is_active", "label": "Active" },
+        { "key": "created_at", "label": "Created At" }
+      ]
+    },
+    "permission": "workflows.manage",
+    "operations": {
+      "search": "search_workflows_api_v1_workflows_search_post",
+      "get": "get_workflow_api_v1_workflows__ref_id__get",
+      "create": "create_workflow_api_v1_workflows_post",
+      "update": "update_workflow_api_v1_workflows__ref_id__put",
+      "remove": "delete_workflow_api_v1_workflows__ref_id__delete",
+      "history": "workflow_history_api_v1_workflows__ref_id__history_post",
+      "report": "report_workflows_api_v1_workflows_report_post",
+      "grants": "search_workflow_grants_api_v1_workflows__ref_id__grants_search_post",
+      "grant": "add_grant_api_v1_workflows__ref_id__grants_post",
+      "revoke": "remove_grant_api_v1_workflows__ref_id__grants__grant_ref_id__delete"
+    },
+    "schemas": {
+      "search": {
+        "required": [],
+        "properties": {
+          "page": {
+            "type": "integer",
+            "minimum": 1,
+            "title": "Page",
+            "default": 1
+          },
+          "size": {
+            "type": "integer",
+            "maximum": 100,
+            "minimum": 1,
+            "title": "Size",
+            "default": 20
+          },
+          "filters": {
+            "items": { "$ref": "#/components/schemas/FilterCriteria" },
+            "type": "array",
+            "title": "Filters"
+          },
+          "sort_orders": {
+            "items": { "$ref": "#/components/schemas/SortOrder" },
+            "type": "array",
+            "title": "Sort Orders"
+          }
+        }
+      },
+      "create": {
+        "required": ["code", "name"],
+        "properties": {
+          "code": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]*$",
+            "title": "Code"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "access_mode": {
+            "type": "string",
+            "enum": ["OPEN", "RESTRICTED"],
+            "title": "Access Mode",
+            "default": "RESTRICTED"
+          },
+          "is_active": {
+            "type": "boolean",
+            "title": "Is Active",
+            "default": true
+          }
+        }
+      },
+      "update": {
+        "required": ["code", "name"],
+        "properties": {
+          "code": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]*$",
+            "title": "Code"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "access_mode": {
+            "type": "string",
+            "enum": ["OPEN", "RESTRICTED"],
+            "title": "Access Mode",
+            "default": "RESTRICTED"
+          },
+          "is_active": {
+            "type": "boolean",
+            "title": "Is Active",
+            "default": true
+          }
+        }
+      },
+      "grant": {
+        "required": [],
+        "properties": {
+          "user_ref_id": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "User Ref Id"
+          },
+          "work_group_ref_id": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Work Group Ref Id"
+          },
+          "can_view": {
+            "type": "boolean",
+            "title": "Can View",
+            "default": true
+          },
+          "can_start": {
+            "type": "boolean",
+            "title": "Can Start",
+            "default": false
+          }
+        }
+      }
+    },
+    "editor": null
+  },
+  "workflow-versions": {
+    "title": "Workflow versions",
+    "list": {
+      "queryFields": [
+        {
+          "key": "number",
+          "label": "Version Number",
+          "type": "number",
+          "nullable": false
+        },
+        {
+          "key": "status",
+          "label": "Status",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "key": "default_priority",
+          "label": "Default Priority",
+          "type": "number",
+          "nullable": false
+        }
+      ],
+      "columns": [
+        { "key": "number", "label": "Version Number" },
+        { "key": "status", "label": "Status" },
+        { "key": "default_priority", "label": "Default Priority" }
+      ]
+    },
+    "permission": "workflows.manage",
+    "operations": {
+      "search": "search_versions_api_v1_workflow_versions_search_post",
+      "get": "get_version_api_v1_workflow_versions__ref_id__get",
+      "create": "create_version_api_v1_workflow_versions_post",
+      "update": "update_version_api_v1_workflow_versions__ref_id__put",
+      "remove": "delete_version_api_v1_workflow_versions__ref_id__delete",
+      "history": "version_history_api_v1_workflow_versions__ref_id__history_post",
+      "report": "report_versions_api_v1_workflow_versions_report_post",
+      "publish": "publish_version_api_v1_workflow_versions__ref_id__publish_post",
+      "retire": "retire_version_api_v1_workflow_versions__ref_id__retire_post"
+    },
+    "schemas": {
+      "search": {
+        "required": ["workflow_ref_id"],
+        "properties": {
+          "page": {
+            "type": "integer",
+            "minimum": 1,
+            "title": "Page",
+            "default": 1
+          },
+          "size": {
+            "type": "integer",
+            "maximum": 100,
+            "minimum": 1,
+            "title": "Size",
+            "default": 20
+          },
+          "filters": {
+            "items": { "$ref": "#/components/schemas/FilterCriteria" },
+            "type": "array",
+            "title": "Filters"
+          },
+          "sort_orders": {
+            "items": { "$ref": "#/components/schemas/SortOrder" },
+            "type": "array",
+            "title": "Sort Orders"
+          },
+          "workflow_ref_id": { "type": "string", "title": "Workflow Ref Id" }
+        }
+      },
+      "create": {
+        "required": ["workflow_ref_id", "number"],
+        "properties": {
+          "workflow_ref_id": { "type": "string", "title": "Workflow Ref Id" },
+          "number": { "type": "integer", "minimum": 1, "title": "Number" },
+          "default_priority": {
+            "type": "integer",
+            "maximum": 9,
+            "minimum": 0,
+            "title": "Default Priority",
+            "default": 0
+          }
+        }
+      },
+      "update": {
+        "required": ["default_priority"],
+        "properties": {
+          "default_priority": {
+            "type": "integer",
+            "maximum": 9,
+            "minimum": 0,
+            "title": "Default Priority"
+          }
+        }
+      }
+    },
+    "editor": "workflow"
+  },
+  "clients": {
+    "title": "Clients",
+    "list": {
+      "queryFields": [
+        { "key": "code", "label": "Code", "type": "text", "nullable": false },
+        { "key": "name", "label": "Name", "type": "text", "nullable": false },
+        { "key": "kind", "label": "Type", "type": "text", "nullable": false },
+        {
+          "key": "platform",
+          "label": "Platform",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "key": "is_active",
+          "label": "Active",
+          "type": "boolean",
+          "nullable": false
+        }
+      ],
+      "columns": [
+        { "key": "code", "label": "Code" },
+        { "key": "name", "label": "Name" },
+        { "key": "kind", "label": "Type" },
+        { "key": "platform", "label": "Platform" },
+        { "key": "is_active", "label": "Active" }
+      ]
+    },
+    "permission": "forms.manage",
+    "operations": {
+      "search": "search_clients_api_v1_clients_search_post",
+      "get": "get_client_api_v1_clients__ref_id__get",
+      "create": "create_client_api_v1_clients_post",
+      "update": "update_client_api_v1_clients__ref_id__put",
+      "remove": "delete_client_api_v1_clients__ref_id__delete",
+      "history": "client_history_api_v1_clients__ref_id__history_post",
+      "report": "report_clients_api_v1_clients_report_post",
+      "select": "select_clients_api_v1_clients_select_post",
+      "rotate": "rotate_client_secret_api_v1_clients__ref_id__rotate_secret_post"
+    },
+    "schemas": {
+      "search": {
+        "required": [],
+        "properties": {
+          "page": {
+            "type": "integer",
+            "minimum": 1,
+            "title": "Page",
+            "default": 1
+          },
+          "size": {
+            "type": "integer",
+            "maximum": 100,
+            "minimum": 1,
+            "title": "Size",
+            "default": 20
+          },
+          "filters": {
+            "items": { "$ref": "#/components/schemas/FilterCriteria" },
+            "type": "array",
+            "title": "Filters"
+          },
+          "sort_orders": {
+            "items": { "$ref": "#/components/schemas/SortOrder" },
+            "type": "array",
+            "title": "Sort Orders"
+          }
+        }
+      },
+      "create": {
+        "required": ["code", "name", "kind", "platform"],
+        "properties": {
+          "code": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 1,
+            "pattern": "^[A-Za-z][A-Za-z0-9_.-]*$",
+            "title": "Code"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "kind": {
+            "type": "string",
+            "enum": ["ANDROID", "IOS", "DESKTOP", "WEB", "B2B", "SDK"],
+            "title": "Kind"
+          },
+          "platform": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Platform"
+          },
+          "confidential": {
+            "type": "boolean",
+            "title": "Confidential",
+            "default": false
+          }
+        }
+      },
+      "update": {
+        "required": ["name", "platform"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "platform": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Platform"
+          },
+          "is_active": {
+            "type": "boolean",
+            "title": "Is Active",
+            "default": true
+          }
+        }
+      },
+      "select": {
+        "required": [],
+        "properties": {
+          "page": {
+            "type": "integer",
+            "minimum": 1,
+            "title": "Page",
+            "default": 1
+          },
+          "size": {
+            "type": "integer",
+            "maximum": 100,
+            "minimum": 1,
+            "title": "Size",
+            "default": 20
+          },
+          "search": {
+            "anyOf": [
+              { "type": "string", "maxLength": 100, "minLength": 1 },
+              { "type": "null" }
+            ],
+            "title": "Search"
+          }
+        }
+      }
+    },
+    "editor": null
+  },
+  "client-releases": {
+    "title": "Client releases",
+    "list": {
+      "queryFields": [
+        {
+          "key": "release_version",
+          "label": "Release Version",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "key": "api_version",
+          "label": "API Version",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "key": "is_enabled",
+          "label": "Enabled",
+          "type": "boolean",
+          "nullable": false
+        }
+      ],
+      "columns": [
+        { "key": "version", "label": "Version" },
+        { "key": "is_enabled", "label": "Enabled" }
+      ]
+    },
+    "permission": "forms.manage",
+    "operations": {
+      "search": "search_releases_api_v1_client_releases_search_post",
+      "get": "get_release_api_v1_client_releases__ref_id__get",
+      "create": "create_release_api_v1_client_releases_post",
+      "history": "release_history_api_v1_client_releases__ref_id__history_post",
+      "report": "report_releases_api_v1_client_releases_report_post",
+      "select": "select_releases_api_v1_client_releases_select_post",
+      "disable": "disable_release_api_v1_client_releases__ref_id__disable_post"
+    },
+    "schemas": {
+      "search": {
+        "required": ["client_ref_id"],
+        "properties": {
+          "page": {
+            "type": "integer",
+            "minimum": 1,
+            "title": "Page",
+            "default": 1
+          },
+          "size": {
+            "type": "integer",
+            "maximum": 100,
+            "minimum": 1,
+            "title": "Size",
+            "default": 20
+          },
+          "filters": {
+            "items": { "$ref": "#/components/schemas/FilterCriteria" },
+            "type": "array",
+            "title": "Filters"
+          },
+          "sort_orders": {
+            "items": { "$ref": "#/components/schemas/SortOrder" },
+            "type": "array",
+            "title": "Sort Orders"
+          },
+          "client_ref_id": { "type": "string", "title": "Client Ref Id" }
+        }
+      },
+      "create": {
+        "required": ["version", "api_version", "client_ref_id"],
+        "properties": {
+          "version": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 3,
+            "title": "Version"
+          },
+          "api_version": {
+            "type": "string",
+            "maxLength": 32,
+            "minLength": 1,
+            "title": "Api Version"
+          },
+          "renderer_capabilities": {
+            "items": { "type": "string" },
+            "type": "array",
+            "maxItems": 32,
+            "title": "Renderer Capabilities"
+          },
+          "client_ref_id": { "type": "string", "title": "Client Ref Id" }
+        }
+      },
+      "select": {
+        "required": [],
+        "properties": {
+          "page": {
+            "type": "integer",
+            "minimum": 1,
+            "title": "Page",
+            "default": 1
+          },
+          "size": {
+            "type": "integer",
+            "maximum": 100,
+            "minimum": 1,
+            "title": "Size",
+            "default": 20
+          },
+          "search": {
+            "anyOf": [
+              { "type": "string", "maxLength": 100, "minLength": 1 },
+              { "type": "null" }
+            ],
+            "title": "Search"
+          }
+        }
+      }
+    },
+    "editor": null
+  },
+  "request-types": {
+    "title": "Request types",
+    "list": {
+      "queryFields": [
+        { "key": "code", "label": "Code", "type": "text", "nullable": false },
+        { "key": "name", "label": "Name", "type": "text", "nullable": false },
+        {
+          "key": "is_active",
+          "label": "Active",
+          "type": "boolean",
+          "nullable": false
+        },
+        {
+          "key": "default_priority",
+          "label": "Default Priority",
+          "type": "number",
+          "nullable": true
+        },
+        {
+          "key": "allow_cross_client_resume",
+          "label": "Resume Across Clients",
+          "type": "boolean",
+          "nullable": false
+        },
+        {
+          "key": "extension_contract",
+          "label": "Extension Contract",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "key": "created_at",
+          "label": "Created At",
+          "type": "datetime",
+          "nullable": false
+        }
+      ],
+      "columns": [
+        { "key": "code", "label": "Code" },
+        { "key": "name", "label": "Name" },
+        { "key": "default_priority", "label": "Default Priority" },
+        { "key": "is_active", "label": "Active" },
+        { "key": "created_at", "label": "Created At" }
+      ]
+    },
+    "permission": "requests.manage",
+    "operations": {
+      "search": "search_types_api_v1_request_types_search_post",
+      "get": "get_type_api_v1_request_types__ref_id__get",
+      "create": "create_type_api_v1_request_types_post",
+      "update": "update_type_api_v1_request_types__ref_id__put",
+      "remove": "delete_type_api_v1_request_types__ref_id__delete",
+      "history": "history_type_api_v1_request_types__ref_id__history_post",
+      "report": "report_types_api_v1_request_types_report_post"
+    },
+    "schemas": {
+      "search": {
+        "required": [],
+        "properties": {
+          "page": {
+            "type": "integer",
+            "minimum": 1,
+            "title": "Page",
+            "default": 1
+          },
+          "size": {
+            "type": "integer",
+            "maximum": 100,
+            "minimum": 1,
+            "title": "Size",
+            "default": 20
+          },
+          "filters": {
+            "items": { "$ref": "#/components/schemas/FilterCriteria" },
+            "type": "array",
+            "title": "Filters"
+          },
+          "sort_orders": {
+            "items": { "$ref": "#/components/schemas/SortOrder" },
+            "type": "array",
+            "title": "Sort Orders"
+          }
+        }
+      },
+      "create": {
+        "required": ["code", "name", "workflow_ref_id", "form_ref_id"],
+        "properties": {
+          "code": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]*$",
+            "title": "Code"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "workflow_ref_id": { "type": "string", "title": "Workflow Ref Id" },
+          "form_ref_id": { "type": "string", "title": "Form Ref Id" },
+          "is_active": {
+            "type": "boolean",
+            "title": "Is Active",
+            "default": true
+          },
+          "default_priority": {
+            "anyOf": [
+              { "type": "integer", "maximum": 9, "minimum": 0 },
+              { "type": "null" }
+            ],
+            "title": "Default Priority"
+          },
+          "client_targets": {
+            "items": {
+              "$ref": "#/components/schemas/RequestTypeClientTargetDTO"
+            },
+            "type": "array",
+            "maxItems": 32,
+            "title": "Client Targets",
+            "description": "Authoritative confidential-client/release restrictions. On PUT, omission preserves existing restrictions; an explicit empty list deliberately removes them."
+          },
+          "allow_cross_client_resume": {
+            "type": "boolean",
+            "title": "Allow Cross Client Resume",
+            "default": false
+          },
+          "extension_contract": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 128,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+              },
+              { "type": "null" }
+            ],
+            "title": "Extension Contract"
+          }
+        }
+      },
+      "update": {
+        "required": ["code", "name", "workflow_ref_id", "form_ref_id"],
+        "properties": {
+          "code": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]*$",
+            "title": "Code"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "workflow_ref_id": { "type": "string", "title": "Workflow Ref Id" },
+          "form_ref_id": { "type": "string", "title": "Form Ref Id" },
+          "is_active": {
+            "type": "boolean",
+            "title": "Is Active",
+            "default": true
+          },
+          "default_priority": {
+            "anyOf": [
+              { "type": "integer", "maximum": 9, "minimum": 0 },
+              { "type": "null" }
+            ],
+            "title": "Default Priority"
+          },
+          "client_targets": {
+            "items": {
+              "$ref": "#/components/schemas/RequestTypeClientTargetDTO"
+            },
+            "type": "array",
+            "maxItems": 32,
+            "title": "Client Targets",
+            "description": "Authoritative confidential-client/release restrictions. On PUT, omission preserves existing restrictions; an explicit empty list deliberately removes them."
+          },
+          "allow_cross_client_resume": {
+            "type": "boolean",
+            "title": "Allow Cross Client Resume",
+            "default": false
+          },
+          "extension_contract": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 128,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+              },
+              { "type": "null" }
+            ],
+            "title": "Extension Contract"
+          }
+        }
+      }
+    },
+    "editor": null
+  },
+  "form-components": {
+    "title": "Reusable components",
+    "list": {
+      "queryFields": [
+        { "key": "code", "label": "Code", "type": "text", "nullable": false },
+        { "key": "name", "label": "Name", "type": "text", "nullable": false },
+        {
+          "key": "is_active",
+          "label": "Active",
+          "type": "boolean",
+          "nullable": false
+        }
+      ],
+      "columns": [
+        { "key": "code", "label": "Code" },
+        { "key": "name", "label": "Name" },
+        { "key": "is_active", "label": "Active" },
+        { "key": "created_at", "label": "Created At" }
+      ]
+    },
+    "permission": "forms.manage",
+    "operations": {
+      "search": "search_api_v1_form_components_search_post",
+      "get": "detail_api_v1_form_components__ref_id__get",
+      "create": "create_api_v1_form_components_post",
+      "update": "update_api_v1_form_components__ref_id__put",
+      "remove": "delete_api_v1_form_components__ref_id__delete",
+      "history": "history_api_v1_form_components__ref_id__history_post",
+      "report": "report_api_v1_form_components_report_post",
+      "grant": "grant_api_v1_form_components__ref_id__grants_post",
+      "revoke": "revoke_grant_api_v1_form_components__ref_id__grants__grant_ref_id__delete"
+    },
+    "schemas": {
+      "search": {
+        "required": [],
+        "properties": {
+          "page": {
+            "type": "integer",
+            "minimum": 1,
+            "title": "Page",
+            "default": 1
+          },
+          "size": {
+            "type": "integer",
+            "maximum": 100,
+            "minimum": 1,
+            "title": "Size",
+            "default": 20
+          },
+          "filters": {
+            "items": { "$ref": "#/components/schemas/FilterCriteria" },
+            "type": "array",
+            "title": "Filters"
+          },
+          "sort_orders": {
+            "items": { "$ref": "#/components/schemas/SortOrder" },
+            "type": "array",
+            "title": "Sort Orders"
+          }
+        }
+      },
+      "create": {
+        "required": ["code", "name"],
+        "properties": {
+          "code": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]*$",
+            "title": "Code"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "is_active": {
+            "type": "boolean",
+            "title": "Is Active",
+            "default": true
+          }
+        }
+      },
+      "update": {
+        "required": ["code", "name"],
+        "properties": {
+          "code": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]*$",
+            "title": "Code"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "is_active": {
+            "type": "boolean",
+            "title": "Is Active",
+            "default": true
+          }
+        }
+      },
+      "grant": {
+        "required": [],
+        "properties": {
+          "user_ref_id": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "User Ref Id"
+          },
+          "work_group_ref_id": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Work Group Ref Id"
+          }
+        }
+      }
+    },
+    "editor": null
+  },
+  "form-component-versions": {
+    "title": "Component versions",
+    "list": {
+      "queryFields": [
+        {
+          "key": "number",
+          "label": "Version Number",
+          "type": "number",
+          "nullable": false
+        },
+        {
+          "key": "status",
+          "label": "Status",
+          "type": "text",
+          "nullable": false
+        }
+      ],
+      "columns": [
+        { "key": "number", "label": "Version Number" },
+        { "key": "status", "label": "Status" }
+      ]
+    },
+    "permission": "forms.manage",
+    "operations": {
+      "search": "search_versions_api_v1_form_component_versions_search_post",
+      "get": "detail_version_api_v1_form_component_versions__ref_id__get",
+      "create": "create_version_api_v1_form_component_versions_post",
+      "update": "update_version_api_v1_form_component_versions__ref_id__put",
+      "remove": "delete_version_api_v1_form_component_versions__ref_id__delete",
+      "history": "history_version_api_v1_form_component_versions__ref_id__history_post",
+      "report": "report_versions_api_v1_form_component_versions_report_post",
+      "publish": "publish_api_v1_form_component_versions__ref_id__publish_post",
+      "retire": "retire_api_v1_form_component_versions__ref_id__retire_post"
+    },
+    "schemas": {
+      "search": {
+        "required": ["root_ref_id"],
+        "properties": {
+          "page": {
+            "type": "integer",
+            "minimum": 1,
+            "title": "Page",
+            "default": 1
+          },
+          "size": {
+            "type": "integer",
+            "maximum": 100,
+            "minimum": 1,
+            "title": "Size",
+            "default": 20
+          },
+          "filters": {
+            "items": { "$ref": "#/components/schemas/FilterCriteria" },
+            "type": "array",
+            "title": "Filters"
+          },
+          "sort_orders": {
+            "items": { "$ref": "#/components/schemas/SortOrder" },
+            "type": "array",
+            "title": "Sort Orders"
+          },
+          "root_ref_id": { "type": "string", "title": "Root Ref Id" }
+        }
+      },
+      "create": {
+        "required": ["root_ref_id", "number", "document"],
+        "properties": {
+          "root_ref_id": { "type": "string", "title": "Root Ref Id" },
+          "number": { "type": "integer", "minimum": 1, "title": "Number" },
+          "document": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Document"
+          }
+        }
+      },
+      "update": {
+        "required": ["document"],
+        "properties": {
+          "document": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Document"
+          }
+        }
+      }
+    },
+    "editor": null
+  },
+  "form-data-types": {
+    "title": "Reusable data types",
+    "list": {
+      "queryFields": [
+        { "key": "code", "label": "Code", "type": "text", "nullable": false },
+        { "key": "name", "label": "Name", "type": "text", "nullable": false },
+        {
+          "key": "is_active",
+          "label": "Active",
+          "type": "boolean",
+          "nullable": false
+        }
+      ],
+      "columns": [
+        { "key": "code", "label": "Code" },
+        { "key": "name", "label": "Name" },
+        { "key": "is_active", "label": "Active" },
+        { "key": "created_at", "label": "Created At" }
+      ]
+    },
+    "permission": "forms.manage",
+    "operations": {
+      "search": "search_api_v1_form_data_types_search_post",
+      "get": "detail_api_v1_form_data_types__ref_id__get",
+      "create": "create_api_v1_form_data_types_post",
+      "update": "update_api_v1_form_data_types__ref_id__put",
+      "remove": "delete_api_v1_form_data_types__ref_id__delete",
+      "history": "history_api_v1_form_data_types__ref_id__history_post",
+      "report": "report_api_v1_form_data_types_report_post",
+      "grant": "grant_api_v1_form_data_types__ref_id__grants_post",
+      "revoke": "revoke_grant_api_v1_form_data_types__ref_id__grants__grant_ref_id__delete"
+    },
+    "schemas": {
+      "search": {
+        "required": [],
+        "properties": {
+          "page": {
+            "type": "integer",
+            "minimum": 1,
+            "title": "Page",
+            "default": 1
+          },
+          "size": {
+            "type": "integer",
+            "maximum": 100,
+            "minimum": 1,
+            "title": "Size",
+            "default": 20
+          },
+          "filters": {
+            "items": { "$ref": "#/components/schemas/FilterCriteria" },
+            "type": "array",
+            "title": "Filters"
+          },
+          "sort_orders": {
+            "items": { "$ref": "#/components/schemas/SortOrder" },
+            "type": "array",
+            "title": "Sort Orders"
+          }
+        }
+      },
+      "create": {
+        "required": ["code", "name"],
+        "properties": {
+          "code": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]*$",
+            "title": "Code"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "is_active": {
+            "type": "boolean",
+            "title": "Is Active",
+            "default": true
+          }
+        }
+      },
+      "update": {
+        "required": ["code", "name"],
+        "properties": {
+          "code": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]*$",
+            "title": "Code"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "is_active": {
+            "type": "boolean",
+            "title": "Is Active",
+            "default": true
+          }
+        }
+      },
+      "grant": {
+        "required": [],
+        "properties": {
+          "user_ref_id": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "User Ref Id"
+          },
+          "work_group_ref_id": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Work Group Ref Id"
+          }
+        }
+      }
+    },
+    "editor": null
+  },
+  "form-data-type-versions": {
+    "title": "Data type versions",
+    "list": {
+      "queryFields": [
+        {
+          "key": "number",
+          "label": "Version Number",
+          "type": "number",
+          "nullable": false
+        },
+        {
+          "key": "status",
+          "label": "Status",
+          "type": "text",
+          "nullable": false
+        }
+      ],
+      "columns": [
+        { "key": "number", "label": "Version Number" },
+        { "key": "status", "label": "Status" }
+      ]
+    },
+    "permission": "forms.manage",
+    "operations": {
+      "search": "search_versions_api_v1_form_data_type_versions_search_post",
+      "get": "detail_version_api_v1_form_data_type_versions__ref_id__get",
+      "create": "create_version_api_v1_form_data_type_versions_post",
+      "update": "update_version_api_v1_form_data_type_versions__ref_id__put",
+      "remove": "delete_version_api_v1_form_data_type_versions__ref_id__delete",
+      "history": "history_version_api_v1_form_data_type_versions__ref_id__history_post",
+      "report": "report_versions_api_v1_form_data_type_versions_report_post",
+      "publish": "publish_api_v1_form_data_type_versions__ref_id__publish_post",
+      "retire": "retire_api_v1_form_data_type_versions__ref_id__retire_post"
+    },
+    "schemas": {
+      "search": {
+        "required": ["root_ref_id"],
+        "properties": {
+          "page": {
+            "type": "integer",
+            "minimum": 1,
+            "title": "Page",
+            "default": 1
+          },
+          "size": {
+            "type": "integer",
+            "maximum": 100,
+            "minimum": 1,
+            "title": "Size",
+            "default": 20
+          },
+          "filters": {
+            "items": { "$ref": "#/components/schemas/FilterCriteria" },
+            "type": "array",
+            "title": "Filters"
+          },
+          "sort_orders": {
+            "items": { "$ref": "#/components/schemas/SortOrder" },
+            "type": "array",
+            "title": "Sort Orders"
+          },
+          "root_ref_id": { "type": "string", "title": "Root Ref Id" }
+        }
+      },
+      "create": {
+        "required": ["root_ref_id", "number", "document"],
+        "properties": {
+          "root_ref_id": { "type": "string", "title": "Root Ref Id" },
+          "number": { "type": "integer", "minimum": 1, "title": "Number" },
+          "document": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Document"
+          }
+        }
+      },
+      "update": {
+        "required": ["document"],
+        "properties": {
+          "document": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Document"
+          }
+        }
+      }
+    },
+    "editor": null
+  }
+}

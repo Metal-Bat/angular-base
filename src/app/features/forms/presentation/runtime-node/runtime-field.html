@@ -1,0 +1,76 @@
+@let vm = view();
+<app-field-wrapper
+  #field
+  [errors]="vm.errors()"
+  [label]="vm.node().label ?? vm.node().scope!"
+  [pointer]="vm.pointer()"
+>
+  @if (!vm.writable()) {
+    <output tabindex="0" [id]="field.id()"
+      ><bdi>{{ vm.value() | valueText }}</bdi></output
+    >
+  } @else if (vm.choice()) {
+    <app-choice-control
+      [controlId]="field.id()"
+      [data]="vm.data()"
+      [describedBy]="field.describedBy()"
+      [document]="vm.document()"
+      [indices]="vm.indices()"
+      [invalid]="vm.errors().length > 0"
+      [node]="vm.node()"
+      [path]="vm.path()"
+      (edit)="vm.edit.emit($event)"
+    />
+  } @else if (vm.node().component === "boolean") {
+    <app-select-control
+      [describedBy]="field.describedBy()"
+      [inputId]="field.id()"
+      [invalid]="vm.errors().length > 0"
+      [value]="vm.text()"
+      (selectionChanged)="vm.bool($any($event.target).value)"
+    >
+      <option value="">{{ "Not provided" | localize }}</option>
+      <option value="true">{{ "Yes" | localize }}</option>
+      <option value="false">{{ "No" | localize }}</option>
+    </app-select-control>
+  } @else if (vm.node().component === "textarea") {
+    <textarea
+      [attr.aria-describedby]="field.describedBy()"
+      [attr.aria-invalid]="vm.errors().length > 0"
+      [id]="field.id()"
+      [value]="vm.text()"
+      (input)="vm.inputValue($any($event.target).value)"
+    ></textarea>
+  } @else {
+    <input
+      [attr.aria-describedby]="field.describedBy()"
+      [attr.aria-invalid]="vm.errors().length > 0"
+      [id]="field.id()"
+      [type]="vm.node().component === 'date' ? 'date' : 'text'"
+      [value]="vm.text()"
+      (input)="vm.inputValue($any($event.target).value)"
+    />
+  }
+  @if (vm.writable() && vm.nullable()) {
+    <button
+      pButton
+      severity="secondary"
+      type="button"
+      [outlined]="true"
+      (click)="vm.set(null)"
+    >
+      {{ "Set null" | localize }}
+    </button>
+  }
+  @if (vm.writable()) {
+    <button
+      pButton
+      severity="secondary"
+      type="button"
+      [outlined]="true"
+      (click)="vm.clear()"
+    >
+      {{ "Remove value" | localize }}
+    </button>
+  }
+</app-field-wrapper>

@@ -1,0 +1,111 @@
+<header class="record-identity" [class.history-identity]="isHistory()">
+  <span aria-hidden="true" class="identity-icon"><i [class]="icon()"></i></span>
+  <div class="identity-text">
+    <span class="console-eyebrow">{{ caption() | localize }}</span>
+    <h2>
+      <bdi>{{ displayTitle() }}</bdi>
+    </h2>
+    @if (subtitle()) {
+      <p>
+        <bdi>{{ subtitle() }}</bdi>
+      </p>
+    }
+    @if (isHistory()) {
+      <div class="history-context">
+        @if (record()["changed_at"]) {
+          <time [attr.datetime]="record()['changed_at']">{{
+            value(record()["changed_at"], true)
+          }}</time>
+        }
+        @if (record()["modifier_type"] || record()["actor_type"]) {
+          <span
+            >{{ "Actor Type" | localize }}:
+            {{
+              $any(record()["modifier_type"] || record()["actor_type"])
+                | localize
+            }}</span
+          >
+        }
+      </div>
+    }
+  </div>
+  @if (status()) {
+    <span class="identity-status">{{ status() | localize }}</span>
+  }
+</header>
+<div class="summary-sections">
+  @for (section of sections(); track section.title) {
+    @if (!isHistory() && section.entries.length) {
+      <section>
+        <h3>{{ section.title | localize }}</h3>
+        <dl>
+          @for (entry of section.entries; track entry.key) {
+            <div>
+              <dt>{{ entry.label | localize }}</dt>
+              <dd
+                [attr.title]="entry.empty ? ('Not set' | localize) : null"
+                [class.unset-value]="entry.empty"
+              >
+                @if (entry.empty) {
+                  <span aria-hidden="true">—</span
+                  ><span class="sr-only">{{ "Not set" | localize }}</span>
+                } @else {
+                  <bdi>{{ entry.value }}</bdi>
+                }
+              </dd>
+            </div>
+          }
+        </dl>
+      </section>
+    }
+  }
+</div>
+@if (isHistory()) {
+  <section
+    class="change-comparison"
+    [attr.aria-label]="'Field changes' | localize"
+  >
+    <h3>
+      {{ "Field changes" | localize }} <span>({{ changes().length }})</span>
+    </h3>
+    <p-table [tableStyle]="{ 'min-width': '32rem' }" [value]="changes()">
+      <ng-template #header>
+        <tr>
+          <th scope="col">{{ "Field" | localize }}</th>
+          <th scope="col">{{ "Before change" | localize }}</th>
+          <th scope="col">{{ "After change" | localize }}</th>
+        </tr>
+      </ng-template>
+      <ng-template #body let-change>
+        <tr>
+          <th scope="row">
+            <span class="change-label">{{ change.label }}</span>
+            <p-tag
+              [severity]="
+                change.kind === 'Added'
+                  ? 'success'
+                  : change.kind === 'Removed'
+                    ? 'warn'
+                    : 'info'
+              "
+              [value]="change.kind | localize"
+            />
+          </th>
+          <td class="change-before">
+            <bdi>{{ change.beforeText }}</bdi>
+          </td>
+          <td class="change-after">
+            <bdi>{{ change.afterText }}</bdi>
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template #emptymessage>
+        <tr>
+          <td colspan="3">
+            {{ "No visible field changes in this event." | localize }}
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </section>
+}

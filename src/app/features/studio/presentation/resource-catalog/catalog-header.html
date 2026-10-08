@@ -1,0 +1,62 @@
+@let vm = view();
+<header class="console-page-header">
+  <div>
+    <span class="console-eyebrow">{{ "Studio catalogs" | localize }}</span>
+    <h1 tabindex="-1">{{ vm.spec.title | localize }}</h1>
+    <p class="console-description">
+      {{ "Manage definitions, versions and their lifecycle." | localize }}
+    </p>
+  </div>
+  <div class="flex flex-wrap gap-2 items-center">
+    @if (vm.selected()) {
+      @if (vm.spec.actions.includes("update") && !vm.immutable()) {
+        <button
+          pButton
+          type="button"
+          [disabled]="vm.busy()"
+          (click)="vm.edit()"
+        >
+          {{ "Edit" | localize }}
+        </button>
+      }
+
+      @if (vm.spec.actions.includes("history")) {
+        <button
+          pButton
+          severity="secondary"
+          type="button"
+          [disabled]="vm.busy()"
+          [outlined]="true"
+          (click)="vm.history()"
+        >
+          <i aria-hidden="true" class="pi pi-history"></i
+          >{{ "History" | localize }}
+        </button>
+      }
+    } @else {
+      @if (vm.spec.actions.includes("report")) {
+        <button
+          pButton
+          severity="secondary"
+          type="button"
+          [disabled]="vm.busy() || !vm.appliedQuery()"
+          [outlined]="true"
+          (click)="vm.load(vm.page(), true)"
+        >
+          <i aria-hidden="true" class="pi pi-file-export"></i
+          >{{ "Request report" | localize }}
+        </button>
+      }
+      @if (vm.spec.actions.includes("create")) {
+        <button
+          pButton
+          type="button"
+          [disabled]="vm.busy() || !vm.canScope()"
+          (click)="vm.create()"
+        >
+          <i aria-hidden="true" class="pi pi-plus"></i>{{ "Create" | localize }}
+        </button>
+      }
+    }
+  </div>
+</header>

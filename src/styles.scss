@@ -4,6 +4,9 @@
 // Learn more about theming and how to use it for your application's
 // custom components at https://material.angular.dev/guide/theming
 @use "@angular/material" as mat;
+@use "./app/shared/styles/console";
+@use "./app/shared/styles/fields";
+@use "./app/shared/styles/typography";
 
 html {
   @include mat.theme(
@@ -12,7 +15,10 @@ html {
         primary: mat.$azure-palette,
         tertiary: mat.$blue-palette,
       ),
-      typography: Roboto,
+      typography: (
+        plain-family: "var(--workspace-font-family)",
+        brand-family: "var(--workspace-font-family)",
+      ),
       density: 0,
     )
   );
@@ -36,10 +42,221 @@ body {
 }
 body {
   margin: 0;
-  font-family: Roboto, "Helvetica Neue", sans-serif;
+  font-family: var(--workspace-font-family);
 }
 
 // Shared dark-mode selector for Material, PrimeNG, and Tailwind.
 html.app-dark {
   color-scheme: dark;
+}
+
+:root {
+  --workspace-space: 0.25rem;
+  --workspace-radius: 0.5rem;
+  --workspace-overlay: 1000;
+}
+@layer components {
+  :where(summary) {
+    cursor: pointer;
+    min-block-size: 2.75rem;
+    padding: 0.75rem;
+  }
+  :where(button, input, select, textarea, a, summary):focus-visible {
+    outline: 3px solid var(--mat-sys-primary);
+    outline-offset: 3px;
+  }
+  :where(input, select, textarea):not([class*="mdc-"]):not(.p-inputtext) {
+    border: 1px solid var(--mat-sys-outline);
+    background: var(--mat-sys-surface);
+    color: var(--mat-sys-on-surface);
+    border-radius: var(--workspace-radius);
+    padding: 0.75rem;
+    max-inline-size: 100%;
+  }
+  :where(button):not([class*="mdc-"]):not(.p-button) {
+    padding: 0.625rem 1rem;
+    border: 1px solid var(--mat-sys-outline);
+    border-radius: var(--workspace-radius);
+    background: var(--mat-sys-surface-container);
+    color: var(--mat-sys-on-surface);
+    cursor: pointer;
+    min-block-size: 2.75rem;
+  }
+  :where(button, input):disabled {
+    opacity: 0.6;
+    cursor: default;
+  }
+  :where(input)[aria-invalid="true"] {
+    border-color: var(--mat-sys-error);
+  }
+  dialog {
+    position: fixed;
+    inset: 0;
+    margin: auto;
+    max-height: calc(100dvh - 2rem);
+    overflow: auto;
+    max-inline-size: min(32rem, calc(100vw - 2rem));
+    background: var(--mat-sys-surface);
+    color: var(--mat-sys-on-surface);
+    padding: 1.5rem;
+    border: 1px solid var(--mat-sys-outline);
+    border-radius: var(--workspace-radius);
+  }
+  dialog::backdrop {
+    background: rgb(0 0 0 / 50%);
+  }
+  [dir="rtl"] :where(input[autocomplete="username"], input[type="password"]) {
+    direction: ltr;
+    text-align: start;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+// Shared presentation tokens keep the shell and feature pages consistent.
+:root {
+  --console-canvas: #f5f7fb;
+  --console-surface: #ffffff;
+  --console-text: #18243b;
+  --console-muted: #586980;
+  --console-border: #e2e8f0;
+  --console-accent: #2563eb;
+  --console-on-accent: #ffffff;
+  --console-accent-hover: #1d4ed8;
+  --console-input-border: #7c8ba1;
+  --console-accent-soft: #edf3ff;
+  --console-shadow: 0 12px 36px rgb(15 23 42 / 8%);
+}
+html.app-dark {
+  --console-canvas: #0d1525;
+  --console-surface: #162237;
+  --console-text: #e5edf8;
+  --console-muted: #a1b1c9;
+  --console-border: #2b3b53;
+  --console-accent: #93b8ff;
+  --console-on-accent: #0d1525;
+  --console-accent-hover: #b0ccff;
+  --console-input-border: #64748b;
+  --console-accent-soft: #20355b;
+}
+body {
+  line-height: 1.6;
+}
+
+// Named palettes from PrimeNG Aura / Tailwind: https://primeng.org/theming/styled
+:root,
+html[data-palette="blue"] {
+  --console-primary-50: #eff6ff;
+  --console-primary-100: #dbeafe;
+  --console-primary-200: #bfdbfe;
+  --console-primary-300: #93c5fd;
+  --console-primary-400: #60a5fa;
+  --console-primary-500: #3b82f6;
+  --console-primary-600: #2563eb;
+  --console-primary-700: #1d4ed8;
+  --console-primary-800: #1e40af;
+  --console-primary-900: #1e3a8a;
+  --console-primary-950: #172554;
+}
+html[data-palette="indigo"] {
+  --console-primary-50: #eef2ff;
+  --console-primary-100: #e0e7ff;
+  --console-primary-200: #c7d2fe;
+  --console-primary-300: #a5b4fc;
+  --console-primary-400: #818cf8;
+  --console-primary-500: #6366f1;
+  --console-primary-600: #4f46e5;
+  --console-primary-700: #4338ca;
+  --console-primary-800: #3730a3;
+  --console-primary-900: #312e81;
+  --console-primary-950: #1e1b4b;
+}
+html[data-palette="violet"] {
+  --console-primary-50: #f5f3ff;
+  --console-primary-100: #ede9fe;
+  --console-primary-200: #ddd6fe;
+  --console-primary-300: #c4b5fd;
+  --console-primary-400: #a78bfa;
+  --console-primary-500: #8b5cf6;
+  --console-primary-600: #7c3aed;
+  --console-primary-700: #6d28d9;
+  --console-primary-800: #5b21b6;
+  --console-primary-900: #4c1d95;
+  --console-primary-950: #2e1065;
+}
+html[data-palette="emerald"] {
+  --console-primary-50: #ecfdf5;
+  --console-primary-100: #d1fae5;
+  --console-primary-200: #a7f3d0;
+  --console-primary-300: #6ee7b7;
+  --console-primary-400: #34d399;
+  --console-primary-500: #10b981;
+  --console-primary-600: #059669;
+  --console-primary-700: #047857;
+  --console-primary-800: #065f46;
+  --console-primary-900: #064e3b;
+  --console-primary-950: #022c22;
+}
+html[data-palette="teal"] {
+  --console-primary-50: #f0fdfa;
+  --console-primary-100: #ccfbf1;
+  --console-primary-200: #99f6e4;
+  --console-primary-300: #5eead4;
+  --console-primary-400: #2dd4bf;
+  --console-primary-500: #14b8a6;
+  --console-primary-600: #0d9488;
+  --console-primary-700: #0f766e;
+  --console-primary-800: #115e59;
+  --console-primary-900: #134e4a;
+  --console-primary-950: #042f2e;
+}
+html[data-palette="rose"] {
+  --console-primary-50: #fff1f2;
+  --console-primary-100: #ffe4e6;
+  --console-primary-200: #fecdd3;
+  --console-primary-300: #fda4af;
+  --console-primary-400: #fb7185;
+  --console-primary-500: #f43f5e;
+  --console-primary-600: #e11d48;
+  --console-primary-700: #be123c;
+  --console-primary-800: #9f1239;
+  --console-primary-900: #881337;
+  --console-primary-950: #4c0519;
+}
+html[data-palette="amber"] {
+  --console-primary-50: #fffbeb;
+  --console-primary-100: #fef3c7;
+  --console-primary-200: #fde68a;
+  --console-primary-300: #fcd34d;
+  --console-primary-400: #fbbf24;
+  --console-primary-500: #f59e0b;
+  --console-primary-600: #d97706;
+  --console-primary-700: #b45309;
+  --console-primary-800: #92400e;
+  --console-primary-900: #78350f;
+  --console-primary-950: #451a03;
+}
+:root {
+  --console-accent: var(--console-primary-700);
+  --console-accent-hover: var(--console-primary-800);
+  --console-accent-soft: var(--console-primary-50);
+  --mat-sys-primary: var(--console-accent);
+  --mat-sys-on-primary: var(--console-on-accent);
+  --mat-sys-primary-container: var(--console-accent-soft);
+  --mat-sys-on-primary-container: var(--console-accent);
+}
+html.app-dark {
+  --console-accent: var(--console-primary-300);
+  --console-accent-hover: var(--console-primary-200);
+  --console-accent-soft: color-mix(
+    in srgb,
+    var(--console-primary-400) 16%,
+    var(--console-surface)
+  );
 }

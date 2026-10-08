@@ -1,0 +1,66 @@
+@let vm = view();
+<p-dialog
+  appendTo="body"
+  position="center"
+  [closable]="!vm.actionBusy()"
+  [draggable]="false"
+  [header]="'Assign role' | localize"
+  [modal]="true"
+  [resizable]="false"
+  [style]="{ width: '58rem', maxWidth: 'calc(100vw - 2rem)' }"
+  [visible]="vm.roleModal()"
+  (visibleChange)="vm.closeRole()"
+>
+  @if (vm.roleModal()) {
+    <p>
+      {{ "Choose a role, then save to assign it to this user." | localize }}
+    </p>
+    <app-list-query
+      [busy]="vm.actionBusy()"
+      [fields]="vm.rolesDefinition.queryFields"
+      [query]="vm.rolesQuery()"
+      (applied)="vm.loadRoles($event)"
+    />
+    <app-record-table
+      actionLabel="Select"
+      [busy]="vm.actionBusy()"
+      [columns]="vm.rolesDefinition.columns"
+      [fields]="vm.rolesDefinition.queryFields"
+      [page]="vm.rolesQuery().page"
+      [pages]="vm.rolesPage()?.totalPages ?? 0"
+      [query]="vm.rolesQuery()"
+      [rows]="vm.rolesPage()?.items ?? []"
+      (opened)="vm.selectedRole.set($any($event))"
+      (pageChanged)="vm.rolesPageTo($event)"
+      (queried)="vm.loadRoles($event)"
+    />
+
+    @if (vm.selectedRole(); as role) {
+      <p role="status">
+        {{ "Selected role" | localize }}: <bdi>{{ role["name"] }}</bdi>
+      </p>
+    }
+    @if (vm.modalError()) {
+      <p role="alert">{{ vm.modalError() | localize }}</p>
+    }
+    <div class="flex justify-end gap-3 mt-4">
+      <button
+        pButton
+        severity="secondary"
+        type="button"
+        [disabled]="vm.actionBusy()"
+        [outlined]="true"
+        (click)="vm.closeRole()"
+      >
+        {{ "Cancel" | localize }}</button
+      ><button
+        pButton
+        type="button"
+        [disabled]="vm.actionBusy() || !vm.selectedRole()"
+        (click)="vm.saveRole()"
+      >
+        {{ "Save" | localize }}
+      </button>
+    </div>
+  }
+</p-dialog>

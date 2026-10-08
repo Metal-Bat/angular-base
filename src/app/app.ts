@@ -1,13 +1,15 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { RequestErrors } from './core/feedback/request-errors';
+import { ErrorNotification } from './core/feedback/error-notification/error-notification';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
+  imports: [RouterOutlet, ErrorNotification],
   templateUrl: './app.html',
-  changeDetection: ChangeDetectionStrategy.Default,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './app.scss',
 })
 export class App {
-  protected readonly title = signal('ng-architect');
+  readonly errors = inject(RequestErrors);
 }

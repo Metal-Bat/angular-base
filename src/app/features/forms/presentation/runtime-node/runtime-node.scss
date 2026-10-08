@@ -1,0 +1,21 @@
+:host {
+  display: block;
+  min-inline-size: 0;
+}
+input:not([type="checkbox"]):not([type="radio"]),
+textarea,
+select {
+  max-inline-size: 100%;
+  inline-size: 100%;
+}
+input[type="checkbox"],
+input[type="radio"] {
+  inline-size: 1.15rem;
+}
+output {
+  display: block;
+  overflow-wrap: anywhere;
+  padding: 0.75rem 1rem;
+  border-radius: 0.6rem;
+  background: var(--console-canvas);
+}

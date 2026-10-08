@@ -1,0 +1,43 @@
+<fieldset
+  [disabled]="editor().busy() || editor().blocked() || resources.transferBusy()"
+>
+  @if (editor().item()?.status === "DRAFT") {
+    <button
+      pButton
+      severity="secondary"
+      type="button"
+      [outlined]="true"
+      (click)="resources.cancelRequest()"
+    >
+      {{ "Cancel draft" | localize }}
+    </button>
+    <button
+      pButton
+      severity="secondary"
+      type="button"
+      [outlined]="true"
+      (click)="resources.resume()"
+    >
+      {{ "Resume presentation" | localize }}
+    </button>
+  }
+  <button
+    pButton
+    severity="secondary"
+    type="button"
+    [outlined]="true"
+    (click)="report()"
+  >
+    {{ "Request report" | localize }}
+  </button>
+</fieldset>
+<ul>
+  @for (entry of reports(); track entry.reference) {
+    <li>
+      <a [routerLink]="['/operations/requests', entry.reference]">{{
+        "Request detail" | localize
+      }}</a>
+      · {{ entry.status | localize }}
+    </li>
+  }
+</ul>

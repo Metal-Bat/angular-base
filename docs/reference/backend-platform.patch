@@ -1,0 +1,3441 @@
+diff --git a/docs/api/platform-runtime.md b/docs/api/platform-runtime.md
+new file mode 100644
+index 0000000..494857d
+--- /dev/null
++++ b/docs/api/platform-runtime.md
+@@ -0,0 +1,42 @@
++# Frontend platform runtime contract
++
++Implemented on the reviewed baseline `8921841`, October 2, 2026. These additions supersede the readiness review's F01–F03 defects and C01–C03/C05/C06 gaps within the tested scope. Existing authentication, permissions, opaque references, error codes and snake_case envelopes remain authoritative.
++
++## Ordinary actors
++
++`POST /api/v1/request-types/eligible/search` requires `requests.start`. Example body: `{"page":1,"size":20,"supported_render_dialects":["bpms.render/1"]}`. Returns the normal `result` page with opaque type references and exact current published workflow/form pins. Filters run before pagination: active roots, published dependencies, workflow start grants, authenticated client/release restrictions, and renderer dialect. Missing/incompatible/unauthorized choices are all absent. Empty capabilities return an empty page. Selection grants no authority; create independently repeats eligibility checks. Browser client headers never establish confidential identity.
++
++`GET /api/v1/business-requests/{ref_id}/view` requires `requests.start`, ownership/superuser and origin-client policy. It returns `bpms.runtime/1`, not a privileged authoring schema. Only DRAFT owners have writable scopes. Other states are summaries. Request DTOs now include `process_ref_id`, null before execution and the actual root process reference after submission. Existing process/timeline routes enforce their visibility policy; never derive a process ref from another opaque reference.
++
++`GET /api/v1/work-items/{ref_id}/runtime?key=review` requires `requests.start` and item visibility. Omit key to select the pinned default view. Runtime state includes current owning/submission refs, pinned form/version/design identity, visible compiled field metadata, display-only render document, canonical visible values, stable row keys, effective writable/required scopes, actions and locale/direction. Nonclaimants and closed items have no writable scopes/actions. Hidden defaults, field schemas, values, input fingerprints and executable client expressions remain server-only. An incompatible pinned render dialect returns VERSION_CONFLICT (409).
++
++Runtime display deliberately omits calculation/rule/default/source/navigation binding metadata. Use existing authorized option/navigation operations when implementing those features; do not reconstruct hidden input dependencies from authoring schemas. Validation metadata supports the backend's compiled JSON Schema subset; the backend validates the complete canonical document. The runtime and render dialects are independently versioned. Clients must reject unknown runtime/render dialects before attempting to render.
++
++Example shape is emitted by `RuntimeFormStateDTO` in generated Swagger. Synthetic example references illustrate shape only; use server-returned references in commands.
++
++## Mutations and reconciliation
++
++| Operation | Result and next command | Replay |
++| --- | --- | --- |
++| Claim, save, complete/reject/return | WorkItemDTO contains current `ref_id` and authorized `runtime_state`. Replace references and evaluated values. | Existing command_key replay with the identical actor/action/payload; changed payload conflicts. |
++| Collection edit, manual override | SuccessResponse data is now RuntimeFormStateDTO with current owning/submission refs, projected data/identity/provenance. | No idempotency key; never blindly replay on timeout. |
++| Attachment mutations | Existing response shape; read `/runtime` before the next task command to reconcile current refs and canonical data. | Existing endpoint contract applies. |
++| Request create/save/submit | Existing request DTO with actual `process_ref_id`; read `/view` for runtime state after mutation. | Submit uses its existing submit_key; save is revision checked. |
++
++Collection/override runtime results replace their older narrower data response. Update clients before deploying both sides. Commands on a task must be serialized. Use the latest owning ref after each response, not the submission ref. A read accepts an earlier revision-bearing reference as an identifier and resolves current state if the actor still has access; writes reject stale revisions. A timeout without idempotency is uncertain: refetch and compare authorized state before deciding whether another command is appropriate.
++
++For policy-filtered saves and completion, data is a patch of supplied writable fields. Omitted fields remain canonical; explicit null writes null and is validated against the schema. `delete_paths` explicitly removes writable object properties using instance JSON pointers, e.g. `/optional_note`; row-index deletion is rejected. Named edit `view_key` limits writes; summary/print views cannot write. Hidden/read-only fields cannot be overwritten, deleted through a parent, or exposed through validation errors. Restricted arrays retain canonical hidden columns; structural edits use stable-key collection commands. Legacy tasks with an empty field policy and no named view retain whole-document replacement semantics.
++
++## Policy editors and kinds
++
++RequestTypeDTO now returns `client_targets` with current client refs and minimum/inclusive and maximum/exclusive release bounds. PUT omission preserves targets. An explicit empty list deliberately clears them. Unrelated renames cannot relax confidential restrictions.
++
++`POST /workflows/{ref_id}/grants/search` requires `workflows.manage`. `POST /integration-connections/{ref_id}/grants/search` requires `integrations.manage` plus per-connection manage/owner/superuser authority. Both return current nondeleted grants with bounded page/filter contracts and current target refs, not reconstructed audit history. Connection access denial is 403; missing roots are 404.
++
++WorkItemDTO `kind` is HUMAN_TASK for form-backed tasks, AI_APPROVAL only when an actual AI approval association exists, and UNSUPPORTED otherwise. A missing form alone never implies AI support. Only HUMAN_TASK items carry the ordinary runtime form state.
++
++All new runtime/catalog/grant responses are private, no-store. HTTP payload logs exclude business and authored documents. English/Farsi Swagger operation descriptions preserve machine keys, enums and operation IDs.
++
++## Evidence
++
++New unit regressions first failed against the unmodified baseline. The disposable PostgreSQL flow suite now includes real HTTP login/requester/reviewer/outsider sessions, hidden-field save/completion preservation, sanitized collection/override results, serialized owning references, runtime/catalog access, actual process navigation refs, confidential release boundaries, omitted versus explicit-clear restrictions, eligibility changes before creation, and per-connection current-grant authorization. ASGI tests intentionally do not start S3 lifespan; media delivery and worker deployment are separate existing integration gates.
+diff --git a/docs/reference/responses/business-requests.md b/docs/reference/responses/business-requests.md
+index 23740bd..f394f53 100644
+--- a/docs/reference/responses/business-requests.md
++++ b/docs/reference/responses/business-requests.md
+@@ -23,6 +23,7 @@ Used by: `DELETE /api/v1/business-requests/{ref_id}/attachments/{attachment_ref_
+ 
+ | Field | Type | Required | Notes |
+ | --- | --- | --- | --- |
++| `process_ref_id` | `string | null` | No | Real authorized root-process ref for tracking, or null for a draft/no process. Never derive a process ref from another entity reference. |
+ | `ref_id` | `string` | Yes | Opaque reference; use the value returned by the API. |
+ | `request_type_ref_id` | `string` | Yes | Opaque reference; use the value returned by the API. |
+ | `requester_ref_id` | `string` | Yes | Opaque reference; use the value returned by the API. |
+@@ -188,6 +189,70 @@ Used by: `POST /api/v1/business-requests/{ref_id}/options`
+ 
+ No reviewed business example is published for this schema. Use the field contract above and the [response scenarios](../../api/response-scenarios.md); do not infer valid lifecycle values from field types alone.
+ 
++### `RuntimeActionDTO`
++
++Used by: `GET /api/v1/business-requests/{ref_id}/view`
++
++| Field | Type | Required | Notes |
++| --- | --- | --- | --- |
++| `key` | `string` | Yes | — |
++| `kind` | `string` | Yes | — |
++| `outcome_key` | `string` | Yes | — |
++| `title` | `string` | Yes | — |
++| `confirmation` | `string | null` | Yes | — |
++| `required_scopes` | `array[string]` | Yes | — |
++| `require_comment` | `boolean` | Yes | — |
++| `validation` | `string` | Yes | — |
++
++No reviewed business example is published for this schema. Use the field contract above and the [response scenarios](../../api/response-scenarios.md); do not infer valid lifecycle values from field types alone.
++
++### `RuntimeFieldMetadataDTO`
++
++Used by: `GET /api/v1/business-requests/{ref_id}/view`
++
++| Field | Type | Required | Notes |
++| --- | --- | --- | --- |
++| `scope` | `string` | Yes | Visible JSON Schema property/items scope. |
++| `validation_schema` | `object` | Yes | Bounded compiled schema of this visible field only. No defaults, examples, hidden properties or shared definitions; backend validates the full canonical document. |
++| `writable` | `boolean` | Yes | — |
++| `required` | `boolean` | Yes | — |
++
++No reviewed business example is published for this schema. Use the field contract above and the [response scenarios](../../api/response-scenarios.md); do not infer valid lifecycle values from field types alone.
++
++### `RuntimeFormStateDTO`
++
++Used by: `GET /api/v1/business-requests/{ref_id}/view`
++
++| Field | Type | Required | Notes |
++| --- | --- | --- | --- |
++| `runtime_dialect` | `string` | No |  Default: `bpms.runtime/1`. |
++| `resource_kind` | `string` | Yes | — |
++| `resource_ref_id` | `string` | Yes | Current opaque revision-bearing reference for the owning request/work item; replace after every mutation. |
++| `form_version_ref_id` | `string` | Yes | Opaque reference; use the value returned by the API. |
++| `form_version_number` | `integer` | Yes | — |
++| `submission_ref_id` | `string` | Yes | Opaque reference; use the value returned by the API. |
++| `design_key` | `string` | Yes | Exact pinned client variant; locale changes cannot change this key. |
++| `render_dialect` | `string` | No |  Default: `bpms.render/1`. |
++| `data_dialect` | `string` | No |  Default: `https://json-schema.org/draft/2020-12/schema`. |
++| `view_key` | `string` | Yes | — |
++| `purpose` | `string` | Yes | — |
++| `resolved_locale` | `string` | Yes | Locale selected by the pinned catalog, or negotiated en/fa fallback. |
++| `direction` | `string` | Yes | — |
++| `data` | `object` | Yes | Canonical actor-visible values. Hidden values are preserved only on the server. |
++| `item_identity` | `object` | Yes | Stable row keys for visible collection paths only. |
++| `page_settings` | `object` | No | Pinned display-only page settings; no scripts, bindings or runtime values. |
++| `before_data` | `object | null` | No | Prior submitted data filtered through the same task view, or null when unavailable. |
++| `render_schema` | `object` | Yes | Actor-filtered bounded bpms.render/1 display document. Server-evaluated calculation metadata and client expressions are omitted; writable_scopes is authoritative for editability. |
++| `readable_scopes` | `array[string]` | Yes | — |
++| `writable_scopes` | `array[string]` | Yes | — |
++| `required_scopes` | `array[string]` | Yes | — |
++| `field_metadata` | `array[RuntimeFieldMetadataDTO]` | Yes | — |
++| `actions` | `array[RuntimeActionDTO]` | No | — |
++| `override_provenance` | `object` | No | Visible override actor/reason/value/time only; input checksums remain server-only. |
++| `issues` | `array[object]` | No | Safe visible pointer/code pairs. Hidden canonical validation failures produce a generic task.validation issue. |
++
++No reviewed business example is published for this schema. Use the field contract above and the [response scenarios](../../api/response-scenarios.md); do not infer valid lifecycle values from field types alone.
++
+ ### `SelectOption_str_`
+ 
+ Used by: `POST /api/v1/business-requests/{ref_id}/options`
+@@ -301,6 +366,20 @@ Used by: `POST /api/v1/business-requests/{ref_id}/overrides`
+ 
+ No reviewed business example is published for this schema. Use the field contract above and the [response scenarios](../../api/response-scenarios.md); do not infer valid lifecycle values from field types alone.
+ 
++### `SuccessResponse_RuntimeFormStateDTO_`
++
++Used by: `GET /api/v1/business-requests/{ref_id}/view`
++
++| Field | Type | Required | Notes |
++| --- | --- | --- | --- |
++| `success` | `boolean` | No |  Default: `True`. |
++| `request_id` | `string` | Yes | — |
++| `error` | `null` | No | — |
++| `code` | `integer` | No |  Default: `200`. |
++| `data` | `RuntimeFormStateDTO` | Yes | — |
++
++No reviewed business example is published for this schema. Use the field contract above and the [response scenarios](../../api/response-scenarios.md); do not infer valid lifecycle values from field types alone.
++
+ ### `SuccessResponse_list_SubmissionAttachmentDTO__`
+ 
+ Used by: `GET /api/v1/business-requests/{ref_id}/attachments`
+diff --git a/docs/reference/responses/index.md b/docs/reference/responses/index.md
+index 9610988..cf665f5 100644
+--- a/docs/reference/responses/index.md
++++ b/docs/reference/responses/index.md
+@@ -9,7 +9,7 @@ Generated from the application's successful OpenAPI responses. Each topic lists
+ - [ai-agents](ai-agents.md) — 32 schemas
+ - [audit-events](audit-events.md) — 4 schemas
+ - [auth](auth.md) — 6 schemas
+-- [business-requests](business-requests.md) — 17 schemas
++- [business-requests](business-requests.md) — 21 schemas
+ - [client-releases](client-releases.md) — 10 schemas
+ - [clients](clients.md) — 13 schemas
+ - [definition-library](definition-library.md) — 23 schemas
+@@ -24,13 +24,13 @@ Generated from the application's successful OpenAPI responses. Each topic lists
+ - [health](health.md) — 5 schemas
+ - [history](history.md) — 3 schemas
+ - [images](images.md) — 2 schemas
+-- [integration-connections](integration-connections.md) — 16 schemas
++- [integration-connections](integration-connections.md) — 19 schemas
+ - [notifications](notifications.md) — 5 schemas
+ - [permissions](permissions.md) — 10 schemas
+ - [process-events](process-events.md) — 2 schemas
+ - [processes](processes.md) — 18 schemas
+ - [reports](reports.md) — 9 schemas
+-- [request-types](request-types.md) — 9 schemas
++- [request-types](request-types.md) — 12 schemas
+ - [roles](roles.md) — 8 schemas
+ - [sessions](sessions.md) — 5 schemas
+ - [step-types](step-types.md) — 11 schemas
+@@ -39,6 +39,6 @@ Generated from the application's successful OpenAPI responses. Each topic lists
+ - [task-schedules](task-schedules.md) — 8 schemas
+ - [users](users.md) — 13 schemas
+ - [work-groups](work-groups.md) — 11 schemas
+-- [work-items](work-items.md) — 21 schemas
++- [work-items](work-items.md) — 20 schemas
+ - [workflow-versions](workflow-versions.md) — 24 schemas
+-- [workflows](workflows.md) — 13 schemas
++- [workflows](workflows.md) — 15 schemas
+diff --git a/docs/reference/responses/integration-connections.md b/docs/reference/responses/integration-connections.md
+index b9e2ce0..97b50be 100644
+--- a/docs/reference/responses/integration-connections.md
++++ b/docs/reference/responses/integration-connections.md
+@@ -49,6 +49,20 @@ Used by: `GET /api/v1/integration-connections/{ref_id}`, `POST /api/v1/integrati
+ 
+ No reviewed business example is published for this schema. Use the field contract above and the [response scenarios](../../api/response-scenarios.md); do not infer valid lifecycle values from field types alone.
+ 
++### `ConnectionGrantViewDTO`
++
++Used by: `POST /api/v1/integration-connections/{ref_id}/grants/search`
++
++| Field | Type | Required | Notes |
++| --- | --- | --- | --- |
++| `user_ref_id` | `string | null` | No | Opaque reference; use the value returned by the API. |
++| `work_group_ref_id` | `string | null` | No | Opaque reference; use the value returned by the API. |
++| `can_use` | `boolean` | No |  Default: `True`. |
++| `can_manage` | `boolean` | No |  Default: `False`. |
++| `ref_id` | `string` | Yes | Opaque reference; use the value returned by the API. |
++
++No reviewed business example is published for this schema. Use the field contract above and the [response scenarios](../../api/response-scenarios.md); do not infer valid lifecycle values from field types alone.
++
+ ### `GrantReferenceDTO`
+ 
+ Used by: `POST /api/v1/integration-connections/{ref_id}/grants`
+@@ -95,6 +109,20 @@ Used by: `POST /api/v1/integration-connections/report`, `POST /api/v1/integratio
+ 
+ No reviewed business example is published for this schema. Use the field contract above and the [response scenarios](../../api/response-scenarios.md); do not infer valid lifecycle values from field types alone.
+ 
++### `PageResponse_Page_ConnectionGrantViewDTO__`
++
++Used by: `POST /api/v1/integration-connections/{ref_id}/grants/search`
++
++| Field | Type | Required | Notes |
++| --- | --- | --- | --- |
++| `success` | `boolean` | No |  Default: `True`. |
++| `request_id` | `string` | Yes | — |
++| `error` | `null` | No | — |
++| `code` | `integer` | No |  Default: `200`. |
++| `result` | `Page_ConnectionGrantViewDTO_` | Yes | — |
++
++No reviewed business example is published for this schema. Use the field contract above and the [response scenarios](../../api/response-scenarios.md); do not infer valid lifecycle values from field types alone.
++
+ ### `PageResponse_Page_HistoryRecordDTO__`
+ 
+ Used by: `POST /api/v1/integration-connections/{ref_id}/history`
+@@ -137,6 +165,20 @@ Used by: `POST /api/v1/integration-connections/report`, `POST /api/v1/integratio
+ 
+ No reviewed business example is published for this schema. Use the field contract above and the [response scenarios](../../api/response-scenarios.md); do not infer valid lifecycle values from field types alone.
+ 
++### `Page_ConnectionGrantViewDTO_`
++
++Used by: `POST /api/v1/integration-connections/{ref_id}/grants/search`
++
++| Field | Type | Required | Notes |
++| --- | --- | --- | --- |
++| `items` | `array[ConnectionGrantViewDTO]` | No | — |
++| `page` | `integer` | No |  Default: `1`. |
++| `size` | `integer` | No |  Default: `20`. |
++| `total` | `integer` | Yes | — |
++| `total_pages` | `integer` | Yes | Return the number of nonempty pages in the full result set. |
++
++No reviewed business example is published for this schema. Use the field contract above and the [response scenarios](../../api/response-scenarios.md); do not infer valid lifecycle values from field types alone.
++
+ ### `Page_HistoryRecordDTO_`
+ 
+ Used by: `POST /api/v1/integration-connections/{ref_id}/history`
+diff --git a/docs/reference/responses/request-types.md b/docs/reference/responses/request-types.md
+index 8bb50c4..9dcdeaf 100644
+--- a/docs/reference/responses/request-types.md
++++ b/docs/reference/responses/request-types.md
+@@ -6,6 +6,21 @@ tags: [api, dto, request-types]
+ 
+ These schemas are emitted by successful API responses in this topic. Reviewed examples are included only when a curated fixture exists. Required nullable fields must be present and may be null; optional fields may be omitted as allowed by the schema. See the [frontend journey](../../guides/frontend-journey.md) for lifecycle and call order. The live Swagger/OpenAPI document is authoritative.
+ 
++### `EligibleRequestTypeDTO`
++
++Used by: `POST /api/v1/request-types/eligible/search`
++
++| Field | Type | Required | Notes |
++| --- | --- | --- | --- |
++| `ref_id` | `string` | Yes | Opaque reference; use the value returned by the API. |
++| `code` | `string` | Yes | — |
++| `name` | `string` | Yes | — |
++| `workflow_version_ref_id` | `string` | Yes | Opaque reference; use the value returned by the API. |
++| `form_version_ref_id` | `string` | Yes | Opaque reference; use the value returned by the API. |
++| `render_dialect` | `string` | Yes | — |
++
++No reviewed business example is published for this schema. Use the field contract above and the [response scenarios](../../api/response-scenarios.md); do not infer valid lifecycle values from field types alone.
++
+ ### `HistoryRecordDTO`
+ 
+ Used by: `POST /api/v1/request-types/{ref_id}/history`
+@@ -28,6 +43,20 @@ Used by: `POST /api/v1/request-types/{ref_id}/history`
+ 
+ No reviewed business example is published for this schema. Use the field contract above and the [response scenarios](../../api/response-scenarios.md); do not infer valid lifecycle values from field types alone.
+ 
++### `PageResponse_Page_EligibleRequestTypeDTO__`
++
++Used by: `POST /api/v1/request-types/eligible/search`
++
++| Field | Type | Required | Notes |
++| --- | --- | --- | --- |
++| `success` | `boolean` | No |  Default: `True`. |
++| `request_id` | `string` | Yes | — |
++| `error` | `null` | No | — |
++| `code` | `integer` | No |  Default: `200`. |
++| `result` | `Page_EligibleRequestTypeDTO_` | Yes | — |
++
++No reviewed business example is published for this schema. Use the field contract above and the [response scenarios](../../api/response-scenarios.md); do not infer valid lifecycle values from field types alone.
++
+ ### `PageResponse_Page_HistoryRecordDTO__`
+ 
+ Used by: `POST /api/v1/request-types/{ref_id}/history`
+@@ -56,6 +85,20 @@ Used by: `POST /api/v1/request-types/report`, `POST /api/v1/request-types/search
+ 
+ No reviewed business example is published for this schema. Use the field contract above and the [response scenarios](../../api/response-scenarios.md); do not infer valid lifecycle values from field types alone.
+ 
++### `Page_EligibleRequestTypeDTO_`
++
++Used by: `POST /api/v1/request-types/eligible/search`
++
++| Field | Type | Required | Notes |
++| --- | --- | --- | --- |
++| `items` | `array[EligibleRequestTypeDTO]` | No | — |
++| `page` | `integer` | No |  Default: `1`. |
++| `size` | `integer` | No |  Default: `20`. |
++| `total` | `integer` | Yes | — |
++| `total_pages` | `integer` | Yes | Return the number of nonempty pages in the full result set. |
++
++No reviewed business example is published for this schema. Use the field contract above and the [response scenarios](../../api/response-scenarios.md); do not infer valid lifecycle values from field types alone.
++
+ ### `Page_HistoryRecordDTO_`
+ 
+ Used by: `POST /api/v1/request-types/{ref_id}/history`
+@@ -108,7 +151,7 @@ Used by: `GET /api/v1/request-types/{ref_id}`, `POST /api/v1/request-types`, `PO
+ | `form_ref_id` | `string` | Yes | Opaque reference; use the value returned by the API. |
+ | `is_active` | `boolean` | No |  Default: `True`. |
+ | `default_priority` | `integer | null` | No | — |
+-| `client_targets` | `array[RequestTypeClientTargetDTO]` | No | — |
++| `client_targets` | `array[RequestTypeClientTargetDTO]` | No | Authoritative confidential-client/release restrictions. On PUT, omission preserves existing restrictions; an explicit empty list deliberately removes them. |
+ | `allow_cross_client_resume` | `boolean` | No |  Default: `False`. |
+ | `extension_contract` | `string | null` | No | — |
+ | `ref_id` | `string` | Yes | Opaque reference; use the value returned by the API. |
+diff --git a/docs/reference/responses/work-items.md b/docs/reference/responses/work-items.md
+index a095e7c..c41226d 100644
+--- a/docs/reference/responses/work-items.md
++++ b/docs/reference/responses/work-items.md
+@@ -6,30 +6,6 @@ tags: [api, dto, work-items]
+ 
+ These schemas are emitted by successful API responses in this topic. Reviewed examples are included only when a curated fixture exists. Required nullable fields must be present and may be null; optional fields may be omitted as allowed by the schema. See the [frontend journey](../../guides/frontend-journey.md) for lifecycle and call order. The live Swagger/OpenAPI document is authoritative.
+ 
+-### `CollectionIssue`
+-
+-Used by: `POST /api/v1/work-items/{ref_id}/collections/edit`
+-
+-| Field | Type | Required | Notes |
+-| --- | --- | --- | --- |
+-| `pointer` | `string` | Yes | — |
+-| `code` | `string` | Yes | — |
+-| `item_keys` | `array[string]` | No | — |
+-
+-No reviewed business example is published for this schema. Use the field contract above and the [response scenarios](../../api/response-scenarios.md); do not infer valid lifecycle values from field types alone.
+-
+-### `CollectionState`
+-
+-Used by: `POST /api/v1/work-items/{ref_id}/collections/edit`
+-
+-| Field | Type | Required | Notes |
+-| --- | --- | --- | --- |
+-| `data` | `object` | Yes | — |
+-| `item_identity` | `object` | Yes | — |
+-| `issues` | `array[CollectionIssue]` | No | — |
+-
+-No reviewed business example is published for this schema. Use the field contract above and the [response scenarios](../../api/response-scenarios.md); do not infer valid lifecycle values from field types alone.
+-
+ ### `CorrectionFeedbackDTO`
+ 
+ Used by: `GET /api/v1/work-items/{ref_id}/view`, `POST /api/v1/work-items/{ref_id}/feedback/{feedback_key}/resolve`
+@@ -48,17 +24,6 @@ Used by: `GET /api/v1/work-items/{ref_id}/view`, `POST /api/v1/work-items/{ref_i
+ 
+ No reviewed business example is published for this schema. Use the field contract above and the [response scenarios](../../api/response-scenarios.md); do not infer valid lifecycle values from field types alone.
+ 
+-### `ManualOverrideState`
+-
+-Used by: `POST /api/v1/work-items/{ref_id}/overrides`
+-
+-| Field | Type | Required | Notes |
+-| --- | --- | --- | --- |
+-| `data` | `object` | Yes | — |
+-| `override_provenance` | `object` | Yes | — |
+-
+-No reviewed business example is published for this schema. Use the field contract above and the [response scenarios](../../api/response-scenarios.md); do not infer valid lifecycle values from field types alone.
+-
+ ### `OptionResult`
+ 
+ Used by: `POST /api/v1/work-items/{ref_id}/options`
+@@ -221,6 +186,70 @@ Used by: `POST /api/v1/work-items/{ref_id}/options`
+ 
+ No reviewed business example is published for this schema. Use the field contract above and the [response scenarios](../../api/response-scenarios.md); do not infer valid lifecycle values from field types alone.
+ 
++### `RuntimeActionDTO`
++
++Used by: `DELETE /api/v1/work-items/{ref_id}/attachments/{attachment_ref_id}`, `GET /api/v1/work-items/{ref_id}`, `GET /api/v1/work-items/{ref_id}/runtime`, `POST /api/v1/work-items/search`, `POST /api/v1/work-items/{ref_id}/archive`, `POST /api/v1/work-items/{ref_id}/cancel`, `POST /api/v1/work-items/{ref_id}/claim`, `POST /api/v1/work-items/{ref_id}/collections/edit`, `POST /api/v1/work-items/{ref_id}/comment`, `POST /api/v1/work-items/{ref_id}/complete`, `POST /api/v1/work-items/{ref_id}/expire`, `POST /api/v1/work-items/{ref_id}/forward`, `POST /api/v1/work-items/{ref_id}/overrides`, `POST /api/v1/work-items/{ref_id}/pin`, `POST /api/v1/work-items/{ref_id}/read`, `POST /api/v1/work-items/{ref_id}/reject`, `POST /api/v1/work-items/{ref_id}/release`, `POST /api/v1/work-items/{ref_id}/return`, `POST /api/v1/work-items/{ref_id}/save`, `POST /api/v1/work-items/{ref_id}/start`, `POST /api/v1/work-items/{ref_id}/watch`, `PUT /api/v1/work-items/{ref_id}/attachments`
++
++| Field | Type | Required | Notes |
++| --- | --- | --- | --- |
++| `key` | `string` | Yes | — |
++| `kind` | `string` | Yes | — |
++| `outcome_key` | `string` | Yes | — |
++| `title` | `string` | Yes | — |
++| `confirmation` | `string | null` | Yes | — |
++| `required_scopes` | `array[string]` | Yes | — |
++| `require_comment` | `boolean` | Yes | — |
++| `validation` | `string` | Yes | — |
++
++No reviewed business example is published for this schema. Use the field contract above and the [response scenarios](../../api/response-scenarios.md); do not infer valid lifecycle values from field types alone.
++
++### `RuntimeFieldMetadataDTO`
++
++Used by: `DELETE /api/v1/work-items/{ref_id}/attachments/{attachment_ref_id}`, `GET /api/v1/work-items/{ref_id}`, `GET /api/v1/work-items/{ref_id}/runtime`, `POST /api/v1/work-items/search`, `POST /api/v1/work-items/{ref_id}/archive`, `POST /api/v1/work-items/{ref_id}/cancel`, `POST /api/v1/work-items/{ref_id}/claim`, `POST /api/v1/work-items/{ref_id}/collections/edit`, `POST /api/v1/work-items/{ref_id}/comment`, `POST /api/v1/work-items/{ref_id}/complete`, `POST /api/v1/work-items/{ref_id}/expire`, `POST /api/v1/work-items/{ref_id}/forward`, `POST /api/v1/work-items/{ref_id}/overrides`, `POST /api/v1/work-items/{ref_id}/pin`, `POST /api/v1/work-items/{ref_id}/read`, `POST /api/v1/work-items/{ref_id}/reject`, `POST /api/v1/work-items/{ref_id}/release`, `POST /api/v1/work-items/{ref_id}/return`, `POST /api/v1/work-items/{ref_id}/save`, `POST /api/v1/work-items/{ref_id}/start`, `POST /api/v1/work-items/{ref_id}/watch`, `PUT /api/v1/work-items/{ref_id}/attachments`
++
++| Field | Type | Required | Notes |
++| --- | --- | --- | --- |
++| `scope` | `string` | Yes | Visible JSON Schema property/items scope. |
++| `validation_schema` | `object` | Yes | Bounded compiled schema of this visible field only. No defaults, examples, hidden properties or shared definitions; backend validates the full canonical document. |
++| `writable` | `boolean` | Yes | — |
++| `required` | `boolean` | Yes | — |
++
++No reviewed business example is published for this schema. Use the field contract above and the [response scenarios](../../api/response-scenarios.md); do not infer valid lifecycle values from field types alone.
++
++### `RuntimeFormStateDTO`
++
++Used by: `DELETE /api/v1/work-items/{ref_id}/attachments/{attachment_ref_id}`, `GET /api/v1/work-items/{ref_id}`, `GET /api/v1/work-items/{ref_id}/runtime`, `POST /api/v1/work-items/search`, `POST /api/v1/work-items/{ref_id}/archive`, `POST /api/v1/work-items/{ref_id}/cancel`, `POST /api/v1/work-items/{ref_id}/claim`, `POST /api/v1/work-items/{ref_id}/collections/edit`, `POST /api/v1/work-items/{ref_id}/comment`, `POST /api/v1/work-items/{ref_id}/complete`, `POST /api/v1/work-items/{ref_id}/expire`, `POST /api/v1/work-items/{ref_id}/forward`, `POST /api/v1/work-items/{ref_id}/overrides`, `POST /api/v1/work-items/{ref_id}/pin`, `POST /api/v1/work-items/{ref_id}/read`, `POST /api/v1/work-items/{ref_id}/reject`, `POST /api/v1/work-items/{ref_id}/release`, `POST /api/v1/work-items/{ref_id}/return`, `POST /api/v1/work-items/{ref_id}/save`, `POST /api/v1/work-items/{ref_id}/start`, `POST /api/v1/work-items/{ref_id}/watch`, `PUT /api/v1/work-items/{ref_id}/attachments`
++
++| Field | Type | Required | Notes |
++| --- | --- | --- | --- |
++| `runtime_dialect` | `string` | No |  Default: `bpms.runtime/1`. |
++| `resource_kind` | `string` | Yes | — |
++| `resource_ref_id` | `string` | Yes | Current opaque revision-bearing reference for the owning request/work item; replace after every mutation. |
++| `form_version_ref_id` | `string` | Yes | Opaque reference; use the value returned by the API. |
++| `form_version_number` | `integer` | Yes | — |
++| `submission_ref_id` | `string` | Yes | Opaque reference; use the value returned by the API. |
++| `design_key` | `string` | Yes | Exact pinned client variant; locale changes cannot change this key. |
++| `render_dialect` | `string` | No |  Default: `bpms.render/1`. |
++| `data_dialect` | `string` | No |  Default: `https://json-schema.org/draft/2020-12/schema`. |
++| `view_key` | `string` | Yes | — |
++| `purpose` | `string` | Yes | — |
++| `resolved_locale` | `string` | Yes | Locale selected by the pinned catalog, or negotiated en/fa fallback. |
++| `direction` | `string` | Yes | — |
++| `data` | `object` | Yes | Canonical actor-visible values. Hidden values are preserved only on the server. |
++| `item_identity` | `object` | Yes | Stable row keys for visible collection paths only. |
++| `page_settings` | `object` | No | Pinned display-only page settings; no scripts, bindings or runtime values. |
++| `before_data` | `object | null` | No | Prior submitted data filtered through the same task view, or null when unavailable. |
++| `render_schema` | `object` | Yes | Actor-filtered bounded bpms.render/1 display document. Server-evaluated calculation metadata and client expressions are omitted; writable_scopes is authoritative for editability. |
++| `readable_scopes` | `array[string]` | Yes | — |
++| `writable_scopes` | `array[string]` | Yes | — |
++| `required_scopes` | `array[string]` | Yes | — |
++| `field_metadata` | `array[RuntimeFieldMetadataDTO]` | Yes | — |
++| `actions` | `array[RuntimeActionDTO]` | No | — |
++| `override_provenance` | `object` | No | Visible override actor/reason/value/time only; input checksums remain server-only. |
++| `issues` | `array[object]` | No | Safe visible pointer/code pairs. Hidden canonical validation failures produce a generic task.validation issue. |
++
++No reviewed business example is published for this schema. Use the field contract above and the [response scenarios](../../api/response-scenarios.md); do not infer valid lifecycle values from field types alone.
++
+ ### `SelectOption_str_`
+ 
+ Used by: `POST /api/v1/work-items/{ref_id}/options`
+@@ -251,23 +280,9 @@ Used by: `GET /api/v1/work-items/{ref_id}/attachments`, `POST /api/v1/work-items
+ 
+ No reviewed business example is published for this schema. Use the field contract above and the [response scenarios](../../api/response-scenarios.md); do not infer valid lifecycle values from field types alone.
+ 
+-### `SuccessResponse_CollectionState_`
+-
+-Used by: `POST /api/v1/work-items/{ref_id}/collections/edit`
+-
+-| Field | Type | Required | Notes |
+-| --- | --- | --- | --- |
+-| `success` | `boolean` | No |  Default: `True`. |
+-| `request_id` | `string` | Yes | — |
+-| `error` | `null` | No | — |
+-| `code` | `integer` | No |  Default: `200`. |
+-| `data` | `CollectionState` | Yes | — |
+-
+-No reviewed business example is published for this schema. Use the field contract above and the [response scenarios](../../api/response-scenarios.md); do not infer valid lifecycle values from field types alone.
+-
+-### `SuccessResponse_ManualOverrideState_`
++### `SuccessResponse_RuntimeFormStateDTO_`
+ 
+-Used by: `POST /api/v1/work-items/{ref_id}/overrides`
++Used by: `GET /api/v1/work-items/{ref_id}/runtime`, `POST /api/v1/work-items/{ref_id}/collections/edit`, `POST /api/v1/work-items/{ref_id}/overrides`
+ 
+ | Field | Type | Required | Notes |
+ | --- | --- | --- | --- |
+@@ -275,7 +290,7 @@ Used by: `POST /api/v1/work-items/{ref_id}/overrides`
+ | `request_id` | `string` | Yes | — |
+ | `error` | `null` | No | — |
+ | `code` | `integer` | No |  Default: `200`. |
+-| `data` | `ManualOverrideState` | Yes | — |
++| `data` | `RuntimeFormStateDTO` | Yes | — |
+ 
+ No reviewed business example is published for this schema. Use the field contract above and the [response scenarios](../../api/response-scenarios.md); do not infer valid lifecycle values from field types alone.
+ 
+@@ -468,6 +483,8 @@ Used by: `DELETE /api/v1/work-items/{ref_id}/attachments/{attachment_ref_id}`, `
+ 
+ | Field | Type | Required | Notes |
+ | --- | --- | --- | --- |
++| `kind` | `string` | No | Explicit classification: human tasks have a pinned form, AI approvals have a real fenced approval association; absent forms alone never imply AI support. Default: `UNSUPPORTED`. |
++| `runtime_state` | `RuntimeFormStateDTO | null` | No | Current canonical authorized form state after reads/mutations. Null for form-less items; never fetch privileged authoring documents as a fallback. |
+ | `ref_id` | `string` | Yes | Opaque reference; use the value returned by the API. |
+ | `request_ref_id` | `string` | Yes | Opaque reference; use the value returned by the API. |
+ | `step_execution_ref_id` | `string` | Yes | Opaque reference; use the value returned by the API. |
+diff --git a/docs/reference/responses/workflows.md b/docs/reference/responses/workflows.md
+index c052387..340cd1a 100644
+--- a/docs/reference/responses/workflows.md
++++ b/docs/reference/responses/workflows.md
+@@ -83,6 +83,20 @@ Used by: `POST /api/v1/workflows/report`, `POST /api/v1/workflows/search`
+ 
+ No reviewed business example is published for this schema. Use the field contract above and the [response scenarios](../../api/response-scenarios.md); do not infer valid lifecycle values from field types alone.
+ 
++### `PageResponse_Page_WorkflowGrantViewDTO__`
++
++Used by: `POST /api/v1/workflows/{ref_id}/grants/search`
++
++| Field | Type | Required | Notes |
++| --- | --- | --- | --- |
++| `success` | `boolean` | No |  Default: `True`. |
++| `request_id` | `string` | Yes | — |
++| `error` | `null` | No | — |
++| `code` | `integer` | No |  Default: `200`. |
++| `result` | `Page_WorkflowGrantViewDTO_` | Yes | — |
++
++No reviewed business example is published for this schema. Use the field contract above and the [response scenarios](../../api/response-scenarios.md); do not infer valid lifecycle values from field types alone.
++
+ ### `Page_HistoryRecordDTO_`
+ 
+ Used by: `POST /api/v1/workflows/{ref_id}/history`
+@@ -111,6 +125,20 @@ Used by: `POST /api/v1/workflows/report`, `POST /api/v1/workflows/search`
+ 
+ No reviewed business example is published for this schema. Use the field contract above and the [response scenarios](../../api/response-scenarios.md); do not infer valid lifecycle values from field types alone.
+ 
++### `Page_WorkflowGrantViewDTO_`
++
++Used by: `POST /api/v1/workflows/{ref_id}/grants/search`
++
++| Field | Type | Required | Notes |
++| --- | --- | --- | --- |
++| `items` | `array[WorkflowGrantViewDTO]` | No | — |
++| `page` | `integer` | No |  Default: `1`. |
++| `size` | `integer` | No |  Default: `20`. |
++| `total` | `integer` | Yes | — |
++| `total_pages` | `integer` | Yes | Return the number of nonempty pages in the full result set. |
++
++No reviewed business example is published for this schema. Use the field contract above and the [response scenarios](../../api/response-scenarios.md); do not infer valid lifecycle values from field types alone.
++
+ ### `SuccessResponse_GraphValidationResult_`
+ 
+ Used by: `POST /api/v1/workflows/validate`
+@@ -184,7 +212,7 @@ No reviewed business example is published for this schema. Use the field contrac
+ 
+ ### `WorkflowGrantViewDTO`
+ 
+-Used by: `POST /api/v1/workflows/{ref_id}/grants`
++Used by: `POST /api/v1/workflows/{ref_id}/grants`, `POST /api/v1/workflows/{ref_id}/grants/search`
+ 
+ | Field | Type | Required | Notes |
+ | --- | --- | --- | --- |
+diff --git a/scripts/run_flow_test.py b/scripts/run_flow_test.py
+index c887edd..0952c3f 100644
+--- a/scripts/run_flow_test.py
++++ b/scripts/run_flow_test.py
+@@ -58,8 +58,11 @@ def main() -> int:
+                 "-m",
+                 "pytest",
+                 "-q",
++                "--tb=short",
++                "--show-capture=no",
+                 "tests/integration/test_full_workflow.py",
+                 "tests/integration/test_frontend_journey.py",
++                "tests/integration/test_platform_foundation.py",
+             ],
+             env=environment,
+             check=False,
+diff --git a/src/apps/forms/application/behavior.py b/src/apps/forms/application/behavior.py
+index 399d9e6..c15e946 100644
+--- a/src/apps/forms/application/behavior.py
++++ b/src/apps/forms/application/behavior.py
+@@ -273,6 +273,8 @@ def evaluate_behavior(
+                     raise BehaviorError("behavior.numeric") from exc
+                 value = int(total) if total == total.to_integral_value() else float(total)
+             elif calculation.get("function") == "concat":
++                if any(not isinstance(item, str) for item in values):
++                    raise BehaviorError("behavior.calculation_type")
+                 value = "".join(values)
+             elif calculation.get("function") == "count":
+                 value = sum(len(item) for item in values)
+diff --git a/src/apps/forms/application/runtime.py b/src/apps/forms/application/runtime.py
+new file mode 100644
+index 0000000..7f8d5b7
+--- /dev/null
++++ b/src/apps/forms/application/runtime.py
+@@ -0,0 +1,169 @@
++"""Build a bounded display and validation projection without hidden authoring metadata."""
++
++from copy import deepcopy
++from typing import Any
++
++from apps.forms.application.validation import _compile
++from apps.forms.domain.runtime import RuntimeFieldMetadataDTO
++from apps.work_items.application.task_mutations import (
++    _covers,
++    _related,
++    project_task_state,
++    visible_scopes,
++)
++from apps.work_items.application.task_views import _data_path
++from apps.workflows.application.validation import GraphValidator
++
++
++def render_scopes(render: dict[str, Any]) -> set[str]:
++    scopes = set()
++
++    def visit(node):
++        if isinstance(node, dict):
++            if isinstance(node.get("scope"), str) and node["scope"].startswith("/properties/"):
++                scopes.add(node["scope"])
++            for child in node.values():
++                visit(child)
++        elif isinstance(node, list):
++            for child in node:
++                visit(child)
++
++    visit(render)
++    return scopes
++
++
++def display_render(render: dict[str, Any], policy, scopes: set[str] | None) -> dict[str, Any]:
++    selected = visible_scopes(policy, scopes)
++    hidden = (policy or {}).get("hidden", [])
++
++    def visible(scope):
++        path = _data_path(scope)
++        return not any(_covers(path, field) for field in hidden) and (
++            selected is None or any(_related(path, field) for field in selected)
++        )
++
++    def visit(value):
++        if isinstance(value, list):
++            return [clean for child in value if (clean := visit(child)) is not None]
++        if not isinstance(value, dict):
++            return deepcopy(value)
++        if (
++            isinstance(value.get("scope"), str)
++            and value["scope"].startswith("/properties/")
++            and not visible(value["scope"])
++        ):
++            return None
++        result = {}
++        for key, child in value.items():
++            # Canonical server evaluation replaces client-side expressions and hidden input dependencies.
++            if key in {
++                "calculation",
++                "conditions",
++                "rules",
++                "default",
++                "default_value",
++                "context_bindings",
++                "parameters",
++                "reuse_instances",
++                "localization",
++                "source",
++                "navigation",
++                "messages",
++                "option_messages",
++            }:
++                continue
++            clean = visit(child)
++            if clean is not None:
++                result[key] = clean
++        return result
++
++    return visit(render) or {}
++
++
++def field_metadata(
++    schema: dict[str, Any], scopes: set[str], writable: set[str], required: set[str], policy
++) -> list[RuntimeFieldMetadataDTO]:
++    compiled = _compile(schema)
++    hidden = (policy or {}).get("hidden", [])
++
++    def clean(node, path):
++        if not isinstance(node, dict):
++            return deepcopy(node)
++        result = {
++            key: deepcopy(value)
++            for key, value in node.items()
++            if key
++            not in {
++                "properties",
++                "items",
++                "prefixItems",
++                "required",
++                "$defs",
++                "title",
++                "description",
++                "default",
++            }
++        }
++        if any(
++            len(_data_path(scope)) > len(path) and _data_path(scope)[: len(path)] == path
++            for scope in hidden
++        ):
++            result.pop("enum", None)
++            result.pop("const", None)
++        if "properties" in node:
++            properties = {
++                key: clean(value, (*path, key))
++                for key, value in node["properties"].items()
++                if not any(_covers((*path, key), scope) for scope in hidden)
++            }
++            result["properties"] = properties
++            if "required" in node:
++                result["required"] = [key for key in node["required"] if key in properties]
++        if "items" in node:
++            result["items"] = clean(node["items"], (*path, "*"))
++        if "prefixItems" in node:
++            result["prefixItems"] = [clean(value, (*path, "*")) for value in node["prefixItems"]]
++        return result
++
++    result = []
++    for scope in sorted(scopes):
++        path = _data_path(scope)
++        if any(_covers(path, field) for field in hidden):
++            continue
++        field = GraphValidator._schema_at(compiled, scope)
++        if field is not None:
++            result.append(
++                RuntimeFieldMetadataDTO(
++                    scope=scope,
++                    validation_schema=clean(field, path),
++                    writable=any(_covers(path, field) for field in writable),
++                    required=scope in required,
++                )
++            )
++    return result
++
++
++def runtime_projection(
++    data, identity, provenance, schema, render, policy, scopes, writable, required
++):
++    state = project_task_state(data, identity, provenance, [], policy, scopes)
++    visible = visible_scopes(policy, scopes)
++    visible = render_scopes(render) if visible is None else visible
++    state["render_schema"] = display_render(render, policy, visible)
++    state["readable_scopes"] = sorted(visible)
++    state["writable_scopes"] = sorted(writable & visible)
++    state["required_scopes"] = sorted(required & visible)
++    state["field_metadata"] = field_metadata(
++        schema, visible, writable & visible, required & visible, policy
++    )
++    return state
++
++
++def display_page(settings):
++    return {
++        key: deepcopy(value)
++        for key, value in (settings or {}).items()
++        if key
++        in {"paper", "orientation", "margins", "title", "header", "footer", "width", "height"}
++        and isinstance(value, (str, int, float, bool))
++    }
+diff --git a/src/apps/forms/domain/runtime.py b/src/apps/forms/domain/runtime.py
+new file mode 100644
+index 0000000..3b66c3f
+--- /dev/null
++++ b/src/apps/forms/domain/runtime.py
+@@ -0,0 +1,127 @@
++"""Versioned ordinary-actor runtime form projections; never authoring DTOs."""
++
++from typing import Any, Literal
++
++from pydantic import ConfigDict, Field
++
++from core.base_dto import BaseDTO
++
++
++class RuntimeActionDTO(BaseDTO):
++    model_config = ConfigDict(extra="forbid")
++    key: str
++    kind: Literal["complete", "reject", "return"]
++    outcome_key: str
++    title: str
++    confirmation: str | None
++    required_scopes: list[str]
++    require_comment: bool
++    validation: Literal["complete", "partial"]
++
++
++class RuntimeFieldMetadataDTO(BaseDTO):
++    scope: str = Field(description="Visible JSON Schema property/items scope.")
++    validation_schema: dict[str, Any] = Field(
++        description="Bounded compiled schema of this visible field only. No defaults, examples, hidden properties or shared definitions; backend validates the full canonical document."
++    )
++    writable: bool
++    required: bool
++
++
++class RuntimeFormStateDTO(BaseDTO):
++    model_config = ConfigDict(
++        extra="forbid",
++        json_schema_extra={
++            "examples": [
++                {
++                    "runtime_dialect": "bpms.runtime/1",
++                    "resource_kind": "WORK_ITEM",
++                    "resource_ref_id": "r2-current-work-item",
++                    "form_version_ref_id": "r2-pinned-form-version",
++                    "form_version_number": 1,
++                    "submission_ref_id": "r2-current-submission",
++                    "design_key": "shared",
++                    "view_key": "review",
++                    "purpose": "edit",
++                    "resolved_locale": "en",
++                    "direction": "ltr",
++                    "data": {"amount": "125.00"},
++                    "item_identity": {},
++                    "render_schema": {
++                        "dialect": "bpms.render/1",
++                        "root": {
++                            "component": "text",
++                            "scope": "/properties/amount",
++                            "label": "Amount",
++                        },
++                    },
++                    "readable_scopes": ["/properties/amount"],
++                    "writable_scopes": ["/properties/amount"],
++                    "required_scopes": ["/properties/amount"],
++                    "field_metadata": [
++                        {
++                            "scope": "/properties/amount",
++                            "validation_schema": {"type": "string"},
++                            "writable": True,
++                            "required": True,
++                        }
++                    ],
++                    "actions": [],
++                    "override_provenance": {},
++                    "issues": [],
++                }
++            ]
++        },
++    )
++    runtime_dialect: Literal["bpms.runtime/1"] = "bpms.runtime/1"
++    resource_kind: Literal["REQUEST", "WORK_ITEM"]
++    resource_ref_id: str = Field(
++        description="Current opaque revision-bearing reference for the owning request/work item; replace after every mutation."
++    )
++    form_version_ref_id: str
++    form_version_number: int = Field(ge=1)
++    submission_ref_id: str
++    design_key: str = Field(
++        description="Exact pinned client variant; locale changes cannot change this key."
++    )
++    render_dialect: Literal["bpms.render/1"] = "bpms.render/1"
++    data_dialect: Literal["https://json-schema.org/draft/2020-12/schema"] = (
++        "https://json-schema.org/draft/2020-12/schema"
++    )
++    view_key: str
++    purpose: Literal["edit", "summary", "print", "observer", "correction"]
++    resolved_locale: str = Field(
++        description="Locale selected by the pinned catalog, or negotiated en/fa fallback."
++    )
++    direction: Literal["ltr", "rtl"]
++    data: dict[str, Any] = Field(
++        description="Canonical actor-visible values. Hidden values are preserved only on the server."
++    )
++    item_identity: dict[str, list[str]] = Field(
++        description="Stable row keys for visible collection paths only."
++    )
++    page_settings: dict[str, Any] = Field(
++        default_factory=dict,
++        description="Pinned display-only page settings; no scripts, bindings or runtime values.",
++    )
++    before_data: dict[str, Any] | None = Field(
++        default=None,
++        description="Prior submitted data filtered through the same task view, or null when unavailable.",
++    )
++    render_schema: dict[str, Any] = Field(
++        description="Actor-filtered bounded bpms.render/1 display document. Server-evaluated calculation metadata and client expressions are omitted; writable_scopes is authoritative for editability."
++    )
++    readable_scopes: list[str] = Field(max_length=256)
++    writable_scopes: list[str] = Field(max_length=256)
++    required_scopes: list[str] = Field(max_length=256)
++    field_metadata: list[RuntimeFieldMetadataDTO] = Field(max_length=256)
++    actions: list[RuntimeActionDTO] = Field(default_factory=list, max_length=64)
++    override_provenance: dict[str, dict[str, Any]] = Field(
++        default_factory=dict,
++        description="Visible override actor/reason/value/time only; input checksums remain server-only.",
++    )
++    issues: list[dict[str, str]] = Field(
++        default_factory=list,
++        max_length=32,
++        description="Safe visible pointer/code pairs. Hidden canonical validation failures produce a generic task.validation issue.",
++    )
+diff --git a/src/apps/integrations/application/service.py b/src/apps/integrations/application/service.py
+index b9a3830..31bb5b4 100644
+--- a/src/apps/integrations/application/service.py
++++ b/src/apps/integrations/application/service.py
+@@ -10,6 +10,8 @@ from apps.integrations.domain.dto import (
+     AIConnectionConfig,
+     ConnectionConfig,
+     ConnectionCreateDTO,
++    ConnectionGrantQuery,
++    ConnectionGrantViewDTO,
+     ConnectionQuery,
+     ConnectionUpdateDTO,
+     GrantDTO,
+@@ -287,6 +289,35 @@ class ConnectionService:
+         except Exception:  # noqa: BLE001 -- This boundary must redact all provider exceptions.
+             raise ServiceUnavailableException("Integration unavailable") from None
+ 
++    async def search_grants(
++        self, ref_id: str, query: ConnectionGrantQuery, actor: UserEntity
++    ) -> Page[ConnectionGrantViewDTO]:
++        row = await self.get(ref_id, actor, manage=True)
++        page = await paginate_entities(
++            self.session,
++            Grant,
++            query,
++            criteria=(Grant.integration_connection_id == row.id, col(Grant.deleted_at).is_(None)),
++        )
++        items = []
++        for grant in page.items:
++            user = await self.session.get(UserEntity, grant.user_id) if grant.user_id else None
++            group = (
++                await self.session.get(WorkGroupEntity, grant.work_group_id)
++                if grant.work_group_id
++                else None
++            )
++            items.append(
++                ConnectionGrantViewDTO(
++                    ref_id=create_ref_id(grant.id, grant.version),
++                    user_ref_id=create_ref_id(user.id, user.version) if user else None,
++                    work_group_ref_id=create_ref_id(group.id, group.version) if group else None,
++                    can_use=grant.can_use,
++                    can_manage=grant.can_manage,
++                )
++            )
++        return Page(items=items, page=page.page, size=page.size, total=page.total)
++
+     async def grant(self, ref_id: str, data: GrantDTO, actor: UserEntity) -> Grant:
+         row = await self.get(ref_id, actor, manage=True, update=True)
+         self._not_revoked(row)
+diff --git a/src/apps/integrations/domain/dto.py b/src/apps/integrations/domain/dto.py
+index 1971926..03937ec 100644
+--- a/src/apps/integrations/domain/dto.py
++++ b/src/apps/integrations/domain/dto.py
+@@ -101,3 +101,11 @@ class GrantDTO(BaseDTO):
+         ):
+             raise ValueError("Exactly one target and at least one capability are required")
+         return self
++
++
++class ConnectionGrantViewDTO(GrantDTO):
++    ref_id: str
++
++
++class ConnectionGrantQuery(SearchRequest):
++    __query_fields__: ClassVar[dict[str, Any]] = {"can_use": bool, "can_manage": bool}
+diff --git a/src/apps/integrations/presentation/routes.py b/src/apps/integrations/presentation/routes.py
+index f98ee8c..f8ca2d8 100644
+--- a/src/apps/integrations/presentation/routes.py
++++ b/src/apps/integrations/presentation/routes.py
+@@ -12,6 +12,8 @@ from apps.integrations.domain.dto import (
+     ConnectionConfig,
+     ConnectionCreateDTO,
+     ConnectionDTO,
++    ConnectionGrantQuery,
++    ConnectionGrantViewDTO,
+     ConnectionQuery,
+     ConnectionUpdateDTO,
+     GrantDTO,
+@@ -26,12 +28,13 @@ from core.history_dto import HistoryQuery, HistoryRecordDTO
+ from core.history_service import HistoryService
+ from core.ref_id import create_ref_id, open_ref_id
+ from core.settings import settings
+-from utils.base_schema import response_schema
++from utils.base_schema import PRIVATE_NO_STORE_RESPONSES, response_schema
+ from utils.pagination import Page
+ from utils.presenter import (
+     PageResponse,
+     SuccessResponse,
+     page_response,
++    private_no_store,
+     select_response,
+     success_response,
+ )
+@@ -220,6 +223,24 @@ async def revoke(
+     return success_response(request, connection_dto(row))
+ 
+ 
++@router.post(
++    "/{ref_id}/grants/search",
++    response_model=PageResponse[Page[ConnectionGrantViewDTO]],
++    dependencies=[Depends(private_no_store)],
++    summary="Read current connection grants",
++    responses=PRIVATE_NO_STORE_RESPONSES,
++    description="Requires integrations.manage plus per-connection manage/owner/superuser authority. Returns current nondeleted grants with opaque grant/user/group refs and can_use/can_manage; no credentials or historical reconstruction. Shared filters allow only can_use/can_manage; one-based page/size defaults 1/20, maximum size 100. Missing connections return 404; denied manage authority returns 403. Private no-store response; grant visibility does not grant use/manage capability.",
++)
++async def search_connection_grants(
++    request: Request,
++    ref_id: str,
++    query: ConnectionGrantQuery,
++    actor: ConnectionActor,
++    application: ServiceDep,
++):
++    return page_response(request, await application.search_grants(ref_id, query, actor))
++
++
+ @router.post("/{ref_id}/grants", response_model=SuccessResponse[GrantReferenceDTO])
+ async def grant(
+     request: Request,
+diff --git a/src/apps/requests/application/service.py b/src/apps/requests/application/service.py
+index b5d3f39..70dc7a9 100644
+--- a/src/apps/requests/application/service.py
++++ b/src/apps/requests/application/service.py
+@@ -26,6 +26,8 @@ from apps.requests.domain.dto import (
+     BusinessRequestCreateDTO,
+     BusinessRequestSubmitDTO,
+     BusinessRequestUpdateDTO,
++    EligibleRequestTypeDTO,
++    EligibleRequestTypeQuery,
+     RequestTypeClientTargetDTO,
+     RequestTypeCreateDTO,
+ )
+@@ -53,6 +55,7 @@ from utils.exceptions import (
+     ValidationDetailsException,
+     VersionConflictException,
+ )
++from utils.pagination import Page
+ 
+ 
+ class RequestService:
+@@ -90,7 +93,8 @@ class RequestService:
+             | {"workflow_definition_id": workflow.id, "form_definition_id": form.id}
+         )
+         row.updated_at = get_datetime_utc()
+-        await self._replace_client_targets(row.id, data.client_targets)
++        if "client_targets" in data.model_fields_set:
++            await self._replace_client_targets(row.id, data.client_targets)
+         await self.session.flush()
+         return row
+ 
+@@ -100,29 +104,172 @@ class RequestService:
+         row.deleted_at = get_datetime_utc()
+         await self.session.flush()
+ 
+-    async def create_draft(
++    async def runtime_state(
++        self, ref_id: str, actor: UserEntity, client_context: ClientContext | None = None
++    ):
++        from apps.forms.application.localization import localize_snapshot
++        from apps.forms.application.runtime import display_page, render_scopes, runtime_projection
++        from apps.forms.domain.runtime import RuntimeFormStateDTO
++        from core.i18n import get_language
++
++        row = await self.get_request(ref_id, actor)
++        # Request participants may track, but a request form is disclosed only to its owner/superuser.
++        if not actor.is_superuser and row.requester_user_id != actor.id:
++            raise NotFoundException("Request form not found")
++        submission = await self.submission_for(row.id)
++        self._require_origin_client(row, client_context, submission)
++        form = await self.session.get(FormVersionEntity, submission.form_version_id)
++        if form is None or form.render_dialect != "bpms.render/1":
++            raise VersionConflictException("Runtime form dialect is incompatible")
++        snapshot = (
++            localize_snapshot(
++                submission.design_snapshot, FormDocuments.model_validate(form, from_attributes=True)
++            )
++            or {}
++        )
++        render = snapshot.get("render_schema", form.render_schema)
++        scopes = render_scopes(render)
++        editable = row.status == "DRAFT" and row.requester_user_id == actor.id
++        required = {
++            "/properties/" + key.replace("~", "~0").replace("/", "~1")
++            for key in form.data_schema.get("required", [])
++        }
++        projection = runtime_projection(
++            submission.data,
++            submission.item_identity,
++            submission.override_provenance,
++            form.data_schema,
++            render,
++            None,
++            None,
++            scopes if editable else set(),
++            required,
++        )
++        locale = (snapshot.get("localization") or {}).get("resolved_locale", get_language())
++        return RuntimeFormStateDTO(
++            resource_kind="REQUEST",
++            page_settings=display_page(snapshot.get("page_settings", form.page_settings)),
++            resource_ref_id=create_ref_id(row.id, row.version),
++            form_version_ref_id=create_ref_id(form.id, form.version),
++            form_version_number=form.number,
++            submission_ref_id=create_ref_id(submission.id, submission.version),
++            design_key=snapshot.get("variant_key", "default"),
++            view_key="request",
++            purpose="edit" if editable else "summary",
++            resolved_locale=locale,
++            direction="rtl" if locale == "fa" else "ltr",
++            **projection,
++        )
++
++    async def eligible_types(
+         self,
+-        data: BusinessRequestCreateDTO,
++        query: EligibleRequestTypeQuery,
+         actor: UserEntity,
+-        client_context: ClientContext | None = None,
+-    ) -> tuple[BusinessRequestEntity, FormSubmissionEntity]:
+-        request_type = await self.get_type(data.request_type_ref_id)
+-        if not request_type.is_active:
++        context: ClientContext | None = None,
++    ) -> Page[EligibleRequestTypeDTO]:
++        context = context or ClientContext.legacy()
++        items = []
++        total = 0
++        if not query.supported_render_dialects:
++            return Page(items=[], page=query.page, size=query.size, total=0)
++        offset = 0
++        while True:
++            candidates = (
++                await self.session.exec(
++                    select(RequestTypeEntity)
++                    .where(
++                        col(RequestTypeEntity.deleted_at).is_(None),
++                        col(RequestTypeEntity.is_active).is_(True),
++                    )
++                    .order_by(col(RequestTypeEntity.code), col(RequestTypeEntity.id))
++                    .offset(offset)
++                    .limit(128)
++                )
++            ).all()
++            for row in candidates:
++                try:
++                    workflow, form_version = await self._eligible_dependencies(row, actor, context)
++                    if form_version.render_dialect not in query.supported_render_dialects:
++                        continue
++                except NotFoundException, NotAllowedException, VersionConflictException:
++                    continue
++                total += 1
++                if (query.page - 1) * query.size < total <= query.page * query.size:
++                    items.append(
++                        EligibleRequestTypeDTO(
++                            ref_id=create_ref_id(row.id, row.version),
++                            code=row.code,
++                            name=row.name,
++                            workflow_version_ref_id=create_ref_id(workflow.id, workflow.version),
++                            form_version_ref_id=create_ref_id(
++                                form_version.id, form_version.version
++                            ),
++                            render_dialect=form_version.render_dialect,
++                        )
++                    )
++            if len(candidates) < 128:
++                break
++            offset += 128
++        return Page(items=items, page=query.page, size=query.size, total=total)
++
++    async def _eligible_dependencies(
++        self, request_type: RequestTypeEntity, actor: UserEntity, context: ClientContext
++    ):
++        if not request_type.is_active or request_type.deleted_at:
+             raise VersionConflictException("Request type is inactive")
+         workflow = await self.session.get(
+             WorkflowDefinitionEntity, request_type.workflow_definition_id
+         )
+-        if workflow is None or not workflow.is_active or workflow.deleted_at:
+-            raise VersionConflictException("Workflow is inactive")
++        form = await self.session.get(FormDefinitionEntity, request_type.form_definition_id)
++        if (
++            workflow is None
++            or not workflow.is_active
++            or workflow.deleted_at
++            or form is None
++            or not form.is_active
++            or form.deleted_at
++        ):
++            raise VersionConflictException("Request type dependencies are inactive")
+         if not await WorkflowService(self.session, get_registry()).can_access(
+             workflow, actor, "start"
+         ):
+             raise NotAllowedException("Workflow start access required")
+-        context = client_context or ClientContext.legacy()
+         if not matches_client_targets(await self._client_targets(request_type.id), context):
+             raise NotAllowedException("Registered client release is required")
+         workflow_version = await self._published_workflow(request_type.workflow_definition_id)
+         form_version = await self._published_form(request_type.form_definition_id)
++        try:
++            resolve_form_documents(
++                FormDocuments.model_validate(form_version, from_attributes=True), context
++            )
++        except ValueError:
++            raise NotAllowedException("Client cannot render the pinned form") from None
++        return workflow_version, form_version
++
++    async def process_reference(self, request_id: UUID) -> str | None:
++        from apps.processes.domain.entity import ProcessInstanceEntity
++
++        process = (
++            await self.session.exec(
++                select(ProcessInstanceEntity).where(
++                    ProcessInstanceEntity.business_request_id == request_id,
++                    col(ProcessInstanceEntity.parent_step_execution_id).is_(None),
++                )
++            )
++        ).one_or_none()
++        return create_ref_id(process.id, process.version) if process else None
++
++    async def create_draft(
++        self,
++        data: BusinessRequestCreateDTO,
++        actor: UserEntity,
++        client_context: ClientContext | None = None,
++    ) -> tuple[BusinessRequestEntity, FormSubmissionEntity]:
++        request_type = await self.get_type(data.request_type_ref_id)
++        context = client_context or ClientContext.legacy()
++        workflow_version, form_version = await self._eligible_dependencies(
++            request_type, actor, context
++        )
+         priority = (
+             data.priority
+             if data.priority is not None
+@@ -220,6 +367,31 @@ class RequestService:
+             )
+         await self.session.flush()
+ 
++    async def client_target_dtos(self, request_type_id: UUID) -> list[RequestTypeClientTargetDTO]:
++        rows = (
++            await self.session.exec(
++                select(RequestTypeClientTargetEntity)
++                .where(
++                    RequestTypeClientTargetEntity.request_type_id == request_type_id,
++                    col(RequestTypeClientTargetEntity.deleted_at).is_(None),
++                )
++                .order_by(col(RequestTypeClientTargetEntity.client_id))
++            )
++        ).all()
++        result = []
++        for row in rows:
++            client = await self.session.get(ClientEntity, row.client_id)
++            if client is None:
++                raise NotFoundException("Request type client target is unavailable")
++            result.append(
++                RequestTypeClientTargetDTO(
++                    client_ref_id=create_ref_id(client.id, client.version),
++                    minimum_release=row.minimum_release,
++                    maximum_release_exclusive=row.maximum_release_exclusive,
++                )
++            )
++        return result
++
+     async def _client_targets(self, request_type_id: UUID) -> tuple[ClientTarget, ...]:
+         rows = (
+             await self.session.exec(
+diff --git a/src/apps/requests/domain/dto.py b/src/apps/requests/domain/dto.py
+index 95982bc..70f8e89 100644
+--- a/src/apps/requests/domain/dto.py
++++ b/src/apps/requests/domain/dto.py
+@@ -30,7 +30,11 @@ class RequestTypeCreateDTO(BaseDTO):
+     form_ref_id: str
+     is_active: bool = True
+     default_priority: int | None = Field(default=None, ge=0, le=9)
+-    client_targets: list[RequestTypeClientTargetDTO] = Field(default_factory=list, max_length=32)
++    client_targets: list[RequestTypeClientTargetDTO] = Field(
++        default_factory=list,
++        max_length=32,
++        description="Authoritative confidential-client/release restrictions. On PUT, omission preserves existing restrictions; an explicit empty list deliberately removes them.",
++    )
+     allow_cross_client_resume: bool = False
+     extension_contract: str | None = Field(
+         default=None, max_length=128, pattern=r"^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+@@ -67,7 +71,31 @@ class BusinessRequestSubmitDTO(BaseDTO):
+     submit_key: str = Field(min_length=1, max_length=128)
+ 
+ 
++class EligibleRequestTypeQuery(BaseDTO):
++    model_config = ConfigDict(extra="forbid")
++    page: int = Field(default=1, ge=1)
++    size: int = Field(default=20, ge=1, le=100)
++    supported_render_dialects: list[str] = Field(
++        default_factory=list,
++        max_length=8,
++        description="Declared renderer capabilities, such as bpms.render/1. Empty means no renderer support and returns an empty page. This hint grants no authorization; draft creation rechecks server eligibility.",
++    )
++
++
++class EligibleRequestTypeDTO(BaseDTO):
++    ref_id: str
++    code: str
++    name: str
++    workflow_version_ref_id: str
++    form_version_ref_id: str
++    render_dialect: str
++
++
+ class BusinessRequestDTO(BaseDTO):
++    process_ref_id: str | None = Field(
++        default=None,
++        description="Real authorized root-process ref for tracking, or null for a draft/no process. Never derive a process ref from another entity reference.",
++    )
+     ref_id: str
+     request_type_ref_id: str
+     requester_ref_id: str
+diff --git a/src/apps/requests/presentation/routes.py b/src/apps/requests/presentation/routes.py
+index 2a9b5ed..871f62d 100644
+--- a/src/apps/requests/presentation/routes.py
++++ b/src/apps/requests/presentation/routes.py
+@@ -21,6 +21,7 @@ from apps.forms.domain.collection import CollectionEditRequest, CollectionState
+ from apps.forms.domain.dto import FormDocuments
+ from apps.forms.domain.entity import FormDefinitionEntity, FormVersionEntity
+ from apps.forms.domain.options import OptionQuery, OptionResult
++from apps.forms.domain.runtime import RuntimeFormStateDTO
+ from apps.media.application.service import UserUploadService
+ from apps.media.domain.entity import UserUploadEntity
+ from apps.requests.application.service import RequestService
+@@ -30,6 +31,8 @@ from apps.requests.domain.dto import (
+     BusinessRequestQuery,
+     BusinessRequestSubmitDTO,
+     BusinessRequestUpdateDTO,
++    EligibleRequestTypeDTO,
++    EligibleRequestTypeQuery,
+     RequestTypeCreateDTO,
+     RequestTypeDTO,
+     RequestTypeQuery,
+@@ -42,7 +45,7 @@ from core.deps import ClientContextDep, SessionDep
+ from core.history_dto import HistoryQuery, HistoryRecordDTO
+ from core.history_service import HistoryService
+ from core.ref_id import create_ref_id, open_ref_id
+-from utils.base_schema import response_schema
++from utils.base_schema import PRIVATE_NO_STORE_RESPONSES, response_schema
+ from utils.exceptions import NotFoundException
+ from utils.pagination import Page, paginate_entities
+ from utils.presenter import (
+@@ -66,6 +69,24 @@ RequestAdmin = Annotated[UserEntity, Depends(RequirePermission("requests.manage"
+ RequestUser = Annotated[UserEntity, Depends(RequirePermission("requests.start"))]
+ 
+ 
++@types_router.post(
++    "/eligible/search",
++    response_model=PageResponse[Page[EligibleRequestTypeDTO]],
++    dependencies=[Depends(private_no_store)],
++    summary="Search request types this requester can start",
++    responses=PRIVATE_NO_STORE_RESPONSES,
++    description="Requires requests.start, not requests.manage or forms.manage. Server filters active types/dependencies, workflow start access, current published pins and trusted registered-client/release targets before one-based bounded pagination. Declared supported_render_dialects further narrows compatibility; empty capabilities return an empty page without disclosing inaccessible choices. Empty/incompatible/ineligible results all appear as no eligible choices; selection grants no authority. Draft creation independently repeats eligibility checks. Page/size default to 1/20, size <=100; private no-store response. Client identity comes from the authenticated session, never browser identity headers.",
++)
++async def search_eligible_request_types(
++    request: Request,
++    data: EligibleRequestTypeQuery,
++    actor: RequestUser,
++    session: SessionDep,
++    client: ClientContextDep,
++):
++    return page_response(request, await RequestService(session).eligible_types(data, actor, client))
++
++
+ async def type_dto(service: RequestService, row: RequestTypeEntity) -> RequestTypeDTO:
+     workflow = await service.session.get(WorkflowDefinitionEntity, row.workflow_definition_id)
+     form = await service.session.get(FormDefinitionEntity, row.form_definition_id)
+@@ -81,6 +102,7 @@ async def type_dto(service: RequestService, row: RequestTypeEntity) -> RequestTy
+         allow_cross_client_resume=row.allow_cross_client_resume,
+         default_priority=row.default_priority,
+         extension_contract=row.extension_contract,
++        client_targets=await service.client_target_dtos(row.id),
+         created_at=row.created_at,
+     )
+ 
+@@ -94,6 +116,7 @@ async def request_dto(service: RequestService, row: BusinessRequestEntity) -> Bu
+     if request_type is None or requester is None or workflow is None or form is None:
+         raise NotFoundException("Business request dependency not found")
+     return BusinessRequestDTO(
++        process_ref_id=await service.process_reference(row.id),
+         ref_id=create_ref_id(row.id, row.version),
+         request_type_ref_id=create_ref_id(request_type.id, request_type.version),
+         requester_ref_id=create_ref_id(requester.id, requester.version),
+@@ -113,6 +136,21 @@ async def request_dto(service: RequestService, row: BusinessRequestEntity) -> Bu
+     )
+ 
+ 
++@requests_router.get(
++    "/{ref_id}/view",
++    response_model=SuccessResponse[RuntimeFormStateDTO],
++    summary="Read an ordinary requester's pinned runtime form",
++    responses=PRIVATE_NO_STORE_RESPONSES,
++    description="Requires requests.start plus ownership/superuser and the pinned origin-client policy. No forms.manage is required. Returns bpms.runtime/1 with exact form/design identity, current request/submission refs, visible display/validation metadata, canonical values, row keys and effective writable/required scopes. DRAFT owners may edit; submitted/closed views are read-only. Accept-Language resolves the pinned catalog without changing the client variant. Incompatible dialects return 409; unauthorized forms return 404; private no-store response.",
++)
++async def get_request_runtime(
++    request: Request, ref_id: str, actor: RequestUser, session: SessionDep, client: ClientContextDep
++):
++    return success_response(
++        request, await RequestService(session).runtime_state(ref_id, actor, client)
++    )
++
++
+ async def attachment_dto(
+     service: AttachmentService, row, upload: UserUploadEntity | None = None
+ ) -> SubmissionAttachmentDTO:
+diff --git a/src/apps/work_items/application/service.py b/src/apps/work_items/application/service.py
+index a0e268f..d8fde5d 100644
+--- a/src/apps/work_items/application/service.py
++++ b/src/apps/work_items/application/service.py
+@@ -33,6 +33,7 @@ from apps.requests.domain.entity import (
+ )
+ from apps.users.domain.entity import UserEntity
+ from apps.work_groups.domain.entity import WorkGroupEntity, WorkGroupMemberEntity
++from apps.work_items.application.task_mutations import merge_task_data, project_task_state
+ from apps.work_items.domain.dto import CartableKind, CartableQueryDTO, WorkItemForwardDTO
+ from apps.work_items.domain.entity import (
+     UserWorkItemStateEntity,
+@@ -369,9 +370,22 @@ class WorkItemService:
+         return item
+ 
+     async def save(
+-        self, ref_id: str, command_key: str, data: dict[str, Any], actor: UserEntity
++        self,
++        ref_id: str,
++        command_key: str,
++        data: dict[str, Any],
++        actor: UserEntity,
++        *,
++        view_key: str | None = None,
++        delete_paths: list[str] | None = None,
+     ) -> WorkItemEntity:
+-        payload_hash = self._hash({"data": data})
++        payload_hash = self._hash(
++            {
++                "data": data,
++                **({"view_key": view_key} if view_key is not None else {}),
++                **({"delete_paths": delete_paths} if delete_paths else {}),
++            }
++        )
+         item_id, _ = open_ref_id(ref_id)
+         if await self._idempotent(item_id, command_key, actor.id, payload_hash):
+             item = await self.session.get(WorkItemEntity, item_id)
+@@ -386,16 +400,20 @@ class WorkItemService:
+         form = await self.session.get(FormVersionEntity, submission.form_version_id)
+         if form is None:
+             raise VersionConflictException("Pinned form version is unavailable")
+-        from apps.work_items.application.task_views import enforce_writes, validate_action_data
+ 
+         step = await self._step(item)
+-        enforce_writes(submission.data, data, step.field_policy)
+-        submission.data = validate_action_data(
++        scopes = self._mutation_scopes(step, view_key)
++        canonical = merge_task_data(
++            submission.data, data, step.field_policy, view_scopes=scopes, delete_paths=delete_paths
++        )
++        submission.data = self._validate_visible_data(
++            step.field_policy,
++            scopes,
+             pinned_behavior_documents(
+                 FormDocuments.model_validate(form, from_attributes=True),
+                 submission.design_snapshot,
+             ),
+-            data,
++            canonical,
+             None,
+             submission.override_provenance,
+             partial=True,
+@@ -417,11 +435,13 @@ class WorkItemService:
+                 submission.item_identity = initialize_identity(
+                     submission.data, submission.item_identity, form.data_schema
+                 )
+-            except BehaviorError as exc:
+-                raise ValidationDetailsException([{"pointer": "/data", "code": str(exc)}]) from None
+-            except CollectionError as exc:
++            except BehaviorError:
++                raise ValidationDetailsException(
++                    [{"pointer": "/data", "code": "task.validation"}]
++                ) from None
++            except CollectionError:
+                 raise ValidationDetailsException(
+-                    [{"pointer": "/item_identity", "code": str(exc)}]
++                    [{"pointer": "/item_identity", "code": "task.validation"}]
+                 ) from None
+         submission.updated_at = get_datetime_utc()
+         item.updated_at = submission.updated_at
+@@ -446,6 +466,9 @@ class WorkItemService:
+         actor: UserEntity,
+         comment: str | None = None,
+         feedback: list[Any] | None = None,
++        *,
++        view_key: str | None = None,
++        delete_paths: list[str] | None = None,
+     ) -> WorkItemEntity:
+         payload_hash = self._hash(
+             {
+@@ -454,6 +477,8 @@ class WorkItemService:
+                 "data": data,
+                 "comment": comment,
+                 "feedback": [row.model_dump() for row in feedback or []],
++                **({"view_key": view_key} if view_key is not None else {}),
++                **({"delete_paths": delete_paths} if delete_paths else {}),
+             }
+         )
+         item_id, _ = open_ref_id(ref_id)
+@@ -475,8 +500,6 @@ class WorkItemService:
+         step = await self._step(item)
+         from apps.work_items.application.task_views import (
+             action_for,
+-            enforce_writes,
+-            validate_action_data,
+         )
+ 
+         contract = (
+@@ -512,23 +535,30 @@ class WorkItemService:
+             raise ValidationDetailsException(
+                 [{"pointer": "/feedback", "code": "task.feedback.return_only"}]
+             )
+-        enforce_writes(submission.data, data, step.field_policy)
+-        submission.data = data
++        scopes = self._mutation_scopes(step, view_key)
++        submission.data = merge_task_data(
++            submission.data, data, step.field_policy, view_scopes=scopes, delete_paths=delete_paths
++        )
+         await AttachmentService(self.session).materialize(submission)
+         documents = pinned_behavior_documents(
+             FormDocuments.model_validate(form, from_attributes=True),
+             submission.design_snapshot,
+         )
+-        submission.data = validate_action_data(
++        submission.data = self._validate_visible_data(
++            step.field_policy,
++            scopes,
+             documents,
+             submission.data,
+             profile,
+             submission.override_provenance,
+             policy_required=(step.field_policy or {}).get("required", []),
+         )
+-        await OptionService(self.session).validate_submission(
+-            FormDocuments.model_validate(form, from_attributes=True), submission.data, actor
+-        )
++        try:
++            await OptionService(self.session).validate_submission(
++                FormDocuments.model_validate(form, from_attributes=True), submission.data, actor
++            )
++        except ValidationDetailsException as exc:
++            raise self._visible_error(exc, step.field_policy, scopes) from None
+         if feedback:
+             submission.correction_feedback = self._record_feedback(
+                 submission, feedback, actor, step.field_policy
+@@ -850,9 +880,7 @@ class WorkItemService:
+         from apps.forms.application.localization import localize_snapshot
+         from apps.work_items.application.task_views import (
+             allowed_view_scopes,
+-            filter_identity,
+             filter_render,
+-            project_data,
+         )
+         from apps.work_items.domain.dto import CorrectionFeedbackDTO, WorkItemViewDTO
+         from core.i18n import get_language
+@@ -875,7 +903,9 @@ class WorkItemService:
+         if contract is None:
+             if view_key not in {None, "shared"}:
+                 raise NotFoundException("Task view not found")
+-            scopes: set[str] | None = None
++            from apps.work_items.application.task_mutations import visible_scopes
++
++            scopes: set[str] | None = visible_scopes(step.field_policy)
+             purpose = "edit"
+             title = "Task"
+             actions = [
+@@ -928,12 +958,21 @@ class WorkItemService:
+             or purpose != "edit"
+         ):
+             actions = []
+-        data = (
+-            deepcopy(submission.data) if scopes is None else project_data(submission.data, scopes)
++        projected = project_task_state(
++            submission.data,
++            submission.item_identity,
++            submission.override_provenance,
++            [],
++            step.field_policy,
++            scopes,
+         )
++        data = projected["data"]
+         render = snapshot.get("render_schema", form.render_schema)
+         if scopes is not None:
+             render = filter_render(render, scopes)
++        from apps.forms.application.runtime import display_render
++
++        render = display_render(render, step.field_policy, scopes)
+         source = (
+             await self.session.get(FormSubmissionEntity, submission.correction_source_submission_id)
+             if submission.correction_source_submission_id
+@@ -954,7 +993,9 @@ class WorkItemService:
+                 )
+             ).first()
+         before = (
+-            (deepcopy(source.data) if scopes is None else project_data(source.data, scopes))
++            project_task_state(
++                source.data, source.item_identity, None, [], step.field_policy, scopes
++            )["data"]
+             if source
+             else None
+         )
+@@ -970,15 +1011,141 @@ class WorkItemService:
+             purpose=purpose,
+             title=title,
+             data=data,
+-            item_identity=deepcopy(submission.item_identity)
+-            if scopes is None
+-            else filter_identity(submission.item_identity, scopes),
++            item_identity=projected["item_identity"],
+             before_data=before,
+             render_schema=render,
+             actions=actions,
+             feedback=feedback_rows,
+         )
+ 
++    @staticmethod
++    def _mutation_scopes(step: WorkflowStepEntity, view_key: str | None) -> set[str] | None:
++        if not step.task_contract:
++            if view_key not in {None, "shared"}:
++                raise NotFoundException("Task view not found")
++            return None
++        from apps.work_items.application.task_views import allowed_view_scopes
++
++        contract = HumanTaskContract.model_validate(step.task_contract)
++        key = view_key or contract.default_view
++        view = next((view for view in contract.views if view.key == key), None)
++        if view is None:
++            raise NotFoundException("Task view not found")
++        if view.purpose != "edit":
++            raise NotAllowedException("A named edit view is required")
++        return allowed_view_scopes(view, step.field_policy or {})
++
++    @staticmethod
++    def _visible_error(
++        exc: ValidationDetailsException, policy, scopes
++    ) -> ValidationDetailsException:
++        issues = project_task_state({}, {}, {}, exc.issues, policy, scopes)["issues"]
++        return ValidationDetailsException(
++            issues or [{"pointer": "/data", "code": "task.validation"}]
++        )
++
++    @classmethod
++    def _validate_visible_data(cls, policy, scopes, *args, **kwargs):
++        from apps.work_items.application.task_views import validate_action_data
++
++        try:
++            return validate_action_data(*args, **kwargs)
++        except ValidationDetailsException as exc:
++            raise cls._visible_error(exc, policy, scopes) from None
++
++    async def runtime_state(self, ref_id: str, actor: UserEntity, view_key: str | None = None):
++        from apps.forms.application.runtime import display_page, runtime_projection
++        from apps.forms.domain.runtime import RuntimeFormStateDTO
++        from core.i18n import get_language
++
++        item = await self.get(ref_id, actor)
++        view = await self.task_view(ref_id, actor, view_key)
++        submission = await self.submission(item)
++        form = await self.session.get(FormVersionEntity, submission.form_version_id)
++        if form is None or form.render_dialect != "bpms.render/1":
++            raise VersionConflictException("Runtime form dialect is incompatible")
++        step = await self._step(item)
++        editable = (
++            item.claimed_by_user_id == actor.id
++            and item.status in {"CLAIMED", "IN_PROGRESS"}
++            and view.purpose == "edit"
++        )
++        policy = step.field_policy or {}
++        from apps.work_items.application.task_mutations import visible_scopes
++
++        scopes = visible_scopes(policy)
++        if step.task_contract:
++            contract = HumanTaskContract.model_validate(step.task_contract)
++            selected = next(row for row in contract.views if row.key == view.view_key)
++            scopes = set(selected.scopes)
++        from apps.forms.application.runtime import render_scopes
++
++        readable = render_scopes(view.render_schema) if scopes is None else scopes
++        writable = (
++            (set(policy.get("write", [])) if any(policy.values()) else readable)
++            if editable
++            else set()
++        )
++        required = set(policy.get("required", []))
++        projected = runtime_projection(
++            submission.data,
++            submission.item_identity,
++            submission.override_provenance,
++            form.data_schema,
++            view.render_schema,
++            policy,
++            readable,
++            writable,
++            required,
++        )
++        from apps.forms.application.localization import localize_snapshot
++
++        snapshot = (
++            localize_snapshot(
++                submission.design_snapshot, FormDocuments.model_validate(form, from_attributes=True)
++            )
++            or {}
++        )
++        locale = (snapshot.get("localization") or {}).get("resolved_locale", get_language())
++        return RuntimeFormStateDTO(
++            resource_kind="WORK_ITEM",
++            before_data=view.before_data,
++            page_settings=display_page(snapshot.get("page_settings", form.page_settings)),
++            resource_ref_id=create_ref_id(item.id, item.version),
++            form_version_ref_id=create_ref_id(form.id, form.version),
++            form_version_number=form.number,
++            submission_ref_id=create_ref_id(submission.id, submission.version),
++            design_key=(submission.design_snapshot or {}).get("variant_key", "default"),
++            view_key=view.view_key,
++            purpose="correction"
++            if editable and submission.correction_source_submission_id
++            else view.purpose
++            if editable or view.purpose != "edit"
++            else "observer",
++            resolved_locale=locale,
++            direction="rtl" if locale == "fa" else "ltr",
++            actions=[
++                action
++                for action in view.actions
++                if set(action.required_scopes) <= set(projected["readable_scopes"])
++            ],
++            **projected,
++        )
++
++    async def item_kind(
++        self, item: WorkItemEntity
++    ) -> Literal["HUMAN_TASK", "AI_APPROVAL", "UNSUPPORTED"]:
++        if item.form_version_id is not None:
++            return "HUMAN_TASK"
++        from apps.ai.domain.entity import AIToolApprovalEntity
++
++        approval = (
++            await self.session.exec(
++                select(AIToolApprovalEntity.id).where(AIToolApprovalEntity.work_item_id == item.id)
++            )
++        ).first()
++        return "AI_APPROVAL" if approval is not None else "UNSUPPORTED"
++
+     async def _step(self, item: WorkItemEntity) -> WorkflowStepEntity:
+         execution = await self.session.get(StepExecutionEntity, item.step_execution_id)
+         step = (
+@@ -1113,6 +1280,32 @@ class WorkItemService:
+ 
+         item, submission = await self._editable_submission(ref_id, actor)
+         await self._require_field(item, data.path, write=True)
++        step = await self._step(item)
++        scopes = self._mutation_scopes(step, None)
++        from apps.work_items.application.task_mutations import _covers, _instance_path
++
++        path = _instance_path(data.path)
++        if scopes is not None and not any(_covers(path, scope) for scope in scopes):
++            raise NotFoundException("Task field not found")
++        if data.operation == "add":
++
++            def check_value(value, current):
++                if any(
++                    _covers(current, scope) for scope in (step.field_policy or {}).get("hidden", [])
++                ):
++                    raise NotAllowedException("Collection value is not writable")
++                if isinstance(value, dict):
++                    for key, child in value.items():
++                        check_value(child, (*current, key))
++                elif isinstance(value, list):
++                    for index, child in enumerate(value):
++                        check_value(child, (*current, str(index)))
++                elif any((step.field_policy or {}).values()) and not any(
++                    _covers(current, scope) for scope in (step.field_policy or {}).get("write", [])
++                ):
++                    raise NotAllowedException("Collection value is not writable")
++
++            check_value(data.value, (*path, "*"))
+         form = await self.session.get(FormVersionEntity, submission.form_version_id)
+         if form is None or form.status not in {"PUBLISHED", "RETIRED"}:
+             raise VersionConflictException("Pinned form version is unavailable")
+@@ -1120,13 +1313,29 @@ class WorkItemService:
+             result = await edit_submission_collection(
+                 self.session, submission, form, data, actor.id
+             )
+-        except CollectionError as exc:
++        except CollectionError:
+             raise ValidationDetailsException(
+-                [{"pointer": "/collection", "code": str(exc)}]
++                [{"pointer": "/collection", "code": "task.validation"}]
+             ) from None
+         item.updated_at = get_datetime_utc()
+         await self.session.flush()
+-        return result
++        from dataclasses import replace
++
++        step = await self._step(item)
++        projected = project_task_state(
++            result.data,
++            result.identity,
++            submission.override_provenance,
++            result.issues,
++            step.field_policy,
++            self._mutation_scopes(step, None),
++        )
++        return replace(
++            result,
++            data=projected["data"],
++            identity=projected["item_identity"],
++            issues=projected["issues"],
++        )
+ 
+     async def apply_override(self, ref_id: str, command, actor: UserEntity):
+         from apps.forms.application.behavior import BehaviorError, apply_manual_override
+@@ -1149,14 +1358,25 @@ class WorkItemService:
+                 actor_ref_id=create_ref_id(actor.id, actor.version),
+                 permissions=await user_permissions(actor, self.session),
+             )
+-        except BehaviorError as exc:
+-            raise ValidationDetailsException([{"pointer": "/override", "code": str(exc)}]) from None
++        except BehaviorError:
++            raise ValidationDetailsException(
++                [{"pointer": "/override", "code": "task.validation"}]
++            ) from None
+         submission.data = changed
+         submission.override_provenance = provenance
+         submission.updated_at = get_datetime_utc()
+         item.updated_at = submission.updated_at
+         await self.session.flush()
+-        return changed, provenance
++        step = await self._step(item)
++        projected = project_task_state(
++            changed,
++            submission.item_identity,
++            provenance,
++            [],
++            step.field_policy,
++            self._mutation_scopes(step, None),
++        )
++        return projected["data"], projected["override_provenance"]
+ 
+     async def attachment_upload(
+         self, ref_id: str, attachment_ref: str, actor: UserEntity
+diff --git a/src/apps/work_items/application/task_mutations.py b/src/apps/work_items/application/task_mutations.py
+new file mode 100644
+index 0000000..96c1d20
+--- /dev/null
++++ b/src/apps/work_items/application/task_mutations.py
+@@ -0,0 +1,213 @@
++"""Actor-filtered patches and a shared safe mutation response projection."""
++
++from copy import deepcopy
++from typing import Any
++
++from apps.work_items.application.task_views import _data_path, filter_identity, project_data
++from utils.exceptions import ValidationDetailsException
++
++_MISSING = object()
++
++
++def _covers(path: tuple[str, ...], scope: str) -> bool:
++    bound = _data_path(scope)
++    return len(path) >= len(bound) and all(
++        part == expected or expected == "*" for part, expected in zip(path, bound)
++    )
++
++
++def _related(path: tuple[str, ...], scope: str) -> bool:
++    bound = _data_path(scope)
++    return all(part == expected or expected == "*" for part, expected in zip(path, bound))
++
++
++def _pointer(path: tuple[str, ...]) -> str:
++    return "/" + "/".join(part.replace("~", "~0").replace("/", "~1") for part in path)
++
++
++def _instance_path(pointer: str) -> tuple[str, ...]:
++    if not pointer.startswith("/") or pointer == "/":
++        raise ValueError("A non-root instance pointer is required")
++    return tuple(part.replace("~1", "/").replace("~0", "~") for part in pointer.split("/")[1:])
++
++
++def visible_scopes(
++    policy: dict[str, list[str]] | None, view_scopes: set[str] | None = None
++) -> set[str] | None:
++    if not policy or not any(policy.values()):
++        return view_scopes
++    scopes = set(policy.get("read", [])) | set(policy.get("write", []))
++    if view_scopes is not None:
++        scopes &= view_scopes
++    return {
++        scope
++        for scope in scopes
++        if not any(_covers(_data_path(scope), hidden) for hidden in policy.get("hidden", []))
++    }
++
++
++def _erase(value: Any, path: tuple[str, ...]) -> None:
++    if not path:
++        return
++    head, *tail = path
++    if isinstance(value, list) and head == "*":
++        for child in value:
++            _erase(child, tuple(tail))
++    elif isinstance(value, dict) and head in value:
++        if tail:
++            _erase(value[head], tuple(tail))
++        else:
++            del value[head]
++
++
++def merge_task_data(
++    before: dict[str, Any],
++    incoming: dict[str, Any],
++    policy: dict[str, list[str]] | None,
++    *,
++    view_scopes: set[str] | None = None,
++    delete_paths: list[str] | None = None,
++) -> dict[str, Any]:
++    """Patch supplied writable values; omission preserves state and delete_paths is explicit."""
++    legacy = not policy or not any(policy.values())
++    scopes = visible_scopes(policy, view_scopes)
++    writable = set((policy or {}).get("write", []))
++    hidden = (policy or {}).get("hidden", [])
++
++    def readable(path: tuple[str, ...], *, container: bool = False) -> bool:
++        return not any(_covers(path, scope) for scope in hidden) and (
++            scopes is None
++            or any((_related if container else _covers)(path, scope) for scope in scopes)
++        )
++
++    def allowed(path: tuple[str, ...]) -> bool:
++        return readable(path) and (legacy or any(_covers(path, scope) for scope in writable))
++
++    def deny(path: tuple[str, ...]) -> None:
++        raise ValidationDetailsException(
++            [{"pointer": "/data" + _pointer(path), "code": "task.field.read_only"}]
++        )
++
++    def merge(old: Any, new: Any, path: tuple[str, ...]) -> Any:
++        if not readable(path, container=isinstance(new, dict | list)):
++            deny(path)
++        if isinstance(new, dict):
++            result = deepcopy(old) if isinstance(old, dict) else {}
++            for key, child in new.items():
++                result[key] = merge(result.get(key, _MISSING), child, (*path, key))
++            return result
++        if isinstance(new, list):
++            # Structural changes need authority over the entire collection and no hidden descendants.
++            if allowed(path) and not any(_related(path, scope) for scope in hidden):
++                return deepcopy(new)
++            if not isinstance(old, list) or len(old) != len(new):
++                deny(path)
++            return [
++                merge(left, right, (*path, str(index)))
++                for index, (left, right) in enumerate(zip(old, new, strict=True))
++            ]
++        if any(_related(path, scope) for scope in hidden):
++            deny(path)
++        if not allowed(path) and old != new:
++            deny(path)
++        return deepcopy(new)
++
++    result = deepcopy(incoming) if legacy and view_scopes is None else merge(before, incoming, ())
++    for pointer in delete_paths or []:
++        try:
++            path = _instance_path(pointer)
++        except ValueError:
++            raise ValidationDetailsException(
++                [{"pointer": "/delete_paths", "code": "task.delete.invalid"}]
++            ) from None
++        if not allowed(path) or any(_related(path, scope) for scope in hidden):
++            deny(path)
++        parent: Any = result
++        for part in path[:-1]:
++            if isinstance(parent, dict):
++                parent = parent.get(part)
++            elif (
++                isinstance(parent, list)
++                and part.isdigit()
++                and str(int(part)) == part
++                and int(part) < len(parent)
++            ):
++                parent = parent[int(part)]
++            else:
++                parent = None
++                break
++        if isinstance(parent, list):
++            deny(
++                path
++            )  # Stable-row structure is changed through collection commands, never index deletion.
++        if isinstance(parent, dict):
++            parent.pop(path[-1], None)
++    return result
++
++
++def project_task_state(
++    data: dict[str, Any],
++    identity: dict[str, list[str]] | None,
++    provenance: dict[str, dict[str, Any]] | None,
++    issues: list[dict[str, Any]],
++    policy: dict[str, list[str]] | None,
++    view_scopes: set[str] | None = None,
++) -> dict[str, Any]:
++    """Filter values, identities, override metadata and error locations through one actor policy."""
++    scopes = visible_scopes(policy, view_scopes)
++    hidden = (policy or {}).get("hidden", [])
++    values = deepcopy(data) if scopes is None else project_data(data, scopes)
++    for scope in hidden:
++        _erase(values, _data_path(scope))
++
++    def visible(path: tuple[str, ...], *, ancestor: bool = False) -> bool:
++        return not any(_covers(path, scope) for scope in hidden) and (
++            scopes is None
++            or any((_related if ancestor else _covers)(path, scope) for scope in scopes)
++        )
++
++    keys = deepcopy(identity) if scopes is None else filter_identity(identity, scopes)
++    keys = {
++        path: value
++        for path, value in (keys or {}).items()
++        if visible(_instance_path(path), ancestor=True)
++    }
++    overrides = {}
++    for scope, entry in (provenance or {}).items():
++        try:
++            path = _data_path(scope) if scope.startswith("/properties/") else _instance_path(scope)
++        except ValueError:
++            continue
++        if visible(path) and not any(_related(path, scope) for scope in hidden):
++            # Checksums of hidden inputs must remain server-only.
++            overrides[scope] = {
++                key: deepcopy(value)
++                for key, value in entry.items()
++                if key in {"actor_ref_id", "reason", "value", "recorded_at"}
++            }
++    safe_issues = []
++    for issue in issues:
++        pointer = issue.get("pointer", "")
++        try:
++            path = (
++                _data_path(pointer)
++                if pointer.startswith("/properties/")
++                else _instance_path(pointer.removeprefix("/data"))
++            )
++        except ValueError:
++            continue
++        if visible(path):
++            safe_issues.append(
++                {
++                    "pointer": pointer,
++                    "code": issue.get("code")
++                    if issue.get("code") in {"data.invalid", "task.action.required"}
++                    else "task.validation",
++                }
++            )
++    return {
++        "data": values,
++        "item_identity": keys,
++        "override_provenance": overrides,
++        "issues": safe_issues,
++    }
+diff --git a/src/apps/work_items/domain/dto.py b/src/apps/work_items/domain/dto.py
+index 66a322d..285b1e2 100644
+--- a/src/apps/work_items/domain/dto.py
++++ b/src/apps/work_items/domain/dto.py
+@@ -6,6 +6,7 @@ from typing import Any, Literal
+ from pydantic import ConfigDict, Field, model_validator
+ 
+ from apps.forms.domain.attachment_dto import SubmissionAttachmentDTO
++from apps.forms.domain.runtime import RuntimeActionDTO, RuntimeFormStateDTO
+ from core.base_dto import BaseDTO
+ 
+ type CartableKind = Literal["available", "claimed", "completed", "watching", "submitted", "unread"]
+@@ -19,6 +20,14 @@ class CartableQueryDTO(BaseDTO):
+ 
+ 
+ class WorkItemDTO(BaseDTO):
++    kind: Literal["HUMAN_TASK", "AI_APPROVAL", "UNSUPPORTED"] = Field(
++        default="UNSUPPORTED",
++        description="Explicit classification: human tasks have a pinned form, AI approvals have a real fenced approval association; absent forms alone never imply AI support.",
++    )
++    runtime_state: RuntimeFormStateDTO | None = Field(
++        default=None,
++        description="Current canonical authorized form state after reads/mutations. Null for form-less items; never fetch privileged authoring documents as a fallback.",
++    )
+     ref_id: str
+     request_ref_id: str
+     step_execution_ref_id: str
+@@ -49,7 +58,19 @@ class WorkItemCommandDTO(BaseDTO):
+ 
+ 
+ class WorkItemSaveDTO(WorkItemCommandDTO):
+-    data: dict[str, Any]
++    data: dict[str, Any] = Field(
++        description="Restricted tasks merge supplied writable values into canonical data. Missing fields are unchanged; null is a value. Unrestricted legacy tasks retain replacement semantics."
++    )
++    view_key: str | None = Field(
++        default=None,
++        max_length=64,
++        description="Named edit view; omitted selects the pinned default. Print/summary views cannot mutate.",
++    )
++    delete_paths: list[str] = Field(
++        default_factory=list,
++        max_length=64,
++        description="Explicit RFC6901 instance pointers to remove writable object properties. Missing values are preserved. Array row structure uses collection commands; stale refs reject index-based edits.",
++    )
+ 
+ 
+ class CorrectionFeedbackInput(BaseDTO):
+@@ -74,16 +95,8 @@ class WorkItemCompleteDTO(WorkItemSaveDTO):
+     feedback: list[CorrectionFeedbackInput] = Field(default_factory=list, max_length=64)
+ 
+ 
+-class TaskActionViewDTO(BaseDTO):
+-    model_config = ConfigDict(extra="forbid")
+-    key: str
+-    kind: Literal["complete", "reject", "return"]
+-    outcome_key: str
+-    title: str
+-    confirmation: str | None
+-    required_scopes: list[str]
+-    require_comment: bool
+-    validation: Literal["complete", "partial"]
++class TaskActionViewDTO(RuntimeActionDTO):
++    pass
+ 
+ 
+ class WorkItemViewDTO(BaseDTO):
+diff --git a/src/apps/work_items/presentation/routes.py b/src/apps/work_items/presentation/routes.py
+index 563174b..64199f5 100644
+--- a/src/apps/work_items/presentation/routes.py
++++ b/src/apps/work_items/presentation/routes.py
+@@ -15,11 +15,12 @@ from apps.forms.domain.attachment_dto import (
+     AttachmentReplaceDTO,
+     SubmissionAttachmentDTO,
+ )
+-from apps.forms.domain.behavior import ManualOverrideRequest, ManualOverrideState
+-from apps.forms.domain.collection import CollectionEditRequest, CollectionState
++from apps.forms.domain.behavior import ManualOverrideRequest
++from apps.forms.domain.collection import CollectionEditRequest
+ from apps.forms.domain.dto import FormDocuments
+ from apps.forms.domain.entity import FormVersionEntity
+ from apps.forms.domain.options import OptionQuery, OptionResult
++from apps.forms.domain.runtime import RuntimeFormStateDTO
+ from apps.media.application.service import UserUploadService
+ from apps.media.domain.entity import UserUploadEntity
+ from apps.processes.domain.entity import StepExecutionEntity
+@@ -42,7 +43,7 @@ from apps.work_items.domain.dto import (
+ from apps.work_items.domain.entity import WorkItemEntity
+ from core.deps import SessionDep
+ from core.ref_id import create_ref_id
+-from utils.base_schema import response_schema
++from utils.base_schema import PRIVATE_NO_STORE_RESPONSES, response_schema
+ from utils.exceptions import NotFoundException
+ from utils.pagination import Page
+ from utils.presenter import (
+@@ -81,25 +82,25 @@ async def work_item_dto(
+     state = await service.state_for(item.id, actor.id)
+     if request is None or execution is None:
+         raise NotFoundException("Work-item dependency not found")
++    runtime = (
++        await service.runtime_state(create_ref_id(item.id, item.version), actor) if form else None
++    )
++    pinned = (submission.design_snapshot or {}) if submission else {}
+     snapshot = (
+-        localize_snapshot(
+-            submission.design_snapshot, FormDocuments.model_validate(form, from_attributes=True)
+-        )
+-        if submission and form
++        {
++            key: pinned[key]
++            for key in ("variant_key", "design_revision", "interaction_revision")
++            if key in pinned
++        }
++        if runtime
+         else None
+     )
+-    step = await service._step(item)
+-    visible_identity = submission.item_identity if submission else None
+-    if snapshot and step.task_contract:
+-        view = await service.task_view(create_ref_id(item.id, item.version), actor)
+-        snapshot = {
+-            key: value
+-            for key, value in snapshot.items()
+-            if key not in {"localization", "page_settings"}
+-        }
+-        snapshot["render_schema"] = view.render_schema
+-        visible_identity = view.item_identity
++    if snapshot is not None and runtime is not None:
++        snapshot["render_schema"] = runtime.render_schema
++    visible_identity = runtime.item_identity if runtime else None
+     return WorkItemDTO(
++        kind=await service.item_kind(item),
++        runtime_state=runtime,
+         ref_id=create_ref_id(item.id, item.version),
+         request_ref_id=create_ref_id(request.id, request.version),
+         step_execution_ref_id=create_ref_id(execution.id, execution.version),
+@@ -189,6 +190,25 @@ async def get_work_item_view(
+     return success_response(request, await WorkItemService(session).task_view(ref_id, actor, key))
+ 
+ 
++@router.get(
++    "/{ref_id}/runtime",
++    response_model=SuccessResponse[RuntimeFormStateDTO],
++    summary="Read the authorized versioned runtime form state",
++    responses=PRIVATE_NO_STORE_RESPONSES,
++    description="Requires requests.start and per-item visibility. Returns bpms.runtime/1 with exact pinned form/design and current owning/submission refs, visible schema metadata, canonical data, stable row keys, effective writable/required scopes and available actions. Named key selects an edit/summary/print view; non-claimants and closed items are explicitly noneditable. Hidden schema/default/value/provenance data stays server-only. Accept-Language resolves en/fa without repinning. Unknown render dialects return 409; inaccessible resources return 404; private no-store response.",
++)
++async def get_work_item_runtime(
++    request: Request,
++    ref_id: str,
++    actor: WorkUser,
++    session: SessionDep,
++    key: str | None = Query(default=None, max_length=64),
++):
++    return success_response(
++        request, await WorkItemService(session).runtime_state(ref_id, actor, key)
++    )
++
++
+ @router.post(
+     "/{ref_id}/feedback/{feedback_key}/resolve",
+     response_model=SuccessResponse[WorkItemViewDTO],
+@@ -362,8 +382,8 @@ async def start_work_item(
+ 
+ @router.post(
+     "/{ref_id}/collections/edit",
+-    response_model=SuccessResponse[CollectionState],
+-    description="Requires requests.start, current work-item ref_id, and the active claimant. Edits a declared collection on the draft submission using stable UUIDv7 item keys. Returns canonical data and the identity map; stale revisions fail with VERSION_CONFLICT.",
++    response_model=SuccessResponse[RuntimeFormStateDTO],
++    description="Requires requests.start, current work-item ref_id, and the active claimant. Edits a declared collection on the draft submission using stable UUIDv7 item keys. Returns the same actor-filtered bpms.runtime/1 state as /runtime, including current resource/submission refs, visible data/row keys and safe issues; there is no idempotency key, so uncertain results require reconciliation rather than automatic retry. Stale revisions fail with VERSION_CONFLICT.",
+ )
+ async def edit_work_item_collection(
+     request: Request,
+@@ -372,18 +392,16 @@ async def edit_work_item_collection(
+     actor: WorkUser,
+     session: SessionDep,
+ ):
+-    result = await WorkItemService(session).edit_collection(ref_id, data, actor)
++    service = WorkItemService(session)
++    await service.edit_collection(ref_id, data, actor)
+     await session.commit()
+-    return success_response(
+-        request,
+-        CollectionState(data=result.data, item_identity=result.identity, issues=result.issues),
+-    )
++    return success_response(request, await service.runtime_state(ref_id, actor))
+ 
+ 
+ @router.post(
+     "/{ref_id}/overrides",
+-    response_model=SuccessResponse[ManualOverrideState],
+-    description="Requires a current owned or claimed draft and the calculation's declared override permission. Set records actor, reason, value and input fingerprint; reset recomputes from current inputs. Source changes invalidate an override at submission.",
++    response_model=SuccessResponse[RuntimeFormStateDTO],
++    description="Requires a current owned or claimed draft and the calculation's declared override permission. Set records actor, reason, value and input fingerprint; reset recomputes from current inputs. Source changes invalidate an override at submission. Returns canonical actor-filtered bpms.runtime/1 state and current owning/submission refs; hidden input checksums never enter provenance. This command has no idempotency key; reconcile uncertain results instead of replaying.",
+ )
+ async def override_calculation(
+     request: Request,
+@@ -392,24 +410,30 @@ async def override_calculation(
+     actor: WorkUser,
+     session: SessionDep,
+ ):
+-    values, provenance = await WorkItemService(session).apply_override(ref_id, data, actor)
++    service = WorkItemService(session)
++    await service.apply_override(ref_id, data, actor)
+     await session.commit()
+-    return success_response(
+-        request, ManualOverrideState(data=values, override_provenance=provenance)
+-    )
++    return success_response(request, await service.runtime_state(ref_id, actor))
+ 
+ 
+ @router.post(
+     "/{ref_id}/save",
+     response_model=SuccessResponse[WorkItemDTO],
+     summary="Autosave a claimed human-task draft",
+-    description="Requires requests.start and the current claimant. The revision-bearing ref_id and command_key guard stale and duplicate writes; a reused key with different data fails. Data replaces the draft, may be incomplete, but supplied types and the pinned task write policy are enforced. Hidden or read-only changes fail with pointer issues. UI navigation should warn about unsaved edits.",
++    description="Requires requests.start and the current claimant. The revision-bearing ref_id and command_key guard stale and duplicate writes; a reused key with different data fails. Restricted tasks merge supplied writable values. Missing fields remain unchanged; delete_paths explicitly removes writable object properties and null remains a value. Unrestricted legacy tasks retain replacement semantics. Named view_key defaults to the pinned edit view; print/summary views cannot write. Completion validates the merged canonical document. Hidden or read-only changes fail with pointer issues. UI navigation should warn about unsaved edits.",
+ )
+ async def save_work_item(
+     request: Request, ref_id: str, data: WorkItemSaveDTO, actor: WorkUser, session: SessionDep
+ ):
+     service = WorkItemService(session)
+-    item = await service.save(ref_id, data.command_key, data.data, actor)
++    item = await service.save(
++        ref_id,
++        data.command_key,
++        data.data,
++        actor,
++        view_key=data.view_key,
++        delete_paths=data.delete_paths,
++    )
+     return await _command_response(request, service, item, actor, session)
+ 
+ 
+@@ -431,6 +455,8 @@ async def _finish_response(
+         actor,
+         data.comment,
+         data.feedback,
++        view_key=data.view_key,
++        delete_paths=data.delete_paths,
+     )
+     return await _command_response(request, service, item, actor, session)
+ 
+diff --git a/src/apps/workflows/application/service.py b/src/apps/workflows/application/service.py
+index 52d70d6..b265a70 100644
+--- a/src/apps/workflows/application/service.py
++++ b/src/apps/workflows/application/service.py
+@@ -26,6 +26,8 @@ from apps.workflows.domain.dto import (
+     GraphValidationResult,
+     WorkflowCreateDTO,
+     WorkflowGrantDTO,
++    WorkflowGrantQuery,
++    WorkflowGrantViewDTO,
+     WorkflowVersionCreateDTO,
+     WorkflowVersionUpdateDTO,
+ )
+@@ -38,7 +40,7 @@ from apps.workflows.domain.entity import (
+     WorkflowTransitionEntity,
+     WorkflowVersionEntity,
+ )
+-from core.ref_id import open_ref_id
++from core.ref_id import create_ref_id, open_ref_id
+ from utils.date_utils import get_datetime_utc
+ from utils.exceptions import (
+     InvalidReferenceException,
+@@ -47,6 +49,7 @@ from utils.exceptions import (
+     ValidationDetailsException,
+     VersionConflictException,
+ )
++from utils.pagination import Page, paginate_entities
+ 
+ 
+ class WorkflowService:
+@@ -279,6 +282,39 @@ class WorkflowService:
+         await self.session.flush()
+         return row
+ 
++    async def search_grants(
++        self, ref_id: str, query: WorkflowGrantQuery
++    ) -> Page[WorkflowGrantViewDTO]:
++        root = await self.get(ref_id)
++        page = await paginate_entities(
++            self.session,
++            WorkflowAccessGrantEntity,
++            query,
++            criteria=(
++                WorkflowAccessGrantEntity.workflow_definition_id == root.id,
++                col(WorkflowAccessGrantEntity.deleted_at).is_(None),
++            ),
++        )
++        items = []
++        for grant in page.items:
++            user = await self.session.get(UserEntity, grant.user_id) if grant.user_id else None
++            group = (
++                await self.session.get(WorkGroupEntity, grant.work_group_id)
++                if grant.work_group_id
++                else None
++            )
++            items.append(
++                WorkflowGrantViewDTO(
++                    ref_id=create_ref_id(grant.id, grant.version),
++                    workflow_ref_id=create_ref_id(root.id, root.version),
++                    user_ref_id=create_ref_id(user.id, user.version) if user else None,
++                    work_group_ref_id=create_ref_id(group.id, group.version) if group else None,
++                    can_view=grant.can_view,
++                    can_start=grant.can_start,
++                )
++            )
++        return Page(items=items, page=page.page, size=page.size, total=page.total)
++
+     async def add_grant(
+         self, workflow_ref: str, data: WorkflowGrantDTO, actor_id: UUID
+     ) -> WorkflowAccessGrantEntity:
+diff --git a/src/apps/workflows/domain/dto.py b/src/apps/workflows/domain/dto.py
+index bf5b7df..82bb530 100644
+--- a/src/apps/workflows/domain/dto.py
++++ b/src/apps/workflows/domain/dto.py
+@@ -4,6 +4,7 @@ from apps.workflows.domain.dtos.authoring import (
+     WorkflowCreateDTO,
+     WorkflowDTO,
+     WorkflowGrantDTO,
++    WorkflowGrantQuery,
+     WorkflowGrantViewDTO,
+     WorkflowQuery,
+     WorkflowVersionCreateDTO,
+@@ -34,6 +35,7 @@ __all__ = [
+     "WorkflowCreateDTO",
+     "WorkflowDTO",
+     "WorkflowGrantDTO",
++    "WorkflowGrantQuery",
+     "WorkflowGrantViewDTO",
+     "WorkflowQuery",
+     "WorkflowVersionCreateDTO",
+diff --git a/src/apps/workflows/domain/dtos/authoring.py b/src/apps/workflows/domain/dtos/authoring.py
+index 21ea09b..5354353 100644
+--- a/src/apps/workflows/domain/dtos/authoring.py
++++ b/src/apps/workflows/domain/dtos/authoring.py
+@@ -79,3 +79,7 @@ class WorkflowGrantDTO(BaseDTO):
+ class WorkflowGrantViewDTO(WorkflowGrantDTO):
+     ref_id: str
+     workflow_ref_id: str
++
++
++class WorkflowGrantQuery(SearchRequest):
++    __query_fields__: ClassVar[dict[str, Any]] = {"can_view": bool, "can_start": bool}
+diff --git a/src/apps/workflows/presentation/routes.py b/src/apps/workflows/presentation/routes.py
+index c737e78..4fe4771 100644
+--- a/src/apps/workflows/presentation/routes.py
++++ b/src/apps/workflows/presentation/routes.py
+@@ -14,6 +14,7 @@ from apps.workflows.domain.dto import (
+     WorkflowCreateDTO,
+     WorkflowDTO,
+     WorkflowGrantDTO,
++    WorkflowGrantQuery,
+     WorkflowGrantViewDTO,
+     WorkflowQuery,
+     WorkflowVersionCreateDTO,
+@@ -26,9 +27,15 @@ from core.deps import SessionDep
+ from core.history_dto import HistoryQuery, HistoryRecordDTO
+ from core.history_service import HistoryService
+ from core.ref_id import create_ref_id, open_ref_id
+-from utils.base_schema import response_schema
++from utils.base_schema import PRIVATE_NO_STORE_RESPONSES, response_schema
+ from utils.pagination import Page, paginate_entities
+-from utils.presenter import PageResponse, SuccessResponse, page_response, success_response
++from utils.presenter import (
++    PageResponse,
++    SuccessResponse,
++    page_response,
++    private_no_store,
++    success_response,
++)
+ 
+ router = APIRouter(prefix="/workflows", tags=["workflows"], responses=response_schema())
+ versions_router = APIRouter(
+@@ -146,6 +153,26 @@ async def workflow_history(
+     )
+ 
+ 
++@router.post(
++    "/{ref_id}/grants/search",
++    response_model=PageResponse[Page[WorkflowGrantViewDTO]],
++    dependencies=[Depends(private_no_store)],
++    summary="Read current workflow access grants",
++    responses=PRIVATE_NO_STORE_RESPONSES,
++    description="Requires workflows.manage, matching the authoring grant-mutation boundary. Returns current nondeleted grants with current opaque workflow/grant/user/group refs and can_view/can_start. Shared filters allow only these capabilities; page/size default 1/20, maximum size 100. Does not reconstruct audit history or expose confidential assignment/configuration. Missing workflows return 404; private no-store response.",
++)
++async def search_workflow_grants(
++    request: Request,
++    ref_id: str,
++    query: WorkflowGrantQuery,
++    _actor: WorkflowAdmin,
++    session: SessionDep,
++):
++    return page_response(
++        request, await WorkflowService(session, get_registry()).search_grants(ref_id, query)
++    )
++
++
+ @router.post(
+     "/{ref_id}/grants", response_model=SuccessResponse[WorkflowGrantViewDTO], status_code=201
+ )
+diff --git a/src/locales/fa/LC_MESSAGES/messages.po b/src/locales/fa/LC_MESSAGES/messages.po
+index d6bc185..41d5c1c 100644
+--- a/src/locales/fa/LC_MESSAGES/messages.po
++++ b/src/locales/fa/LC_MESSAGES/messages.po
+@@ -1122,3 +1122,78 @@ msgstr "نیازمند مالک احراز هویت‌شده یا سیاست د
+ 
+ msgid "Verified private WebP image bytes."
+ msgstr "بایت‌های تأییدشده تصویر خصوصی WebP."
++
++msgid "Search request types this requester can start"
++msgstr "جستجوی انواع درخواست مجاز برای درخواست‌کننده"
++
++msgid "Requires requests.start, not requests.manage or forms.manage. Server filters active types/dependencies, workflow start access, current published pins and trusted registered-client/release targets before one-based bounded pagination. Declared supported_render_dialects further narrows compatibility; empty capabilities return an empty page without disclosing inaccessible choices. Empty/incompatible/ineligible results all appear as no eligible choices; selection grants no authority. Draft creation independently repeats eligibility checks. Page/size default to 1/20, size <=100; private no-store response. Client identity comes from the authenticated session, never browser identity headers."
++msgstr "نیازمند requests.start است و به مجوز مدیریت نیاز ندارد. انواع فعال با وابستگی‌های منتشرشده، دسترسی شروع گردش‌کار و محدودیت مشتری محرمانه و نسخه معتبر، پیش از صفحه‌بندی فیلتر می‌شوند. supported_render_dialects فقط سازگاری را محدود می‌کند؛ فهرست خالی قابلیت‌ها نتیجه خالی دارد. نبود گزینه مجاز اطلاعات موارد غیرمجاز را افشا نمی‌کند. ایجاد پیش‌نویس شرایط را دوباره بررسی می‌کند. پیش‌فرض page و size برابر ۱ و ۲۰ و حداکثر اندازه ۱۰۰ است. هویت مشتری از نشست احراز هویت می‌آید. پاسخ private, no-store است."
++
++msgid "Read an ordinary requester's pinned runtime form"
++msgstr "خواندن فرم اجرایی نسخه ثابت درخواست‌کننده"
++
++msgid "Requires requests.start plus ownership/superuser and the pinned origin-client policy. No forms.manage is required. Returns bpms.runtime/1 with exact form/design identity, current request/submission refs, visible display/validation metadata, canonical values, row keys and effective writable/required scopes. DRAFT owners may edit; submitted/closed views are read-only. Accept-Language resolves the pinned catalog without changing the client variant. Incompatible dialects return 409; unauthorized forms return 404; private no-store response."
++msgstr "نیازمند requests.start، مالکیت یا دسترسی مدیر کل و سیاست مشتری مبدأ است؛ forms.manage لازم نیست. bpms.runtime/1 شناسه نسخه ثابت فرم و طراحی، مراجع جاری درخواست و ارسال، داده معتبر، شناسه پایدار ردیف و محدوده‌های نوشتن و الزامی را برمی‌گرداند. مالک پیش‌نویس می‌تواند ویرایش کند و موارد ارسال‌شده فقط خواندنی‌اند. Accept-Language زبان کاتالوگ ثابت را بدون تغییر گونه مشتری تعیین می‌کند. ناسازگاری نسخه 409، عدم دسترسی مالکیت 404 و نقض سیاست مشتری 403 است. پاسخ private, no-store است."
++
++msgid "Read the authorized versioned runtime form state"
++msgstr "خواندن وضعیت نسخه‌دار و مجاز فرم اجرایی"
++
++msgid "Requires requests.start and per-item visibility. Returns bpms.runtime/1 with exact pinned form/design and current owning/submission refs, visible schema metadata, canonical data, stable row keys, effective writable/required scopes and available actions. Named key selects an edit/summary/print view; non-claimants and closed items are explicitly noneditable. Hidden schema/default/value/provenance data stays server-only. Accept-Language resolves en/fa without repinning. Unknown render dialects return 409; inaccessible resources return 404; private no-store response."
++msgstr "نیازمند requests.start و دسترسی به کار است. bpms.runtime/1 نسخه ثابت فرم و طراحی، مراجع جاری کار و ارسال، شمای قابل مشاهده، داده معتبر، شناسه پایدار ردیف، محدوده‌های نوشتن و الزامی و کنش‌ها را برمی‌گرداند. key نمای ویرایش، خلاصه یا چاپ را انتخاب می‌کند؛ موارد بسته و کاربران غیرمسئول حق ویرایش ندارند. شمای پنهان، مقدار پیش‌فرض و منشأ پنهان فقط در سرور می‌ماند. زبان en/fa بدون تغییر نسخه ثابت تعیین می‌شود. نسخه ناسازگار 409 و کار غیرقابل دسترس 404 است. پاسخ private, no-store است."
++
++msgid "Read current workflow access grants"
++msgstr "خواندن مجوزهای جاری گردش‌کار"
++
++msgid "Requires workflows.manage, matching the authoring grant-mutation boundary. Returns current nondeleted grants with current opaque workflow/grant/user/group refs and can_view/can_start. Shared filters allow only these capabilities; page/size default 1/20, maximum size 100. Does not reconstruct audit history or expose confidential assignment/configuration. Missing workflows return 404; private no-store response."
++msgstr "نیازمند workflows.manage همانند تغییر مجوزها است. مجوزهای حذف‌نشده با مراجع جاری گردش‌کار، مجوز، کاربر و گروه و can_view و can_start برمی‌گردند. فیلترها فقط همین قابلیت‌ها را می‌پذیرند. پیش‌فرض صفحه و اندازه ۱ و ۲۰ و حداکثر اندازه ۱۰۰ است. تاریخچه یا تنظیمات محرمانه افشا نمی‌شود. گردش‌کار ناموجود 404 است. پاسخ private, no-store است."
++
++msgid "Read current connection grants"
++msgstr "خواندن مجوزهای جاری اتصال"
++
++msgid "Requires integrations.manage plus per-connection manage/owner/superuser authority. Returns current nondeleted grants with opaque grant/user/group refs and can_use/can_manage; no credentials or historical reconstruction. Shared filters allow only can_use/can_manage; one-based page/size defaults 1/20, maximum size 100. Unauthorized connections return 404. Private no-store response; grant visibility does not grant use/manage capability."
++msgstr "نیازمند integrations.manage و اختیار مدیریت اتصال، مالکیت یا مدیر کل است. مجوزهای حذف‌نشده با مراجع مجوز، کاربر و گروه و can_use و can_manage بازگردانده می‌شوند؛ هیچ اعتبارنامه یا بازسازی تاریخچه‌ای ارائه نمی‌شود. فیلترها فقط همین دو قابلیت را می‌پذیرند. پیش‌فرض صفحه و اندازه ۱ و ۲۰ و حداکثر ۱۰۰ است. اتصال ناموجود 404 و عدم اختیار مدیریت 403 است. مشاهده مجوز اختیار استفاده یا مدیریت ایجاد نمی‌کند. پاسخ private, no-store است."
++
++msgid "Requires integrations.manage plus per-connection manage/owner/superuser authority. Returns current nondeleted grants with opaque grant/user/group refs and can_use/can_manage; no credentials or historical reconstruction. Shared filters allow only can_use/can_manage; one-based page/size defaults 1/20, maximum size 100. Missing connections return 404; denied manage authority returns 403. Private no-store response; grant visibility does not grant use/manage capability."
++msgstr "نیازمند integrations.manage و اختیار مدیریت اتصال، مالکیت یا مدیر کل است. مجوزهای حذف‌نشده با مراجع مجوز، کاربر و گروه و can_use و can_manage بازگردانده می‌شوند؛ هیچ اعتبارنامه یا بازسازی تاریخچه‌ای ارائه نمی‌شود. فیلترها فقط همین دو قابلیت را می‌پذیرند. پیش‌فرض صفحه و اندازه ۱ و ۲۰ و حداکثر ۱۰۰ است. اتصال ناموجود 404 و عدم اختیار مدیریت 403 است. مشاهده مجوز اختیار استفاده یا مدیریت ایجاد نمی‌کند. پاسخ private, no-store است."
++
++msgid "Visible JSON Schema property/items scope."
++msgstr "محدوده قابل مشاهده properties/items در شمای JSON."
++
++msgid "Bounded compiled schema of this visible field only. No defaults, examples, hidden properties or shared definitions; backend validates the full canonical document."
++msgstr "شمای کامپایل‌شده و محدود همین فیلد قابل مشاهده، بدون مقدار پیش‌فرض، مثال، ویژگی پنهان یا تعریف مشترک؛ سرور کل سند معتبر را بررسی می‌کند."
++
++msgid "Current opaque revision-bearing reference for the owning request/work item; replace after every mutation."
++msgstr "مرجع غیرشفاف و نسخه‌دار جاری درخواست یا کار مالک؛ پس از هر تغییر جایگزین شود."
++
++msgid "Exact pinned client variant; locale changes cannot change this key."
++msgstr "گونه دقیق و ثابت مشتری؛ تغییر زبان این کلید را تغییر نمی‌دهد."
++
++msgid "Locale selected by the pinned catalog, or negotiated en/fa fallback."
++msgstr "زبان انتخاب‌شده از کاتالوگ ثابت یا زبان جایگزین توافق‌شده en/fa."
++
++msgid "Canonical actor-visible values. Hidden values are preserved only on the server."
++msgstr "مقادیر معتبر قابل مشاهده برای کاربر؛ مقادیر پنهان فقط در سرور حفظ می‌شوند."
++
++msgid "Stable row keys for visible collection paths only."
++msgstr "کلیدهای پایدار ردیف فقط برای مسیرهای مجموعه قابل مشاهده."
++
++msgid "Actor-filtered bounded bpms.render/1 display document. Server-evaluated calculation metadata and client expressions are omitted; writable_scopes is authoritative for editability."
++msgstr "سند نمایشی محدود bpms.render/1 با فیلتر دسترسی کاربر؛ فراداده محاسبات سرور و عبارت‌های مشتری حذف می‌شوند. writable_scopes اختیار ویرایش را تعیین می‌کند."
++
++msgid "Visible override actor/reason/value/time only; input checksums remain server-only."
++msgstr "فقط کاربر، دلیل، مقدار و زمان بازنویسی قابل مشاهده؛ اثر انگشت ورودی فقط در سرور می‌ماند."
++
++msgid "Safe visible pointer/code pairs. Hidden canonical validation failures produce a generic task.validation issue."
++msgstr "جفت‌های امن و قابل مشاهده pointer/code؛ خطاهای اعتبارسنجی پنهان به task.validation عمومی تبدیل می‌شوند."
++
++msgid "Pinned display-only page settings; no scripts, bindings or runtime values."
++msgstr "تنظیمات ثابت و صرفاً نمایشی صفحه، بدون اسکریپت، اتصال داده یا مقدار اجرایی."
++
++msgid "Prior submitted data filtered through the same task view, or null when unavailable."
++msgstr "داده ارسال‌شده پیشین با فیلتر همین نمای کار، یا null در صورت نبودن."
++
++msgid "Authoritative confidential-client/release restrictions. On PUT, omission preserves existing restrictions; an explicit empty list deliberately removes them."
++msgstr "محدودیت معتبر مشتری محرمانه و نسخه؛ در PUT حذف فیلد از ورودی محدودیت موجود را حفظ می‌کند و فهرست صریح خالی عمداً آن را برمی‌دارد."
++
++msgid "Real authorized root-process ref for tracking, or null for a draft/no process. Never derive a process ref from another entity reference."
++msgstr "مرجع واقعی و مجاز فرایند ریشه برای پیگیری، یا null برای پیش‌نویس یا نبود فرایند؛ مرجع فرایند را از مرجع موجودیت دیگر نسازید."
+diff --git a/src/utils/base_schema.py b/src/utils/base_schema.py
+index 3a4c9cb..234c029 100644
+--- a/src/utils/base_schema.py
++++ b/src/utils/base_schema.py
+@@ -1,4 +1,4 @@
+-from typing import Annotated
++from typing import Annotated, Any
+ from uuid import uuid7
+ 
+ from fastapi import Header, Request
+@@ -10,6 +10,17 @@ from utils.localization import resolve_language
+ from utils.middleware import normalize_user_agent
+ from utils.presenter import ErrorResponse
+ 
++PRIVATE_NO_STORE_RESPONSES: dict[int | str, dict[str, Any]] = {
++    200: {
++        "headers": {
++            "Cache-Control": {
++                "description": "Protected actor-specific response; persistent caching is prohibited.",
++                "schema": {"type": "string", "const": "private, no-store"},
++            }
++        }
++    }
++}
++
+ ERROR_CODES = frozenset([400, 401, 403, 404, 409, 413, 422, 423, 429, 500, 503])
+ 
+ 
+diff --git a/src/utils/middleware.py b/src/utils/middleware.py
+index 9923567..8438cf5 100644
+--- a/src/utils/middleware.py
++++ b/src/utils/middleware.py
+@@ -202,7 +202,20 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
+                 "client_date": client_date.isoformat() if client_date else None,
+                 "client_date_delta_seconds": client_date_delta,
+             }
+-            if _is_json_content_type(request.headers.get("content-type")):
++            # Runtime and authored documents can contain business values under arbitrary keys.
++            private_payload = request.url.path.startswith(
++                (
++                    "/api/v1/business-requests",
++                    "/api/v1/work-items",
++                    "/api/v1/forms",
++                    "/api/v1/form-versions",
++                    "/api/v1/reports",
++                    "/api/v1/workflows",
++                    "/api/v1/workflow-versions",
++                    "/api/v1/integration-connections",
++                )
++            )
++            if not private_payload and _is_json_content_type(request.headers.get("content-type")):
+                 declared_length = _content_length(request.headers)
+                 if (
+                     declared_length is not None
+@@ -223,7 +236,11 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
+ 
+             streaming_response = cast(_StreamingBodyResponse, response)
+             response_iterator = streaming_response.body_iterator
+-            response_is_json = _is_json_content_type(response.headers.get("content-type"))
++            response_is_json = (
++                not private_payload
++                and "no-store" not in response.headers.get("cache-control", "").lower()
++                and _is_json_content_type(response.headers.get("content-type"))
++            )
+             response_status = response.status_code
+ 
+             async def body_with_logging() -> AsyncIterator[bytes]:
+diff --git a/tests/apps/forms/test_behavior.py b/tests/apps/forms/test_behavior.py
+index 2847401..8dd2e9d 100644
+--- a/tests/apps/forms/test_behavior.py
++++ b/tests/apps/forms/test_behavior.py
+@@ -329,3 +329,29 @@ def test_pinned_variant_uses_authored_render_for_behavior_and_attachments():
+     assert "/files" in _collections(selected.render_schema, {})
+     assert selected.variants == []
+     assert "/files" not in _collections(doc.render_schema, {})
++
++
++def test_concat_rejects_null_input_with_a_validation_error():
++    doc = FormDocuments(
++        behavior_dialect="bpms.behavior/1",
++        data_schema={
++            "type": "object",
++            "properties": {"source": {"type": "string"}, "result": {"type": "string"}},
++        },
++        render_schema={
++            "dialect": "bpms.render/1",
++            "root": {
++                "component": "vertical",
++                "children": [
++                    {"component": "text", "scope": "/properties/source"},
++                    {
++                        "component": "calculated",
++                        "scope": "/properties/result",
++                        "calculation": {"function": "concat", "scopes": ["/properties/source"]},
++                    },
++                ],
++            },
++        },
++    )
++    with pytest.raises(BehaviorError, match="behavior.calculation_type"):
++        evaluate_behavior(doc, {"source": None})
+diff --git a/tests/apps/work_items/test_filtered_mutations.py b/tests/apps/work_items/test_filtered_mutations.py
+new file mode 100644
+index 0000000..52bc91b
+--- /dev/null
++++ b/tests/apps/work_items/test_filtered_mutations.py
+@@ -0,0 +1,114 @@
++"""Filtered mutation contracts preserve undisclosed canonical state."""
++
++import pytest
++
++from utils.exceptions import ValidationDetailsException
++
++POLICY = {
++    "read": ["/properties/amount"],
++    "write": ["/properties/amount"],
++    "hidden": ["/properties/internal_note"],
++}
++
++
++def test_filtered_save_preserves_hidden_values_and_omission_is_not_deletion():
++    from apps.work_items.application.task_mutations import merge_task_data
++
++    before = {"amount": 10, "internal_note": "not-disclosed"}
++    assert merge_task_data(before, {"amount": None}, POLICY) == {
++        "amount": None,
++        "internal_note": "not-disclosed",
++    }
++    assert merge_task_data(before, {}, POLICY) == before
++    assert merge_task_data(before, {}, POLICY, delete_paths=["/amount"]) == {
++        "internal_note": "not-disclosed"
++    }
++    with pytest.raises(ValidationDetailsException):
++        merge_task_data(before, {"internal_note": "guess"}, POLICY)
++    with pytest.raises(ValidationDetailsException):
++        merge_task_data(before, {}, POLICY, delete_paths=["/internal_note"])
++
++
++def test_nested_row_patch_preserves_unseen_columns_and_rejects_structural_edits():
++    from apps.work_items.application.task_mutations import merge_task_data
++
++    scope = "/properties/rows/items/properties/value"
++    policy = {"read": [scope], "write": [scope]}
++    before = {"rows": [{"value": 1, "private": "row-a"}, {"value": 2, "private": "row-b"}]}
++    assert merge_task_data(before, {"rows": [{"value": 9}, {"value": 2}]}, policy) == {
++        "rows": [{"value": 9, "private": "row-a"}, {"value": 2, "private": "row-b"}]
++    }
++    with pytest.raises(ValidationDetailsException):
++        merge_task_data(before, {"rows": [{"value": 9}]}, policy)
++    assert merge_task_data(before, {}, policy, delete_paths=["/rows/0/value"]) == {
++        "rows": [{"private": "row-a"}, {"value": 2, "private": "row-b"}]
++    }
++
++
++def test_named_view_cannot_write_other_visible_fields():
++    from apps.work_items.application.task_mutations import merge_task_data
++
++    policy = {
++        "read": ["/properties/a", "/properties/b"],
++        "write": ["/properties/a", "/properties/b"],
++    }
++    with pytest.raises(ValidationDetailsException):
++        merge_task_data({"a": 1, "b": 2}, {"b": 3}, policy, view_scopes={"/properties/a"})
++
++
++def test_mutation_projection_filters_data_identity_provenance_and_issues():
++    from apps.work_items.application.task_mutations import project_task_state
++
++    scope = "/properties/rows"
++    policy = {
++        "read": [scope],
++        "write": [scope],
++        "hidden": ["/properties/internal_note", "/properties/secret_rows"],
++    }
++    result = project_task_state(
++        {
++            "rows": [{"value": 1}],
++            "internal_note": "not-disclosed",
++            "secret_rows": [{"secret": "private"}],
++        },
++        {"/rows": ["visible-key"], "/secret_rows": ["hidden-key"]},
++        {"/properties/internal_note": {"value": "private"}},
++        [{"pointer": "/data/internal_note", "code": "hidden-code", "item_keys": ["hidden-key"]}],
++        policy,
++    )
++    assert result["data"] == {"rows": [{"value": 1}]}
++    assert result["item_identity"] == {"/rows": ["visible-key"]}
++    assert result["override_provenance"] == {}
++    assert result["issues"] == []
++
++
++def test_nested_hidden_fields_are_redacted_even_when_parent_collection_is_readable():
++    from apps.work_items.application.task_mutations import project_task_state
++
++    result = project_task_state(
++        {"rows": [{"visible": 1, "secret": "private"}]},
++        {},
++        {},
++        [],
++        {"read": ["/properties/rows"], "hidden": ["/properties/rows/items/properties/secret"]},
++    )
++    assert result["data"] == {"rows": [{"visible": 1}]}
++
++
++def test_hidden_descendants_survive_container_replacement_and_explicit_deletion():
++    from apps.work_items.application.task_mutations import merge_task_data, project_task_state
++
++    before = {"object": {"visible": 1, "private": "protected"}}
++    policy = {
++        "read": ["/properties/object"],
++        "write": ["/properties/object"],
++        "hidden": ["/properties/object/properties/private"],
++    }
++    with pytest.raises(ValidationDetailsException):
++        merge_task_data(before, {"object": None}, policy)
++    with pytest.raises(ValidationDetailsException):
++        merge_task_data(before, {}, policy, delete_paths=["/object"])
++    state = project_task_state(
++        before, {}, {"/properties/object": {"value": before["object"]}}, [], policy
++    )
++    assert state["override_provenance"] == {}
+diff --git a/tests/apps/work_items/test_platform_contract.py b/tests/apps/work_items/test_platform_contract.py
+new file mode 100644
+index 0000000..3a243ad
+--- /dev/null
++++ b/tests/apps/work_items/test_platform_contract.py
+@@ -0,0 +1,123 @@
++"""Machine-readable platform contracts needed by ordinary frontend actors."""
++
++from main import app
++
++
++def test_runtime_and_discovery_operations_exist_without_authoring_workarounds():
++    schema = app.openapi()
++    for path, method in [
++        ("/api/v1/business-requests/{ref_id}/view", "get"),
++        ("/api/v1/work-items/{ref_id}/runtime", "get"),
++        ("/api/v1/request-types/eligible/search", "post"),
++        ("/api/v1/integration-connections/{ref_id}/grants/search", "post"),
++        ("/api/v1/workflows/{ref_id}/grants/search", "post"),
++    ]:
++        assert method in schema["paths"].get(path, {})
++
++
++def test_runtime_dialect_permissions_and_current_resource_references_are_explicit():
++    schemas = app.openapi()["components"]["schemas"]
++    runtime = schemas["RuntimeFormStateDTO"]["properties"]
++    for name in [
++        "runtime_dialect",
++        "resource_ref_id",
++        "resource_kind",
++        "form_version_ref_id",
++        "submission_ref_id",
++        "writable_scopes",
++        "required_scopes",
++        "field_metadata",
++        "data",
++        "render_schema",
++    ]:
++        assert name in runtime
++    assert "kind" in schemas["WorkItemDTO"]["properties"]
++    assert "process_ref_id" in schemas["BusinessRequestDTO"]["properties"]
++
++
++def test_new_runtime_routes_are_localized_private_and_examples_validate():
++    from apps.forms.domain.runtime import RuntimeFormStateDTO
++    from utils.localized_docs import localized_openapi
++
++    english = app.openapi()
++    persian = localized_openapi(app, "fa")
++    for path, method in [
++        ("/api/v1/business-requests/{ref_id}/view", "get"),
++        ("/api/v1/work-items/{ref_id}/runtime", "get"),
++        ("/api/v1/request-types/eligible/search", "post"),
++        ("/api/v1/integration-connections/{ref_id}/grants/search", "post"),
++        ("/api/v1/workflows/{ref_id}/grants/search", "post"),
++    ]:
++        operation = english["paths"][path][method]
++        assert operation["summary"] != persian["paths"][path][method]["summary"]
++        assert operation["description"] != persian["paths"][path][method]["description"]
++        assert operation.get("security")
++        assert "Cache-Control" in operation["responses"]["200"].get("headers", {})
++    for example in english["components"]["schemas"]["RuntimeFormStateDTO"]["examples"]:
++        RuntimeFormStateDTO.model_validate(example)
++
++
++def test_runtime_projection_removes_nested_hidden_metadata_and_executable_dependencies():
++    from apps.forms.application.runtime import runtime_projection
++
++    schema = {
++        "type": "object",
++        "properties": {
++            "rows": {
++                "type": "array",
++                "items": {
++                    "type": "object",
++                    "properties": {
++                        "visible": {"type": "string", "default": "public-default"},
++                        "private": {"type": "string", "default": "private-default"},
++                    },
++                    "required": ["private"],
++                },
++            }
++        },
++    }
++    render = {
++        "dialect": "bpms.render/1",
++        "root": {
++            "component": "repeater",
++            "scope": "/properties/rows",
++            "children": [
++                {
++                    "component": "text",
++                    "scope": "/properties/rows/items/properties/visible",
++                    "calculation": {"scopes": ["private"]},
++                },
++                {"component": "text", "scope": "/properties/rows/items/properties/private"},
++            ],
++        },
++    }
++    policy = {
++        "read": ["/properties/rows"],
++        "write": ["/properties/rows"],
++        "hidden": ["/properties/rows/items/properties/private"],
++    }
++    state = runtime_projection(
++        {"rows": [{"visible": "yes", "private": "hidden-value"}]},
++        {"/rows": ["row-1"]},
++        {},
++        schema,
++        render,
++        policy,
++        {"/properties/rows"},
++        set(),
++        set(),
++    )
++    assert state["data"] == {"rows": [{"visible": "yes"}]}
++    assert state["item_identity"] == {"/rows": ["row-1"]}
++    assert state["writable_scopes"] == []
++    assert not any(
++        value in str(state)
++        for value in (
++            "hidden-value",
++            "private-default",
++            "public-default",
++            "calculation",
++            '"private"',
++        )
++    )
++    assert state["field_metadata"][0].validation_schema["items"]["required"] == []
+diff --git a/tests/integration/test_frontend_journey.py b/tests/integration/test_frontend_journey.py
+index a898330..20373e8 100644
+--- a/tests/integration/test_frontend_journey.py
++++ b/tests/integration/test_frontend_journey.py
+@@ -8,6 +8,8 @@ import pytest
+ from httpx import ASGITransport, AsyncClient
+ from sqlmodel import select
+ 
++from apps.forms.application.service import FormService
++from apps.forms.domain.dto import FormCreateDTO, FormVersionCreateDTO
+ from apps.requests.application.service import RequestService
+ from apps.requests.domain.dto import RequestTypeCreateDTO
+ from apps.step_types.application.registry import builtin_registry
+@@ -30,7 +32,7 @@ from apps.workflows.domain.dto import (
+ from core.deps import SessionFactory, engine
+ from core.ref_id import create_ref_id
+ from main import app
+-from tests.integration.test_processes import _published_form, _step_refs
++from tests.integration.test_processes import _step_refs
+ from utils.security import hash_password
+ 
+ pytestmark = [
+@@ -62,7 +64,67 @@ async def _prepare_journey() -> tuple[list[str], str, str]:
+         session.add(RolePermissionEntity(role_id=role.id, permission_id=permission.id))
+         session.add_all([UserRoleEntity(user_id=user.id, role_id=role.id) for user in users[:3]])
+         requester, reviewer = users[:2]
+-        form, form_version = await _published_form(session, requester)
++        forms = FormService(session)
++        form = await forms.create(
++            FormCreateDTO(code=f"JF{uuid7().hex}", name="Private review"), requester.id
++        )
++        form_version = await forms.create_version(
++            FormVersionCreateDTO(
++                form_ref_id=create_ref_id(form.id, form.version),
++                number=1,
++                behavior_dialect="bpms.behavior/1",
++                data_schema={
++                    "type": "object",
++                    "properties": {
++                        "amount": {"type": "string"},
++                        "private_note": {"type": "string", "default": "hidden-default"},
++                        "summary": {"type": "string"},
++                        "lines": {
++                            "type": "array",
++                            "items": {"type": "object", "properties": {"note": {"type": "string"}}},
++                        },
++                    },
++                    "required": ["amount"],
++                },
++                render_schema={
++                    "dialect": "bpms.render/1",
++                    "outcomes": ["approve"],
++                    "root": {
++                        "component": "vertical",
++                        "children": [
++                            {"component": "text", "scope": "/properties/amount", "label": "Amount"},
++                            {
++                                "component": "text",
++                                "scope": "/properties/private_note",
++                                "label": "Private",
++                            },
++                            {
++                                "component": "calculated",
++                                "scope": "/properties/summary",
++                                "calculation": {
++                                    "function": "concat",
++                                    "scopes": ["/properties/amount"],
++                                    "override_permission": "requests.start",
++                                },
++                            },
++                            {
++                                "component": "repeater",
++                                "scope": "/properties/lines",
++                                "children": [
++                                    {
++                                        "component": "text",
++                                        "scope": "/properties/lines/items/properties/note",
++                                    }
++                                ],
++                            },
++                        ],
++                    },
++                },
++            )
++        )
++        form_version = await forms.publish(
++            create_ref_id(form_version.id, form_version.version), requester.id
++        )
+         refs = await _step_refs(session)
+         workflows = WorkflowService(session, builtin_registry())
+         root = await workflows.create(
+@@ -86,12 +148,28 @@ async def _prepare_journey() -> tuple[list[str], str, str]:
+                             "inherit_previous": True,
+                             "default_view": "review",
+                             "views": [
++                                {
++                                    "key": "summary",
++                                    "purpose": "summary",
++                                    "title": {"en": "Summary"},
++                                    "scopes": ["/properties/amount"],
++                                },
++                                {
++                                    "key": "print",
++                                    "purpose": "print",
++                                    "title": {"en": "Print"},
++                                    "scopes": ["/properties/amount"],
++                                },
+                                 {
+                                     "key": "review",
+                                     "purpose": "edit",
+                                     "title": {"en": "Purchase review"},
+-                                    "scopes": ["/properties/amount"],
+-                                }
++                                    "scopes": [
++                                        "/properties/amount",
++                                        "/properties/summary",
++                                        "/properties/lines",
++                                    ],
++                                },
+                             ],
+                             "actions": [
+                                 {
+@@ -104,10 +182,18 @@ async def _prepare_journey() -> tuple[list[str], str, str]:
+                             ],
+                         },
+                         field_policy={
+-                            "read": ["/properties/amount"],
+-                            "write": ["/properties/amount"],
++                            "read": [
++                                "/properties/amount",
++                                "/properties/summary",
++                                "/properties/lines",
++                            ],
++                            "write": [
++                                "/properties/amount",
++                                "/properties/summary",
++                                "/properties/lines",
++                            ],
+                             "required": ["/properties/amount"],
+-                            "hidden": [],
++                            "hidden": ["/properties/private_note"],
+                         },
+                     ),
+                     GraphStep(
+@@ -210,6 +296,31 @@ async def test_documented_http_login_submit_approve_track_and_session_lifecycle(
+             )["data"]
+             path = _member("business-requests", draft["ref_id"])
+             assert draft["status"] == "DRAFT"
++            assert draft["process_ref_id"] is None
++            requester_view = (await _call(client, "GET", path + "/view", token=requester))["data"]
++            assert requester_view["purpose"] == "edit"
++            assert requester_view["runtime_dialect"] == "bpms.runtime/1"
++            await _call(client, "GET", path + "/view", token=outsider, status=404, code=1003)
++            choices = (
++                await _call(
++                    client,
++                    "POST",
++                    "/request-types/eligible/search",
++                    token=requester,
++                    body={"supported_render_dialects": ["bpms.render/1"], "size": 100},
++                )
++            )["result"]
++            assert kind in [choice["ref_id"] for choice in choices["items"]]
++            incompatible = (
++                await _call(
++                    client,
++                    "POST",
++                    "/request-types/eligible/search",
++                    token=requester,
++                    body={"supported_render_dialects": ["unsupported/9"]},
++                )
++            )["result"]
++            assert incompatible["total"] == 0
+             await _call(client, "GET", path, token=outsider, status=404, code=1003)
+             await _call(
+                 client,
+@@ -226,7 +337,10 @@ async def test_documented_http_login_submit_approve_track_and_session_lifecycle(
+                     "PUT",
+                     path,
+                     token=requester,
+-                    body={"data": {"amount": "125.00"}, "priority": 5},
++                    body={
++                        "data": {"amount": "125.00", "private_note": "keep-private", "lines": []},
++                        "priority": 5,
++                    },
+                 )
+             )["data"]
+             await _call(
+@@ -250,6 +364,11 @@ async def test_documented_http_login_submit_approve_track_and_session_lifecycle(
+                     )
+                 )["data"]
+                 assert submitted["status"] == "RUNNING"
++                assert submitted["process_ref_id"] is not None
++            process_path = _member("processes", submitted["process_ref_id"])
++            await _call(client, "GET", process_path, token=requester)
++            await _call(client, "GET", process_path, token=outsider, status=404, code=1003)
++            await _call(client, "POST", process_path + "/timeline", token=requester, body={})
+             items = (
+                 await _call(
+                     client,
+@@ -260,6 +379,8 @@ async def test_documented_http_login_submit_approve_track_and_session_lifecycle(
+                 )
+             )["result"]["items"]
+             assert len(items) == 1
++            assert items[0]["runtime_state"]["purpose"] == "observer"
++            assert items[0]["runtime_state"]["writable_scopes"] == []
+             task_path = _member("work-items", items[0]["ref_id"])
+             await _call(
+                 client,
+@@ -289,12 +410,73 @@ async def test_documented_http_login_submit_approve_track_and_session_lifecycle(
+                     token=reviewer,
+                 )
+             )["data"]
+-            assert view["data"] == {"amount": "125.00"}
++            assert view["data"]["amount"] == "125.00"
++            assert "private_note" not in view["data"]
+             assert any(
+                 action["kind"] == "complete" and action["outcome_key"] == "approve"
+                 for action in view["actions"]
+             )
+-            complete_path = _member("work-items", view["work_item_ref_id"]) + "/complete"
++            runtime = (
++                await _call(
++                    client,
++                    "GET",
++                    _member("work-items", claimed["ref_id"]) + "/runtime",
++                    token=reviewer,
++                )
++            )["data"]
++            assert runtime["writable_scopes"]
++            assert "private_note" not in str(runtime) and "hidden-default" not in str(runtime)
++            assert claimed["kind"] == "HUMAN_TASK"
++            for key in ("summary", "print"):
++                selected = (
++                    await _call(
++                        client,
++                        "GET",
++                        _member("work-items", claimed["ref_id"]) + "/runtime?key=" + key,
++                        token=reviewer,
++                    )
++                )["data"]
++                assert selected["purpose"] == key and selected["writable_scopes"] == []
++                assert selected["actions"] == [] and selected["data"] == {"amount": "125.00"}
++            current = runtime["resource_ref_id"]
++            collection = (
++                await _call(
++                    client,
++                    "POST",
++                    _member("work-items", current) + "/collections/edit",
++                    token=reviewer,
++                    body={"path": "/lines", "operation": "add", "value": {"note": "visible line"}},
++                )
++            )["data"]
++            assert "private_note" not in str(collection)
++            assert collection["data"]["lines"] == [{"note": "visible line"}]
++            current = collection["resource_ref_id"]
++            override = (
++                await _call(
++                    client,
++                    "POST",
++                    _member("work-items", current) + "/overrides",
++                    token=reviewer,
++                    body={
++                        "scope": "/properties/summary",
++                        "operation": "set",
++                        "value": "Reviewed",
++                        "reason": "Manual review",
++                    },
++                )
++            )["data"]
++            assert "private_note" not in str(override) and "input_checksum" not in str(override)
++            saved_task = (
++                await _call(
++                    client,
++                    "POST",
++                    _member("work-items", override["resource_ref_id"]) + "/save",
++                    token=reviewer,
++                    body={"command_key": "safe-save", "data": {"amount": "125.00"}},
++                )
++            )["data"]
++            assert saved_task["runtime_state"]["data"]["lines"] == [{"note": "visible line"}]
++            complete_path = _member("work-items", saved_task["ref_id"]) + "/complete"
+             action = {
+                 "command_key": "purchase-approve-001",
+                 "outcome_key": "approve",
+@@ -307,7 +489,7 @@ async def test_documented_http_login_submit_approve_track_and_session_lifecycle(
+                 "POST",
+                 complete_path,
+                 token=reviewer,
+-                body={**action, "data": {}},
++                body={**action, "data": {"amount": None}},
+                 status=422,
+                 code=1002,
+             )
+@@ -327,7 +509,8 @@ async def test_documented_http_login_submit_approve_track_and_session_lifecycle(
+             )
+             tracked = (await _call(client, "GET", path, token=requester))["data"]
+             assert tracked["status"] == "COMPLETED"
+-            assert tracked["data"] == {"amount": "125.00"}
++            assert tracked["data"]["amount"] == "125.00"
++            assert tracked["data"]["private_note"] == "keep-private"
+             closed = (
+                 await _call(
+                     client,
+diff --git a/tests/integration/test_platform_foundation.py b/tests/integration/test_platform_foundation.py
+new file mode 100644
+index 0000000..732b62b
+--- /dev/null
++++ b/tests/integration/test_platform_foundation.py
+@@ -0,0 +1,198 @@
++"""Real-database restriction round trips, eligibility and grant visibility."""
++
++import os
++from typing import Any
++from unittest.mock import Mock
++from uuid import uuid7
++
++import pytest
++from sqlmodel import select
++
++from apps.clients.application.service import ClientService
++from apps.clients.domain.contracts import ClientContext
++from apps.clients.domain.dto import ClientCreateDTO, ClientReleaseCreateDTO
++from apps.integrations.application.providers import StatusProvider
++from apps.integrations.application.service import ConnectionService
++from apps.integrations.domain.dto import ConnectionCreateDTO, ConnectionGrantQuery, GrantDTO
++from apps.requests.application.service import RequestService
++from apps.requests.domain.dto import (
++    BusinessRequestCreateDTO,
++    EligibleRequestTypeQuery,
++    RequestTypeClientTargetDTO,
++    RequestTypeCreateDTO,
++)
++from apps.requests.presentation.routes import type_dto
++from apps.step_types.application.registry import builtin_registry
++from apps.users.domain.entity import UserEntity
++from apps.workflows.application.service import WorkflowService
++from apps.workflows.domain.dto import WorkflowGrantDTO, WorkflowGrantQuery
++from apps.workflows.domain.entity import WorkflowDefinitionEntity
++from core.deps import SessionFactory, engine
++from core.ref_id import create_ref_id
++from tests.integration.test_frontend_journey import _prepare_journey
++from utils.date_utils import get_datetime_utc
++from utils.exceptions import NotAllowedException, VersionConflictException
++
++pytestmark = [
++    pytest.mark.integration,
++    pytest.mark.skipif(os.getenv("RUN_INTEGRATION") != "1", reason="uses PostgreSQL"),
++]
++
++
++@pytest.mark.anyio
++async def test_restrictions_round_trip_and_eligibility_rechecked_at_creation():
++    try:
++        names, _, reference = await _prepare_journey()
++        async with SessionFactory() as session:
++            actor = (
++                await session.exec(select(UserEntity).where(UserEntity.username == names[0]))
++            ).one()
++            service = RequestService(session)
++            row = await service.get_type(reference)
++            clients = ClientService(session)
++            registered, secret = await clients.create_client(
++                ClientCreateDTO(
++                    code=f"WEB_{uuid7().hex}",
++                    name="Trusted boundary",
++                    kind="WEB",
++                    platform="server",
++                    confidential=True,
++                )
++            )
++            for version in ("1.9", "2.0", "2.5", "3.0"):
++                await clients.create_release(
++                    registered.id,
++                    ClientReleaseCreateDTO(
++                        version=version, api_version="v1", renderer_capabilities=["bpms.render/1"]
++                    ),
++                )
++            target = RequestTypeClientTargetDTO(
++                client_ref_id=create_ref_id(registered.id, registered.version),
++                minimum_release="2.0",
++                maximum_release_exclusive="3.0",
++            )
++            base: dict[str, Any] = {
++                "code": row.code,
++                "name": row.name,
++                "workflow_ref_id": create_ref_id(row.workflow_definition_id, 1),
++                "form_ref_id": create_ref_id(row.form_definition_id, 1),
++            }
++            row = await service.update_type(
++                create_ref_id(row.id, row.version),
++                RequestTypeCreateDTO(**base, client_targets=[target]),
++            )
++            read = await type_dto(service, row)
++            assert read.client_targets == [target]
++            row = await service.update_type(
++                create_ref_id(row.id, row.version),
++                RequestTypeCreateDTO.model_validate(base | {"name": "Renamed only"}),
++            )
++            assert (await type_dto(service, row)).client_targets == [target]
++            query = EligibleRequestTypeQuery(supported_render_dialects=["bpms.render/1"], size=100)
++
++            async def listed(context):
++                return row.code in [
++                    item.code
++                    for item in (await service.eligible_types(query, actor, context)).items
++                ]
++
++            assert not await listed(ClientContext.legacy())
++            for version, expected in (("1.9", False), ("2.0", True), ("2.5", True), ("3.0", False)):
++                context = await clients.authenticate(registered.code, secret, version)
++                assert await listed(context) is expected
++            with pytest.raises(NotAllowedException):
++                await service.create_draft(
++                    BusinessRequestCreateDTO(
++                        request_type_ref_id=create_ref_id(row.id, row.version)
++                    ),
++                    actor,
++                    ClientContext.legacy(),
++                )
++            row = await service.update_type(
++                create_ref_id(row.id, row.version), RequestTypeCreateDTO(**base, client_targets=[])
++            )
++            assert (await type_dto(service, row)).client_targets == []
++            assert await listed(ClientContext.legacy())
++            workflow = await session.get(WorkflowDefinitionEntity, row.workflow_definition_id)
++            assert workflow is not None
++            workflow.is_active = False
++            workflow.updated_at = get_datetime_utc()
++            await session.flush()
++            with pytest.raises(VersionConflictException):
++                await service.create_draft(
++                    BusinessRequestCreateDTO(
++                        request_type_ref_id=create_ref_id(row.id, row.version)
++                    ),
++                    actor,
++                    ClientContext.legacy(),
++                )
++            await session.rollback()
++    finally:
++        await engine.dispose()
++
++
++@pytest.mark.anyio
++async def test_current_grant_reads_enforce_connection_manage_authority():
++    try:
++        names, _, reference = await _prepare_journey()
++        async with SessionFactory() as session:
++            users = [
++                (await session.exec(select(UserEntity).where(UserEntity.username == name))).one()
++                for name in names[:3]
++            ]
++            owner, reviewer, outsider = users
++            requests = RequestService(session)
++            kind = await requests.get_type(reference)
++            workflows = WorkflowService(session, builtin_registry())
++            root = await session.get(WorkflowDefinitionEntity, kind.workflow_definition_id)
++            assert root is not None
++            await workflows.add_grant(
++                create_ref_id(root.id, root.version),
++                WorkflowGrantDTO(
++                    user_ref_id=create_ref_id(reviewer.id, reviewer.version), can_start=True
++                ),
++                owner.id,
++            )
++            grants = await workflows.search_grants(
++                create_ref_id(root.id, root.version), WorkflowGrantQuery(size=1)
++            )
++            assert grants.total == 1 and grants.items[0].can_start
++            connections = ConnectionService(
++                session, StatusProvider(Mock(), {"fixture": "https://example.invalid/status"})
++            )
++            connection = await connections.create(
++                ConnectionCreateDTO(
++                    code=f"CON_{uuid7().hex}",
++                    name="Service",
++                    kind="SERVICE",
++                    provider="https_status",
++                    non_secret_config={"endpoint_key": "fixture"},
++                    secret_ref="fixture",
++                    secret_version="v1",
++                ),
++                owner,
++            )
++            await connections.grant(
++                create_ref_id(connection.id, connection.version),
++                GrantDTO(user_ref_id=create_ref_id(reviewer.id, reviewer.version)),
++                owner,
++            )
++            page = await connections.search_grants(
++                create_ref_id(connection.id, connection.version), ConnectionGrantQuery(), owner
++            )
++            assert page.total == 1 and page.items[0].can_use
++            with pytest.raises(NotAllowedException):
++                await connections.search_grants(
++                    create_ref_id(connection.id, connection.version),
++                    ConnectionGrantQuery(),
++                    outsider,
++                )
++            with pytest.raises(NotAllowedException):
++                await connections.search_grants(
++                    create_ref_id(connection.id, connection.version),
++                    ConnectionGrantQuery(),
++                    reviewer,
++                )
++            await session.rollback()
++    finally:
++        await engine.dispose()
+diff --git a/tests/utils/test_middleware.py b/tests/utils/test_middleware.py
+index cca2785..ffb74df 100644
+--- a/tests/utils/test_middleware.py
++++ b/tests/utils/test_middleware.py
+@@ -265,3 +265,34 @@ def test_rfc9110_http_date_variants_and_bad_weekday() -> None:
+         future_year.weekday()
+     ]
+     assert middleware.parse_client_date(f"{weekday}, 06-Nov-69 08:49:37 GMT", 2026) == future_year
++
++
++@pytest.mark.anyio
++async def test_runtime_payloads_never_enter_http_logs(monkeypatch):
++    events = []
++
++    class CaptureLogger:
++        def bind(self, **kwargs):
++            return self
++
++        async def ainfo(self, event, **fields):
++            events.append((event, fields))
++
++        async def acritical(self, event, **fields):
++            events.append((event, fields))
++
++    monkeypatch.setattr(middleware, "logger", CaptureLogger())
++    app = FastAPI()
++    app.add_middleware(RequestLoggingMiddleware)
++
++    @app.post("/api/v1/work-items/test/save")
++    async def save(body: dict[str, Any]):
++        return {"data": body}
++
++    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
++        response = await client.post(
++            "/api/v1/work-items/test/save", json={"amount": "sensitive-value"}
++        )
++    assert response.status_code == 200
++    assert response.json()["data"]["amount"] == "sensitive-value"
++    assert all("body" not in fields for _, fields in events)
