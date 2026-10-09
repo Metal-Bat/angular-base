@@ -53,6 +53,7 @@
               [errors]="errors()"
               [label]="labels[location]"
               [path]="location"
+              [referenceLabels]="referenceLabels()"
               [schema]="schema(location)"
               [value]="input()[location]"
               (referenceRequested)="picker().open($event)"
@@ -100,5 +101,5 @@
 <app-reference-picker
   #references
   [context]="bodyContext()"
-  (picked)="pick($event.path, $event.value)"
+  (picked)="pick($event.path, $event.value, $event.label)"
 />

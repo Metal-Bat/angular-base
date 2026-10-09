@@ -4,6 +4,7 @@ import { firstValueFrom, fromEvent, takeUntil } from 'rxjs';
 import { ApiClient } from '../../../core/transport/api-client';
 import {
   ApiOperationId,
+  RequestBody,
   RequestInput,
   SuccessBody,
 } from '../../../core/transport/api-types';
@@ -15,16 +16,40 @@ import {
 import { record } from '../../../core/transport/api-failure';
 import { stringField } from './workspace-decoders';
 import {
+  NotificationOptions,
   PersonalServicesPort,
   ServiceItem,
   ServiceKind,
 } from '../application/personal-services-port';
 const query = (
   page: number,
-): { page: number; size: number; filters: never[]; sort_orders: never[] } => ({
+  options?: NotificationOptions,
+): RequestBody<'search_notifications_api_v1_notifications_search_post'> => ({
   page,
   size: 20,
-  filters: [],
+  filters: [
+    ...(options?.read && options.read !== 'all'
+      ? [
+          {
+            field_name: 'read_at',
+            operation:
+              options.read === 'unread'
+                ? ('isNull' as const)
+                : ('isNotNull' as const),
+            value: null,
+          },
+        ]
+      : []),
+    ...(options?.search
+      ? [
+          {
+            field_name: 'subject',
+            operation: 'contains' as const,
+            value: options.search,
+          },
+        ]
+      : []),
+  ],
   sort_orders: [],
 });
 @Injectable({ providedIn: 'root' })
@@ -47,6 +72,8 @@ export class PersonalServices implements PersonalServicesPort {
     const value = record(raw);
     return {
       ref: stringField(value, 'ref_id'),
+      createdAt:
+        typeof value['created_at'] === 'string' ? value['created_at'] : null,
       title: String(
         kind === 'reports'
           ? (value['file_name'] ?? value['definition_key'])
@@ -77,6 +104,7 @@ export class PersonalServices implements PersonalServicesPort {
     page = 1,
     report = false,
     signal?: AbortSignal,
+    options?: NotificationOptions,
   ): Promise<Page<ServiceItem>> {
     const id =
       kind === 'reports'
@@ -85,7 +113,11 @@ export class PersonalServices implements PersonalServicesPort {
           ? 'report_notifications_api_v1_notifications_report_post'
           : 'search_notifications_api_v1_notifications_search_post';
     return readResultPage(
-      await this.request(id, { body: query(page) }, signal),
+      await this.request(
+        id,
+        { body: query(page, kind === 'notifications' ? options : undefined) },
+        signal,
+      ),
       (raw) => this.decode(kind, raw),
     );
   }

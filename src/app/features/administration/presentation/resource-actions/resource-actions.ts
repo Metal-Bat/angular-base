@@ -14,6 +14,10 @@ import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
 import { ActorState } from '../../../../core/auth/actor-state';
+import {
+  actorReferenceLabels,
+  rememberReference,
+} from '../../../../shared/ui/reference-labels';
 import { SessionContext } from '../../../../core/auth/session-context';
 import { Feedback } from '../../../../core/feedback/feedback';
 import { hasPermissions } from '../../../../core/permissions/area-access';
@@ -39,7 +43,7 @@ import {
   knownTarget,
   pageInput,
 } from '../../domain/action-input';
-import { setAt } from '../../domain/reference-options';
+import { pickedInput } from '../../domain/reference-options';
 import { SchemaInput } from '../schema-input/schema-input';
 import { ReferencePicker } from '../reference-picker/reference-picker';
 @Component({
@@ -83,6 +87,7 @@ export class ResourceActions {
   readonly locations = ['path', 'query', 'body'] as const;
   readonly labels = { path: 'Target', query: 'Options', body: 'Values' };
   private generation = 0;
+  readonly referenceLabels = actorReferenceLabels();
   private scope = '';
   private dirty = false;
   private applied: AdminInput | null = null;
@@ -174,6 +179,7 @@ export class ResourceActions {
     });
   }
   clear(): void {
+    this.referenceLabels.set({});
     this.generation++;
     this.command.set(null);
     this.input.set({ body: {}, path: {}, query: {} });
@@ -246,16 +252,10 @@ export class ResourceActions {
     this.dirty = true;
     this.errors.set({});
   }
-  pick(path: string, value: string): void {
-    const [location, ...remaining] = path.split('.');
-    this.change(
-      location as keyof AdminInput,
-      setAt(
-        this.input()[location as keyof AdminInput],
-        remaining.join('.'),
-        value,
-      ),
-    );
+  pick(path: string, value: string, label = 'Selected resource'): void {
+    rememberReference(this.referenceLabels, path, value, label);
+    const selection = pickedInput(this.input(), path, value);
+    this.change(selection.location, selection.value);
   }
   async canLeave(): Promise<boolean> {
     return (

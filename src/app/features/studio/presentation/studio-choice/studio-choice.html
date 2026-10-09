@@ -1,0 +1,56 @@
+<div class="flex flex-col gap-2">
+  <label [for]="controlId() + '-search'">{{ "Search" | localize }}</label>
+  <input
+    pInputText
+    [disabled]="disabled() || busy()"
+    [id]="controlId() + '-search'"
+    [ngModel]="search()"
+    (ngModelChange)="search.set($event)"
+  />
+  <button
+    pButton
+    type="button"
+    [disabled]="disabled() || busy()"
+    (click)="load()"
+  >
+    {{ "Find references" | localize }}
+  </button>
+  <app-select-control
+    [ariaLabel]="'Selected resource' | localize"
+    [disabled]="disabled() || busy()"
+    [inputId]="controlId()"
+    [ngModel]="value()"
+    (ngModelChange)="choose($event)"
+  >
+    <option value="">{{ "Choose" | localize }}</option>
+    @if (fallback()) {
+      <option [value]="value()">{{ "Selected resource" | localize }}</option>
+    }
+    @for (row of rows(); track row.key) {
+      <option [value]="row.key">{{ row.label }}</option>
+    }
+  </app-select-control>
+  @if (pages() > 1) {
+    <div class="flex gap-2">
+      <button
+        pButton
+        type="button"
+        [disabled]="disabled() || busy() || page() <= 1"
+        (click)="load(page() - 1)"
+      >
+        {{ "Previous" | localize }}
+      </button>
+      <button
+        pButton
+        type="button"
+        [disabled]="disabled() || busy() || page() >= pages()"
+        (click)="load(page() + 1)"
+      >
+        {{ "Next" | localize }}
+      </button>
+    </div>
+  }
+  @if (error()) {
+    <p role="alert">{{ error() | localize }}</p>
+  }
+</div>

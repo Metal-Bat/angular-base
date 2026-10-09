@@ -1,5 +1,93 @@
+import { authoringMessages } from './authoring-messages';
 import { fieldTranslations } from '../../shared/domain/field-label';
 export const crudMessages: Readonly<Record<string, string>> = {
+  'This resource changed. Reload it before making another change.':
+    'این منبع تغییر کرده است. پیش از تغییر دوباره، آن را بارگذاری کنید.',
+  'Check the highlighted fields before continuing.':
+    'پیش از ادامه، فیلدهای مشخص‌شده را بررسی کنید.',
+
+  'Appearance and language': 'ظاهر و زبان',
+  'Changes are saved automatically to your account.':
+    'تغییرات به‌طور خودکار در حساب شما ذخیره می‌شوند.',
+  'Loading saved preferences…': 'در حال بارگذاری تنظیمات ذخیره‌شده…',
+  'Saving preferences…': 'در حال ذخیره تنظیمات…',
+  'Preferences saved.': 'تنظیمات ذخیره شدند.',
+  'Preferences could not be saved. Reload saved preferences before changing them again.':
+    'تنظیمات ذخیره نشدند. پیش از تغییر دوباره، تنظیمات ذخیره‌شده را بارگذاری کنید.',
+  'Reload saved preferences': 'بارگذاری تنظیمات ذخیره‌شده',
+  'Arabic applies to this session; saved language supports English and Persian.':
+    'عربی فقط در این نشست اعمال می‌شود؛ زبان ذخیره‌شده از انگلیسی و فارسی پشتیبانی می‌کند.',
+  ...authoringMessages,
+  Help: 'راهنما',
+  'Open a topic to read it. Help does not change access.':
+    'برای خواندن یک موضوع، آن را باز کنید. راهنما دسترسی شما را تغییر نمی‌دهد.',
+  'Reset help for this session': 'بازنشانی راهنمای این نشست',
+  'Reset help for this session?': 'راهنمای این نشست بازنشانی شود؟',
+  'Help is available. Viewed and dismissed status applies to this session.':
+    'راهنما در دسترس است. وضعیت مشاهده و رد کردن فقط برای این نشست است.',
+  'Dismissed this session': 'در این نشست رد شده',
+  'Viewed this session': 'در این نشست مشاهده شده',
+  'Not viewed this session': 'در این نشست مشاهده نشده',
+  Dismiss: 'رد کردن',
+  'Open workspace': 'باز کردن محیط کار',
+  'Read status': 'وضعیت خواندن',
+  'All notifications': 'همه اعلان‌ها',
+  Unread: 'خوانده‌نشده',
+  Read: 'خوانده‌شده',
+  Subject: 'موضوع',
+  'Matching notifications': 'اعلان‌های مطابق',
+  'Unread notifications': 'اعلان‌های خوانده‌نشده',
+  'Open notifications': 'باز کردن اعلان‌ها',
+  'Search must be 256 characters or fewer.':
+    'جستجو باید حداکثر ۲۵۶ نویسه داشته باشد.',
+  'Request reference': 'شناسه درخواست',
+  'Copy request reference': 'کپی شناسه درخواست',
+  Readiness: 'آمادگی',
+  'Graph validation': 'اعتبارسنجی گراف',
+  'Graph structure': 'ساختار گراف',
+  'Overall status': 'وضعیت کلی',
+  'Received at': 'دریافت در',
+  Check: 'بررسی',
+  Required: 'ضروری',
+  Recheck: 'بررسی دوباره',
+  Blocked: 'مسدود',
+  Unknown: 'نامشخص',
+  'Not applicable': 'نامرتبط',
+  'Results may be out of date. Recheck before continuing.':
+    'ممکن است نتایج قدیمی باشند. پیش از ادامه دوباره بررسی کنید.',
+  'Graph validation does not check installation, provider or worker readiness.':
+    'اعتبارسنجی گراف، آمادگی نصب، ارائه‌دهنده یا اجراکننده را بررسی نمی‌کند.',
+  'Resolve the reported graph issues and validate again.':
+    'مشکلات گزارش‌شده گراف را رفع کنید و دوباره اعتبارسنجی کنید.',
+  'Graph validation passed.': 'اعتبارسنجی گراف موفق بود.',
+  'Readiness has not been checked.': 'آمادگی بررسی نشده است.',
+  'Workspace saved. This is not an executable graph.':
+    'محیط کار ذخیره شد. این گراف قابل اجرا نیست.',
+  'Promoted. Publication is a separate explicit action.':
+    'ارتقا یافت. انتشار به اقدام صریح جداگانه نیاز دارد.',
+  'Published immutable workflow version': 'نسخه تغییرناپذیر گردش کار منتشر شد',
+  Calendar: 'تقویم',
+  'Calendar view': 'نمای تقویم',
+  Agenda: 'برنامه',
+  Week: 'هفته',
+  Month: 'ماه',
+  Timezone: 'منطقه زمانی',
+  'All day': 'تمام روز',
+  'Personal event': 'رویداد شخصی',
+  'Workflow deadline': 'مهلت گردش کار',
+  'Calendar is unavailable.': 'تقویم در دسترس نیست.',
+  'No events in this range.': 'رویدادی در این بازه وجود ندارد.',
+  'Appearance for this session': 'ظاهر این نشست',
+  'Changes apply to this session.': 'تغییرات فقط در این نشست اعمال می‌شوند.',
+  'Use system appearance': 'استفاده از ظاهر سیستم',
+  'Reset appearance': 'بازنشانی ظاهر',
+  'Selected resource': 'منبع انتخاب‌شده',
+  'The selected resource is unavailable. Choose again.':
+    'منبع انتخاب‌شده در دسترس نیست. دوباره انتخاب کنید.',
+  Choose: 'انتخاب کنید',
+  'No records': 'رکوردی وجود ندارد',
+  Apply: 'اعمال',
+  Clear: 'پاک کردن',
   'Advanced filters': 'فیلترهای پیشرفته',
   'List settings': 'تنظیمات فهرست',
   'Add a condition to narrow the results.':

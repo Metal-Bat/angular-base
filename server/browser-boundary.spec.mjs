@@ -133,7 +133,7 @@ const page = `<!doctype html><script>
  check(!document.cookie.includes('workspace_session'), 'cookie readable by JavaScript');
  check(localStorage.length === 0 && sessionStorage.length === 0, 'persistent state');
  const denied = await fetch('/api/v1/work-items/search', {method:'POST',headers:{'content-type':'application/json'},body:'{}'});
- check(denied.status === 403, 'missing CSRF accepted');
+ check(denied.status === 403, 'missing CSRF rejection status '+denied.status);
  const accepted = await fetch('/api/v1/work-items/search', {method:'POST',headers:{'content-type':'application/json','x-csrf-token':state.csrfToken,'authorization':'Bearer browser-forgery'},body:'{}'});
  check(accepted.status === 200 && accepted.headers.get('cache-control').includes('no-store'), 'authorized request');
  const rawTokens = await fetch('/api/v1/auth/refresh', {method:'POST',headers:{'content-type':'application/json','x-csrf-token':state.csrfToken},body:'{}'});

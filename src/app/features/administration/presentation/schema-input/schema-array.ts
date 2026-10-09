@@ -32,6 +32,8 @@ export class SchemaArray {
         | 'path'
         | 'removeItem'
         | 'required'
+        | 'referenceLabels'
+        | 'referenceRequested'
         | 'setItem'
         | 'shape'
         | 'title'

@@ -20,24 +20,20 @@ try {
     await cp(entry, join(sandbox, entry), { recursive: true });
   }
   await symlink(resolve("node_modules"), join(sandbox, "node_modules"), "dir");
-  const run = (args) =>
-    spawnSync(
-      process.execPath,
-      [resolve("node_modules/@angular/cli/bin/ng.js"), ...args],
-      {
-        cwd: sandbox,
-        encoding: "utf8",
-        env: {
-          ...process.env,
-          CI: "true",
-          NG_CLI_ANALYTICS: "false",
-          NG_BUILD_MAX_WORKERS: "2",
-        },
-        timeout: 60000,
+  const run = (args, script = "node_modules/@angular/cli/bin/ng.js") =>
+    spawnSync(process.execPath, [resolve(script), ...args], {
+      cwd: sandbox,
+      encoding: "utf8",
+      env: {
+        ...process.env,
+        CI: "true",
+        NG_CLI_ANALYTICS: "false",
+        NG_BUILD_MAX_WORKERS: "2",
       },
-    );
-  const expectFailure = (label, args, expected) => {
-    const result = run(args);
+      timeout: 180000,
+    });
+  const expectFailure = (label, args, expected, script) => {
+    const result = run(args, script);
     if (
       result.error ||
       result.status === 0 ||
@@ -49,6 +45,29 @@ try {
     }
     console.log(`${label} rejected the deliberately failing change.`);
   };
+  await writeFile(
+    join(sandbox, "src/app/ci-warning-probe.ts"),
+    "export const warningProbe = 1; const unusedWarning = 2;\n",
+  );
+  expectFailure("Lint warning ceiling", ["lint"], "no-unused-vars");
+  await rm(join(sandbox, "src/app/ci-warning-probe.ts"));
+  await writeFile(
+    join(sandbox, "src/app/shared/ui/ci-translation-probe.html"),
+    '{{ "Untranslated gate probe" | localize }}\n',
+  );
+  expectFailure(
+    "Translation",
+    [],
+    "Missing translation",
+    "scripts/check-delivery-ui.mjs",
+  );
+  await rm(join(sandbox, "src/app/shared/ui/ci-translation-probe.html"));
+  await writeFile(
+    join(sandbox, "src/app/app.html"),
+    "{{ definitelyMissingTemplateMember }}\n",
+  );
+  expectFailure("Template types", ["build"], "definitelyMissingTemplateMember");
+  await cp("src/app/app.html", join(sandbox, "src/app/app.html"));
   await writeFile(
     join(sandbox, "src/app/ci-gate-probe.ts"),
     'export const probe = eval("1");\n',

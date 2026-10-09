@@ -32,22 +32,20 @@ jobs:
           key: npm-${{ runner.os }}-${{ hashFiles('mise.toml', 'package-lock.json') }}
       - name: Install exact dependencies
         run: mise run install
-      - name: Run project checks
-        run: mise run check
-      - name: Verify optional webfont registration
-        run: mise exec -- npm run test:fonts
-      - name: Verify failing lint, test and build gates
-        run: mise exec -- npm run ci:gates
       - name: Install Chrome for browser quality checks
         id: chrome
         uses: browser-actions/setup-chrome@v2
         with:
           chrome-version: stable
-      - name: Run browser quality and accessibility checks
+      - name: Run project checks
         env:
           BROWSER_ENGINE: chromium
           BROWSER_BINARY: ${{ steps.chrome.outputs.chrome-path }}
-        run: mise exec -- npm run test:browser-quality
+        run: mise run check
+      - name: Verify optional webfont registration
+        run: mise exec -- npm run test:fonts
+      - name: Verify failing lint, test and build gates
+        run: mise exec -- npm run ci:gates
       - name: Generate dependency reports
         run: mise exec -- npm run dependencies:report
       - name: Upload release, dependency and browser evidence

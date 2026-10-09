@@ -1,0 +1,167 @@
+[
+  {
+    "help_key": "requests.start",
+    "revision": "1",
+    "route_key": "requests",
+    "permissions": ["requests.start"],
+    "order": 10,
+    "title": {
+      "en": "Create a request",
+      "fa": "ایجاد درخواست"
+    },
+    "body": {
+      "en": "Start from the request catalog. Required fields must be complete before submission. Saving a draft does not submit it.",
+      "fa": "از فهرست انواع درخواست شروع کنید. پیش از ارسال، فیلدهای ضروری را تکمیل کنید. ذخیره پیش‌نویس به معنی ارسال نیست."
+    }
+  },
+  {
+    "help_key": "work.review",
+    "revision": "1",
+    "route_key": "tasks",
+    "permissions": ["requests.start"],
+    "order": 20,
+    "title": {
+      "en": "Review and correction",
+      "fa": "بررسی و اصلاح"
+    },
+    "body": {
+      "en": "Open your task inbox and claim available work before editing. A human decision and a returned correction are separate actions; check the current task state before retrying.",
+      "fa": "صندوق کارها را باز کنید و پیش از ویرایش، کار قابل انجام را بپذیرید. تصمیم انسانی و بازگشت برای اصلاح دو عمل جداگانه‌اند؛ پیش از تلاش دوباره وضعیت جاری کار را بررسی کنید."
+    }
+  },
+  {
+    "help_key": "studio.save",
+    "revision": "1",
+    "route_key": "studio",
+    "permissions": ["forms.manage", "workflows.manage"],
+    "order": 30,
+    "title": {
+      "en": "Save your work",
+      "fa": "ذخیره کار"
+    },
+    "body": {
+      "en": "Save records changes to the working copy. Review validation feedback and keep unrelated fields and access restrictions intact.",
+      "fa": "ذخیره، تغییرات را در نسخه کاری ثبت می‌کند. پیام‌های اعتبارسنجی را بررسی کنید و فیلدهای نامرتبط و محدودیت‌های دسترسی را حفظ کنید."
+    }
+  },
+  {
+    "help_key": "studio.promote",
+    "revision": "1",
+    "route_key": "studio",
+    "permissions": ["workflows.manage"],
+    "order": 40,
+    "title": {
+      "en": "Promote a working copy",
+      "fa": "ارتقای نسخه کاری"
+    },
+    "body": {
+      "en": "Promotion is a separate confirmed action. It checks the current revision before replacing draft content; saving alone does not promote or publish.",
+      "fa": "ارتقا عملی جداگانه و نیازمند تأیید است. پیش از جایگزینی محتوای پیش‌نویس، بازبینی جاری بررسی می‌شود؛ ذخیره به تنهایی ارتقا یا انتشار نیست."
+    }
+  },
+  {
+    "help_key": "studio.publish",
+    "revision": "1",
+    "route_key": "studio",
+    "permissions": ["forms.manage", "workflows.manage"],
+    "order": 50,
+    "title": {
+      "en": "Publish a definition",
+      "fa": "انتشار تعریف"
+    },
+    "body": {
+      "en": "Publication validates dependencies and creates an immutable version. Active requests keep their pinned version. Fix reported blockers before trying publication again.",
+      "fa": "انتشار وابستگی‌ها را بررسی می‌کند و نسخه‌ای تغییرناپذیر می‌سازد. درخواست‌های فعال نسخه ثابت خود را نگه می‌دارند. پیش از انتشار دوباره، موانع گزارش‌شده را رفع کنید."
+    }
+  },
+  {
+    "help_key": "workflow.defaults",
+    "revision": "1",
+    "route_key": null,
+    "permissions": ["workflows.manage"],
+    "order": 60,
+    "title": {
+      "en": "Definition defaults",
+      "fa": "مقادیر پیش‌فرض تعریف"
+    },
+    "body": {
+      "en": "Restoring definition defaults is separate from resetting a demo environment. Published versions and active request pins must stay unchanged.",
+      "fa": "بازگرداندن مقادیر پیش‌فرض تعریف با بازنشانی محیط نمایشی متفاوت است. نسخه‌های منتشرشده و نسخه ثابت درخواست‌های فعال باید بدون تغییر بمانند."
+    }
+  },
+  {
+    "help_key": "data.mapping",
+    "revision": "1",
+    "route_key": null,
+    "permissions": ["workflows.manage"],
+    "order": 70,
+    "title": {
+      "en": "Data mappings",
+      "fa": "نگاشت داده"
+    },
+    "body": {
+      "en": "Use only authorized available data and compatible target fields. Missing, null, false and zero have different meanings; never replace a protected human decision with an AI result.",
+      "fa": "فقط داده‌های مجاز و در دسترس و فیلدهای مقصد سازگار را انتخاب کنید. نبود مقدار، تهی، نادرست و صفر معناهای متفاوتی دارند؛ نتیجه هوش مصنوعی را جایگزین تصمیم انسانی الزامی نکنید."
+    }
+  },
+  {
+    "help_key": "notifications",
+    "revision": "1",
+    "route_key": "notifications",
+    "permissions": [],
+    "order": 80,
+    "title": {
+      "en": "Read notifications",
+      "fa": "خواندن اعلان‌ها"
+    },
+    "body": {
+      "en": "Opening a notification shows its content. Mark read is explicit and does not claim, approve or retry the linked work. Access is checked again when opening a request.",
+      "fa": "باز کردن اعلان محتوای آن را نشان می‌دهد. علامت‌گذاری خوانده‌شده عملی صریح است و کار مرتبط را نمی‌پذیرد، تأیید نمی‌کند یا تکرار نمی‌کند. هنگام باز کردن درخواست، دسترسی دوباره بررسی می‌شود."
+    }
+  },
+  {
+    "help_key": "calendar",
+    "revision": "1",
+    "route_key": null,
+    "permissions": [],
+    "order": 90,
+    "title": {
+      "en": "Calendar dates",
+      "fa": "تاریخ‌های تقویم"
+    },
+    "body": {
+      "en": "All-day events use dates with an exclusive end date. Timed events use a timezone. Workflow deadlines are read-only unless an authorized deadline-change action is available.",
+      "fa": "رویدادهای تمام‌روز با تاریخ و تاریخ پایان غیرشامل مشخص می‌شوند. رویدادهای زمان‌دار منطقه زمانی دارند. موعدهای گردش کار فقط خواندنی‌اند، مگر اینکه تغییر مجاز موعد در دسترس باشد."
+    }
+  },
+  {
+    "help_key": "saved.views",
+    "revision": "1",
+    "route_key": null,
+    "permissions": [],
+    "order": 100,
+    "title": {
+      "en": "Saved views",
+      "fa": "نماهای ذخیره‌شده"
+    },
+    "body": {
+      "en": "A saved view records the applied filters, sort, columns and page size. It does not save a page offset or grant access. Repair outdated restrictions rather than silently removing them.",
+      "fa": "نمای ذخیره‌شده فیلترهای اعمال‌شده، ترتیب، ستون‌ها و اندازه صفحه را ثبت می‌کند. شماره صفحه را ذخیره نمی‌کند و دسترسی نمی‌دهد. محدودیت‌های قدیمی را اصلاح کنید و آن‌ها را بی‌خبر حذف نکنید."
+    }
+  },
+  {
+    "help_key": "support.references",
+    "revision": "1",
+    "route_key": null,
+    "permissions": [],
+    "order": 110,
+    "title": {
+      "en": "Support references",
+      "fa": "شناسه‌های پشتیبانی"
+    },
+    "body": {
+      "en": "Give support the error code and request reference shown with a failure. Do not include passwords, tokens or private form data. For an unknown outcome, check the current state before repeating the action.",
+      "fa": "کد خطا و شناسه درخواست نمایش‌داده‌شده را به پشتیبانی بدهید. گذرواژه، توکن یا داده خصوصی فرم را ارسال نکنید. اگر نتیجه نامشخص است، پیش از تکرار عمل وضعیت جاری را بررسی کنید."
+    }
+  }
+]

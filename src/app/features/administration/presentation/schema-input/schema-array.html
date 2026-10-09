@@ -23,8 +23,10 @@
         [errors]="vm.errors()"
         [label]="('Value' | localize) + ' ' + (index + 1)"
         [path]="vm.childPath(index)"
+        [referenceLabels]="vm.referenceLabels()"
         [schema]="$any(vm.shape()['items'] || {})"
         [value]="item"
+        (referenceRequested)="vm.referenceRequested.emit($event)"
         (valueChange)="vm.setItem(index, $event)"
       />
       <button

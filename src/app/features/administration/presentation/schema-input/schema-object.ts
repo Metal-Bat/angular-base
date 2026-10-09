@@ -45,6 +45,7 @@ export class SchemaObject {
         | 'path'
         | 'properties'
         | 'referenceRequested'
+        | 'referenceLabels'
         | 'required'
         | 'setChild'
         | 'shape'

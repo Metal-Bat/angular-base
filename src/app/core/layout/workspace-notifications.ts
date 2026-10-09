@@ -1,11 +1,12 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import type { AppShell } from './app-shell';
+import { RouterLink } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { LocalizePipe } from '../../shared/ui/localize-pipe';
 
 @Component({
   selector: 'app-workspace-notifications',
-  imports: [ButtonModule, LocalizePipe],
+  imports: [RouterLink, ButtonModule, LocalizePipe],
   templateUrl: './workspace-notifications.html',
   styleUrl: './workspace-notifications.scss',
   host: { style: 'display: contents' },

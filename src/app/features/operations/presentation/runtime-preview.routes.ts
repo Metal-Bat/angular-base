@@ -27,6 +27,15 @@ const previewOptions: RuntimeOptionsPort = {
 };
 export const runtimePreviewRoutes: Routes = [
   {
+    path: 'foundation-preview',
+    data: { access: 'authenticated', requiredPermissions: ['requests.start'] },
+    title: 'Delivery preview | Workflow workspace',
+    loadComponent: () =>
+      import('../../calendar/presentation/foundation-preview/foundation-preview').then(
+        (m) => m.FoundationPreview,
+      ),
+  },
+  {
     path: 'runtime-preview',
     providers: [
       { provide: RUNTIME_OPTIONS, useValue: previewOptions },

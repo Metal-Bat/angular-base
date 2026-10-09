@@ -1,0 +1,77 @@
+<header class="console-page-header">
+  <div>
+    <h1 tabindex="-1">{{ "Help" | localize }}</h1>
+    <p>
+      {{ "Open a topic to read it. Help does not change access." | localize }}
+    </p>
+  </div>
+  <button
+    pButton
+    severity="secondary"
+    type="button"
+    [outlined]="true"
+    (click)="reset()"
+  >
+    {{ "Reset help for this session" | localize }}
+  </button>
+</header>
+<p role="status">
+  {{
+    "Help is available. Viewed and dismissed status applies to this session."
+      | localize
+  }}
+</p>
+<ul class="grid gap-3 my-5 list-none p-0">
+  @for (topic of topics(); track topic.help_key) {
+    <li
+      class="flex flex-wrap items-center gap-3 rounded-lg border border-console-border p-3"
+      [attr.data-help-key]="topic.help_key"
+      [attr.data-suggested]="suggested === topic.help_key"
+    >
+      <button
+        pButton
+        severity="secondary"
+        type="button"
+        [outlined]="true"
+        (click)="open(topic, $event)"
+      >
+        <bdi [attr.lang]="language()">{{ topic.title[language()] }}</bdi>
+      </button>
+      <span>{{ status(topic) | localize }}</span>
+      <button
+        pButton
+        severity="secondary"
+        type="button"
+        [attr.aria-label]="
+          ('Dismiss' | localize) + ' ' + topic.title[language()]
+        "
+        [text]="true"
+        (click)="dismiss(topic)"
+      >
+        {{ "Dismiss" | localize }}
+      </button>
+    </li>
+  }
+</ul>
+@if (selected(); as topic) {
+  <article
+    class="rounded-xl border border-console-border bg-console-surface p-5"
+    [attr.lang]="language()"
+  >
+    <h2 #topicTitle tabindex="-1">{{ topic.title[language()] }}</h2>
+    <p class="my-4 leading-relaxed">{{ topic.body[language()] }}</p>
+    @if (topic.route_key && routes[topic.route_key]; as path) {
+      <a pButton [routerLink]="path">{{ "Open workspace" | localize }}</a>
+    }
+    <button
+      class="ms-3"
+      pButton
+      severity="secondary"
+      type="button"
+      [outlined]="true"
+      (click)="close()"
+    >
+      {{ "Close" | localize }}
+    </button>
+  </article>
+}

@@ -1,13 +1,10 @@
 import { CanvasToolbar } from './canvas-toolbar';
 import {
-  afterNextRender,
   ChangeDetectionStrategy,
   Component,
   computed,
-  effect,
-  inject,
-  Injector,
   input,
+  signal,
   viewChild,
 } from '@angular/core';
 import {
@@ -15,6 +12,7 @@ import {
   FCanvasComponent,
   FCreateConnectionEvent,
   FFlowModule,
+  FReassignConnectionEvent,
   FZoomDirective,
 } from '@foblex/flow';
 import { CanvasEdge, CanvasNode } from '../../domain/workflow-authoring';
@@ -102,6 +100,47 @@ export class WorkflowCanvas {
     });
   }
   readonly selected = input('');
+  readonly selectionKeys = input<readonly string[]>([]);
+  readonly selectNodes = input<((keys: string[]) => void) | null>(null);
+  readonly keyboardMove = input<((key: string, point: Point) => void) | null>(
+    null,
+  );
+  readonly reconnect = input<
+    ((id: string, source: string, target: string) => void) | null
+  >(null);
+  select(event: MouseEvent, key: string): void {
+    if (event.shiftKey && this.selectNodes()) {
+      const keys = this.selectionKeys();
+      this.selectNodes()!(
+        keys.includes(key)
+          ? keys.filter((item) => item !== key)
+          : [...keys, key],
+      );
+    } else {
+      this.selectNode()(key);
+    }
+  }
+  find(key: string): void {
+    if (!this.rendered() || !this.nodes().some((node) => node.key === key)) {
+      return;
+    }
+    this.selectNode()(key);
+    this.canvas()?.centerGroupOrNode(key, false, true);
+  }
+  reassigned(event: FReassignConnectionEvent): void {
+    if (
+      !this.disabled() &&
+      !this.readOnly() &&
+      event.nextSourceId &&
+      event.nextTargetId
+    ) {
+      this.reconnect()?.(
+        event.connectionId,
+        event.nextSourceId,
+        event.nextTargetId,
+      );
+    }
+  }
   private readonly canvas = viewChild(FCanvasComponent);
   readonly zoomPercent = computed(() => Math.round(this.viewport().zoom * 100));
   readonly collapsed = input<readonly string[]>([]);
@@ -112,17 +151,15 @@ export class WorkflowCanvas {
   readonly connect = input.required<(source: string, target: string) => void>();
   readonly transform =
     input.required<(viewport: Point & { zoom: number }) => void>();
-  constructor() {
-    const injector = inject(Injector);
-    effect(() => {
-      const nodes = this.nodes();
-      if (this.readOnly() && nodes.length) {
-        afterNextRender(() => this.fit(), { injector });
-      }
-    });
+  readonly rendered = signal(false);
+  nodesRendered(): void {
+    this.rendered.set(true);
+    if (this.readOnly()) {
+      this.fit();
+    }
   }
   zoom(delta: number): void {
-    if (!this.disabled()) {
+    if (!this.disabled() && this.rendered()) {
       const canvas = this.canvas();
       canvas?.setScale(
         Math.min(4, Math.max(0.1, this.viewport().zoom + delta)),
@@ -132,12 +169,12 @@ export class WorkflowCanvas {
     }
   }
   fit(): void {
-    if (!this.disabled() && this.nodes().length) {
+    if (!this.disabled() && this.rendered() && this.nodes().length) {
       this.canvas()?.fitToScreen({ x: 40, y: 40 }, false, true, 1);
     }
   }
   reset(): void {
-    if (!this.disabled()) {
+    if (!this.disabled() && this.rendered()) {
       if (!this.nodes().length) {
         this.transform()({ x: 0, y: 0, zoom: 1 });
         return;
@@ -151,7 +188,7 @@ export class WorkflowCanvas {
     }
   }
   changed(event: FCanvasChangeEvent): void {
-    if (!this.disabled()) {
+    if (!this.disabled() && this.rendered()) {
       this.transform()({
         ...event.position,
         zoom: Math.min(4, Math.max(0.1, event.scale)),
@@ -167,7 +204,7 @@ export class WorkflowCanvas {
       return;
     }
     event.preventDefault();
-    this.moveNode()(node.key, {
+    (this.keyboardMove() ?? this.moveNode())(node.key, {
       x:
         node.position.x +
         (event.key === 'ArrowRight' ? 20 : event.key === 'ArrowLeft' ? -20 : 0),

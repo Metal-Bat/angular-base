@@ -1,3 +1,4 @@
+import { publicTokenCount } from '../../../shared/domain/record-presentation';
 import { FieldSpec, projectFields } from '../../studio/domain/authoring';
 import { JsonObject, JsonValue } from '../../forms/domain/runtime-document';
 export type AdminCommand = {
@@ -52,6 +53,7 @@ export function redactAdmin(value: JsonValue): JsonValue {
       continue;
     }
     output[key] =
+      !publicTokenCount(key, item) &&
       /password|secret|credential|token|authorization|api_key/i.test(key)
         ? '[redacted]'
         : redactAdmin(item);

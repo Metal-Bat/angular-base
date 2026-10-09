@@ -3,6 +3,7 @@
   ><textarea
     id="task-comment"
     maxlength="4000"
+    [disabled]="editor().busy() || editor().blocked()"
     [ngModel]="editor().comment()"
     (ngModelChange)="editor().comment.set($event)"
   ></textarea>
@@ -11,11 +12,19 @@
       pButton
       severity="secondary"
       type="button"
+      [disabled]="
+        editor().busy() ||
+        editor().blocked() ||
+        (action.requireComment && !editor().comment().trim())
+      "
       [outlined]="true"
       (click)="editor().decide(action)"
     >
       {{ action.title }}
     </button>
+    @if (action.requireComment) {
+      <p>{{ "Comment required for this action" | localize }}</p>
+    }
   }
 }
 @if (editor().item(); as item) {

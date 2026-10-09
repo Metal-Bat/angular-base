@@ -62,7 +62,11 @@ export class AdminApi implements AdminPort {
   commands(group: string): readonly AdminCommand[] {
     return catalog[group]?.commands ?? [];
   }
-  async send(command: AdminCommand, input: AdminInput): Promise<AdminResult> {
+  async send(
+    command: AdminCommand,
+    input: AdminInput,
+    abort?: AbortSignal,
+  ): Promise<AdminResult> {
     const trusted = Object.values(catalog)
       .flatMap((group) => group.commands)
       .find((item) => item.id === command.id);
@@ -72,15 +76,19 @@ export class AdminApi implements AdminPort {
     const snapshot = freezeCommand(trusted, input);
     const id = operation(trusted.id);
     const response = await firstValueFrom(
-      this.api.call(id, {
-        ...(trusted.bodyRequired || Object.keys(snapshot.body).length
-          ? { body: snapshot.body }
-          : {}),
-        ...(Object.keys(snapshot.path).length ? { path: snapshot.path } : {}),
-        ...(Object.keys(snapshot.query).length
-          ? { query: snapshot.query }
-          : {}),
-      } as RequestInput<typeof id>),
+      this.api.call(
+        id,
+        {
+          ...(trusted.bodyRequired || Object.keys(snapshot.body).length
+            ? { body: snapshot.body }
+            : {}),
+          ...(Object.keys(snapshot.path).length ? { path: snapshot.path } : {}),
+          ...(Object.keys(snapshot.query).length
+            ? { query: snapshot.query }
+            : {}),
+        } as RequestInput<typeof id>,
+        abort,
+      ),
     );
     const requestId = responseMetadata(response).requestId;
     if (Array.isArray(response.body)) {

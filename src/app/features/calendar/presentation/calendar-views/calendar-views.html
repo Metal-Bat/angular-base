@@ -1,0 +1,81 @@
+<section [attr.aria-label]="'Calendar' | localize">
+  <div
+    class="flex flex-wrap gap-2 my-4"
+    role="group"
+    [attr.aria-label]="'Calendar view' | localize"
+  >
+    @for (mode of views; track mode) {
+      <button
+        pButton
+        severity="secondary"
+        type="button"
+        [attr.aria-pressed]="view() === mode"
+        [outlined]="true"
+        (click)="view.set(mode)"
+      >
+        {{ labels[mode] | localize }}
+      </button>
+    }
+  </div>
+  <p>
+    {{ "Timezone" | localize }}: <bdi>{{ timezone() }}</bdi>
+  </p>
+  @switch (state()) {
+    @case ("loading") {
+      <p role="status">{{ "Loading…" | localize }}</p>
+    }
+    @case ("failed") {
+      <p role="alert">{{ "Calendar is unavailable." | localize }}</p>
+    }
+    @case ("ready") {
+      @if (projection().stale) {
+        <p role="status">
+          {{
+            "Results may be out of date. Recheck before continuing." | localize
+          }}
+        </p>
+      }
+      @if (!events().length) {
+        <p role="status">{{ "No events in this range." | localize }}</p>
+      }
+      <div class="grid gap-3" [class.md:grid-cols-7]="view() !== 'agenda'">
+        @for (day of days(); track day) {
+          <section
+            class="rounded-lg border border-console-border p-3 min-w-0"
+            [attr.aria-label]="dateLabel(day)"
+            [style.grid-column-start]="
+              view() === 'month' && $first ? firstColumn() : null
+            "
+          >
+            <h3>
+              <time [attr.datetime]="day">{{ dateLabel(day) }}</time>
+            </h3>
+            <ul class="list-none p-0 grid gap-2">
+              @for (event of onDay(day); track event.key) {
+                <li>
+                  <button
+                    class="text-start"
+                    pButton
+                    severity="secondary"
+                    type="button"
+                    [text]="true"
+                    (click)="open(event)"
+                  >
+                    <bdi>{{ event.title }}</bdi>
+                  </button>
+                  <p>{{ timeLabel(event) }}</p>
+                  <small>{{
+                    (event.source === "workflow"
+                      ? "Workflow deadline"
+                      : "Personal event"
+                    ) | localize
+                  }}</small>
+                </li>
+              }
+            </ul>
+          </section>
+        }
+      </div>
+    }
+  }
+</section>

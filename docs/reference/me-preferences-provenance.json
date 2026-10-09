@@ -1,0 +1,21 @@
+{
+  "source": "APP-BE-007 wave-four/openapi-en.json and users/presentation/personal.py",
+  "frozen_at": "2026-10-09",
+  "source_sha256": "cb61bfb17b23c4af8b56059a2cbaa16ae76cf57b5e876d48201e0bf0e07665b2",
+  "path": "/api/v1/me/preferences",
+  "methods": [
+    "get",
+    "patch"
+  ],
+  "schema_names": [
+    "AppearancePreferences",
+    "ErrorResponse",
+    "LocalePreferences",
+    "NotificationPreferences",
+    "PreferencesDTO",
+    "PreferencesPatch",
+    "SuccessResponse_PreferencesDTO_",
+    "WorkspacePreferences"
+  ],
+  "baseline_transport": "APP-FE-001 remains unchanged; this freezes only the additive C02 preferences subset."
+}

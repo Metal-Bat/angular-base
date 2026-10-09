@@ -22,6 +22,7 @@ export abstract class WorkflowBoardState {
   );
   readonly state = signal<WorkspaceState | null>(null);
   readonly document = signal<Workspace>(emptyWorkspace());
+  readonly childCatalog = signal<readonly JsonObject[]>([]);
   readonly catalogEntries = signal<readonly JsonObject[]>([]);
   readonly pending = signal<readonly string[]>([]);
   readonly catalog = signal<readonly JsonObject[]>([]);
@@ -43,6 +44,12 @@ export abstract class WorkflowBoardState {
     }
   });
   readonly readonly = computed(() => this.busy() || this.status() !== 'DRAFT');
+  readonly typedReadonly = computed(
+    () => this.readonly() || this.pending().some((panel) => panel !== 'typed'),
+  );
+  readonly expertReadonly = computed(
+    () => this.readonly() || this.pending().some((panel) => panel !== 'node'),
+  );
   readonly selected = signal('');
   selectedJson = '{}';
   graphJson = '{}';
@@ -83,6 +90,7 @@ export abstract class WorkflowBoardState {
     this.state.set(null);
     this.catalog.set([]);
     this.catalogEntries.set([]);
+    this.childCatalog.set([]);
     this.pending.set([]);
     this.status.set('');
     this.error.set('');
@@ -133,6 +141,7 @@ export abstract class WorkflowBoardState {
     try {
       if (!this.catalogEntries().length) {
         const entries: JsonObject[] = [];
+        const children: JsonObject[] = [];
         let totalPages = 1;
         for (let index = 1; index <= totalPages; index++) {
           const result = (await this.api.auxiliary('catalog', {
@@ -148,11 +157,15 @@ export abstract class WorkflowBoardState {
               'Designer catalog exceeds the supported workspace budget',
             );
           }
+          children.push(
+            ...result.items.filter((row) => row['category'] === 'subprocess'),
+          );
           entries.push(
             ...result.items.filter((row) => row['category'] === 'step_type'),
           );
         }
         this.catalogEntries.set(entries);
+        this.childCatalog.set(children);
       }
       this.catalog.set(this.catalogEntries().slice((page - 1) * 20, page * 20));
       this.catalogPage.set(page);
@@ -195,6 +208,8 @@ export abstract class WorkflowBoardState {
     });
   }
   async promote(): Promise<void> {
+    const epoch = this.generation;
+    const target = this.state();
     if (
       this.dirty() ||
       this.pending().length > 0 ||
@@ -202,12 +217,17 @@ export abstract class WorkflowBoardState {
       this.readonly() ||
       !(await this.feedback.confirm(
         'Validate and promote this saved workspace into the draft executable graph?',
-      ))
+      )) ||
+      epoch !== this.generation ||
+      target !== this.state() ||
+      this.readonly() ||
+      this.dirty() ||
+      this.pending().length > 0
     ) {
       return;
     }
     await this.run(async (generation) => {
-      const row = await this.api.promote(this.state()!);
+      const row = await this.api.promote(target!);
       const state = await this.api.workspace(String(row['ref_id']));
       if (generation !== this.generation) {
         return;
@@ -220,22 +240,25 @@ export abstract class WorkflowBoardState {
     });
   }
   async publish(): Promise<void> {
+    const epoch = this.generation;
+    const target = this.reference();
     if (
       this.dirty() ||
       this.pending().length > 0 ||
       this.readonly() ||
       !(await this.feedback.confirm(
         'Publish this promoted version as an immutable executable workflow?',
-      ))
+      )) ||
+      epoch !== this.generation ||
+      target !== this.reference() ||
+      this.readonly() ||
+      this.dirty() ||
+      this.pending().length > 0
     ) {
       return;
     }
     await this.run(async (generation) => {
-      const row = await this.api.action(
-        'workflow-versions',
-        this.reference(),
-        'publish',
-      );
+      const row = await this.api.action('workflow-versions', target, 'publish');
       if (generation !== this.generation) {
         return;
       }

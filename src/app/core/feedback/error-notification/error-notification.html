@@ -9,27 +9,59 @@
     <div class="error-content">
       <strong>{{ "Request failed" | localize }}</strong>
       <p>{{ message.data.message | localize }}</p>
-      <div class="error-code">
-        <span>{{ "Error code" | localize }}</span>
-        <button
-          pButton
-          severity="secondary"
-          size="small"
-          type="button"
-          [attr.aria-label]="
-            ('Copy error code' | localize) + ': ' + message.data.code
-          "
-          [disabled]="copying()"
-          [outlined]="true"
-          (click)="copy(message.data)"
-        >
-          <span class="code-value" dir="ltr">{{ message.data.code }}</span>
-          <i
-            aria-hidden="true"
-            [class]="copied() ? 'pi pi-check' : 'pi pi-copy'"
-          ></i>
-        </button>
-      </div>
+      @if (message.data.code) {
+        <div class="error-code">
+          <span>{{ "Error code" | localize }}</span>
+          <button
+            pButton
+            severity="secondary"
+            size="small"
+            type="button"
+            [attr.aria-label]="
+              ('Copy error code' | localize) + ': ' + message.data.code
+            "
+            [disabled]="copying()"
+            [outlined]="true"
+            (click)="copy(message.data)"
+          >
+            <span class="code-value" dir="ltr">{{ message.data.code }}</span>
+            <i
+              aria-hidden="true"
+              [class]="copiedTarget() === 'code' ? 'pi pi-check' : 'pi pi-copy'"
+            ></i>
+          </button>
+        </div>
+      }
+      @if (message.data.requestReference) {
+        <div class="error-code">
+          <span>{{ "Request reference" | localize }}</span>
+          <button
+            pButton
+            severity="secondary"
+            size="small"
+            type="button"
+            [attr.aria-label]="
+              ('Copy request reference' | localize) +
+              ': ' +
+              message.data.requestReference
+            "
+            [disabled]="copying()"
+            [outlined]="true"
+            (click)="copy(message.data, true)"
+          >
+            <bdi>{{ message.data.requestReference }}</bdi
+            ><i
+              aria-hidden="true"
+              [class]="
+                copiedTarget() === 'reference' ? 'pi pi-check' : 'pi pi-copy'
+              "
+            ></i>
+          </button>
+        </div>
+      }
+      <a routerLink="/help" [queryParams]="{ topic: 'support.references' }">{{
+        "Help" | localize
+      }}</a>
       <small
         class="copy-status"
         role="status"

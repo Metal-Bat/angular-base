@@ -22,6 +22,12 @@
 @if (busy()) {
   <p role="status">{{ "Loading…" | localize }}</p>
 }
+<app-publication-review
+  [dirty]="dirty()"
+  [pending]="pending().length"
+  [state]="state()"
+  [status]="status()"
+/>
 <nav
   class="workflow-commands"
   [attr.aria-label]="'Workflow commands' | localize"
@@ -95,9 +101,54 @@
 </nav>
 @if (pending().length) {
   <p role="status">
-    {{ "Apply each edited JSON panel before saving." | localize }}
+    {{ "Apply pending inspector edits before saving." | localize }}
   </p>
 }
+<details>
+  <summary>{{ "Selection and connections" | localize }}</summary>
+  <fieldset>
+    <legend>{{ "Select steps" | localize }}</legend>
+    @for (node of nodes(); track node.key) {
+      <label
+        ><input
+          type="checkbox"
+          [disabled]="pending().length > 0"
+          [ngModel]="selectionKeys().includes(node.key)"
+          (ngModelChange)="toggleSelection(node.key, $event)"
+        /><bdi>{{ node.key }}</bdi> · {{ node.title }}</label
+      >
+    }
+  </fieldset>
+  <button
+    pButton
+    type="button"
+    [disabled]="
+      readonly() ||
+      pending().length > 0 ||
+      (!selected() && !selectionKeys().length)
+    "
+    (click)="duplicate()"
+  >
+    {{ "Duplicate selection" | localize }}
+  </button>
+  <label for="connection-select">{{ "Connection" | localize }}</label>
+  <app-select-control inputId="connection-select" [(ngModel)]="connectionId">
+    <option value="">{{ "Choose" | localize }}</option>
+    @for (edge of connections(); track edge.id) {
+      <option [value]="edge.id">
+        {{ edge.kind }} · {{ edge.source }} → {{ edge.target }}
+      </option>
+    }
+  </app-select-control>
+  <button
+    pButton
+    type="button"
+    [disabled]="readonly() || pending().length > 0 || !connectionId"
+    (click)="removeConnection()"
+  >
+    {{ "Remove connection" | localize }}
+  </button>
+</details>
 <div class="canvas-workspace">
   <ng-container *ngComponentOutlet="canvas; inputs: inputs()" />
   <div class="inspectors">
@@ -217,59 +268,7 @@
       </details>
     </section>
 
-    <section
-      class="step-inspector"
-      [attr.aria-label]="'Step inspector' | localize"
-    >
-      <h2>
-        {{ "Selected step" | localize }} <bdi>{{ selected() }}</bdi>
-      </h2>
-      @if (!selected()) {
-        <p class="inspector-hint">
-          {{
-            "Select a step on the canvas to inspect its configuration."
-              | localize
-          }}
-        </p>
-      }
-      <label for="step-json">{{
-        "Configuration, human views/actions, assignment policy and subprocess pins"
-          | localize
-      }}</label
-      ><textarea
-        class="font-mono"
-        id="step-json"
-        rows="14"
-        [disabled]="readonly() || !selected()"
-        [(ngModel)]="selectedJson"
-        (ngModelChange)="markPending('node')"
-      ></textarea
-      ><button
-        pButton
-        severity="secondary"
-        type="button"
-        [disabled]="readonly() || !selected()"
-        [outlined]="true"
-        (click)="applyNode()"
-      >
-        {{ "Apply step" | localize }}</button
-      ><button
-        pButton
-        severity="secondary"
-        type="button"
-        [disabled]="readonly() || !selected() || pending().length > 0"
-        [outlined]="true"
-        (click)="remove()"
-      >
-        {{ "Remove step" | localize }}
-      </button>
-      <p>
-        {{
-          "Arrow keys move focused nodes; buttons select nodes. Control and data ports remain separate."
-            | localize
-        }}
-      </p>
-    </section>
+    <app-workflow-editor-pane [view]="this" />
   </div>
 </div>
 <details class="graph-editor">

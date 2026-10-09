@@ -46,10 +46,14 @@ export class CatalogParents extends CatalogState {
     const reference = this.query()[this.spec.queryFields[0]?.key];
     if (this.parentCatalog && typeof reference === 'string') {
       const epoch = this.actor.epoch;
+      const generation = this.parentGeneration;
       void this.api
         .get(this.parentCatalog, reference)
         .then((row) => {
-          if (this.actor.epoch === epoch) {
+          if (
+            this.actor.epoch === epoch &&
+            generation === this.parentGeneration
+          ) {
             this.parentLabel.set(resourceLabel(row));
           }
         })
@@ -111,6 +115,8 @@ export class CatalogParents extends CatalogState {
     if (!field || typeof row['ref_id'] !== 'string') {
       return;
     }
+    this.parentGeneration++;
+    this.parentBusy.set(false);
     this.query.set({ [field.key]: row['ref_id'] });
     this.parentLabel.set(resourceLabel(row as JsonObject));
     this.parentModal.set(false);

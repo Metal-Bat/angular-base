@@ -1,0 +1,94 @@
+<fieldset
+  class="rounded border p-3 col-span-full"
+  [attr.aria-describedby]="error() ? controlId() + '-error' : null"
+  [disabled]="disabled() || busy()"
+  [id]="controlId()"
+>
+  <legend>{{ "Permissions" | localize }}</legend>
+  <label [for]="controlId() + '-search'">{{
+    "Search permissions" | localize
+  }}</label>
+  <input
+    maxlength="255"
+    pInputText
+    [id]="controlId() + '-search'"
+    [ngModel]="search()"
+    [ngModelOptions]="{ standalone: true }"
+    (ngModelChange)="search.set($event)"
+  />
+  <button pButton type="button" (click)="load()">
+    {{ "Search" | localize }}
+  </button>
+  <p>
+    {{ "Selected permissions remain selected across search pages." | localize }}
+  </p>
+  <ul>
+    @for (name of selected(); track name) {
+      <li>
+        <bdi>{{ name }}</bdi>
+        <button
+          pButton
+          severity="secondary"
+          type="button"
+          [attr.aria-label]="('Remove permission' | localize) + ' ' + name"
+          [text]="true"
+          (click)="toggle(name)"
+        >
+          <i aria-hidden="true" class="pi pi-times"></i>
+        </button>
+      </li>
+    } @empty {
+      <li>{{ "No permissions selected" | localize }}</li>
+    }
+  </ul>
+  @for (group of groups(); track group.key) {
+    <fieldset>
+      <legend>
+        <bdi>{{ group.key }}</bdi>
+      </legend>
+      @for (row of group.rows; track row.name) {
+        <label class="flex gap-2 items-start my-2"
+          ><input
+            type="checkbox"
+            [checked]="selected().includes(row.name)"
+            (change)="toggle(row.name)"
+          /><span
+            ><bdi>{{ row.name }}</bdi> {{ row.description }}</span
+          ></label
+        >
+      }
+    </fieldset>
+  }
+  <div class="flex gap-2 items-center">
+    <button
+      pButton
+      severity="secondary"
+      type="button"
+      [disabled]="page() <= 1"
+      [outlined]="true"
+      (click)="load(page() - 1)"
+    >
+      {{ "Previous" | localize }}
+    </button>
+    <span>{{ page() }} / {{ pages() }}</span>
+    <button
+      pButton
+      severity="secondary"
+      type="button"
+      [disabled]="page() >= pages()"
+      [outlined]="true"
+      (click)="load(page() + 1)"
+    >
+      {{ "Next" | localize }}
+    </button>
+  </div>
+</fieldset>
+@if (busy()) {
+  <p role="status">{{ "Loading…" | localize }}</p>
+}
+@if (failure()) {
+  <p role="alert">{{ failure() | localize }}</p>
+}
+@if (error()) {
+  <p role="alert" [id]="controlId() + '-error'">{{ error() | localize }}</p>
+}

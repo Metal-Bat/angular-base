@@ -1,3 +1,4 @@
+import { PermissionChoices } from '../../../administration/presentation/permission-choices/permission-choices';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -12,29 +13,44 @@ import { SchemaInput } from '../../../administration/presentation/schema-input/s
 import { ReferencePicker } from '../../../administration/presentation/reference-picker/reference-picker';
 import { parseDocument } from '../../../studio/domain/authoring';
 import { setAt } from '../../../administration/domain/reference-options';
+import {
+  actorReferenceLabels,
+  rememberReference,
+} from '../../../../shared/ui/reference-labels';
 @Component({
   selector: 'app-record-fields',
-  imports: [SchemaInput, ReferencePicker],
+  imports: [PermissionChoices, SchemaInput, ReferencePicker],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @for (field of fields(); track field.key) {
-      <app-schema-input
-        [controlId]="'record-' + field.key"
-        [disabled]="disabled()"
-        [errors]="errors()"
-        [label]="field.label"
-        [path]="field.key"
-        [required]="field.required"
-        [schema]="schema(field)"
-        [value]="value(field)"
-        (referenceRequested)="picker().open($event)"
-        (valueChange)="change(field, $event)"
-      />
+      @if (field.key === 'permissions' && field.type === 'strings') {
+        <app-permission-choices
+          [controlId]="'record-' + field.key"
+          [disabled]="disabled()"
+          [error]="errors()[field.key] || ''"
+          [value]="permissions(field)"
+          (valueChange)="change(field, $event)"
+        />
+      } @else {
+        <app-schema-input
+          [controlId]="'record-' + field.key"
+          [disabled]="disabled()"
+          [errors]="errors()"
+          [label]="field.label"
+          [path]="field.key"
+          [referenceLabels]="referenceLabels()"
+          [required]="field.required"
+          [schema]="schema(field)"
+          [value]="value(field)"
+          (referenceRequested)="picker().open($event)"
+          (valueChange)="change(field, $event)"
+        />
+      }
     }
     <app-reference-picker
       #references
       [context]="context()"
-      (picked)="pick($event.path, $event.value)"
+      (picked)="pick($event.path, $event.value, $event.label)"
     />
   `,
   styles: `
@@ -61,6 +77,12 @@ export class RecordFields {
   readonly errors = input<Record<string, string>>({});
   readonly disabled = input(false);
   readonly picker = viewChild.required<ReferencePicker>('references');
+  readonly referenceLabels = actorReferenceLabels();
+  permissions(field: RecordField): string[] {
+    return String(this.draft()[field.key] ?? '')
+      .split('\n')
+      .filter(Boolean);
+  }
   schema(field: RecordField): JsonObject {
     return (
       field.schema ?? {
@@ -120,12 +142,13 @@ export class RecordFields {
     this.draft.set(next);
     this.valuesChange.emit(next);
   }
-  pick(path: string, value: string): void {
+  pick(path: string, value: string, label = 'Selected resource'): void {
     const [key, ...rest] = path.split('.');
     const field = this.fields().find((candidate) => candidate.key === key);
     if (!field) {
       return;
     }
+    rememberReference(this.referenceLabels, path, value, label);
     this.change(
       field,
       rest.length

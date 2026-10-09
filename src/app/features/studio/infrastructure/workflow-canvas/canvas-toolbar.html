@@ -10,10 +10,22 @@
     >
   </div>
   <div class="canvas-tools flex flex-wrap items-center gap-1">
+    <label for="canvas-find">{{ "Find step" | localize }}</label>
+    <app-select-control
+      inputId="canvas-find"
+      [disabled]="!vm.rendered()"
+      [ngModel]="''"
+      (ngModelChange)="vm.find($event)"
+    >
+      <option value="">{{ "Choose" | localize }}</option>
+      @for (node of vm.nodes(); track node.key) {
+        <option [value]="node.key">{{ node.key }} · {{ node.title }}</option>
+      }
+    </app-select-control>
     <button
       type="button"
       [attr.aria-label]="'Zoom out' | localize"
-      [disabled]="vm.disabled() || vm.viewport().zoom <= 0.1"
+      [disabled]="vm.disabled() || !vm.rendered() || vm.viewport().zoom <= 0.1"
       (click)="vm.zoom(-0.1)"
     >
       <i aria-hidden="true" class="pi pi-minus"></i>
@@ -22,20 +34,24 @@
     <button
       type="button"
       [attr.aria-label]="'Zoom in' | localize"
-      [disabled]="vm.disabled() || vm.viewport().zoom >= 4"
+      [disabled]="vm.disabled() || !vm.rendered() || vm.viewport().zoom >= 4"
       (click)="vm.zoom(0.1)"
     >
       <i aria-hidden="true" class="pi pi-plus"></i>
     </button>
     <button
       type="button"
-      [disabled]="vm.disabled() || !vm.nodes().length"
+      [disabled]="vm.disabled() || !vm.rendered() || !vm.nodes().length"
       (click)="vm.fit()"
     >
       <i aria-hidden="true" class="pi pi-expand"></i
       ><span>{{ "Fit to view" | localize }}</span>
     </button>
-    <button type="button" [disabled]="vm.disabled()" (click)="vm.reset()">
+    <button
+      type="button"
+      [disabled]="vm.disabled() || !vm.rendered()"
+      (click)="vm.reset()"
+    >
       <span>{{ "Reset view" | localize }}</span>
     </button>
   </div>

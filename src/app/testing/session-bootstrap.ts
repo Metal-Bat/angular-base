@@ -1,3 +1,4 @@
+import { Preferences } from '../core/auth/preferences';
 import { expect, vi } from 'vitest';
 import { HttpTestingController } from '@angular/common/http/testing';
 import { ApplicationInitStatus } from '@angular/core';
@@ -45,5 +46,28 @@ export async function finishSessionBootstrap(
   }
   await TestBed.inject(ApplicationInitStatus).donePromise;
   expect(TestBed.inject(SessionContext).snapshot()).toEqual(session);
+  const preferences = TestBed.inject(Preferences);
+  TestBed.tick();
+  if (session.status === 'authenticated') {
+    http.expectOne('/api/v1/me/preferences').flush({
+      success: true,
+      data: {
+        schema_version: 1,
+        ref_id: 'test-preferences',
+        appearance: {
+          theme_key: 'blue',
+          theme_mode: 'light',
+          density: 'comfortable',
+        },
+        locale: {
+          language: 'en',
+          timezone: 'UTC',
+          calendar: 'gregory',
+          numbering: 'latn',
+        },
+      },
+    });
+    await vi.waitFor(() => expect(preferences.status()).toBe('saved'));
+  }
   http.verify();
 }

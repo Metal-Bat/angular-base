@@ -26,8 +26,8 @@ run = "npm run lint"
 run = "npm run test:ci"
 
 [tasks.check]
-description = "Check formatting, API inventory, types, lint, tests, and build"
-run = ["npm run format:check", "npm run api:check", "npm run typecheck", "npm run lint", "npm run test:ci", "npm run test:boundary", "npm run test:deployment", "npm run build", "npm run release:evidence"]
+description = "Verify source, types, lint, tests, build and deterministic browser quality with diagnostic evidence"
+run = "node scripts/check-project.mjs"
 
 [tasks.session]
 description = "Start the same-origin session boundary on loopback:3000"

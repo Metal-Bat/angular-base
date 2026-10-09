@@ -1,3 +1,5 @@
+import { ControlField } from '../control-field/control-field';
+import { SelectControl } from '../select-control/select-control';
 import { FieldWrapper } from '../field-wrapper/field-wrapper';
 import {
   ChangeDetectionStrategy,
@@ -26,6 +28,8 @@ import { LocalizePipe } from '../localize-pipe';
     TableModule,
     LocalizePipe,
     FieldWrapper,
+    ControlField,
+    SelectControl,
   ],
   templateUrl: './ui-showcase.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -35,6 +39,12 @@ export class UiShowcase {
   readonly name = signal('');
   readonly department = signal('');
   readonly preview = signal(false);
+  readonly selection = signal('');
+  select(value: unknown): void {
+    if (typeof value === 'string') {
+      this.selection.set(value);
+    }
+  }
   readonly rows = [{ name: 'Example', status: 'Ready' }];
   async confirm(): Promise<void> {
     const approved = await this.feedback.confirm(

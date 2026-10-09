@@ -1,6 +1,10 @@
 import { record } from '../../../core/transport/api-failure';
 import { decodePage } from '../../../core/transport/response-adapters';
-import { ProcessSnapshot, processStatuses } from '../domain/process-tracking';
+import {
+  ExecutionVisit,
+  ProcessSnapshot,
+  processStatuses,
+} from '../domain/process-tracking';
 import { stringField } from './workspace-decoders';
 function rows(value: unknown): Record<string, unknown>[] {
   if (!Array.isArray(value) || value.length > 1000) {
@@ -16,6 +20,41 @@ function optional(value: unknown): string | null {
     throw Error('Invalid tracking response');
   }
   return value;
+}
+function count(value: unknown): number {
+  if (!Number.isSafeInteger(value) || Number(value) < 1) {
+    throw Error('Invalid execution count');
+  }
+  return Number(value);
+}
+function execution(value: unknown): ExecutionVisit {
+  const row = record(value);
+  const task =
+    row['work_item'] === null || row['work_item'] === undefined
+      ? null
+      : record(row['work_item']);
+  return {
+    reference: stringField(row, 'ref_id'),
+    visit: count(row['visit_number']),
+    status: stringField(row, 'status'),
+    wait: optional(row['wait_kind']),
+    error: optional(row['last_error_code']),
+    attempts: rows(row['attempts']).map((attempt) => ({
+      number: count(attempt['number']),
+      status: stringField(attempt, 'status'),
+      error: optional(attempt['error_code']),
+      started: stringField(attempt, 'started_at'),
+      ended: optional(attempt['ended_at']),
+    })),
+    task: task
+      ? {
+          reference: stringField(task, 'ref_id'),
+          status: stringField(task, 'status'),
+          outcome: optional(task['outcome_key']),
+          due: optional(task['due_at']),
+        }
+      : null,
+  };
 }
 export function tracking(process: unknown, timeline: unknown): ProcessSnapshot {
   const owner = record(process);
@@ -49,6 +88,7 @@ export function tracking(process: unknown, timeline: unknown): ProcessSnapshot {
     steps: rows(view['steps']).map((step) => ({
       key: stringField(step, 'step_key'),
       status: stringField(step, 'path_status'),
+      executions: rows(step['executions'] ?? []).map(execution),
     })),
     children: rows(view['children'] ?? []).map((child) => ({
       reference: stringField(child, 'process_ref_id'),

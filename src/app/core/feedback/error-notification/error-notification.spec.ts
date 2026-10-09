@@ -1,4 +1,5 @@
 import { Clipboard } from '@angular/cdk/clipboard';
+import { provideRouter } from '@angular/router';
 import { TestBed } from '@angular/core/testing';
 import { ApiFailure } from '../../transport/api-failure';
 import { RequestErrors } from '../request-errors';
@@ -10,7 +11,10 @@ describe('Copyable error notification', () => {
     fallback.copy.mockReset().mockReturnValue(true);
     TestBed.configureTestingModule({
       imports: [ErrorNotification],
-      providers: [{ provide: Clipboard, useValue: fallback }],
+      providers: [
+        provideRouter([]),
+        { provide: Clipboard, useValue: fallback },
+      ],
     });
   });
   afterEach(() => vi.unstubAllGlobals());
@@ -28,6 +32,17 @@ describe('Copyable error notification', () => {
     expect(fixture.componentInstance.copyStatus()).toBe('Copied to clipboard');
   });
 
+  it('copies the exact returned request reference separately from its application code', async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    vi.stubGlobal('navigator', { clipboard: { writeText } });
+    const fixture = TestBed.createComponent(ErrorNotification);
+    const errors = TestBed.inject(RequestErrors);
+    errors.show(new ApiFailure(503, 'SERVICE', 'returned-request-001', []));
+    fixture.detectChanges();
+    await fixture.componentInstance.copy(errors.notice()!, true);
+    expect(writeText).toHaveBeenCalledWith('returned-request-001');
+    expect(fixture.componentInstance.copiedTarget()).toBe('reference');
+  });
   it('falls back when clipboard access is denied and reports a failed copy honestly', async () => {
     vi.stubGlobal('navigator', {
       clipboard: { writeText: vi.fn().mockRejectedValue(Error('denied')) },

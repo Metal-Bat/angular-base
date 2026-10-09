@@ -5,6 +5,7 @@ import {
   readBareToken,
   readData,
   readDataPage,
+  readResult,
   readResultPage,
   readSelector,
   responseMetadata,
@@ -24,6 +25,21 @@ const response = (body: unknown, status = 200): HttpResponse<unknown> =>
   });
 const page = { items: ['one'], page: 1, size: 20, total: 1, total_pages: 1 };
 describe('Endpoint response contracts', () => {
+  it('rejects missing envelope members while preserving null, false and zero', () => {
+    for (const read of [readData, readResult]) {
+      expect(() =>
+        read(response({ success: true }), (value) => value),
+      ).toThrow();
+      for (const value of [null, false, 0]) {
+        expect(
+          read(
+            response({ success: true, data: value, result: value }),
+            (data) => data,
+          ),
+        ).toBe(value);
+      }
+    }
+  });
   it('keeps HTTP 200 distinct from application 204 and preserves null data', () => {
     const value = response({ success: true, code: 204, data: null });
     expect(readData(value, (data) => data)).toBeNull();

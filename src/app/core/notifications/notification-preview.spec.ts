@@ -18,7 +18,7 @@ describe('Actor-owned notification preview', () => {
       ],
     });
   });
-  function page(items: unknown[]): void {
+  function page(items: unknown[], total = items.length): void {
     response.next(
       new HttpResponse({
         body: {
@@ -27,8 +27,8 @@ describe('Actor-owned notification preview', () => {
             items,
             page: 1,
             size: 20,
-            total: items.length,
-            total_pages: items.length ? 1 : 0,
+            total,
+            total_pages: total ? Math.ceil(total / 20) : 0,
           },
         },
       }),
@@ -55,6 +55,16 @@ describe('Actor-owned notification preview', () => {
     await work;
     expect(preview.items()).toEqual([]);
     expect(preview.status()).toBe('ready');
+  });
+  it('uses the authoritative unread total rather than the current page length', async () => {
+    const preview = TestBed.inject(NotificationPreview);
+    const work = preview.load();
+    page([{ ref_id: 'current', subject: 'One page item' }], 31);
+    await work;
+    expect(preview.unreadCount()).toBe(31);
+    expect(preview.totalPages()).toBe(2);
+    TestBed.inject(ActorState).reset();
+    expect(preview.unreadCount()).toBeNull();
   });
   it('ignores a previous actor response after cleanup', async () => {
     const preview = TestBed.inject(NotificationPreview);

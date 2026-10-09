@@ -1,6 +1,25 @@
 import { TestBed } from '@angular/core/testing';
 import { RecordSummary } from './record-summary';
 describe('Record summary', () => {
+  it('presents assignments as an accessible table with missing distinct from null and false', async () => {
+    const fixture = TestBed.createComponent(RecordSummary);
+    fixture.componentRef.setInput('record', {
+      assignments: [
+        { name: 'Sara', enabled: false, note: null, ref_id: 'private' },
+        { name: 'Ali' },
+      ],
+    });
+    fixture.componentRef.setInput('title', 'Review');
+    await fixture.whenStable();
+    const table = fixture.nativeElement.querySelector('table');
+    expect(table.querySelectorAll('tbody tr')).toHaveLength(2);
+    expect(table.textContent).toContain('Sara');
+    expect(table.textContent).toContain('No value');
+    expect(table.textContent).toContain('Not present');
+    expect(table.textContent).toContain('No');
+    expect(table.textContent).not.toContain('private');
+    expect(table.querySelector('th').getAttribute('scope')).toBe('col');
+  });
   it('presents business information without opaque references, secrets or raw fields', async () => {
     const fixture = TestBed.createComponent(RecordSummary);
     const record = {

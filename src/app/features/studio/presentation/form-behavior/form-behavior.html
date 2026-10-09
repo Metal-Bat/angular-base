@@ -1,0 +1,127 @@
+@let vm = view();
+@if (vm.hasChoices()) {
+  <h3>{{ "Option source" | localize }}</h3>
+  @if (vm.source()["kind"] === "remote") {
+    <p>
+      {{
+        "This source requires approved configuration. Existing settings are preserved."
+          | localize
+      }}
+    </p>
+  } @else {
+    <label for="source-kind">{{ "Source kind" | localize }}</label>
+    <app-select-control
+      inputId="source-kind"
+      [disabled]="vm.disabled()"
+      [ngModel]="vm.source()['kind'] || 'schema'"
+      (ngModelChange)="vm.sourceKind($event)"
+    >
+      <option
+        value="schema"
+        [disabled]="
+          vm.node()['component'] === 'user' ||
+          vm.node()['component'] === 'group'
+        "
+      >
+        {{ "Schema choices" | localize }}
+      </option>
+      <option
+        value="custom"
+        [disabled]="
+          vm.node()['component'] === 'user' ||
+          vm.node()['component'] === 'group'
+        "
+      >
+        {{ "Custom choices" | localize }}
+      </option>
+      <option value="domain">{{ "Authorized selector" | localize }}</option>
+    </app-select-control>
+    <h4>{{ "Option dependencies" | localize }}</h4>
+    <ul>
+      @for (dependency of vm.dependencies(); track dependency[0]) {
+        <li>
+          <bdi>{{ dependency[0] }} · {{ dependency[1] }}</bdi
+          ><button
+            pButton
+            type="button"
+            [disabled]="vm.disabled()"
+            (click)="vm.removeDependency(dependency[0])"
+          >
+            {{ "Remove dependency" | localize }}
+          </button>
+        </li>
+      }
+    </ul>
+    <label for="dependency-name">{{ "Dependency name" | localize }}</label>
+    <input
+      id="dependency-name"
+      maxlength="32"
+      [disabled]="vm.disabled()"
+      [(ngModel)]="vm.dependencyName"
+    />
+    <label for="dependency-scope">{{ "Dependency field" | localize }}</label>
+    <app-select-control
+      inputId="dependency-scope"
+      [disabled]="vm.disabled()"
+      [(ngModel)]="vm.dependencyScope"
+    >
+      <option value="">{{ "Choose" | localize }}</option>
+      @for (field of vm.fields(); track field.scope) {
+        <option [value]="field.scope">{{ field.label }}</option>
+      }
+    </app-select-control>
+    <button
+      pButton
+      type="button"
+      [disabled]="vm.disabled() || vm.dependencies().length >= 8"
+      (click)="vm.addDependency()"
+    >
+      {{ "Add dependency" | localize }}
+    </button>
+    @if (vm.source()["kind"] === "custom") {
+      <app-schema-input
+        controlId="source-choices"
+        [disabled]="vm.disabled()"
+        [schema]="vm.choicesSchema"
+        [value]="vm.source()['items']"
+        (valueChange)="vm.sourcePatch('items', $event)"
+      />
+    }
+    @if (vm.source()["kind"] === "domain") {
+      <label for="source-selector">{{ "Selector" | localize }}</label>
+      <app-select-control
+        inputId="source-selector"
+        [disabled]="vm.disabled()"
+        [ngModel]="vm.source()['selector']"
+        (ngModelChange)="vm.sourcePatch('selector', $event)"
+      >
+        <option value="users">{{ "Users" | localize }}</option>
+        <option value="work_groups">{{ "Work groups" | localize }}</option>
+      </app-select-control>
+    }
+  }
+}
+@if (vm.node()["component"] === "calculated") {
+  <h3>{{ "Calculation expression" | localize }}</h3>
+  <p>
+    {{
+      "Expressions are validated by the server and never executed as JavaScript."
+        | localize
+    }}
+  </p>
+  <label for="calculation-expression">{{ "Expression" | localize }}</label>
+  <textarea
+    id="calculation-expression"
+    maxlength="1024"
+    [disabled]="vm.disabled()"
+    [(ngModel)]="vm.expression"
+  ></textarea>
+  <button
+    pButton
+    type="button"
+    [disabled]="vm.disabled()"
+    (click)="vm.setExpression()"
+  >
+    {{ "Set expression" | localize }}
+  </button>
+}

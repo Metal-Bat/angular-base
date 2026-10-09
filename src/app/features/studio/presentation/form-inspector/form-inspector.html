@@ -1,0 +1,166 @@
+@if (optionsSchema(); as schema) {
+  @if (error()) {
+    <p role="alert">{{ error() | localize }}</p>
+  }
+  <p>
+    {{ "Canonical field keys stay unchanged." | localize }}
+    <bdi>{{ scope() }}</bdi>
+  </p>
+  <label for="field-label">{{ "Label" | localize }}</label>
+  <input
+    id="field-label"
+    maxlength="255"
+    pInputText
+    [disabled]="disabled()"
+    [ngModel]="draft()['label']"
+    (ngModelChange)="patch('label', $event)"
+  />
+  <label for="field-renderer">{{ "Renderer" | localize }}</label>
+  <app-select-control
+    inputId="field-renderer"
+    [disabled]="disabled()"
+    [ngModel]="draft()['renderer'] || 'default'"
+    (ngModelChange)="patch('renderer', $event)"
+  >
+    <option value="default">{{ "Default" | localize }}</option>
+    <option value="compact">{{ "Compact" | localize }}</option>
+  </app-select-control>
+  <h3>{{ "Localized messages" | localize }}</h3>
+  <label for="message-role">{{ "Message role" | localize }}</label>
+  <app-select-control
+    inputId="message-role"
+    [disabled]="disabled()"
+    [(ngModel)]="messageRole"
+  >
+    <option value="label">{{ "Label" | localize }}</option>
+    <option value="help">{{ "Help" | localize }}</option>
+    <option value="placeholder">{{ "Placeholder" | localize }}</option>
+    <option value="action">{{ "Action" | localize }}</option>
+    <option value="confirmation">{{ "Confirmation" | localize }}</option>
+  </app-select-control>
+  <label for="field-message-key">{{ "Message key" | localize }}</label>
+  <app-select-control
+    inputId="field-message-key"
+    [disabled]="disabled()"
+    [(ngModel)]="messageKey"
+  >
+    <option value="">{{ "Choose" | localize }}</option>
+    @for (key of messageKeys(); track key) {
+      <option [value]="key">{{ key }}</option>
+    }
+  </app-select-control>
+  <button
+    pButton
+    type="button"
+    [disabled]="disabled() || !messageKey"
+    (click)="setMessage()"
+  >
+    {{ "Link message" | localize }}
+  </button>
+  <h3>{{ "Presentation options" | localize }}</h3>
+  <app-schema-input
+    controlId="field-options"
+    [disabled]="disabled()"
+    [schema]="schema"
+    [value]="options()"
+    (valueChange)="patch('options', $event)"
+  />
+  @if (scope()) {
+    <h3>{{ "Validation constraints" | localize }}</h3>
+    <label
+      ><input
+        type="checkbox"
+        [disabled]="disabled()"
+        [ngModel]="required()"
+        (ngModelChange)="requirement($event)"
+      />{{ "Required" | localize }}</label
+    >
+    <app-schema-input
+      controlId="field-constraints"
+      [disabled]="disabled()"
+      [schema]="constraintSchema"
+      [value]="constraints()"
+      (valueChange)="constraint($event)"
+    />
+  }
+  <h3>{{ "Behavior rules" | localize }}</h3>
+  <ul>
+    @for (rule of rules(); track $index) {
+      <li>
+        <bdi>{{ rule["scope"] }}</bdi> {{ rule["operator"] }} ·
+        {{ rule["effect"] }}
+        <button
+          pButton
+          type="button"
+          [disabled]="disabled()"
+          (click)="removeRule($index)"
+        >
+          {{ "Remove rule" | localize }}
+        </button>
+      </li>
+    }
+  </ul>
+  <label for="rule-scope">{{ "Field" | localize }}</label>
+  <app-select-control
+    inputId="rule-scope"
+    [disabled]="disabled()"
+    [(ngModel)]="ruleScope"
+  >
+    <option value="">{{ "Choose" | localize }}</option>
+    @for (field of fields(); track field.scope) {
+      <option [value]="field.scope">{{ field.label }}</option>
+    }
+  </app-select-control>
+  <label for="rule-operator">{{ "Operator" | localize }}</label>
+  <app-select-control
+    inputId="rule-operator"
+    [disabled]="disabled()"
+    [(ngModel)]="ruleOperator"
+  >
+    <option value="eq">{{ "Equals" | localize }}</option>
+    <option value="ne">{{ "Not equal" | localize }}</option>
+    <option value="present">{{ "Present" | localize }}</option>
+  </app-select-control>
+  <label for="rule-effect">{{ "Effect" | localize }}</label>
+  <app-select-control
+    inputId="rule-effect"
+    [disabled]="disabled()"
+    [(ngModel)]="ruleEffect"
+  >
+    <option value="show">{{ "Show" | localize }}</option>
+    <option value="hide">{{ "Hide" | localize }}</option>
+    <option value="enable">{{ "Enable" | localize }}</option>
+    <option value="disable">{{ "Disable" | localize }}</option>
+    <option value="require">{{ "Require" | localize }}</option>
+  </app-select-control>
+  <app-schema-input
+    controlId="rule-value"
+    label="Value"
+    [disabled]="disabled()"
+    [schema]="valueSchema"
+    [value]="ruleValue"
+    (valueChange)="ruleValue = $event ?? null"
+  />
+  <button
+    pButton
+    type="button"
+    [disabled]="disabled() || !ruleScope || rules().length >= 16"
+    (click)="addRule()"
+  >
+    {{ "Add rule" | localize }}
+  </button>
+  <app-form-behavior [view]="this" />
+  <button
+    class="mt-4"
+    pButton
+    type="button"
+    [disabled]="disabled()"
+    (click)="apply()"
+  >
+    {{ "Apply properties" | localize }}
+  </button>
+} @else {
+  <p role="alert">
+    {{ "Unsupported component. Existing settings are preserved." | localize }}
+  </p>
+}

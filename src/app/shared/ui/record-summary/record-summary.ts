@@ -2,6 +2,7 @@ import { fieldLabel } from '../../domain/field-label';
 import {
   fieldChanges,
   presentedFields,
+  recordCollections,
 } from '../../domain/record-presentation';
 import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
@@ -14,10 +15,11 @@ import {
 } from '@angular/core';
 import { Locale } from '../../../core/localization/locale';
 import { LocalizePipe } from '../localize-pipe';
+import { RecordCollections } from './record-collections';
 
 @Component({
   selector: 'app-record-summary',
-  imports: [LocalizePipe, TableModule, TagModule],
+  imports: [LocalizePipe, TableModule, TagModule, RecordCollections],
   templateUrl: './record-summary.html',
   styleUrl: './record-summary.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -28,6 +30,7 @@ export class RecordSummary {
   readonly title = input.required<string>();
   readonly icon = input('pi pi-file');
   readonly caption = input('Record overview');
+  readonly formatValue = (value: unknown): string => this.value(value);
   readonly displayTitle = computed(() => {
     if (this.isHistory()) {
       const operation = String(this.record()['operation'] ?? '').toLowerCase();
@@ -77,7 +80,9 @@ export class RecordSummary {
       Object.fromEntries(
         Object.entries(this.record()).filter(
           ([key]) =>
-            !['from_values', 'to_values'].includes(key) && !key.endsWith('_at'),
+            !['from_values', 'to_values'].includes(key) &&
+            !key.endsWith('_at') &&
+            !this.collections().some((collection) => collection.key === key),
         ),
       ),
     ).map((entry) => ({
@@ -85,6 +90,16 @@ export class RecordSummary {
       label: this.pathLabel(entry.path),
       empty: entry.value === null,
       value: this.value(entry.value),
+    })),
+  );
+  readonly collections = computed(() =>
+    recordCollections(this.record()).map((collection) => ({
+      ...collection,
+      label: this.locale.text(fieldLabel(collection.key)),
+      columns: collection.columns.map((column) => ({
+        ...column,
+        label: this.pathLabel(column.path),
+      })),
     })),
   );
   readonly activity = computed(() =>

@@ -20,13 +20,21 @@ export function readData<T>(
   response: HttpResponse<unknown>,
   decode: Decoder<T>,
 ): T {
-  return decode(envelope(response)['data']);
+  const value = envelope(response);
+  if (!Object.hasOwn(value, 'data')) {
+    throw new Error('Missing data response.');
+  }
+  return decode(value['data']);
 }
 export function readResult<T>(
   response: HttpResponse<unknown>,
   decode: Decoder<T>,
 ): T {
-  return decode(envelope(response)['result']);
+  const value = envelope(response);
+  if (!Object.hasOwn(value, 'result')) {
+    throw new Error('Missing result response.');
+  }
+  return decode(value['result']);
 }
 export function decodePage<T>(value: unknown, decode: Decoder<T>): Page<T> {
   const page = record(value);

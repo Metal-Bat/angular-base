@@ -16,6 +16,8 @@
       fDraggable
       [fDraggableDisabled]="disabled()"
       (fCreateConnection)="created($event)"
+      (fNodesRendered)="nodesRendered()"
+      (fReassignConnection)="reassigned($event)"
     >
       <f-canvas
         fZoom
@@ -23,6 +25,9 @@
         [scale]="viewport().zoom"
         (fCanvasChange)="changed($event)"
       >
+        <f-connection-for-create
+          ><f-connection-marker-arrow
+        /></f-connection-for-create>
         @for (edge of edges(); track edge.id) {
           <f-connection
             [class.data-edge]="edge.kind === 'data'"
@@ -51,7 +56,9 @@
             [attr.aria-label]="node.title"
             [class.collapsed]="collapsed().includes(node.key)"
             [class.node-invalid]="invalidNodes().includes(node.key)"
-            [class.selected]="selected() === node.key"
+            [class.selected]="
+              selected() === node.key || selectionKeys().includes(node.key)
+            "
             [fNodeDraggingDisabled]="disabled() || readOnly()"
             [fNodeId]="node.key"
             [fNodePosition]="node.position"
@@ -62,8 +69,10 @@
               class="node-handle"
               fDragHandle
               type="button"
-              [attr.aria-pressed]="selected() === node.key"
-              (click)="selectNode()(node.key)"
+              [attr.aria-pressed]="
+                selected() === node.key || selectionKeys().includes(node.key)
+              "
+              (click)="select($event, node.key)"
             >
               <span aria-hidden="true" class="node-icon"
                 ><i class="pi pi-sitemap"></i

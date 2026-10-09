@@ -69,4 +69,40 @@
       <bdi>{{ name() }}</bdi> — <bdi>{{ department() }}</bdi>
     </p>
   </p-dialog>
+
+  <app-control-field
+    controlId="showcase-selector"
+    [error]="selection() ? '' : 'Required'"
+    [label]="'Status'"
+    [required]="true"
+  >
+    <app-select-control
+      inputId="showcase-selector"
+      required
+      [ariaLabel]="'Status' | localize"
+      [describedBy]="selection() ? null : 'showcase-selector-error'"
+      [invalid]="!selection()"
+      [value]="selection()"
+      (selectionChanged)="select($event.target.value)"
+    >
+      <option value="">{{ "Choose" | localize }}</option>
+      <option value="ready">{{ "Ready" | localize }}</option>
+    </app-select-control>
+  </app-control-field>
+  <app-control-field controlId="showcase-disabled" [label]="'Name'">
+    <input disabled id="showcase-disabled" pInputText value="Example" />
+  </app-control-field>
+  <p-table [value]="[]">
+    <ng-template #caption>{{ "Sample records" | localize }}</ng-template>
+    <ng-template #header
+      ><tr>
+        <th scope="col">{{ "Name" | localize }}</th>
+      </tr></ng-template
+    >
+    <ng-template #emptymessage
+      ><tr>
+        <td>{{ "No records" | localize }}</td>
+      </tr></ng-template
+    >
+  </p-table>
 </section>

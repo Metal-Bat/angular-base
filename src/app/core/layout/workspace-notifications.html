@@ -27,6 +27,13 @@
         </button>
       }
       @case ("ready") {
+        <p>
+          {{ "Unread notifications" | localize }}:
+          <bdi>{{ vm.notifications.unreadCount() }}</bdi>
+        </p>
+        <a routerLink="/operations/notifications">{{
+          "Open notifications" | localize
+        }}</a>
         <ul>
           @for (item of vm.notifications.items(); track item.ref) {
             <li>

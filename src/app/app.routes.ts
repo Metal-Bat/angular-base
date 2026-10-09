@@ -23,6 +23,16 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'help',
+        title: 'Help | Workflow workspace',
+        canActivate: [routeAccessGuard],
+        data: { access: 'authenticated', requiredPermissions: [] },
+        loadComponent: () =>
+          import('./features/help/presentation/help-page/help-page').then(
+            (m) => m.HelpPage,
+          ),
+      },
+      {
         path: 'account/profile',
         title: 'My information | Workflow workspace',
         canActivate: [routeAccessGuard],

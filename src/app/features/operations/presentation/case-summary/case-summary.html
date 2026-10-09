@@ -3,7 +3,11 @@
   <dd>{{ item().status | localize }}</dd>
   <dt>{{ "Pinned form" | localize }}</dt>
   <dd>
-    <bdi>{{ item().form }}</bdi>
+    @if (item().form) {
+      <bdi>{{ item().form }}</bdi>
+    } @else {
+      {{ "No form is attached to this task." | localize }}
+    }
   </dd>
   @if (item().workflow) {
     <dt>{{ "Pinned workflow" | localize }}</dt>
@@ -28,5 +32,14 @@
     <a [routerLink]="['/operations/processes', item().process]"
       ><bdi>{{ item().process }}</bdi></a
     >
+  </p>
+}
+
+@if (kind() === "request" && item().status !== "DRAFT") {
+  <p>
+    {{
+      "Business outcomes and receipts are unavailable here. Follow process tracking for recorded events."
+        | localize
+    }}
   </p>
 }

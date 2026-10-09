@@ -1,5 +1,40 @@
-import { fieldChanges, presentedFields } from './record-presentation';
+import {
+  fieldChanges,
+  presentedFields,
+  recordCollections,
+} from './record-presentation';
 describe('Read-only response presentation', () => {
+  it('groups heterogeneous domain collection rows without leaking references or mutating input', () => {
+    const source = {
+      assignments: [
+        {
+          name: 'Sara',
+          enabled: false,
+          user_ref_id: 'hidden',
+          client_ref_ids: ['private'],
+        },
+        { name: 'Ali', amount: '0.00000000000000001', token: 'secret' },
+      ],
+    };
+    const snapshot = structuredClone(source);
+    const [collection] = recordCollections(source);
+    expect(collection.columns.map((column) => column.path)).toEqual([
+      ['name'],
+      ['enabled'],
+      ['amount'],
+    ]);
+    expect(collection.rows[0]['["enabled"]'].value).toBe(false);
+    expect(collection.rows[1]['["amount"]'].value).toBe('0.00000000000000001');
+    expect(source).toEqual(snapshot);
+    expect(JSON.stringify(collection)).not.toMatch(/hidden|private|secret/);
+    expect(
+      presentedFields({
+        client_ref_ids: ['private'],
+        refs: ['private'],
+        number: 0,
+      }).map((field) => field.value),
+    ).toEqual([0]);
+  });
   it('keeps returned nested fields, booleans, zeroes and array objects', () => {
     const fields = presentedFields({
       priority: 0,
@@ -72,4 +107,28 @@ describe('Read-only response presentation', () => {
     ]);
     expect(before.profile.password).toBe('hidden');
   });
+});
+
+it('presents authorized token usage counts while hiding authentication tokens', () => {
+  const fields = presentedFields({
+    used: { input_tokens: 0, output_tokens: 2, total_tokens: 2 },
+    access_token: 'private',
+    token: 'private',
+  });
+  expect(fields.map((field) => field.path.join('.'))).toEqual([
+    'used.input_tokens',
+    'used.output_tokens',
+    'used.total_tokens',
+  ]);
+  expect(JSON.stringify(fields)).not.toContain('private');
+});
+
+it('does not present secrets stored under a token-count-shaped key', () => {
+  expect(
+    presentedFields({
+      input_tokens: 'private-secret',
+      output_tokens: -1,
+      total_tokens: 1.5,
+    }),
+  ).toEqual([]);
 });

@@ -1,5 +1,6 @@
 import { createStaticAssets } from "./static-assets.mjs";
 import { createServer } from "node:http";
+import { createHttpBoundary } from "./http-boundary.mjs";
 import { createSessionBoundary } from "./session-boundary.mjs";
 
 const browserOrigin =
@@ -17,6 +18,12 @@ if (
 const development = process.env.NODE_ENV !== "production";
 const handle = createSessionBoundary({
   browserOrigin,
+  maxBodyBytes,
+  maxInFlightRequests: Number(process.env.BOUNDARY_MAX_IN_FLIGHT_REQUESTS ?? 8),
+  maxResponseBytes: Number(
+    process.env.BOUNDARY_MAX_RESPONSE_BYTES ?? 11 * 1024 * 1024,
+  ),
+  transferTimeoutMs: Number(process.env.BOUNDARY_TRANSFER_TIMEOUT_MS ?? 60000),
   development,
   upstreamOrigin:
     process.env.BOUNDARY_UPSTREAM_ORIGIN ?? "http://127.0.0.1:8000",
@@ -30,44 +37,9 @@ const handle = createSessionBoundary({
 const assets = process.env.FRONTEND_DIR
   ? await createStaticAssets(process.env.FRONTEND_DIR)
   : null;
-const server = createServer(async (incoming, outgoing) => {
-  try {
-    const parts = [];
-    let size = 0;
-    for await (const part of incoming) {
-      size += part.length;
-      if (size > maxBodyBytes) {
-        outgoing.writeHead(413);
-        outgoing.end();
-        return;
-      }
-      parts.push(part);
-    }
-    const url = new URL(incoming.url, browserOrigin);
-    if (url.origin !== browserOrigin) {
-      outgoing.writeHead(400);
-      outgoing.end();
-      return;
-    }
-    const request = new Request(url, {
-      method: incoming.method,
-      headers: incoming.headers,
-      body: ["GET", "HEAD"].includes(incoming.method)
-        ? undefined
-        : Buffer.concat(parts),
-    });
-    const response =
-      (assets && (await assets(request))) || (await handle(request));
-    outgoing.writeHead(response.status, Object.fromEntries(response.headers));
-    outgoing.end(Buffer.from(await response.arrayBuffer()));
-  } catch {
-    outgoing.writeHead(500, {
-      "content-type": "application/json",
-      "cache-control": "no-store",
-    });
-    outgoing.end(JSON.stringify({ error: "boundary_failure" }));
-  }
-});
+const server = createServer(
+  createHttpBoundary({ browserOrigin, handle, assets }),
+);
 server.listen(Number(process.env.BOUNDARY_PORT ?? 3000), "127.0.0.1", () => {
   console.log("Session boundary listening on loopback.");
 });

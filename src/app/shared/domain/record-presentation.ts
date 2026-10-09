@@ -12,22 +12,69 @@ export type FieldChange = {
   beforePresent: boolean;
   afterPresent: boolean;
 };
-export function hiddenField(key: string): boolean {
+export function publicTokenCount(key: string, value: unknown): boolean {
   return (
-    /(^|_)ref(_id)?$|password|secret|credential|token|authorization|api_key/i.test(
-      key,
-    ) ||
+    ['input_tokens', 'output_tokens', 'total_tokens'].includes(key) &&
+    (value === null || (Number.isSafeInteger(value) && Number(value) >= 0))
+  );
+}
+export function hiddenField(key: string, value?: unknown): boolean {
+  return (
+    (!publicTokenCount(key, value) &&
+      /(^|_)ref(_id)?s?$|password|secret|credential|token|authorization|api_key/i.test(
+        key,
+      )) ||
     /^(id|entity_id|actor_id|modifier_id|request_id|trace_id|source_ip|user_agent|graph_checksum)$/.test(
       key,
     )
   );
+}
+export type PresentedCollection = {
+  key: string;
+  columns: readonly { key: string; path: readonly string[] }[];
+  rows: readonly Readonly<Record<string, PresentedField>>[];
+};
+/** Present record collections as rows; scalar lists remain ordinary fields. */
+export function recordCollections(
+  record: Readonly<Record<string, unknown>>,
+): PresentedCollection[] {
+  return Object.entries(record).flatMap(([key, value]) => {
+    if (
+      hiddenField(key, value) ||
+      !Array.isArray(value) ||
+      !value.length ||
+      !value.every(
+        (row) => row !== null && typeof row === 'object' && !Array.isArray(row),
+      )
+    ) {
+      return [];
+    }
+    const rows = value.map((row) =>
+      Object.fromEntries(
+        presentedFields(row).map((field) => [field.key, field]),
+      ),
+    );
+    const columns = [
+      ...new Map(
+        rows.flatMap((row) =>
+          Object.values(row).map(
+            (field) =>
+              [field.key, { key: field.key, path: field.path }] as const,
+          ),
+        ),
+      ).values(),
+    ];
+    return columns.length ? [{ key, columns, rows }] : [];
+  });
 }
 export function presentedFields(
   value: unknown,
   path: readonly string[] = [],
 ): PresentedField[] {
   if (value !== null && typeof value === 'object') {
-    const entries = Object.entries(value).filter(([key]) => !hiddenField(key));
+    const entries = Object.entries(value).filter(
+      ([key, item]) => !hiddenField(key, item),
+    );
     if (!Object.keys(value).length && path.length) {
       return [{ key: JSON.stringify(path), path, value }];
     }

@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "backend_head": "995829eebd9483ac6b589c1648fc799c650ad464",
+  "backend_worktree": "uncommitted; final gate records complete nonignored source hashes",
+  "schema_head": "f57db46ce934",
+  "contracts": [
+    "C01",
+    "C02",
+    "C03",
+    "C05",
+    "C10",
+    "C11",
+    "C14"
+  ],
+  "artifacts": {
+    "openapi-en.json": "59b3f390e73e0a349b052ba3ed653d10441290af4952f150ca7bd1acdfb8d73a",
+    "inspector-en.json": "40a356b08b9ef858ece7aea62c8c2966785539896a9db929f6ef8321e30f52c8",
+    "openapi-fa.json": "db3a36ee4623cc09da6a8d450fbf2a9e4fcec8be6b402cb5f472a1c522271c4b",
+    "inspector-fa.json": "267e993895f3e8db7d182e1a77a8f3a3f4e476a799ba8d1aa3ff4ce2d8a350e3",
+    "metric-dictionary.json": "fecbc2f82cfbf20633c6547494b73c36f7c2cc4a04cc8b00cd93362d63ff2df2",
+    "help-release.schema.json": "ee3a51bc28a467a7155371a21463b0a100ae5840c11ab5e38b6112749dfee050",
+    "help-release.synthetic.json": "bec7e581f11d26d6734d03ec5876677deabad82c4974923be077ebe83dd0902d"
+  },
+  "help_content": "Frontend-owned; synthetic example does not attest a shipped frontend catalog.",
+  "verification": "See ../wave-four-verification.md; snapshots alone are not integration evidence."
+}

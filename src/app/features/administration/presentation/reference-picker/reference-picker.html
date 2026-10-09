@@ -6,6 +6,7 @@
   [resizable]="false"
   [style]="{ width: '48rem', maxWidth: 'calc(100vw - 2rem)' }"
   [visible]="visible()"
+  (onHide)="restoreFocus()"
   (visibleChange)="clear()"
 >
   <form class="flex items-end gap-2 mb-4" (ngSubmit)="load()">
@@ -17,7 +18,8 @@
         id="reference-search"
         name="search"
         pInputText
-        [(ngModel)]="search"
+        [ngModel]="search"
+        (ngModelChange)="scheduleSearch($event)"
     /></app-control-field>
     <button pButton type="submit" [disabled]="busy()">
       {{ "Search" | localize }}

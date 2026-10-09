@@ -1,3 +1,8 @@
+import { createPreferencesFixture } from "./preferences-fixture.mjs";
+import {
+  browserDiagnosticsScript,
+  assertBrowserDiagnostics,
+} from "./browser-diagnostics.mjs";
 import {
   createStudioCatalogFixture,
   studioCatalogBrowserScript,
@@ -19,6 +24,10 @@ import {
   administrationFixture,
   administrationScript,
 } from "./administration-fixture.mjs";
+import {
+  createFoundationsFixture,
+  foundationsBrowserScript,
+} from "./foundations-fixture.mjs";
 import { createWorkspaceFixture } from "./workspace-fixture.mjs";
 import assert from "node:assert/strict";
 import { createServer } from "node:http";
@@ -39,9 +48,11 @@ const axe =
     ? await readFile("node_modules/axe-core/axe.min.js", "utf8")
     : "";
 const workspace = createWorkspaceFixture();
+const foundations = createFoundationsFixture();
 const canvasFixture = createCanvasFixture();
 const recordsFixture = createRecordsFixture();
 const studioCatalogFixture = createStudioCatalogFixture();
+const preferencesFixture = createPreferencesFixture();
 let completedLogouts = 0;
 let revoked = false;
 let expire = false;
@@ -66,8 +77,27 @@ const upstream = createServer(async (req, res) => {
     process.env.STUDIO_CATALOG_BROWSER_CHECKS === "1"
       ? studioCatalogFixture.handle(req.method, req.url, body)
       : null;
+  if (
+    process.env.FOUNDATION_BROWSER_CHECKS === "1" &&
+    req.url === "/api/v1/notifications/notice-fail"
+  ) {
+    res.statusCode = 503;
+    res.setHeader("X-Request-ID", "fixture-request-001");
+  }
+  const foundationResponse =
+    process.env.FOUNDATION_BROWSER_CHECKS === "1"
+      ? foundations.handle(req.method, req.url, body)
+      : null;
+  const preferenceResponse = preferencesFixture.handle(
+    req.method,
+    req.url,
+    body,
+  );
   let result;
-  if (req.url.endsWith("/login") || req.url.endsWith("/refresh")) {
+  if (preferenceResponse) {
+    res.statusCode = preferenceResponse.status;
+    result = preferenceResponse.body;
+  } else if (req.url.endsWith("/login") || req.url.endsWith("/refresh")) {
     if (
       req.url.endsWith("/login") &&
       JSON.parse(body).password !== "fixture-password"
@@ -142,6 +172,8 @@ const upstream = createServer(async (req, res) => {
         total_pages: revoked ? 0 : 2,
       },
     };
+  } else if (foundationResponse) {
+    result = foundationResponse;
   } else if (studioResponse) {
     result = studioResponse;
   } else if (recordsResponse) {
@@ -178,6 +210,7 @@ await once(upstream, "listening");
 let handle;
 let resolveResult;
 let lastBrowserStage = "not started";
+const browserDiagnostics = [];
 const result = new Promise((resolve) => {
   resolveResult = resolve;
 });
@@ -192,18 +225,23 @@ const script = `
  window.fixtureMessages=[];
  const fixtureChannel=new BroadcastChannel('workspace-session'); fixtureChannel.onmessage=event=>window.fixtureMessages.push({message:typeof event.data==='string'?event.data:'structured',at:Math.round(performance.now())});
  const check = (ok, message) => { if (!ok) throw Error(message); };
- const wait = async (predicate, name) => { for (let i=0;i<200;i++) { if(predicate()) return; await new Promise(r=>setTimeout(r,25)); } throw Error('Timed out: '+name); };
+ const wait = async (predicate, name) => { for (let i=0;i<200;i++) { if(predicate()) return; await new Promise(r=>setTimeout(r,25)); } throw Error('Timed out: '+name+' dropdowns='+JSON.stringify({expanded:[...document.querySelectorAll('[role="combobox"][aria-expanded="true"]')].map(item=>item.id),animations:[...document.querySelectorAll('.p-select-overlay, .p-multiselect-overlay')].flatMap(item=>item.getAnimations({subtree:true}).filter(animation=>animation.playState==='running').map(animation=>({state:animation.playState,name:animation.animationName??animation.transitionProperty, duration:animation.effect?.getTiming().duration})))})); };
  const text = () => document.querySelector('main')?.textContent ?? '';
  const themeControl=()=>document.querySelector('[data-theme-picker] [role="combobox"]');
+ const dropdownsIdle=()=>!document.querySelector('[role="combobox"][aria-expanded="true"]') && Array.from(document.querySelectorAll('.p-select-overlay, .p-multiselect-overlay')).every(overlay=>overlay.getAnimations({subtree:true}).every(animation=>animation.playState!=='running'));
  const chooseTheme=async value=>{
+  await wait(dropdownsIdle,'previous dropdown closed');
   const control=themeControl();check(control,'PrimeNG theme combobox');
   control.focus();control.click();await wait(()=>control.getAttribute('aria-expanded')==='true','theme popup');
   const popup=()=>document.getElementById(control.getAttribute('aria-controls'));
   await wait(()=>popup()?.querySelector('[data-theme-option="'+value+'"]'),'theme option '+value);
+  await wait(()=>popup().parentElement.getAnimations({subtree:true}).every(animation=>animation.playState!=='running'),'theme opening complete');
   popup().querySelector('[data-theme-option="'+value+'"]').closest('[role="option"]').click();
-  await wait(()=>themeControl()?.getAttribute('aria-expanded')==='false','theme popup closed '+value);
+  await wait(()=>themeControl()?.getAttribute('aria-expanded')==='false','theme popup closed '+value+' (palette='+document.documentElement.dataset.palette+', expanded='+themeControl()?.getAttribute('aria-expanded')+')');
+  await wait(dropdownsIdle,'theme overlay removed');
  };
  const chooseLanguage=async value=>{
+  await wait(dropdownsIdle,'previous language dropdown closed');
   const picker=document.querySelector('[data-language-picker]');
   const source=picker.querySelector('select');
   const control=picker.querySelector('[role="combobox"]');
@@ -212,8 +250,10 @@ const script = `
   control.click();await wait(()=>control.getAttribute('aria-expanded')==='true','language popup');
   const popup=()=>document.getElementById(control.getAttribute('aria-controls'));
   await wait(()=>popup()?.querySelector('[role="option"][aria-label="'+option.textContent.trim()+'"]'),'language option');
+  await wait(()=>popup().parentElement.getAnimations({subtree:true}).every(animation=>animation.playState!=='running'),'language opening complete');
   popup().querySelector('[role="option"][aria-label="'+option.textContent.trim()+'"]').click();
   await wait(()=>document.documentElement.lang===value&&control.getAttribute('aria-expanded')==='false','language selected '+value);
+  await wait(dropdownsIdle,'language overlay removed');
  };
  const toggleTheme=()=>chooseTheme((document.documentElement.dataset.palette??'blue')+'-'+(document.documentElement.classList.contains('app-dark')?'light':'dark'));
 
@@ -229,7 +269,9 @@ const script = `
  const settleLogout = async (count) => { for(let i=0;i<200;i++){ const state=await (await fetch('/test-control?logout-status=1')).json(); if(state.completedLogouts>=count)return; await new Promise(r=>setTimeout(r,25)); } throw Error('Logout request did not finish'); };
  const phase = new URL(location.href).searchParams.get('browserPhase');
  window.fixtureStage=phase??'login';
- if (phase === 'studio-catalog') {
+ if (phase === 'foundations') {
+ ${foundationsBrowserScript}
+ } else if (phase === 'studio-catalog') {
  ${studioCatalogBrowserScript}
  } else if (phase === 'records') {
  ${recordsBrowserScript}
@@ -241,8 +283,30 @@ const script = `
   await wait(()=>document.querySelector('app-ui-showcase'),'UI controls');
   await wait(()=>window.ng?.getComponent(document.querySelector('app-ui-showcase')),'component readiness');
   const sample=document.querySelector('app-ui-showcase');
+  await wait(()=>document.activeElement===sample.querySelector('h1'),'showcase route focus settled');
   const prime=sample.querySelector('input.p-inputtext'); const material=sample.querySelector('input[matinput]');
   check(prime && material,'both libraries');
+  const showcaseChoice=()=>sample.querySelector('#showcase-selector');
+  check(showcaseChoice()?.getAttribute('aria-label')==='Status','shared selector label');
+  check(showcaseChoice().getAttribute('aria-required')==='true','shared selector required semantics');
+  check(showcaseChoice().getAttribute('aria-describedby')==='showcase-selector-error' && document.getElementById('showcase-selector-error'),'shared selector validation link');
+  showcaseChoice().focus();showcaseChoice().dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowDown',code:'ArrowDown',bubbles:true}));
+  await wait(()=>showcaseChoice().getAttribute('aria-expanded')==='true','showcase choice open');
+  await wait(()=>{
+    const list=document.getElementById(showcaseChoice().getAttribute('aria-controls'));
+    return list?.querySelectorAll('[role="option"]').length===2 && list.parentElement.getAnimations({subtree:true}).every(animation=>animation.playState!=='running');
+  },'showcase options ready');
+  showcaseChoice().dispatchEvent(new KeyboardEvent('keydown',{key:'End',code:'End',bubbles:true}));
+  await wait(()=>document.getElementById(showcaseChoice().getAttribute('aria-activedescendant'))?.getAttribute('aria-label')==='Ready','showcase keyboard option focused');
+  showcaseChoice().dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',code:'Enter',bubbles:true}));
+  await wait(()=>window.ng.getComponent(sample).selection()==='ready','showcase selection propagated');
+  await wait(()=>!document.getElementById('showcase-selector-error'),'showcase validation cleared');
+  await wait(()=>showcaseChoice().getAttribute('aria-expanded')==='false','showcase overlay closed');
+  await wait(dropdownsIdle,'showcase overlay removed');
+  check(!showcaseChoice().getAttribute('aria-describedby'),'no dangling validation link');
+  check(document.getElementById('showcase-disabled').disabled,'disabled example');
+  check(sample.querySelectorAll('table').length===2 && sample.textContent.includes('No records'),'empty and populated tables');
+
   await auditAccessibility('shared-ui-light');
   const themePicker=themeControl();check(themePicker?.getAttribute('aria-label')==='Theme','theme accessible name');
   const languageSelect=document.querySelector('[data-language-picker] p-select');
@@ -260,12 +324,16 @@ const script = `
   await auditAccessibility('theme-picker-open');
   themePicker.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',code:'Escape',bubbles:true}));
   await wait(()=>themePicker.getAttribute('aria-expanded')==='false','theme escape');
+  await wait(dropdownsIdle,'theme escape animation complete');
   check(document.activeElement===themePicker,'theme focus restored');
   themePicker.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowDown',code:'ArrowDown',bubbles:true}));
   await wait(()=>themePicker.getAttribute('aria-expanded')==='true','keyboard theme open');
+  await wait(()=>document.getElementById(themePicker.getAttribute('aria-controls'))?.parentElement.getAnimations({subtree:true}).every(animation=>animation.playState!=='running'),'keyboard theme opening complete');
   themePicker.dispatchEvent(new KeyboardEvent('keydown',{key:'End',code:'End',bubbles:true}));
+  await wait(()=>document.getElementById(themePicker.getAttribute('aria-activedescendant'))?.querySelector('[data-theme-option="amber-dark"]'),'keyboard theme option focused');
   themePicker.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',code:'Enter',bubbles:true}));
   await wait(()=>document.documentElement.dataset.palette==='amber'&&document.documentElement.classList.contains('app-dark'),'keyboard theme selected');
+  await wait(dropdownsIdle,'keyboard theme closed');
   const luminance=hex=>{const rgb=hex.trim().replace('#','').match(/.{2}/g).map(c=>parseInt(c,16)/255).map(c=>c<=.04045?c/12.92:((c+.055)/1.055)**2.4);return rgb[0]*.2126+rgb[1]*.7152+rgb[2]*.0722;};
   for(const palette of ['blue','indigo','violet','emerald','teal','rose','amber']){
     for(const mode of ['light','dark']){
@@ -277,6 +345,8 @@ const script = `
     }
   }
   await chooseTheme('blue-light');await wait(()=>!document.documentElement.classList.contains('app-dark'),'restore blue light');
+  await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+  await wait(()=>prime.getAnimations().every(animation=>animation.playState!=='running'),'light input transition settled');
 
   const initialBackground=getComputedStyle(prime).backgroundColor;
   check(getComputedStyle(prime).fontFamily.includes('system-ui') && getComputedStyle(material).fontFamily.includes('system-ui'),'shared typography');
@@ -285,7 +355,7 @@ const script = `
   window.fixtureStage='dark';
   await toggleTheme();
   await wait(()=>document.documentElement.classList.contains('app-dark'),'dark theme');
-  await wait(()=>getComputedStyle(prime).backgroundColor!==initialBackground,'Prime dark theme');
+  await wait(()=>getComputedStyle(prime).backgroundColor!==initialBackground,'Prime dark theme (initial='+initialBackground+', current='+getComputedStyle(prime).backgroundColor+')');
   window.fixtureStage='persian';
   await chooseLanguage('fa');
   await wait(()=>document.documentElement.dir==='rtl' && sample.textContent.includes('کنترل‌های فرم'),'Persian RTL');
@@ -341,6 +411,11 @@ const script = `
   button('Submit').click(); await approveDialog(); await wait(()=>text().includes('RUNNING') && !button('Submit') && !button('Check current state').disabled,'immediate running request');
   const tracking=document.querySelector('main a[href^="/operations/processes/"]'); check(tracking,'real process tracking link'); tracking.click();
   await wait(()=>document.querySelector('h1')?.textContent.trim()==='Process tracking' && text().includes('RUNNING'),'authorized tracking entry');
+  await wait(()=>document.querySelector('app-execution-path details'),'structured execution visits');
+  check(text().includes('left')&&text().includes('right'),'both active positions preserved');
+  document.querySelector('app-execution-path summary').click();
+  check(document.querySelector('app-execution-path').textContent.includes('EFFECT_UNKNOWN')&&document.querySelector('app-execution-path').textContent.includes('TIMEOUT'),'visit and attempt diagnosis');
+  check(!text().includes('never-rendered-fixture-input'),'private execution input excluded');
   window.fixtureStage='inbox'; history.pushState(null,'','/operations/tasks'); window.dispatchEvent(new PopStateEvent('popstate'));
   await wait(()=>document.querySelector('h1')?.textContent.trim()==='Task inbox' && document.querySelector('main a[href^="/operations/tasks/"]'),'task inbox');
   const inboxSelect=document.querySelector('#inbox-view');check(inboxSelect?.getAttribute('role')==='combobox','Inbox is not a PrimeNG dropdown');check(inboxSelect.tabIndex===0,'Inbox selector not keyboard accessible');inboxSelect.click();await wait(()=>[...document.querySelectorAll('[role="option"]')].some(option=>option.textContent.trim()==='claimed'),'Inbox views');[...document.querySelectorAll('[role="option"]')].find(option=>option.textContent.trim()==='claimed').click();await wait(()=>document.querySelector('app-task-inbox .p-select-label')?.textContent.trim()==='claimed'&&document.querySelector('main a[href^="/operations/tasks/"]'),'Claimed inbox');await auditAccessibility('task-inbox-dropdown');
@@ -362,6 +437,27 @@ const script = `
   check(document.querySelector('app-profile').textContent.includes('Fixture User'),'profile full name');
   check(!document.querySelector('app-profile').textContent.includes('opaque-browser-user'),'profile hides reference');
   check(document.querySelector('app-profile a[href="/account"]'),'account security link');
+  await wait(()=>document.querySelector('[data-preference-status]')?.dataset.preferenceStatus==='saved','Saved preferences loaded');
+  check(document.querySelector('app-profile-appearance')?.textContent.includes('Changes are saved automatically to your account.'),'Automatic preference save disclosure');
+  const profileTheme=document.getElementById('profile-theme');check(profileTheme?.getAttribute('role')==='combobox'&&profileTheme.tabIndex===0,'Profile theme keyboard access');
+  profileTheme.click();await wait(()=>[...document.querySelectorAll('[role="option"]')].some(option=>option.textContent.trim()==='Violet · Dark'),'Profile theme options');
+  [...document.querySelectorAll('[role="option"]')].find(option=>option.textContent.trim()==='Violet · Dark').click();await wait(()=>document.documentElement.dataset.palette==='violet'&&document.documentElement.classList.contains('app-dark'),'Profile appearance applies');
+  await wait(()=>document.querySelector('[data-preference-status]')?.dataset.preferenceStatus==='saved','Profile theme autosaved');
+  check(document.querySelector('header [data-theme-picker] .theme-swatch'),'Header color swatch');
+  check(document.querySelector('app-profile-appearance [data-theme-picker] .theme-swatch'),'Profile color swatch');
+  check(document.querySelector('header [data-theme-picker] .p-select-label').textContent.trim()===document.querySelector('app-profile-appearance [data-theme-picker] .p-select-label').textContent.trim(),'Header/profile theme synchronized');
+  document.getElementById('profile-language').click();await wait(()=>[...document.querySelectorAll('[role="option"]')].some(option=>option.textContent.includes('فارسی')),'Profile language options');
+  [...document.querySelectorAll('[role="option"]')].find(option=>option.textContent.includes('فارسی')).click();
+  await wait(()=>document.documentElement.lang==='fa'&&document.querySelector('[data-preference-status]')?.dataset.preferenceStatus==='saved','Profile language autosaved');
+  const preferenceFrame=document.createElement('iframe');preferenceFrame.src='/account/profile?peer=1';document.body.append(preferenceFrame);
+  await wait(()=>preferenceFrame.contentDocument?.querySelector('[data-preference-status]')?.dataset.preferenceStatus==='saved','Preferences loaded in a fresh app document');
+  check(preferenceFrame.contentDocument.documentElement.dataset.palette==='violet'&&preferenceFrame.contentDocument.documentElement.classList.contains('app-dark'),'Saved theme restored on bootstrap');
+  check(preferenceFrame.contentDocument.documentElement.lang==='fa','Saved language restored on bootstrap');
+  preferenceFrame.remove();await chooseLanguage('en');
+  await wait(()=>document.documentElement.lang==='en'&&document.querySelector('[data-preference-status]')?.dataset.preferenceStatus==='saved','Header language autosaved');
+  [...document.querySelectorAll('app-profile-appearance button')].find(item=>item.textContent.trim()==='Reset appearance').click();await wait(()=>document.documentElement.dataset.palette==='blue'&&!document.documentElement.classList.contains('app-dark'),'Profile appearance reset');
+  await wait(()=>document.querySelector('[data-preference-status]')?.dataset.preferenceStatus==='saved','Reset appearance autosaved');
+  check(document.getElementById('profile-language')?.getAttribute('role')==='combobox','Profile language control');
   await auditAccessibility('my-information');
   history.pushState(null,'','/operations');window.dispatchEvent(new PopStateEvent('popstate'));
   await wait(()=>document.querySelector('app-operations-home'),'profile return');
@@ -406,6 +502,7 @@ const script = `
  ${process.env.CANVAS_BROWSER_CHECKS === "1" ? "location.href='/studio/workflow-versions/fixture-flow/edit?browserPhase=canvas'; return;" : ""}
  ${process.env.PERFORMANCE_BROWSER_CHECKS === "1" ? "location.href='/operations?browserPhase=performance'; return;" : ""}
  ${process.env.ADMIN_BROWSER_CHECKS === "1" ? "location.href='/administration/commands/users?browserPhase=admin'; return;" : ""}
+ ${process.env.FOUNDATION_BROWSER_CHECKS === "1" ? "location.href='/help?browserPhase=foundations'; return;" : ""}
  ${process.env.UI_BROWSER_CHECKS === "1" ? "location.href='/ui-preview?browserPhase=ui'; return;" : ""}
  ${process.env.WORKSPACE_BROWSER_CHECKS === "1" ? "location.href='/operations/catalog?browserPhase=workspace'; return;" : ""}
   await fetch('/test-control?expire=1'); window.dispatchEvent(new Event('focus'));
@@ -441,13 +538,20 @@ const browserServer = createServer(async (req, res) => {
   for await (const part of req) {
     parts.push(part);
   }
+  if (url.pathname === "/test-diagnostics") {
+    browserDiagnostics.push(...JSON.parse(Buffer.concat(parts)));
+    res.end("ok");
+    return;
+  }
   if (url.pathname === "/test-stage") {
     lastBrowserStage = url.searchParams.get("value");
     res.end("ok");
     return;
   }
   if (url.pathname === "/test-result") {
-    resolveResult(JSON.parse(Buffer.concat(parts)));
+    const outcome = JSON.parse(Buffer.concat(parts));
+    outcome.diagnostics = browserDiagnostics;
+    resolveResult(outcome);
     res.end("ok");
     return;
   }
@@ -508,6 +612,29 @@ const browserServer = createServer(async (req, res) => {
       return;
     }
     res.setHeader("content-type", "text/html");
+    const diagnostics =
+      browserDiagnosticsScript +
+      `
+      const originalFetch = window.fetch.bind(window);
+      const pendingDiagnostics = [];
+      const originalPush = window.fixtureDiagnostics.push.bind(window.fixtureDiagnostics);
+      window.fixtureDiagnostics.push = (...entries) => {
+        const length = originalPush(...entries);
+        pendingDiagnostics.push(originalFetch('/test-diagnostics', {
+          method:'POST', keepalive:true, body:JSON.stringify(entries)
+        }).then(response => response.ok, () => false));
+        return length;
+      };
+      window.fetch = async (input, init) => {
+        if (String(input).startsWith('/test-result')) {
+          const delivered = await Promise.all(pendingDiagnostics);
+          if (delivered.some(ok => !ok)) {
+            await originalFetch('/test-diagnostics', {method:'POST', body:JSON.stringify([{kind:'diagnostic-delivery-failed'}])});
+          }
+        }
+        return originalFetch(input, init);
+      };
+    `;
     const injected = url.searchParams.has("peer")
       ? ""
       : "<script>" +
@@ -515,7 +642,11 @@ const browserServer = createServer(async (req, res) => {
         "</script><script>" +
         script.replace("ORIGIN_PLACEHOLDER", origin) +
         "</script>";
-    res.end(index.replace("</body>", injected + "</body>"));
+    res.end(
+      index
+        .replace("<head>", "<head><script>" + diagnostics + "</script>")
+        .replace("</body>", injected + "</body>"),
+    );
   } catch (error) {
     res.writeHead(500);
     res.end("Fixture failed");
@@ -568,6 +699,7 @@ try {
         : "") +
       (outcome.stack ? "\n" + outcome.stack : ""),
   );
+  assertBrowserDiagnostics(outcome.diagnostics);
   assert.ok(
     calls.some(
       (call) =>
@@ -581,10 +713,38 @@ try {
     !process.env.CANVAS_BROWSER_CHECKS &&
     !process.env.ADMIN_BROWSER_CHECKS &&
     !process.env.UI_BROWSER_CHECKS &&
+    !process.env.FOUNDATION_BROWSER_CHECKS &&
     !process.env.WORKSPACE_BROWSER_CHECKS &&
     !process.env.PERFORMANCE_BROWSER_CHECKS
   ) {
     assert.ok(calls.some((call) => call.path.endsWith("/refresh")));
+  }
+  if (process.env.FOUNDATION_BROWSER_CHECKS === "1") {
+    assert.ok(
+      calls.some(
+        (call) => call.path === "/api/v1/notifications/notice-current/read",
+      ),
+    );
+    assert.ok(
+      !calls.some(
+        (call) => call.path === "/api/v1/notifications/notice-old/read",
+      ),
+    );
+    assert.ok(
+      calls.some(
+        (call) =>
+          call.path.endsWith("/notifications/search") &&
+          JSON.parse(call.body).filters?.some(
+            (filter) =>
+              filter.field_name === "subject" && filter.value === "Inbox",
+          ),
+      ),
+    );
+    assert.ok(
+      !calls.some((call) =>
+        /\/(calendar|help-state|incidents)(\/|$)/.test(call.path),
+      ),
+    );
   }
   if (process.env.STUDIO_CATALOG_BROWSER_CHECKS === "1") {
     const seen = studioCatalogFixture.calls;
@@ -710,6 +870,8 @@ try {
       JSON.stringify(
         {
           engine: browserName(),
+          evidence: "fixture-only",
+          diagnostics: outcome.diagnostics,
           date: new Date().toISOString(),
           measurements: outcome.measurements,
           accessibility: outcome.accessibility,
@@ -736,11 +898,14 @@ try {
           : process.env.WORKSPACE_BROWSER_CHECKS === "1"
             ? browserName() +
               " workspace passed: eligible draft, exact canonical values, save-before-submit, tracking, claim, filtered save, completion and readonly policy."
-            : process.env.UI_BROWSER_CHECKS === "1"
+            : process.env.FOUNDATION_BROWSER_CHECKS === "1"
               ? browserName() +
-                " UI checks passed: shared typography, dark theme, Persian RTL, preserved values, modal semantics, confirmation focus, linked validation, responsive layout."
-              : browserName() +
-                " Angular journeys passed: invalid/valid login, reload, multi-page permissions, revocation, cross-tab logout, expiry, safe return, empty storage.",
+                " foundations passed: help actions, current-reference mark-read, returned support reference, Gregorian calendar views and Persian RTL."
+              : process.env.UI_BROWSER_CHECKS === "1"
+                ? browserName() +
+                  " UI checks passed: shared typography, dark theme, Persian RTL, preserved values, modal semantics, confirmation focus, linked validation, responsive layout."
+                : browserName() +
+                  " Angular journeys passed: invalid/valid login, reload, multi-page permissions, revocation, cross-tab logout, expiry, safe return, empty storage.",
   );
 } finally {
   clearTimeout(timer);

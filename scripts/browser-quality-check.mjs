@@ -10,6 +10,11 @@ for (const [scope, file, flags] of [
   ["auth", "server/browser-auth.spec.mjs", {}],
   ["ui", "server/browser-ui.spec.mjs", { ACCESSIBILITY_CHECKS: "1" }],
   [
+    "foundations",
+    "server/browser-foundations.spec.mjs",
+    { ACCESSIBILITY_CHECKS: "1" },
+  ],
+  [
     "workspace",
     "server/browser-auth.spec.mjs",
     { WORKSPACE_BROWSER_CHECKS: "1" },
@@ -56,6 +61,7 @@ for (const [scope, file, flags] of [
     "RECORD_BROWSER_CHECKS",
     "STUDIO_CATALOG_BROWSER_CHECKS",
     "UI_BROWSER_CHECKS",
+    "FOUNDATION_BROWSER_CHECKS",
     "WORKSPACE_BROWSER_CHECKS",
     "ADMIN_BROWSER_CHECKS",
     "PERFORMANCE_BROWSER_CHECKS",

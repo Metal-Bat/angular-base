@@ -102,12 +102,16 @@ f-flow {
   color: var(--console-accent);
 }
 .port-socket {
+  cursor: crosshair;
   top: 50%;
   transform: translateY(-50%);
-  --ff-connector-size: 12px;
+  --ff-connector-size: 16px;
   --ff-connector-background-color: var(--console-surface);
   --ff-connector-border-color: var(--console-accent);
   --ff-connector-connected-color: var(--console-accent);
+}
+.port-socket.f-connector-disabled {
+  cursor: default;
 }
 .input-socket {
   left: -12px;

@@ -471,23 +471,35 @@ test("does not dispatch a command whose body arrives after logout", async () => 
     },
   });
   const { cookie, data } = await login(handle);
-  const command = request(
-    "/api/v1/business-requests/search",
-    {},
-    { cookie, "x-csrf-token": data.csrfToken },
+  const command = new Request(
+    config.browserOrigin + "/api/v1/business-requests/search",
+    {
+      method: "POST",
+      headers: {
+        origin: config.browserOrigin,
+        cookie,
+        "x-csrf-token": data.csrfToken,
+      },
+      body: new ReadableStream({
+        pull(controller) {
+          entered();
+          return new Promise((resolve) => {
+            finish = () => {
+              controller.close();
+              resolve();
+            };
+          });
+        },
+      }),
+      duplex: "half",
+    },
   );
-  command.arrayBuffer = () => {
-    entered();
-    return new Promise((resolve) => {
-      finish = resolve;
-    });
-  };
   const work = handle(command);
   await waiting;
   await handle(
     request("/session/logout", {}, { cookie, "x-csrf-token": data.csrfToken }),
   );
-  finish(new ArrayBuffer(0));
+  finish();
   assert.equal((await work).status, 401);
   assert.equal(dispatches, 0);
 });
@@ -578,4 +590,192 @@ test("password reset failures retain a string code without upstream details", as
     error: "reset_failed",
     code: "RESET_EXPIRED",
   });
+});
+
+test("rejects excessive command bodies before any business effect is sent", async () => {
+  let businessCalls = 0;
+  const handle = createSessionBoundary(
+    { ...config, maxBodyBytes: 1024 },
+    {
+      fetcher: async (url) => {
+        if (url.pathname.endsWith("/login")) return tokens();
+        businessCalls++;
+        return new Response("{}");
+      },
+    },
+  );
+  const { cookie, data } = await login(handle);
+  const response = await handle(
+    request(
+      "/api/v1/requests/submit",
+      { payload: "x".repeat(1024) },
+      {
+        cookie,
+        "x-csrf-token": data.csrfToken,
+      },
+    ),
+  );
+  assert.equal(response.status, 413);
+  assert.equal((await response.json()).uncertain, false);
+  assert.equal(businessCalls, 0);
+});
+
+test("private streams surface body failure without replay or private error text", async () => {
+  let businessCalls = 0;
+  const handle = createSessionBoundary(config, {
+    fetcher: async (url) => {
+      if (url.pathname.endsWith("/login")) return tokens();
+      businessCalls++;
+      return new Response(
+        new ReadableStream({
+          pull(controller) {
+            controller.error(Error("private upstream details"));
+          },
+        }),
+      );
+    },
+  });
+  const { cookie, data } = await login(handle);
+  const response = await handle(
+    request(
+      "/api/v1/requests/submit",
+      { command_key: "exact-intent" },
+      {
+        cookie,
+        "x-csrf-token": data.csrfToken,
+      },
+    ),
+  );
+  await assert.rejects(response.text(), {
+    message: "Private transfer interrupted",
+  });
+  assert.equal(businessCalls, 1);
+});
+
+test("private response stream rejects excessive declared and actual sizes", async () => {
+  for (const declared of [true, false]) {
+    let cancelled = false;
+    const handle = createSessionBoundary(
+      { ...config, maxResponseBytes: 1024 },
+      {
+        fetcher: async (url) => {
+          if (url.pathname.endsWith("/login")) return tokens();
+          return new Response(
+            new ReadableStream({
+              pull(controller) {
+                controller.enqueue(new Uint8Array(1025));
+              },
+              cancel() {
+                cancelled = true;
+              },
+            }),
+            { headers: declared ? { "content-length": "1025" } : {} },
+          );
+        },
+      },
+    );
+    const { cookie } = await login(handle);
+    const response = await handle(
+      request("/api/v1/reports/file/download", undefined, { cookie }),
+    );
+    if (declared) assert.equal(response.status, 502);
+    else
+      await assert.rejects(response.arrayBuffer(), {
+        message: "Private transfer interrupted",
+      });
+    assert.equal(cancelled, true);
+  }
+});
+
+test("logout fences bytes from an already opened private download", async () => {
+  const handle = createSessionBoundary(config, {
+    fetcher: async (url) => {
+      if (url.pathname.endsWith("/login")) return tokens();
+      if (url.pathname.endsWith("/logout")) return new Response("{}");
+      return new Response(
+        new ReadableStream({
+          pull(controller) {
+            controller.enqueue(new Uint8Array([1]));
+          },
+        }),
+      );
+    },
+  });
+  const { cookie, data } = await login(handle);
+  const response = await handle(
+    request("/api/v1/reports/file/download", undefined, { cookie }),
+  );
+  const reader = response.body.getReader();
+  assert.deepEqual((await reader.read()).value, new Uint8Array([1]));
+  await handle(
+    request("/session/logout", {}, { cookie, "x-csrf-token": data.csrfToken }),
+  );
+  await assert.rejects(reader.read(), {
+    message: "Private transfer interrupted",
+  });
+});
+
+test("cancels a blocked private body read when its owner aborts", async () => {
+  const { readBoundedBody } = await import("./private-transfer.mjs");
+  let cancelled = false;
+  const controller = new AbortController();
+  const incoming = new Request(config.browserOrigin, {
+    method: "POST",
+    duplex: "half",
+    body: new ReadableStream({
+      cancel() {
+        cancelled = true;
+      },
+    }),
+  });
+  const work = readBoundedBody(incoming, 1024, controller.signal);
+  controller.abort();
+  await assert.rejects(work, { message: "Private transfer interrupted" });
+  assert.equal(cancelled, true);
+});
+
+test("bounds concurrent proxy work and does not send commands rejected at capacity", async () => {
+  let enter;
+  const started = new Promise((resolve) => {
+    enter = resolve;
+  });
+  let finish;
+  let calls = 0;
+  const handle = createSessionBoundary(
+    { ...config, maxInFlightRequests: 1 },
+    {
+      fetcher: async (url) => {
+        if (url.pathname.endsWith("/login")) return tokens();
+        calls++;
+        enter();
+        return new Promise((resolve) => {
+          finish = () => resolve(new Response("{}"));
+        });
+      },
+    },
+  );
+  const { cookie, data } = await login(handle);
+  const headers = { cookie, "x-csrf-token": data.csrfToken };
+  const first = handle(
+    request("/api/v1/requests/submit", { command_key: "first" }, headers),
+  );
+  await started;
+  const second = await handle(
+    request("/api/v1/requests/submit", { command_key: "second" }, headers),
+  );
+  assert.equal(second.status, 503);
+  assert.deepEqual(await second.json(), {
+    error: "proxy_capacity_reached",
+    uncertain: false,
+  });
+  assert.equal(calls, 1);
+  finish();
+  assert.equal((await first).status, 200);
+  const next = handle(
+    request("/api/v1/requests/submit", { command_key: "third" }, headers),
+  );
+  await new Promise((resolve) => setImmediate(resolve));
+  finish();
+  assert.equal((await next).status, 200);
+  assert.equal(calls, 2);
 });

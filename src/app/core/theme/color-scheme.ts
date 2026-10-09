@@ -1,5 +1,12 @@
 import { DOCUMENT } from '@angular/common';
-import { computed, inject, Injectable, signal } from '@angular/core';
+import {
+  computed,
+  DestroyRef,
+  inject,
+  Injectable,
+  signal,
+} from '@angular/core';
+import { ActorState } from '../auth/actor-state';
 export const themePalettes = [
   { key: 'blue', name: 'Blue' },
   { key: 'indigo', name: 'Indigo' },
@@ -18,9 +25,47 @@ export class ColorScheme {
   readonly dark = signal(
     this.document.documentElement.classList.contains('app-dark'),
   );
+  readonly mode = signal<'light' | 'dark' | 'system'>(
+    this.dark() ? 'dark' : 'light',
+  );
+  private readonly media = this.document.defaultView?.matchMedia?.(
+    '(prefers-color-scheme: dark)',
+  );
+  readonly systemAvailable = !!this.media;
   readonly selected = computed(
     () => `${this.palette()}-${this.dark() ? 'dark' : 'light'}`,
   );
+  constructor() {
+    const release = inject(ActorState).register(() => this.reset());
+    const changed = (): void => {
+      if (this.mode() === 'system') {
+        this.dark.set(this.media?.matches ?? false);
+        this.apply();
+      }
+    };
+    this.media?.addEventListener('change', changed);
+    inject(DestroyRef).onDestroy(() => {
+      release();
+      this.media?.removeEventListener('change', changed);
+    });
+  }
+  reset(): void {
+    this.palette.set('blue');
+    this.setMode('light');
+  }
+  setMode(mode: 'light' | 'dark' | 'system'): void {
+    if (
+      !['light', 'dark', 'system'].includes(mode) ||
+      (mode === 'system' && !this.systemAvailable)
+    ) {
+      return;
+    }
+    this.mode.set(mode);
+    this.dark.set(
+      mode === 'system' ? (this.media?.matches ?? false) : mode === 'dark',
+    );
+    this.apply();
+  }
   select(value: string): void {
     const option = this.palettes.find(
       (p) => value === `${p.key}-light` || value === `${p.key}-dark`,
@@ -30,10 +75,12 @@ export class ColorScheme {
     }
     this.palette.set(option.key);
     this.dark.set(value.endsWith('-dark'));
+    this.mode.set(this.dark() ? 'dark' : 'light');
     this.apply();
   }
   toggle(): void {
     this.dark.update((value) => !value);
+    this.mode.set(this.dark() ? 'dark' : 'light');
     this.apply();
   }
   private apply(): void {

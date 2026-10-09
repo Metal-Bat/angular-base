@@ -4,6 +4,51 @@ import { RecordField } from '../../domain/records';
 import { SchemaInput } from '../../../administration/presentation/schema-input/schema-input';
 
 describe('Consecutive structured form edits', () => {
+  it('shows a picked label while retaining the opaque key and unrelated restrictions', async () => {
+    const fixture = TestBed.createComponent(RecordFields);
+    fixture.componentRef.setInput('fields', [
+      {
+        key: 'spec',
+        label: 'Settings',
+        type: 'json',
+        required: true,
+        nullable: false,
+        schema: {
+          type: 'object',
+          properties: {
+            user_ref_id: { type: 'string' },
+            limit: { type: 'integer' },
+          },
+        },
+      },
+    ]);
+    fixture.componentRef.setInput('values', {
+      spec: '{"limit":0,"hidden_restriction":false}',
+    });
+    fixture.detectChanges();
+    fixture.componentInstance.pick(
+      'spec.user_ref_id',
+      'opaque-current-key',
+      'Sara',
+    );
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const input = fixture.nativeElement.querySelector(
+      '#record-spec-user_ref_id',
+    ) as HTMLInputElement;
+    expect(input.value).toBe('Sara');
+    expect(input.readOnly).toBe(true);
+    expect(
+      JSON.parse(String(fixture.componentInstance.draft()['spec'])),
+    ).toEqual({
+      limit: 0,
+      hidden_restriction: false,
+      user_ref_id: 'opaque-current-key',
+    });
+    expect(fixture.nativeElement.textContent).not.toContain(
+      'opaque-current-key',
+    );
+  });
   it('marks only the affected control and connects its inline error', () => {
     const fixture = TestBed.createComponent(RecordFields);
     fixture.componentRef.setInput('fields', [

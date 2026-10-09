@@ -60,6 +60,10 @@
     }
   }
 </div>
+<app-record-collections
+  [collections]="isHistory() ? [] : collections()"
+  [format]="formatValue"
+/>
 @if (isHistory()) {
   <section
     class="change-comparison"

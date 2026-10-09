@@ -121,11 +121,12 @@
           [attr.aria-invalid]="errors()[path()] ? 'true' : null"
           [disabled]="disabled()"
           [id]="controlId()"
-          [ngModel]="text()"
+          [ngModel]="canPick() ? (referenceText() | localize) : text()"
           [ngModelOptions]="{ standalone: true }"
           [placeholder]="
             shape()['format'] === 'date-time' ? 'YYYY-MM-DDTHH:mm:ssZ' : ''
           "
+          [readOnly]="canPick()"
           [required]="required()"
           [type]="
             secret()
@@ -150,6 +151,21 @@
           >
             <i aria-hidden="true" class="pi pi-search"></i>
           </button>
+          @if (draft()) {
+            <button
+              pButton
+              severity="secondary"
+              type="button"
+              [attr.aria-label]="
+                ('Clear' | localize) + ' ' + (title() | localize)
+              "
+              [disabled]="disabled()"
+              [text]="true"
+              (click)="set(undefined)"
+            >
+              <i aria-hidden="true" class="pi pi-times"></i>
+            </button>
+          }
         }
       </div>
     }

@@ -1,5 +1,12 @@
 import { DOCUMENT } from '@angular/common';
-import { computed, inject, Injectable, signal } from '@angular/core';
+import {
+  computed,
+  DestroyRef,
+  inject,
+  Injectable,
+  signal,
+} from '@angular/core';
+import { ActorState } from '../auth/actor-state';
 import { RUNTIME_CONFIG } from '../configuration/runtime-config';
 import {
   isSupportedLocale,
@@ -19,6 +26,7 @@ const catalogLoaders: Record<
 @Injectable({ providedIn: 'root' })
 export class Locale {
   readonly languages = supportedLanguages;
+  private readonly defaultLanguage = inject(RUNTIME_CONFIG).locale;
   private readonly document = inject(DOCUMENT);
   readonly language = signal<SupportedLocale>(inject(RUNTIME_CONFIG).locale);
   // The released renderer DTOs currently accept en/fa, independently of UI languages.
@@ -26,11 +34,29 @@ export class Locale {
     this.language() === 'fa' ? 'fa' : 'en',
   );
   private catalog: Readonly<Record<string, string>> = {};
+  private readonly catalogs = new Map<
+    SupportedLocale,
+    Readonly<Record<string, string>>
+  >();
   private generation = 0;
   readonly changing = signal(false);
   constructor() {
     this.document.documentElement.lang = this.language();
     this.document.documentElement.dir = languageDirection(this.language());
+    const release = inject(ActorState).register(() => {
+      this.generation++;
+      this.catalog = this.catalogs.get(this.defaultLanguage) ?? {};
+      this.language.set(this.defaultLanguage);
+      this.changing.set(false);
+      this.document.documentElement.lang = this.defaultLanguage;
+      this.document.documentElement.dir = languageDirection(
+        this.defaultLanguage,
+      );
+    });
+    inject(DestroyRef).onDestroy(() => {
+      this.generation++;
+      release();
+    });
   }
   initialize(): Promise<void> {
     return this.set(this.language());
@@ -43,6 +69,7 @@ export class Locale {
     this.changing.set(true);
     try {
       const catalog = await catalogLoaders[language]();
+      this.catalogs.set(language, catalog);
       if (generation !== this.generation) {
         return;
       }

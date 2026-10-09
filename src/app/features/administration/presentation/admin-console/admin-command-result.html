@@ -2,7 +2,16 @@
 @if (vm.result(); as response) {
   <section aria-label="Result">
     <h2>{{ "Result" | localize }}</h2>
-    <pre dir="ltr">{{ vm.json(response.value, null, 2) }}</pre>
+    @if (record(); as row) {
+      <app-record-summary title="Result" [record]="row" />
+    }
+    @for (row of vm.rows(); track $index) {
+      <app-record-summary title="Result" [record]="row" />
+    }
+    <details>
+      <summary>{{ "Advanced diagnostics" | localize }}</summary>
+      <pre dir="ltr">{{ vm.json(response.value, null, 2) }}</pre>
+    </details>
     @if (response.requestId) {
       <p>{{ "Request ID" | localize }}: {{ response.requestId }}</p>
     }

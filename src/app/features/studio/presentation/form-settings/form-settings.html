@@ -1,0 +1,131 @@
+@if (error()) {
+  <p role="alert">{{ error() | localize }}</p>
+}
+<h2>{{ "Translations" | localize }}</h2>
+@if (messages().length) {
+  <table>
+    <thead>
+      <tr>
+        <th scope="col">{{ "Message key" | localize }}</th>
+        <th scope="col">English</th>
+        <th scope="col">فارسی</th>
+        <th scope="col">{{ "Action" | localize }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (message of messages(); track message.key) {
+        <tr>
+          <td>
+            <bdi>{{ message.key }}</bdi>
+          </td>
+          <td>{{ message.en }}</td>
+          <td dir="rtl" lang="fa">{{ message.fa }}</td>
+          <td>
+            <button
+              pButton
+              type="button"
+              [disabled]="disabled()"
+              (click)="editMessage(message.key)"
+            >
+              {{ "Edit" | localize }}
+            </button>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+} @else {
+  <p>{{ "No translations" | localize }}</p>
+}
+
+<label for="message-key">{{ "Message key" | localize }}</label
+><input
+  id="message-key"
+  maxlength="128"
+  pInputText
+  [disabled]="disabled()"
+  [(ngModel)]="key"
+  (ngModelChange)="changed.emit()"
+/>
+<label for="message-en">English</label
+><textarea
+  dir="ltr"
+  id="message-en"
+  lang="en"
+  maxlength="2048"
+  [disabled]="disabled()"
+  [(ngModel)]="en"
+  (ngModelChange)="changed.emit()"
+></textarea>
+<label for="message-fa">فارسی</label
+><textarea
+  dir="rtl"
+  id="message-fa"
+  lang="fa"
+  maxlength="2048"
+  [disabled]="disabled()"
+  [(ngModel)]="fa"
+  (ngModelChange)="changed.emit()"
+></textarea>
+<button
+  pButton
+  type="button"
+  [disabled]="disabled() || busy()"
+  (click)="applyTranslation()"
+>
+  {{ "Apply translation" | localize }}
+</button>
+@if (pageAuthoring()) {
+  <h2>{{ "Pages" | localize }}</h2>
+  <ul>
+    @for (page of pages(); track page["key"]) {
+      <li>
+        <bdi>{{ page["key"] }}</bdi> · {{ page["title"] }}
+      </li>
+    }
+  </ul>
+  <label for="page-key">{{ "Page key" | localize }}</label
+  ><input
+    id="page-key"
+    maxlength="64"
+    pInputText
+    [disabled]="disabled()"
+    [(ngModel)]="pageKey"
+    (ngModelChange)="changed.emit()"
+  />
+  <label for="page-title">{{ "Page title" | localize }}</label
+  ><input
+    id="page-title"
+    maxlength="255"
+    pInputText
+    [disabled]="disabled()"
+    [(ngModel)]="pageTitle"
+    (ngModelChange)="changed.emit()"
+  />
+  <fieldset>
+    <legend>{{ "Page fields" | localize }}</legend>
+    @for (field of fields(); track field.scope) {
+      <label
+        ><input
+          type="checkbox"
+          [disabled]="disabled()"
+          [ngModel]="selectedScopes.includes(field.scope!)"
+          (ngModelChange)="toggle(field.scope!, $event)"
+        />{{ field.label }}</label
+      >
+    }
+  </fieldset>
+  <button pButton type="button" [disabled]="disabled()" (click)="addPage()">
+    {{ "Add page" | localize }}
+  </button>
+}
+<h2>{{ "Synthetic sample values" | localize }}</h2>
+<p>
+  {{ "Simulated values do not upload files or execute workflows." | localize }}
+</p>
+<app-schema-input
+  controlId="synthetic-values"
+  [schema]="schema()"
+  [value]="synthetic()"
+  (valueChange)="setSample($event)"
+/>

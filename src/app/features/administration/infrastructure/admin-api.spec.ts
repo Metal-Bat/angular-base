@@ -36,9 +36,26 @@ describe('Actual administration contracts', () => {
       path: { task_id: 'opaque/id', ref_id: 'wrong' },
       query: {},
     });
-    expect(call).toHaveBeenCalledWith(command.id, {
-      path: { task_id: 'opaque/id' },
-    });
+    expect(call).toHaveBeenCalledWith(
+      command.id,
+      { path: { task_id: 'opaque/id' } },
+      undefined,
+    );
+  });
+  it('forwards selector cancellation to the authenticated transport', async () => {
+    const api = TestBed.inject(AdminApi);
+    const command = api
+      .commands('users')
+      .find((item) => item.path.endsWith('/select'))!;
+    const abort = new AbortController();
+    await api.send(
+      command,
+      { body: { page: 2, size: 20 }, path: {}, query: {} },
+      abort.signal,
+    );
+    expect(call.mock.calls[0][2]).toBe(abort.signal);
+    abort.abort();
+    expect((call.mock.calls[0][2] as AbortSignal).aborted).toBe(true);
   });
   it('keeps role assignment, connection selection and process recovery permissions distinct', () => {
     const api = TestBed.inject(AdminApi);

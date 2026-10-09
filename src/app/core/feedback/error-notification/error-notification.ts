@@ -1,3 +1,4 @@
+import { RouterLink } from '@angular/router';
 import { Clipboard } from '@angular/cdk/clipboard';
 import {
   afterRenderEffect,
@@ -15,7 +16,7 @@ import { ErrorNotice, RequestErrors } from '../request-errors';
 
 @Component({
   selector: 'app-error-notification',
-  imports: [ToastModule, ButtonModule, LocalizePipe],
+  imports: [RouterLink, ToastModule, ButtonModule, LocalizePipe],
   providers: [MessageService],
   templateUrl: './error-notification.html',
   styleUrl: './error-notification.scss',
@@ -29,12 +30,14 @@ export class ErrorNotification {
   readonly copying = signal(false);
   readonly copyStatus = signal('');
   readonly copied = signal(false);
+  readonly copiedTarget = signal<'code' | 'reference' | null>(null);
 
   constructor() {
     afterRenderEffect(() => {
       const notice = this.errors.notice();
       this.copyStatus.set('');
       this.copied.set(false);
+      this.copiedTarget.set(null);
       this.copying.set(false);
       this.messages.clear('request-error');
       if (notice) {
@@ -50,7 +53,11 @@ export class ErrorNotification {
     });
   }
 
-  async copy(notice: ErrorNotice): Promise<void> {
+  async copy(notice: ErrorNotice, reference = false): Promise<void> {
+    const value = reference ? notice.requestReference : notice.code;
+    if (!value) {
+      return;
+    }
     if (this.copying()) {
       return;
     }
@@ -58,7 +65,7 @@ export class ErrorNotification {
     let success = false;
     try {
       if (typeof globalThis.navigator?.clipboard?.writeText === 'function') {
-        await navigator.clipboard.writeText(notice.code);
+        await navigator.clipboard.writeText(value);
         success = true;
       }
     } catch {
@@ -66,7 +73,7 @@ export class ErrorNotification {
     }
     if (!success) {
       try {
-        success = this.clipboard.copy(notice.code);
+        success = this.clipboard.copy(value);
       } catch {
         /* Show failure below. */
       }
@@ -74,6 +81,9 @@ export class ErrorNotification {
     if (this.errors.notice()?.id === notice.id) {
       this.copying.set(false);
       this.copied.set(success);
+      this.copiedTarget.set(
+        success ? (reference ? 'reference' : 'code') : null,
+      );
       this.copyStatus.set(
         success
           ? 'Copied to clipboard'

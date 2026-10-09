@@ -1,6 +1,17 @@
 @let vm = view();
 @if (vm.diagnostics()) {
-  <section aria-label="Diagnostics">
+  <section [attr.aria-label]="'Diagnostics' | localize">
+    @if (message()) {
+      <p role="status">{{ message() | localize }}</p>
+    }
+    <app-readiness-panel
+      caption="Graph validation"
+      note="Graph validation does not check installation, provider or worker readiness."
+      [canRecheck]="!vm.busy()"
+      [checks]="checks()"
+      [stale]="vm.dirty()"
+      (recheck)="vm.validate()"
+    />
     <ul>
       @for (issue of vm.issues(); track $index) {
         <li>
@@ -20,6 +31,8 @@
         </li>
       }
     </ul>
-    <pre>{{ vm.diagnostics() }}</pre>
+    <a routerLink="/help" [queryParams]="{ topic: 'studio.publish' }">{{
+      "Help" | localize
+    }}</a>
   </section>
 }

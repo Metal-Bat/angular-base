@@ -1,3 +1,7 @@
+import {
+  browserDiagnosticsScript,
+  assertBrowserDiagnostics,
+} from "./browser-diagnostics.mjs";
 import assert from "node:assert/strict";
 import { createServer } from "node:http";
 import { readFile, mkdtemp, rm } from "node:fs/promises";
@@ -57,7 +61,7 @@ const script = `
   await click('Approve'); await confirm(); await wait(()=>document.querySelector('app-case-detail')?.textContent.includes('COMPLETED'),'Completed task');
   check(!document.getElementById(field('/private_note')),'Hidden field disclosed after completion');
   check(localStorage.length===0 && sessionStorage.length===0,'Private state persisted in browser storage');
-  await fetch('/__result',{method:'POST',body:JSON.stringify({ok:true})});
+  await fetch('/__result',{method:'POST',body:JSON.stringify({ok:true,diagnostics:window.fixtureDiagnostics})});
  } catch(error) { await fetch('/__result',{method:'POST',body:JSON.stringify({ok:false,error:error.message+"; "+[...document.querySelectorAll("app-case-detail [role=alert]")].map(el=>el.textContent).join("; ")})}); }
 })();`;
 const server = createServer(async (req, res) => {
@@ -112,7 +116,14 @@ const server = createServer(async (req, res) => {
       return;
     }
     res.setHeader("content-type", "text/html");
-    res.end(index.replace("</body>", "<script>" + script + "</script></body>"));
+    res.end(
+      index
+        .replace(
+          "<head>",
+          "<head><script>" + browserDiagnosticsScript + "</script>",
+        )
+        .replace("</body>", "<script>" + script + "</script></body>"),
+    );
   } catch {
     res.writeHead(500);
     res.end("Browser test service failed");
@@ -154,11 +165,31 @@ try {
       );
     }),
   ]);
+  assertBrowserDiagnostics(outcome.diagnostics);
   assert.equal(
     outcome.ok,
     true,
     outcome.error + "\n" + JSON.stringify(calls.slice(-10)),
   );
+  if (process.env.BROWSER_REPORT_PATH) {
+    const { mkdir, writeFile } = await import("node:fs/promises");
+    const { dirname } = await import("node:path");
+    await mkdir(dirname(process.env.BROWSER_REPORT_PATH), { recursive: true });
+    await writeFile(
+      process.env.BROWSER_REPORT_PATH,
+      JSON.stringify(
+        {
+          engine: "Firefox",
+          evidence: "real-http",
+          diagnostics: outcome.diagnostics,
+          requests: calls.length,
+          status: "passed",
+        },
+        null,
+        2,
+      ) + "\n",
+    );
+  }
   console.log(
     "Firefox real backend passed: ordinary requester/reviewer, exact decimal, stable row duplication, private policy, save, submit, timeline, claim and completion.",
   );

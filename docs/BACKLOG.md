@@ -2,6 +2,8 @@
 
 Prepared October 2, 2026 for this Angular repository. This backlog turns the supplied backend review and OpenAPI snapshot into implementation work for a PrimeNG operational workspace, authoring studio, and administration area. Deliver the ordinary requester and reviewer journey before expanding the editors and administration tools.
 
+New application delivery deltas and APP-FE status are maintained in the [delivery supplement](delivery/FRONTEND-BACKLOG.md). Existing ticket IDs and completion history remain authoritative for their original scope.
+
 ## Evidence and current baseline
 
 - [Readiness review](reference/frontend-readiness-review.md): source review of backend commit `8921841a866c190d794f41af7a41389400fea26b`. Its original findings are preserved as supplied evidence. Steps 6–8 now have separately tested local backend corrections; see the platform contract.

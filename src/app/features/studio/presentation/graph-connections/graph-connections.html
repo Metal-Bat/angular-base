@@ -1,0 +1,179 @@
+<section [attr.aria-label]="'Typed connections' | localize">
+  <h3>{{ "Typed connections" | localize }}</h3>
+  <p>{{ "Server validation is required before promotion." | localize }}</p>
+  <label for="mapping-target">{{ "Target port" | localize }}</label>
+  <app-select-control
+    inputId="mapping-target"
+    [disabled]="disabled()"
+    [ngModel]="target()"
+    (ngModelChange)="target.set($event); constant.set(undefined)"
+  >
+    <option value="">{{ "Choose" | localize }}</option>
+    @for (port of targets(); track port.key) {
+      <option [value]="port.key">
+        {{ port.key }} · {{ port.schema["type"] }}
+      </option>
+    }
+  </app-select-control>
+  <details>
+    <summary>{{ "Authorized data sources" | localize }}</summary>
+    <app-studio-choice
+      controlId="mapping-request"
+      kind="request_types"
+      [disabled]="disabled()"
+      [value]="request()"
+      (picked)="setRequest($event)"
+    />
+    <button
+      pButton
+      type="button"
+      [disabled]="disabled() || busy() || !request()"
+      (click)="load()"
+    >
+      {{ "Binding suggestions" | localize }}
+    </button>
+    <button
+      pButton
+      type="button"
+      [disabled]="disabled() || busy() || page() <= 1"
+      (click)="load(page() - 1)"
+    >
+      {{ "Previous" | localize }}
+    </button>
+    <button
+      pButton
+      type="button"
+      [disabled]="disabled() || busy() || page() >= pages()"
+      (click)="load(page() + 1)"
+    >
+      {{ "Next" | localize }}
+    </button>
+  </details>
+  <label for="mapping-source">{{ "Source port" | localize }}</label>
+  <app-select-control
+    inputId="mapping-source"
+    [disabled]="disabled()"
+    [ngModel]="source()"
+    (ngModelChange)="source.set($event)"
+  >
+    <option value="">{{ "Constant value" | localize }}</option>
+    @for (item of sources(); track item.key) {
+      <option [value]="item.key">
+        {{ item.label }} · {{ item.schema["type"] }}
+      </option>
+    }
+  </app-select-control>
+  @if (!source() && target()) {
+    <app-schema-input
+      controlId="mapping-constant"
+      label="Constant value"
+      [disabled]="disabled()"
+      [schema]="targetSchema()"
+      [value]="constant()"
+      (valueChange)="constant.set($event)"
+    />
+  }
+  <button
+    pButton
+    type="button"
+    [disabled]="disabled() || !target()"
+    (click)="map()"
+  >
+    {{ "Add data mapping" | localize }}
+  </button>
+  <ul>
+    @for (binding of bindings(); track binding.id) {
+      <li>
+        {{ binding.edge["target_port"] }} ←
+        {{ $any(binding.edge["source_kind"]) | localize }}
+        {{ binding.edge["source_path"] || binding.edge["source_port"] }}
+        <button
+          pButton
+          type="button"
+          [disabled]="disabled()"
+          (click)="removeMapping(binding.id)"
+        >
+          {{ "Remove data mapping" | localize }}
+        </button>
+      </li>
+    }
+  </ul>
+  <h3>{{ "Control transitions" | localize }}</h3>
+  <p>
+    {{
+      "Higher priorities are evaluated first; default is the final else."
+        | localize
+    }}
+  </p>
+  @for (item of transitions(); track item.index) {
+    <fieldset>
+      <legend>
+        <bdi>{{ item.edge["outcome"] }}</bdi> →
+        <bdi>{{ item.edge["target"] }}</bdi>
+      </legend>
+      <label [for]="'transition-priority-' + item.index">{{
+        "Priority" | localize
+      }}</label>
+      <input
+        pInputText
+        type="number"
+        [disabled]="disabled()"
+        [id]="'transition-priority-' + item.index"
+        [ngModel]="item.edge['priority'] || 0"
+        (ngModelChange)="transition(item.index, 'priority', $event)"
+      />
+      <label [for]="'transition-default-' + item.index">{{
+        "Default transition" | localize
+      }}</label>
+      <input
+        type="checkbox"
+        [disabled]="disabled()"
+        [id]="'transition-default-' + item.index"
+        [ngModel]="item.edge['is_default'] || false"
+        (ngModelChange)="transition(item.index, 'is_default', $event)"
+      />
+      <label [for]="'transition-condition-' + item.index">{{
+        "Condition" | localize
+      }}</label>
+      <input
+        pInputText
+        [disabled]="disabled()"
+        [id]="'transition-condition-' + item.index"
+        [ngModel]="item.edge['condition'] || ''"
+        (ngModelChange)="transition(item.index, 'condition', $event || null)"
+      />
+    </fieldset>
+  }
+  @if (human()) {
+    @if (missingRoutes().length) {
+      <p role="status">
+        {{ "Missing action transitions" | localize }}:
+        {{ missingRoutes().join(", ") }}
+      </p>
+    }
+    @if (!candidates().length) {
+      <p role="status">
+        {{ "No candidate targets are configured." | localize }}
+      </p>
+    }
+    <h3>{{ "Eligible candidates" | localize }}</h3>
+    <p>{{ "User" | localize }}</p>
+    <app-studio-choice
+      controlId="candidate-user"
+      kind="users"
+      [disabled]="disabled()"
+      (picked)="candidate('user_ref', $event)"
+    />
+    <p>{{ "Work group" | localize }}</p>
+    <app-studio-choice
+      controlId="candidate-group"
+      kind="work_groups"
+      [disabled]="disabled()"
+      (picked)="candidate('work_group_ref', $event)"
+    />
+    <p>{{ "Candidate count" | localize }}: {{ candidates().length }}</p>
+  }
+  @if (error()) {
+    <p role="alert">{{ error() | localize }}</p>
+  }
+</section>

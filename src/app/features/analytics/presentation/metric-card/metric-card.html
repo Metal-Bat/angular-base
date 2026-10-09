@@ -1,0 +1,96 @@
+<section class="my-4 rounded-lg border border-console-border p-4">
+  <h2>{{ title() | localize }}</h2>
+  <p>
+    <time [attr.datetime]="start()">{{ start() }}</time> –
+    <time [attr.datetime]="end()">{{ end() }}</time>
+    {{ "End date is exclusive" | localize }}
+  </p>
+  @if (state() === "loading") {
+    <p role="status">{{ "Loading…" | localize }}</p>
+  } @else if (!available()) {
+    <p role="alert">{{ "Metrics are unavailable." | localize }}</p>
+  } @else {
+    @let metric = result()!;
+    <p>
+      {{ "As of" | localize }}:
+      <time [attr.datetime]="metric.as_of">{{ metric.as_of }}</time> ·
+      <bdi>{{ metric.timezone }}</bdi>
+    </p>
+    @if (stale()) {
+      <p role="status">
+        {{
+          "Results may be out of date. Recheck before continuing." | localize
+        }}
+      </p>
+    }
+    @if (metric.availability === "unavailable") {
+      <p role="status">{{ "Metrics are unavailable." | localize }}</p>
+    } @else {
+      <p>
+        {{ "Total" | localize }}:
+        <bdi>{{
+          metric.total_value === null
+            ? ("Unknown" | localize)
+            : metric.total_value
+        }}</bdi>
+        {{ metric.unit | localize }}
+      </p>
+      <p>
+        {{ "Unknown values" | localize }}:
+        <bdi>{{
+          metric.unknown_count === null
+            ? ("Unknown" | localize)
+            : metric.unknown_count
+        }}</bdi>
+      </p>
+      <div aria-hidden="true" class="grid gap-1 my-3">
+        @for (row of rows(); track row.series + ":" + row.date) {
+          <div class="flex gap-2 items-center">
+            <span>{{ row.date }}</span
+            ><span
+              class="h-3 bg-primary rounded"
+              [style.width.%]="width(row.value)"
+            ></span>
+          </div>
+        }
+      </div>
+      <p-table [value]="rows()">
+        <ng-template #header
+          ><tr>
+            <th scope="col">{{ "Series" | localize }}</th>
+            <th scope="col">{{ "Date" | localize }}</th>
+            <th scope="col">{{ "Value" | localize }}</th>
+            <th scope="col">{{ "Sample count" | localize }}</th>
+            <th scope="col">{{ "Unknown values" | localize }}</th>
+          </tr></ng-template
+        >
+        <ng-template #body let-row
+          ><tr>
+            <td>
+              <bdi>{{ row.series }}</bdi>
+            </td>
+            <td>{{ row.date }}</td>
+            <td>
+              <bdi>{{
+                row.value === null ? ("Unknown" | localize) : row.value
+              }}</bdi>
+              {{ metric.unit | localize }}
+            </td>
+            <td>{{ row.sample_count }}</td>
+            <td>{{ row.unknown_count }}</td>
+          </tr></ng-template
+        >
+        <ng-template #emptymessage
+          ><tr>
+            <td colspan="5">{{ "No metric buckets" | localize }}</td>
+          </tr></ng-template
+        >
+      </p-table>
+      @if (canDrillDown() && metric.drilldown) {
+        <button pButton type="button" (click)="open()">
+          {{ "Open matching records" | localize }}
+        </button>
+      }
+    }
+  }
+</section>

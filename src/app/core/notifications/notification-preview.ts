@@ -1,4 +1,4 @@
-import { inject, Injectable, signal } from '@angular/core';
+import { DestroyRef, inject, Injectable, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { ActorState } from '../auth/actor-state';
 import { ApiClient } from '../transport/api-client';
@@ -13,25 +13,45 @@ export class NotificationPreview {
   readonly items = signal<readonly { ref: string; subject: string }[]>([]);
   readonly page = signal(1);
   readonly totalPages = signal(0);
+  readonly unreadCount = signal<number | null>(null);
+  private abort = new AbortController();
   constructor() {
-    this.actor.register((): void => {
+    const release = this.actor.register((): void => {
+      this.abort.abort();
+      this.unreadCount.set(null);
       this.generation++;
       this.status.set('idle');
       this.items.set([]);
       this.page.set(1);
       this.totalPages.set(0);
     });
+    inject(DestroyRef).onDestroy(() => {
+      this.abort.abort();
+      release();
+    });
   }
   async load(index = 1): Promise<void> {
+    this.abort.abort();
+    this.abort = new AbortController();
     const epoch = this.actor.epoch;
     const generation = ++this.generation;
     this.status.set('loading');
     this.items.set([]);
     try {
       const response = await firstValueFrom(
-        this.api.call('search_notifications_api_v1_notifications_search_post', {
-          body: { page: index, size: 20 },
-        }),
+        this.api.call(
+          'search_notifications_api_v1_notifications_search_post',
+          {
+            body: {
+              page: index,
+              size: 20,
+              filters: [
+                { field_name: 'read_at', operation: 'isNull', value: null },
+              ],
+            },
+          },
+          this.abort.signal,
+        ),
       );
       const page = readResultPage(
         response,
@@ -49,12 +69,14 @@ export class NotificationPreview {
       if (this.actor.epoch !== epoch || generation !== this.generation) {
         return;
       }
+      this.unreadCount.set(page.total);
       this.page.set(page.page);
       this.totalPages.set(page.totalPages);
       this.items.set(page.items);
       this.status.set('ready');
     } catch {
       if (this.actor.epoch === epoch && generation === this.generation) {
+        this.unreadCount.set(null);
         this.status.set('error');
       }
     }

@@ -1,10 +1,12 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import type { WorkflowCanvas } from './workflow-canvas';
+import { FormsModule } from '@angular/forms';
+import { SelectControl } from '../../../../shared/ui/select-control/select-control';
 import { LocalizePipe } from '../../../../shared/ui/localize-pipe';
 
 @Component({
   selector: 'app-canvas-toolbar',
-  imports: [LocalizePipe],
+  imports: [LocalizePipe, SelectControl, FormsModule],
   templateUrl: './canvas-toolbar.html',
   styleUrl: './canvas-toolbar.scss',
   host: { style: 'display: contents' },
@@ -24,6 +26,8 @@ export class CanvasToolbar {
         | 'viewport'
         | 'zoom'
         | 'zoomPercent'
+        | 'find'
+        | 'rendered'
       >
     >();
 }

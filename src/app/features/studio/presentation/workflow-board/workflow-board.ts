@@ -1,3 +1,5 @@
+import { PublicationReview } from '../publication-review/publication-review';
+import { WorkflowEditorPane } from '../workflow-editor-pane/workflow-editor-pane';
 import { WorkflowDiagnostics } from './workflow-diagnostics';
 import { SelectControl } from '../../../../shared/ui/select-control/select-control';
 import { ButtonDirective } from 'primeng/button';
@@ -16,16 +18,19 @@ import { JsonObject, JsonValue } from '../../../forms/domain/runtime-document';
 import { parseDocument, Point, Workspace } from '../../domain/authoring';
 import {
   canvasEdges,
-  CanvasNode,
   connectWorkspace,
   graphSteps,
 } from '../../domain/workflow-authoring';
-import { WorkflowBoardState } from './workflow-board-state';
+
+import { nodeModels } from '../../domain/node-models';
+import { WorkflowInteractions } from './workflow-interactions';
 @Component({
   host: { class: 'console-page' },
   selector: 'app-workflow-board',
   imports: [
+    PublicationReview,
     WorkflowDiagnostics,
+    WorkflowEditorPane,
     SelectControl,
     ButtonDirective,
     FormsModule,
@@ -37,7 +42,12 @@ import { WorkflowBoardState } from './workflow-board-state';
   styleUrl: './workflow-board.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class WorkflowBoard extends WorkflowBoardState {
+export class WorkflowBoard extends WorkflowInteractions {
+  protected override clear(): void {
+    super.clear();
+    this.paletteSearch.set('');
+    this.paletteSelection.set('');
+  }
   readonly paletteSearch = signal('');
   readonly paletteSelection = signal('');
   choosePalette(key: string): void {
@@ -91,7 +101,9 @@ export class WorkflowBoard extends WorkflowBoardState {
       this.paletteSelection.set('');
     }
   }
-  readonly nodes = computed(() => this.nodeModels());
+  override readonly nodes = computed(() =>
+    nodeModels(this.document(), this.catalogEntries()),
+  );
   readonly inputs = computed(() => ({
     nodes: this.nodes(),
     invalidNodes: this.invalidNodes(),
@@ -101,6 +113,12 @@ export class WorkflowBoard extends WorkflowBoardState {
     viewport: this.document().viewport,
     disabled: this.readonly() || this.pending().length > 0,
     selected: this.selected(),
+    selectionKeys: this.selectionKeys(),
+    selectNodes: (keys: string[]): void => this.selectMany(keys),
+    keyboardMove: (key: string, point: Point): void =>
+      this.keyboardMove(key, point),
+    reconnect: (id: string, source: string, target: string): void =>
+      this.reconnect(id, source, target),
     routing: this.document().routing,
     collapsed: this.document().collapsed,
     routeEdge: (key: string, points: Point[]): void =>
@@ -116,40 +134,8 @@ export class WorkflowBoard extends WorkflowBoardState {
     this.pending.update((keys) => [...new Set([...keys, key])]);
     this.dirty.set(true);
   }
-  private nodeModels(): CanvasNode[] {
-    let steps: readonly JsonObject[];
-    try {
-      steps = graphSteps(this.document().graph);
-    } catch {
-      return [];
-    }
-    return steps.map((step, index) => {
-      const catalog = this.catalogEntries().find(
-        (row) =>
-          (row['metadata'] as JsonObject | undefined)?.['ref_id'] ===
-          step['type_version_ref'],
-      );
-      const metadata = catalog?.['metadata'] as JsonObject | undefined;
-      const ports = Array.isArray(metadata?.['ports'])
-        ? (metadata!['ports'] as JsonObject[]).map((port) => ({
-            key: String(port['port_key']),
-            direction: String(port['direction']),
-            schema: (port['value_schema'] ?? {}) as JsonObject,
-          }))
-        : [];
-      return {
-        key: String(step['key']),
-        title: String(step['type_code']),
-        position: this.document().positions[String(step['key'])] ?? {
-          x: 40 + (index % 4) * 280,
-          y: 40 + Math.floor(index / 4) * 240,
-        },
-        ports,
-      };
-    });
-  }
-  select(key: string): void {
-    if (this.pending().includes('node')) {
+  override select(key: string): void {
+    if (this.pending().some((panel) => panel === 'node' || panel === 'typed')) {
       this.error.set(
         'Apply or reload component edits before selecting another step',
       );
@@ -163,7 +149,7 @@ export class WorkflowBoard extends WorkflowBoardState {
       this.selectedJson = JSON.stringify(node, null, 2);
     }
   }
-  private change(next: Workspace): void {
+  protected override change(next: Workspace): void {
     if (this.pending().length) {
       this.error.set('Apply or reload pending JSON edits first');
       return;
@@ -172,8 +158,13 @@ export class WorkflowBoard extends WorkflowBoardState {
       return;
     }
     graphSteps(next.graph);
+    const validated = readWorkspace(next);
     this.history.record(this.document());
-    this.document.set(next);
+    this.document.set(validated);
+    const keys = new Set(
+      graphSteps(next.graph).map((step) => String(step['key'])),
+    );
+    this.selectionKeys.update((items) => items.filter((key) => keys.has(key)));
     this.syncSelection(next);
     this.graphJson = JSON.stringify(next.graph, null, 2);
     this.dirty.set(true);
@@ -222,6 +213,11 @@ export class WorkflowBoard extends WorkflowBoardState {
       this.error.set(error instanceof Error ? error.message : 'Invalid step');
     }
   }
+  readonly selectedStep = computed(() =>
+    graphSteps(this.document().graph).find(
+      (step) => step['key'] === this.selected(),
+    ),
+  );
   applyNode(): void {
     if (this.pending().some((key) => key !== 'node')) {
       this.error.set('Apply other edited panels first');
@@ -328,6 +324,7 @@ export class WorkflowBoard extends WorkflowBoardState {
       : this.history.undo(this.document());
     if (value) {
       this.document.set(value);
+      this.selectionKeys.set([]);
       this.syncSelection(value);
       this.graphJson = JSON.stringify(value.graph, null, 2);
       this.dirty.set(true);

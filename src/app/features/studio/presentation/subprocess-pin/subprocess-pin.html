@@ -1,0 +1,77 @@
+<label for="subprocess-version">{{
+  "Published child workflow" | localize
+}}</label>
+<app-select-control
+  inputId="subprocess-version"
+  [disabled]="disabled() || pinnedWithInputs()"
+  [ngModel]="selected()"
+  (ngModelChange)="choose($event)"
+>
+  <option value="">{{ "Choose" | localize }}</option>
+  @if (fallback()) {
+    <option [value]="selected()">{{ "Selected resource" | localize }}</option>
+  }
+  @for (call of calls(); track call.reference) {
+    <option [value]="call.reference">{{ call.title }}</option>
+  }
+</app-select-control>
+<ul>
+  @for (port of ports(); track $index) {
+    <li>
+      {{ port["name"] }} · {{ port["direction"] }} ·
+      {{ $any(port["value_schema"])["type"] }}
+    </li>
+  }
+</ul>
+@for (port of inputs(); track port["name"]) {
+  <fieldset>
+    <legend>
+      <bdi>{{ port["name"] }}</bdi>
+    </legend>
+    @if (
+      mapping(String(port["name"]))?.["source_kind"] &&
+      mapping(String(port["name"]))?.["source_kind"] !== "CONSTANT"
+    ) {
+      <p>{{ "Existing source mapping is preserved." | localize }}</p>
+    } @else if (port["assignment"]) {
+      <app-studio-choice
+        [controlId]="'child-' + port['name']"
+        [disabled]="disabled()"
+        [kind]="port['assignment'] === 'user' ? 'users' : 'work_groups'"
+        [value]="
+          String(mapping(String(port['name']))?.['constant_value'] || '')
+        "
+        (picked)="setInput(String(port['name']), $event)"
+      />
+    } @else if (editable(port)) {
+      <app-schema-input
+        [controlId]="'child-' + port['name']"
+        [disabled]="disabled()"
+        [label]="String(port['name'])"
+        [required]="port['required'] !== false"
+        [schema]="$any(port['value_schema'])"
+        [value]="mapping(String(port['name']))?.['constant_value']"
+        (valueChange)="setInput(String(port['name']), $event)"
+      />
+    } @else {
+      <p>{{ "Structured child input mapping is unavailable." | localize }}</p>
+    }
+    <button
+      pButton
+      type="button"
+      [disabled]="disabled() || !mapping(String(port['name']))"
+      (click)="setInput(String(port['name']), undefined)"
+    >
+      {{ "Clear child input" | localize }}
+    </button>
+  </fieldset>
+}
+<p>
+  {{
+    "Child input mappings require interface validation before promotion."
+      | localize
+  }}
+</p>
+@if (error()) {
+  <p role="alert">{{ error() | localize }}</p>
+}

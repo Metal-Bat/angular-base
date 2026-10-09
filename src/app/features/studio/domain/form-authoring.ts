@@ -25,6 +25,7 @@ export type OutlineItem = {
   path: readonly number[];
   label: string;
   scope: string | null;
+  identity: string;
 };
 export function outline(render: JsonObject): OutlineItem[] {
   const result: OutlineItem[] = [];
@@ -38,6 +39,10 @@ export function outline(render: JsonObject): OutlineItem[] {
     }
     result.push({
       path,
+      identity:
+        typeof node['node_key'] === 'string'
+          ? node['node_key']
+          : 'legacy-' + path.join('.'),
       label: String(node['label'] ?? node['component']),
       scope: typeof node['scope'] === 'string' ? node['scope'] : null,
     });
@@ -124,7 +129,11 @@ export function addPrimitive(
     'display',
     'action',
   ].includes(kind);
-  const node: Record<string, JsonValue> = { component: kind, label: name };
+  const node: Record<string, JsonValue> = {
+    component: kind,
+    label: name,
+    node_key: nextNodeKey(render),
+  };
   if (!layout) {
     if (!validPropertyName(name)) {
       throw Error('Use a stable property name');
@@ -227,4 +236,15 @@ function validPropertyName(name: string): boolean {
     /^[A-Za-z][A-Za-z0-9_]{0,63}$/.test(name) &&
     !['constructor', 'prototype'].includes(name)
   );
+}
+
+export function nextNodeKey(render: JsonObject): string {
+  const used = new Set(
+    outline(render).map((item) => authoredNode(render, item.path)['node_key']),
+  );
+  let index = 1;
+  while (used.has('field_' + index)) {
+    index++;
+  }
+  return 'field_' + index;
 }

@@ -84,7 +84,9 @@ export abstract class FormBuilderCommands {
     });
     void this.load();
   }
+  protected abstract resetEditorHistory(): void;
   protected clear(): void {
+    this.resetEditorHistory();
     this.generation++;
     this.reference.set('');
     this.selected.set([]);
@@ -146,6 +148,7 @@ export abstract class FormBuilderCommands {
           null,
           2,
         );
+        this.resetEditorHistory();
         this.pending.set([]);
         this.select([]);
         this.dirty.set(false);

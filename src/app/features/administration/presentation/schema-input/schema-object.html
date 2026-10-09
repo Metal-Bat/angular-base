@@ -24,6 +24,7 @@
       [errors]="vm.errors()"
       [label]="field.label"
       [path]="vm.childPath(field.key)"
+      [referenceLabels]="vm.referenceLabels()"
       [required]="field.required"
       [schema]="field.schema"
       [value]="vm.object()[field.key]"
@@ -40,8 +41,10 @@
           [errors]="vm.errors()"
           [label]="key"
           [path]="vm.childPath(key)"
+          [referenceLabels]="vm.referenceLabels()"
           [schema]="vm.extraSchema()"
           [value]="vm.object()[key]"
+          (referenceRequested)="vm.referenceRequested.emit($event)"
           (valueChange)="vm.setChild(key, $event)"
         />
         <button

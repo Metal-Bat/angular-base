@@ -563,5 +563,335 @@
     "label": "Duration (seconds)",
     "fa": "مدت (ثانیه)",
     "ar": "المدة (ثواني)"
+  },
+  "allow_duplicates": {
+    "label": "Allow duplicates",
+    "fa": "اجازه تکرار",
+    "ar": "السماح بالتكرار"
+  },
+  "allow_remove": {
+    "label": "Allow removal",
+    "fa": "اجازه حذف",
+    "ar": "السماح بالحذف"
+  },
+  "allow_reorder": {
+    "label": "Allow reorder",
+    "fa": "اجازه تغییر ترتیب",
+    "ar": "السماح بإعادة الترتيب"
+  },
+  "allow_replace": {
+    "label": "Allow replacement",
+    "fa": "اجازه جایگزینی",
+    "ar": "السماح بالاستبدال"
+  },
+  "allowed_kinds": {
+    "label": "Allowed kinds",
+    "fa": "نوع‌های مجاز",
+    "ar": "الأنواع المسموحة"
+  },
+  "allowed_mime_types": {
+    "label": "Allowed MIME types",
+    "fa": "نوع‌های مجاز محتوا",
+    "ar": "أنواع المحتوى المسموحة"
+  },
+  "camera": {
+    "label": "Camera",
+    "fa": "دوربین",
+    "ar": "الكاميرا"
+  },
+  "caption_required": {
+    "label": "Caption required",
+    "fa": "شرح الزامی",
+    "ar": "التسمية مطلوبة"
+  },
+  "columns": {
+    "label": "Columns",
+    "fa": "ستون‌ها",
+    "ar": "الأعمدة"
+  },
+  "max_item_bytes": {
+    "label": "Maximum item bytes",
+    "fa": "حداکثر اندازه هر مورد به بایت",
+    "ar": "الحد الأقصى لحجم العنصر بالبايت"
+  },
+  "max_items": {
+    "label": "Maximum items",
+    "fa": "حداکثر تعداد موارد",
+    "ar": "الحد الأقصى للعناصر"
+  },
+  "max_total_bytes": {
+    "label": "Maximum total bytes",
+    "fa": "حداکثر اندازه کل به بایت",
+    "ar": "الحد الأقصى للحجم الإجمالي بالبايت"
+  },
+  "min_items": {
+    "label": "Minimum items",
+    "fa": "حداقل تعداد موارد",
+    "ar": "الحد الأدنى للعناصر"
+  },
+  "multiple": {
+    "label": "Multiple",
+    "fa": "چندتایی",
+    "ar": "متعدد"
+  },
+  "placeholder": {
+    "label": "Placeholder",
+    "fa": "متن راهنمای ورودی",
+    "ar": "النص الإرشادي"
+  },
+  "preview": {
+    "label": "Preview",
+    "fa": "پیش‌نمایش",
+    "ar": "معاينة"
+  },
+  "read_only": {
+    "label": "Read only",
+    "fa": "فقط خواندنی",
+    "ar": "للقراءة فقط"
+  },
+  "rows": {
+    "label": "Rows",
+    "fa": "ردیف‌ها",
+    "ar": "الصفوف"
+  },
+  "minLength": {
+    "label": "Minimum length",
+    "fa": "حداقل طول",
+    "ar": "الحد الأدنى للطول"
+  },
+  "maxLength": {
+    "label": "Maximum length",
+    "fa": "حداکثر طول",
+    "ar": "الحد الأقصى للطول"
+  },
+  "minItems": {
+    "label": "Minimum items",
+    "fa": "حداقل تعداد موارد",
+    "ar": "الحد الأدنى للعناصر"
+  },
+  "maxItems": {
+    "label": "Maximum items",
+    "fa": "حداکثر تعداد موارد",
+    "ar": "الحد الأقصى للعناصر"
+  },
+  "pattern": {
+    "label": "Pattern",
+    "fa": "الگو",
+    "ar": "النمط"
+  },
+  "minimum": {
+    "label": "Minimum",
+    "fa": "حداقل",
+    "ar": "الحد الأدنى"
+  },
+  "maximum": {
+    "label": "Maximum",
+    "fa": "حداکثر",
+    "ar": "الحد الأقصى"
+  },
+  "expression": {
+    "label": "Expression",
+    "fa": "عبارت",
+    "ar": "التعبير"
+  },
+  "compensation_step": {
+    "label": "Compensation Step",
+    "fa": "مرحلهٔ جبران",
+    "ar": "خطوة التعويض"
+  },
+  "expires_in_seconds": {
+    "label": "Expires In Seconds",
+    "fa": "انقضا بر حسب ثانیه",
+    "ar": "انتهاء الصلاحية بالثواني"
+  },
+  "views": {
+    "label": "Views",
+    "fa": "نماها",
+    "ar": "العروض"
+  },
+  "form_version_ref": {
+    "label": "Form Version Ref",
+    "fa": "نسخهٔ فرم",
+    "ar": "نسخة النموذج"
+  },
+  "purpose": {
+    "label": "Purpose",
+    "fa": "کاربرد",
+    "ar": "الغرض"
+  },
+  "inherit_previous": {
+    "label": "Inherit Previous",
+    "fa": "ارث‌بری از قبل",
+    "ar": "وراثة السابق"
+  },
+  "format": {
+    "label": "Format",
+    "fa": "قالب",
+    "ar": "التنسيق"
+  },
+  "connection_ref": {
+    "label": "Connection Ref",
+    "fa": "اتصال",
+    "ar": "الاتصال"
+  },
+  "locale": {
+    "label": "Locale",
+    "fa": "زبان",
+    "ar": "اللغة"
+  },
+  "permission_key": {
+    "label": "Permission Key",
+    "fa": "کلید مجوز",
+    "ar": "مفتاح الإذن"
+  },
+  "default_view": {
+    "label": "Default View",
+    "fa": "نمای پیش‌فرض",
+    "ar": "العرض الافتراضي"
+  },
+  "title": {
+    "label": "Title",
+    "fa": "عنوان",
+    "ar": "العنوان"
+  },
+  "scopes": {
+    "label": "Scopes",
+    "fa": "حوزه‌ها",
+    "ar": "النطاقات"
+  },
+  "join": {
+    "label": "Join",
+    "fa": "ادغام",
+    "ar": "الدمج"
+  },
+  "outcome_key": {
+    "label": "Outcome Key",
+    "fa": "کلید نتیجه",
+    "ar": "مفتاح النتيجة"
+  },
+  "key": {
+    "label": "Key",
+    "fa": "کلید",
+    "ar": "المفتاح"
+  },
+  "function_key": {
+    "label": "Function Key",
+    "fa": "کلید تابع",
+    "ar": "مفتاح الدالة"
+  },
+  "correction_entry": {
+    "label": "Correction Entry",
+    "fa": "ورود اصلاحی",
+    "ar": "إدخال التصحيح"
+  },
+  "null_behavior": {
+    "label": "Null Behavior",
+    "fa": "رفتار مقدار تهی",
+    "ar": "سلوك القيمة الفارغة"
+  },
+  "actions": {
+    "label": "Actions",
+    "fa": "اقدامات",
+    "ar": "الإجراءات"
+  },
+  "require_comment": {
+    "label": "Require Comment",
+    "fa": "توضیح الزامی",
+    "ar": "يتطلب تعليقاً"
+  },
+  "en": {
+    "label": "En",
+    "fa": "انگلیسی",
+    "ar": "الإنجليزية"
+  },
+  "cancelled_branches": {
+    "label": "Cancelled Branches",
+    "fa": "شاخه‌های لغوشده",
+    "ar": "الفروع الملغاة"
+  },
+  "retry_limit": {
+    "label": "Retry Limit",
+    "fa": "سقف تلاش مجدد",
+    "ar": "حد إعادة المحاولة"
+  },
+  "required_scopes": {
+    "label": "Required Scopes",
+    "fa": "حوزه‌های الزامی",
+    "ar": "النطاقات المطلوبة"
+  },
+  "fa": {
+    "label": "Fa",
+    "fa": "فارسی",
+    "ar": "الفارسية"
+  },
+  "template_version": {
+    "label": "Template Version",
+    "fa": "نسخهٔ الگو",
+    "ar": "نسخة القالب"
+  },
+  "validation": {
+    "label": "Validation",
+    "fa": "اعتبارسنجی",
+    "ar": "التحقق"
+  },
+  "max_visits": {
+    "label": "Max Visits",
+    "fa": "حداکثر دفعات ورود",
+    "ar": "الحد الأقصى للزيارات"
+  },
+  "operation_key": {
+    "label": "Operation Key",
+    "fa": "کلید عملیات",
+    "ar": "مفتاح العملية"
+  },
+  "confirmation": {
+    "label": "Confirmation",
+    "fa": "تأیید",
+    "ar": "التأكيد"
+  },
+  "split": {
+    "label": "Split",
+    "fa": "انشعاب",
+    "ar": "التفرع"
+  },
+  "delay_seconds": {
+    "label": "Delay Seconds",
+    "fa": "تأخیر بر حسب ثانیه",
+    "ar": "التأخير بالثواني"
+  },
+  "conversion_key": {
+    "label": "Conversion Key",
+    "fa": "نوع تبدیل",
+    "ar": "نوع التحويل"
+  },
+  "default": {
+    "label": "Default",
+    "fa": "مقدار پیش‌فرض",
+    "ar": "القيمة الافتراضية"
+  },
+  "channel": {
+    "label": "Channel",
+    "fa": "کانال",
+    "ar": "القناة"
+  },
+  "template_key": {
+    "label": "Template Key",
+    "fa": "کلید الگو",
+    "ar": "مفتاح القالب"
+  },
+  "projection": {
+    "label": "Projection",
+    "fa": "تصویر داده",
+    "ar": "إسقاط البيانات"
+  },
+  "compensation_only": {
+    "label": "Compensation Only",
+    "fa": "فقط جبران",
+    "ar": "التعويض فقط"
+  },
+  "agent_ref": {
+    "label": "Agent Ref",
+    "fa": "نسخهٔ عامل",
+    "ar": "نسخة الوكيل"
   }
 }

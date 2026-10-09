@@ -15,10 +15,17 @@ import { readData } from '../../transport/response-adapters';
 import { ActorState } from '../actor-state';
 import { LocalizePipe } from '../../../shared/ui/localize-pipe';
 import { RecordSummary } from '../../../shared/ui/record-summary/record-summary';
+import { ProfileAppearance } from './profile-appearance';
 
 @Component({
   selector: 'app-profile',
-  imports: [RouterLink, ButtonDirective, LocalizePipe, RecordSummary],
+  imports: [
+    RouterLink,
+    ButtonDirective,
+    LocalizePipe,
+    RecordSummary,
+    ProfileAppearance,
+  ],
   host: { class: 'console-page' },
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './profile.html',

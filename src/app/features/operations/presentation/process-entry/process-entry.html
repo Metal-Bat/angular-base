@@ -43,14 +43,7 @@
       <li>{{ "No active positions" | localize }}</li>
     }
   </ul>
-  <h2>{{ "Execution path" | localize }}</h2>
-  <ul>
-    @for (step of process.steps; track step.key) {
-      <li>
-        <bdi>{{ step.key }}</bdi> · {{ step.status | localize }}
-      </li>
-    }
-  </ul>
+  <app-execution-path [process]="process" />
   <h2>{{ "Child processes" | localize }}</h2>
   <ul>
     @for (child of process.children; track child.reference) {

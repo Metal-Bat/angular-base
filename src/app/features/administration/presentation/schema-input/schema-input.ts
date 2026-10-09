@@ -49,6 +49,9 @@ export class SchemaInput {
   readonly disabled = input(false);
   readonly path = input('');
   readonly errors = input<Readonly<Record<string, string>>>({});
+  readonly referenceLabels = input<
+    Readonly<Record<string, { key: string; label: string }>>
+  >({});
   readonly referenceRequested = output<{
     key: string;
     path: string;
@@ -106,12 +109,27 @@ export class SchemaInput {
     () => (this.shape()['enum'] as JsonValue[]) ?? [],
   );
   readonly canPick = computed(() =>
-    /(^|\.)(user_ref_id|work_group_ref_id|connection_ref|provider_key|model_id|task_name|queue)$/.test(
-      this.path(),
-    ),
+    [
+      'user_ref_id',
+      'work_group_ref_id',
+      'connection_ref',
+      'integration_connection_ref',
+      'agent_ref_id',
+      'provider_key',
+      'model_id',
+      'task_name',
+      'queue',
+    ].includes(this.path().split('.').pop() ?? ''),
   );
   readonly kinds = ['string', 'number', 'boolean', 'object', 'array', 'null'];
   readonly Number = Number;
+  referenceText(): string {
+    const selected = this.referenceLabels()[this.path()];
+    if (selected && selected.key === this.draft()) {
+      return selected.label;
+    }
+    return this.draft() ? 'Selected resource' : '';
+  }
   newKey = '';
   object(): JsonObject {
     const value = this.draft();
@@ -147,6 +165,9 @@ export class SchemaInput {
     }
   }
   changeText(value: string): void {
+    if (this.canPick()) {
+      return;
+    }
     this.set(value === '' && !this.required() ? undefined : value);
   }
   changeNumber(value: number | null): void {

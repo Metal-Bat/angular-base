@@ -7,8 +7,25 @@ export const workspacePreset = definePreset(Aura, {
     button: {
       colorScheme: {
         light: {
-          outlined: { secondary: { color: 'var(--console-muted)' } },
+          outlined: {
+            danger: {
+              color: 'var(--mat-sys-error)',
+              borderColor: 'var(--mat-sys-error)',
+              hoverBackground:
+                'color-mix(in srgb, var(--mat-sys-error) 12%, var(--console-surface))',
+              activeBackground:
+                'color-mix(in srgb, var(--mat-sys-error) 16%, var(--console-surface))',
+            },
+            secondary: { color: 'var(--console-muted)' },
+          },
           text: {
+            danger: {
+              color: 'var(--mat-sys-error)',
+              hoverBackground:
+                'color-mix(in srgb, var(--mat-sys-error) 12%, var(--console-surface))',
+              activeBackground:
+                'color-mix(in srgb, var(--mat-sys-error) 16%, var(--console-surface))',
+            },
             secondary: {
               color: 'var(--console-accent)',
               hoverBackground: 'var(--console-accent-soft)',
@@ -17,8 +34,25 @@ export const workspacePreset = definePreset(Aura, {
           },
         },
         dark: {
-          outlined: { secondary: { color: 'var(--console-muted)' } },
+          outlined: {
+            danger: {
+              color: 'var(--mat-sys-error)',
+              borderColor: 'var(--mat-sys-error)',
+              hoverBackground:
+                'color-mix(in srgb, var(--mat-sys-error) 12%, var(--console-surface))',
+              activeBackground:
+                'color-mix(in srgb, var(--mat-sys-error) 16%, var(--console-surface))',
+            },
+            secondary: { color: 'var(--console-muted)' },
+          },
           text: {
+            danger: {
+              color: 'var(--mat-sys-error)',
+              hoverBackground:
+                'color-mix(in srgb, var(--mat-sys-error) 12%, var(--console-surface))',
+              activeBackground:
+                'color-mix(in srgb, var(--mat-sys-error) 16%, var(--console-surface))',
+            },
             secondary: {
               color: 'var(--console-accent)',
               hoverBackground: 'var(--console-accent-soft)',

@@ -1,5 +1,7 @@
 <header class="console-page-header">
-  <h1 tabindex="-1">{{ kind | localize }}</h1>
+  <h1 tabindex="-1">
+    {{ (notifications ? "Notifications" : "My reports") | localize }}
+  </h1>
   <a routerLink="/operations">{{ "Workspace" | localize }}</a>
 </header>
 @if (error()) {
@@ -37,9 +39,43 @@
     {{ "Notification report" | localize }}
   </button>
 }
-<ul>
+@if (notifications) {
+  <form class="my-4 flex flex-wrap items-end gap-3" (ngSubmit)="apply()">
+    <label for="notification-read"
+      >{{ "Read status" | localize }}
+      <app-select-control
+        inputId="notification-read"
+        name="readFilter"
+        [ariaLabel]="'Read status' | localize"
+        [(ngModel)]="readFilter"
+      >
+        <option value="all">{{ "All notifications" | localize }}</option>
+        <option value="unread">{{ "Unread" | localize }}</option>
+        <option value="read">{{ "Read" | localize }}</option>
+      </app-select-control>
+    </label>
+    <label for="notification-search"
+      >{{ "Subject" | localize
+      }}<input
+        id="notification-search"
+        maxlength="256"
+        name="search"
+        pInputText
+        [(ngModel)]="search"
+    /></label>
+    <button pButton type="submit" [disabled]="busy()">
+      {{ "Apply" | localize }}
+    </button>
+  </form>
+  @if (total() !== null) {
+    <p>
+      {{ "Matching notifications" | localize }}: <bdi>{{ total() }}</bdi>
+    </p>
+  }
+}
+<ul class="grid gap-3 my-4 list-none p-0">
   @for (item of items(); track item.ref) {
-    <li>
+    <li class="rounded-lg border border-console-border p-3">
       <button
         pButton
         severity="secondary"
@@ -50,6 +86,16 @@
       >
         {{ item.title }}
       </button>
+      @if (notifications) {
+        <span class="ms-3">{{
+          (item.read ? "Read" : "Unread") | localize
+        }}</span>
+      }
+      @if (item.createdAt) {
+        <time class="ms-3" [attr.datetime]="item.createdAt">{{
+          item.createdAt
+        }}</time>
+      }
       · {{ item.status | localize }}
     </li>
   } @empty {

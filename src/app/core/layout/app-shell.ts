@@ -3,8 +3,8 @@ import { SelectControl } from '../../shared/ui/select-control/select-control';
 import { isSupportedLocale } from '../localization/languages';
 import { NotificationPreview } from '../notifications/notification-preview';
 import { ButtonModule } from 'primeng/button';
-import { FormsModule } from '@angular/forms';
-import { SelectModule } from 'primeng/select';
+import { ThemePicker } from '../../shared/ui/theme-picker/theme-picker';
+import { Preferences } from '../auth/preferences';
 import { Locale } from '../localization/locale';
 import { ColorScheme } from '../theme/color-scheme';
 import { Feedback } from '../feedback/feedback';
@@ -37,8 +37,7 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
     LocalizePipe,
     CommandFeedback,
     ButtonModule,
-    FormsModule,
-    SelectModule,
+    ThemePicker,
   ],
   selector: 'app-app-shell',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -68,17 +67,7 @@ export class AppShell {
   );
   readonly locale = inject(Locale);
   readonly scheme = inject(ColorScheme);
-  readonly themeGroups = computed(() =>
-    (['light', 'dark'] as const).map((mode) => ({
-      label: this.locale.text(mode === 'light' ? 'Light mode' : 'Dark mode'),
-      icon: mode === 'light' ? 'pi pi-sun' : 'pi pi-moon',
-      items: this.scheme.palettes.map((palette) => ({
-        value: `${palette.key}-${mode}`,
-        label: `${this.locale.text(palette.name)} · ${this.locale.text(mode === 'light' ? 'Light' : 'Dark')}`,
-        color: `var(--p-${palette.key}-500)`,
-      })),
-    })),
-  );
+  readonly preferences = inject(Preferences);
   readonly feedback = inject(Feedback);
   readonly menuOpen = signal(false);
   readonly notifications = inject(NotificationPreview);
@@ -141,6 +130,7 @@ export class AppShell {
                   forbidden: 'Access denied',
                   'access-unavailable': 'Access unavailable',
                   account: 'Account and sessions',
+                  help: 'Help',
                 } as Record<string, string>
               )[area] ?? 'Page not found'),
         );
@@ -158,7 +148,7 @@ export class AppShell {
   }
   setLanguage(value: string): void {
     if (isSupportedLocale(value)) {
-      void this.locale.set(value);
+      void this.preferences.language(value);
     }
   }
 

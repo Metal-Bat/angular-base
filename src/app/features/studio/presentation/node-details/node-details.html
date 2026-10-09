@@ -1,0 +1,29 @@
+<p>
+  <bdi>{{ handler().handler_key }}</bdi> · {{ handler().handler_version }} ·
+  {{ handler().execution_mode }}
+</p>
+@if (handler().help_text && handler().help_text !== handler().help_key) {
+  <p>{{ handler().help_text! | localize }}</p>
+}
+<p>
+  {{ "Required capabilities" | localize }}:
+  @for (capability of handler().required_capabilities; track capability) {
+    <bdi>{{ capability }} </bdi>
+  }
+</p>
+<h3>{{ "Inputs and outputs" | localize }}</h3>
+<ul>
+  @for (port of handler().ports; track port["port_key"]) {
+    <li>
+      <bdi>{{ port["port_key"] }}</bdi> · {{ port["direction"] }} ·
+      {{ port["cardinality"] }} ·
+      {{ $any(port["value_schema"] || {})["type"] }}
+    </li>
+  }
+</ul>
+<p>
+  {{ "Control outcome" | localize }}:
+  @for (outcome of handler().outcomes; track outcome) {
+    <bdi>{{ outcome }} </bdi>
+  }
+</p>

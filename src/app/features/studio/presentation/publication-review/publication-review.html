@@ -1,0 +1,40 @@
+<details class="console-panel my-4">
+  <summary>{{ "Publication review" | localize }}</summary>
+  <dl class="grid gap-2 break-all">
+    <dt>{{ "Editing state" | localize }}</dt>
+    <dd>{{ status() | localize }}</dd>
+    <dt>{{ "Workspace" | localize }}</dt>
+    <dd>
+      {{ (dirty() || pending() ? "Unsaved changes" : "Saved") | localize }}
+    </dd>
+    <dt>{{ "Pending inspector edits" | localize }}</dt>
+    <dd>{{ pending() }}</dd>
+    @if (state(); as current) {
+      <dt>{{ "Workflow version" | localize }}</dt>
+      <dd>
+        <bdi>{{ current.version }}</bdi>
+      </dd>
+      <dt>{{ "Saved workspace reference" | localize }}</dt>
+      <dd>
+        <bdi>{{ current.reference ?? ("Unavailable" | localize) }}</bdi>
+      </dd>
+      <dt>{{ "Last promoted graph checksum" | localize }}</dt>
+      <dd>
+        <bdi>{{ current.promoted ?? ("Not promoted" | localize) }}</bdi>
+      </dd>
+    }
+  </dl>
+  <p>
+    {{
+      "Validate current work, promote saved work, then publish an immutable version."
+        | localize
+    }}
+  </p>
+  <p>
+    {{
+      "Review and promote intended changes before publishing. Saved work may differ from the promoted graph."
+        | localize
+    }}
+  </p>
+  <p>{{ "Existing cases keep their pinned workflow version." | localize }}</p>
+</details>

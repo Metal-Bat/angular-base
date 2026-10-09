@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "release_key": "app-fe-help-1",
+  "items": [
+    { "help_key": "requests.start", "revision": "1", "locales": ["en", "fa"] },
+    { "help_key": "work.review", "revision": "1", "locales": ["en", "fa"] },
+    { "help_key": "studio.save", "revision": "1", "locales": ["en", "fa"] },
+    { "help_key": "studio.promote", "revision": "1", "locales": ["en", "fa"] },
+    { "help_key": "studio.publish", "revision": "1", "locales": ["en", "fa"] },
+    {
+      "help_key": "workflow.defaults",
+      "revision": "1",
+      "locales": ["en", "fa"]
+    },
+    { "help_key": "data.mapping", "revision": "1", "locales": ["en", "fa"] },
+    { "help_key": "notifications", "revision": "1", "locales": ["en", "fa"] },
+    { "help_key": "calendar", "revision": "1", "locales": ["en", "fa"] },
+    { "help_key": "saved.views", "revision": "1", "locales": ["en", "fa"] },
+    {
+      "help_key": "support.references",
+      "revision": "1",
+      "locales": ["en", "fa"]
+    }
+  ]
+}

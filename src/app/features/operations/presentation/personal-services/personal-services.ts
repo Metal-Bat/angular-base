@@ -1,4 +1,8 @@
 import { PersonalServiceDetail } from './personal-service-detail';
+import { FormsModule } from '@angular/forms';
+import { NotificationPreview } from '../../../../core/notifications/notification-preview';
+import { InputTextModule } from 'primeng/inputtext';
+import { SelectControl } from '../../../../shared/ui/select-control/select-control';
 import { ButtonDirective } from 'primeng/button';
 import {
   ChangeDetectionStrategy,
@@ -15,6 +19,7 @@ import { BinaryTransfer } from '../../../../core/transport/binary-transfer';
 import { BoundedPolling } from '../../../../core/transport/bounded-polling';
 import { LocalizePipe } from '../../../../shared/ui/localize-pipe';
 import {
+  NotificationOptions,
   ServiceItem,
   ServiceKind,
 } from '../../application/personal-services-port';
@@ -23,12 +28,26 @@ import { PERSONAL_SERVICES } from '../../bindings';
   host: { class: 'console-page' },
   selector: 'app-personal-services',
   providers: [BinaryTransfer, BoundedPolling],
-  imports: [PersonalServiceDetail, ButtonDirective, RouterLink, LocalizePipe],
+  imports: [
+    FormsModule,
+    InputTextModule,
+    SelectControl,
+    PersonalServiceDetail,
+    ButtonDirective,
+    RouterLink,
+    LocalizePipe,
+  ],
   templateUrl: './personal-services.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PersonalServices {
   private readonly service = inject(PERSONAL_SERVICES);
+  private readonly preview = inject(NotificationPreview);
+  private abort = new AbortController();
+  readFilter: NotificationOptions['read'] = 'all';
+  search = '';
+  private applied: NotificationOptions = { read: 'all', search: '' };
+  readonly total = signal<number | null>(null);
   readonly transfer = inject(BinaryTransfer);
   readonly polling = inject(BoundedPolling);
   private readonly feedback = inject(Feedback);
@@ -52,11 +71,19 @@ export class PersonalServices {
   constructor() {
     const release = inject(ActorState).register(() => {
       this.generation++;
+      this.abort.abort();
+      this.busy.set(false);
+      this.error.set('');
+      this.total.set(null);
+      this.readFilter = 'all';
+      this.search = '';
+      this.applied = { read: 'all', search: '' };
       this.items.set([]);
       this.detail.set(null);
     });
     inject(DestroyRef).onDestroy(() => {
       this.generation++;
+      this.abort.abort();
       this.detail.set(null);
       release();
     });
@@ -86,18 +113,30 @@ export class PersonalServices {
     }
   }
   async load(page = 1, report = false, abort?: AbortSignal): Promise<void> {
+    this.abort.abort();
+    this.abort = new AbortController();
+    const requestAbort = abort
+      ? AbortSignal.any([abort, this.abort.signal])
+      : this.abort.signal;
     const generation = ++this.generation;
     this.busy.set(true);
     this.error.set('');
     try {
-      const result = await this.service.list(this.kind, page, report, abort);
-      if (generation === this.generation && !abort?.aborted) {
+      const result = await this.service.list(
+        this.kind,
+        page,
+        report,
+        requestAbort,
+        this.applied,
+      );
+      if (generation === this.generation && !requestAbort.aborted) {
+        this.total.set(result.total ?? null);
         this.items.set(result.items);
         this.page.set(result.page);
         this.totalPages.set(result.totalPages);
       }
     } catch {
-      if (generation === this.generation && !abort?.aborted) {
+      if (generation === this.generation && !requestAbort.aborted) {
         this.error.set('The service is unavailable.');
         if (abort) {
           throw Error('Polling failed');
@@ -109,14 +148,38 @@ export class PersonalServices {
       }
     }
   }
+  async apply(): Promise<void> {
+    if (!['all', 'unread', 'read'].includes(this.readFilter)) {
+      return;
+    }
+    if (this.search.length > 256) {
+      this.error.set('Search must be 256 characters or fewer.');
+      return;
+    }
+    this.applied = { read: this.readFilter, search: this.search.trim() };
+    this.detail.set(null);
+    await this.load();
+  }
   async open(ref: string, read = false): Promise<void> {
+    this.abort.abort();
+    this.abort = new AbortController();
+    const abort = this.abort.signal;
     const generation = ++this.generation;
     this.detail.set(null);
     this.busy.set(true);
+    this.error.set('');
     try {
-      const item = read
-        ? await this.service.read(ref)
-        : await this.service.detail(this.kind, ref);
+      const current = await this.service.detail(this.kind, ref, abort);
+      if (generation !== this.generation || abort.aborted) {
+        return;
+      }
+      const item = read ? await this.service.read(current.ref) : current;
+      if (read && generation === this.generation) {
+        this.items.update((items) =>
+          items.map((row) => (row.ref === ref ? item : row)),
+        );
+        void this.preview.load();
+      }
       if (generation === this.generation) {
         this.detail.set(item);
       }

@@ -1,85 +1,103 @@
 import { TestBed } from '@angular/core/testing';
-import { ActivatedRoute, provideRouter } from '@angular/router';
+import {
+  ActivatedRoute,
+  convertToParamMap,
+  provideRouter,
+} from '@angular/router';
 import { ActorState } from '../../../../core/auth/actor-state';
-import { RUNTIME_OPTIONS } from '../../../forms/bindings';
+import { Feedback } from '../../../../core/feedback/feedback';
 import { STUDIO_API } from '../../bindings';
 import { FormBuilder } from './form-builder';
-const docs = {
+const row = {
+  ref_id: 'current',
+  status: 'DRAFT',
   data_schema: { type: 'object', properties: {} },
   render_schema: { root: { component: 'vertical', children: [] } },
 };
-describe('Form authoring session and edits', () => {
-  const get = vi.fn();
-  const write = vi.fn();
-  const options = vi.fn();
+describe('Form authoring commands', () => {
+  const api = {
+    get: vi.fn(async () => structuredClone(row)),
+    write: vi.fn(async () => ({ ...row, ref_id: 'next' })),
+  };
   beforeEach(() => {
-    get.mockResolvedValue({ ...docs, ref_id: 'current', status: 'DRAFT' });
-    write.mockReset();
-    options.mockReset();
+    vi.clearAllMocks();
     TestBed.configureTestingModule({
       providers: [
         provideRouter([]),
         {
           provide: ActivatedRoute,
           useValue: {
-            snapshot: { paramMap: { get: (): string => 'current' } },
+            snapshot: { paramMap: convertToParamMap({ ref: 'old' }) },
           },
         },
-        { provide: STUDIO_API, useValue: { get, write, options } },
+        { provide: STUDIO_API, useValue: api },
       ],
     });
   });
-  it('blocks saving unapplied invalid JSON and retains visible work', async () => {
+  it('saves through the current reference, restores edits with undo, and fences published mutations', async () => {
     const fixture = TestBed.createComponent(FormBuilder);
     await fixture.whenStable();
-    const editor = fixture.componentInstance;
-    editor.schemaJson = '{invalid';
-    editor.markPending('schema');
-    editor.applySchema();
-    await editor.save();
-    expect(editor.pending()).toEqual(['schema']);
-    expect(editor.schemaJson).toBe('{invalid');
-    expect(write).not.toHaveBeenCalled();
+    const vm = fixture.componentInstance;
+    vm.primitive = 'boolean';
+    vm.propertyName = 'flag';
+    vm.componentLabel = 'Friendly flag';
+    vm.add();
+    const next = vm.documents();
+    expect(vm.outline()).toHaveLength(2);
+    vm.undo();
+    expect(vm.outline()).toHaveLength(1);
+    vm.undo(true);
+    expect(vm.documents()).toEqual(next);
+    await vm.save();
+    expect(api.write).toHaveBeenCalledWith('form-versions', 'current', next);
+    expect(vm.reference()).toBe('next');
+    vm.status.set('PUBLISHED');
+    vm.add();
+    vm.applyProperties({ ...next, page_settings: {} });
+    await vm.save();
+    expect(vm.documents()).toEqual(next);
+    expect(api.write).toHaveBeenCalledTimes(1);
   });
-  it('ignores a late save response after actor reset', async () => {
+  it('preserves edits after a failed save and ignores a late response after actor reset', async () => {
     const fixture = TestBed.createComponent(FormBuilder);
     await fixture.whenStable();
-    const editor = fixture.componentInstance;
-    let finish: (value: unknown) => void = (): void => undefined;
-    write.mockImplementation(
+    const vm = fixture.componentInstance;
+    vm.primitive = 'boolean';
+    vm.propertyName = 'flag';
+    vm.add();
+    const next = vm.documents();
+    api.write.mockRejectedValueOnce(Error('failure'));
+    await vm.save();
+    expect(vm.documents()).toEqual(next);
+    expect(vm.dirty()).toBe(true);
+    let resolve!: (value: typeof row) => void;
+    api.write.mockImplementationOnce(
       () =>
-        new Promise((resolve) => {
-          finish = resolve;
+        new Promise((done) => {
+          resolve = done;
         }),
     );
-    const saving = editor.save();
+    const pending = vm.save();
     TestBed.inject(ActorState).reset();
-    finish({ ...docs, ref_id: 'leaked-old-actor', status: 'DRAFT' });
-    await saving;
-    expect(editor.preview()).toBeNull();
-    expect(editor.reference()).not.toBe('leaked-old-actor');
-    expect(editor.status()).toBe('');
-    fixture.detectChanges();
-    expect(editor.outline().length).toBe(1);
+    resolve({ ...row, ref_id: 'late' });
+    await pending;
+    expect(vm.reference()).toBe('');
+    expect(vm.outline()).toHaveLength(1);
+    expect(vm.dirty()).toBe(false);
+    vm.undo();
+    expect(vm.outline()).toHaveLength(1);
   });
-  it('routes preview choices through author options with current documents', async () => {
+  it('clears old undo snapshots on an explicitly confirmed reload', async () => {
     const fixture = TestBed.createComponent(FormBuilder);
     await fixture.whenStable();
-    const port = fixture.debugElement.injector.get(RUNTIME_OPTIONS);
-    const input = { data: {}, locale: 'en', page: 1, search: '', selected: [] };
-    await port.query(
-      {} as Parameters<typeof port.query>[0],
-      '/root',
-      input,
-      1,
-      new AbortController().signal,
-    );
-    expect(options).toHaveBeenCalledWith(
-      fixture.componentInstance.documents(),
-      '/root',
-      input,
-      1,
-      expect.any(AbortSignal),
-    );
+    const vm = fixture.componentInstance;
+    vm.propertyName = 'flag';
+    vm.add();
+    const loading = vm.load();
+    TestBed.inject(Feedback).answer(true);
+    await loading;
+    expect(vm.outline()).toHaveLength(1);
+    vm.undo();
+    expect(vm.outline()).toHaveLength(1);
   });
 });

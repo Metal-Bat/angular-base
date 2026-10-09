@@ -1,0 +1,80 @@
+<section
+  class="console-panel my-4"
+  [attr.aria-label]="'Execution path' | localize"
+>
+  <h2>{{ "Execution path" | localize }}</h2>
+  <p>
+    {{ "Execution status is separate from the business outcome." | localize }}
+  </p>
+  <ul class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+    @for (step of process().steps; track step.key) {
+      <li class="rounded border p-3">
+        <h3>
+          <bdi>{{ step.key }}</bdi> · {{ step.status | localize }}
+        </h3>
+        @for (execution of step.executions; track execution.reference) {
+          <details class="mt-2">
+            <summary>
+              {{ "Visit" | localize }} {{ execution.visit }} ·
+              {{ execution.status | localize }}
+            </summary>
+            @if (execution.wait) {
+              <p>
+                {{ "Waiting for" | localize }}: {{ execution.wait | localize }}
+              </p>
+            }
+            @if (execution.error) {
+              <p>
+                {{ "Error code" | localize }}: <bdi>{{ execution.error }}</bdi>
+              </p>
+            }
+            @if (execution.task) {
+              <p>
+                <a
+                  [routerLink]="['/operations/tasks', execution.task.reference]"
+                  >{{ "Task detail" | localize }}</a
+                >
+                · {{ execution.task.status | localize }}
+              </p>
+              @if (execution.task.outcome) {
+                <p>
+                  {{ "Declared outcome" | localize }}:
+                  <bdi>{{ execution.task.outcome }}</bdi>
+                </p>
+              }
+              @if (execution.task.due) {
+                <p>
+                  {{ "Due" | localize }}: <time>{{ execution.task.due }}</time>
+                </p>
+              }
+            }
+            <h4>{{ "Attempts" | localize }}</h4>
+            <ol>
+              @for (attempt of execution.attempts; track attempt.number) {
+                <li>
+                  {{ attempt.number }} · {{ attempt.status | localize }} ·
+                  <time>{{ attempt.started }}</time>
+                  @if (attempt.ended) {
+                    <span>
+                      — <time>{{ attempt.ended }}</time></span
+                    >
+                  }
+                  @if (attempt.error) {
+                    <span>
+                      · {{ "Error code" | localize }}:
+                      <bdi>{{ attempt.error }}</bdi></span
+                    >
+                  }
+                </li>
+              } @empty {
+                <li>{{ "No recorded attempts" | localize }}</li>
+              }
+            </ol>
+          </details>
+        }
+      </li>
+    } @empty {
+      <li>{{ "No execution steps" | localize }}</li>
+    }
+  </ul>
+</section>

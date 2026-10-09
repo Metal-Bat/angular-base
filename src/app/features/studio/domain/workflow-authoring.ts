@@ -1,6 +1,11 @@
 import { JsonObject, JsonValue } from '../../forms/domain/runtime-document';
 import { Point, Workspace } from './authoring';
-export type CanvasPort = { key: string; direction: string; schema: JsonObject };
+export type CanvasPort = {
+  key: string;
+  direction: string;
+  schema: JsonObject;
+  cardinality?: string;
+};
 export type CanvasNode = {
   key: string;
   title: string;
@@ -198,7 +203,7 @@ export class WorkspaceHistory {
   }
 }
 
-function connectionKey(kind: string, edge: JsonObject): string {
+export function connectionKey(kind: string, edge: JsonObject): string {
   const identity = JSON.stringify(
     Object.entries(edge).sort(([left], [right]) => left.localeCompare(right)),
   );

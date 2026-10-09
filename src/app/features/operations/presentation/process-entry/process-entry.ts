@@ -1,3 +1,4 @@
+import { ExecutionPath } from '../execution-path/execution-path';
 import { ButtonDirective } from 'primeng/button';
 import { BoundedPolling } from '../../../../core/transport/bounded-polling';
 import { ProcessSnapshot } from '../../domain/process-tracking';
@@ -16,7 +17,7 @@ import { PROCESS_READER } from '../../bindings';
   host: { class: 'console-page' },
   selector: 'app-process-entry',
   providers: [BoundedPolling],
-  imports: [ButtonDirective, LocalizePipe, RouterLink],
+  imports: [ExecutionPath, ButtonDirective, LocalizePipe, RouterLink],
   templateUrl: './process-entry.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -34,6 +35,7 @@ export class ProcessEntry {
   constructor() {
     const unregister = this.actor.register((): void => {
       this.generation++;
+      this.busy.set(false);
       this.status.set('');
       this.snapshot.set(null);
       this.error.set('Access changed. Reload this page.');

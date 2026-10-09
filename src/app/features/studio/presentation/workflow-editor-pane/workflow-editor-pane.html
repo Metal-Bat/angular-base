@@ -1,0 +1,76 @@
+<section class="step-inspector" [attr.aria-label]="'Step inspector' | localize">
+  <h2>
+    {{ "Selected step" | localize }} <bdi>{{ view().selected() }}</bdi>
+  </h2>
+  @if (!view().selected()) {
+    <p class="inspector-hint">
+      {{
+        "Select a step on the canvas to inspect its configuration." | localize
+      }}
+    </p>
+  }
+  @if (view().selectedStep(); as step) {
+    <app-node-inspector
+      [catalog]="view().catalogEntries()"
+      [children]="view().childCatalog()"
+      [disabled]="view().typedReadonly()"
+      [step]="step"
+      (applied)="view().applyTyped($event)"
+      (changed)="view().markPending('typed')"
+    />
+  }
+  @if (view().selectedStep(); as step) {
+    <app-graph-connections
+      [disabled]="view().readonly() || view().pending().length > 0"
+      [graph]="view().document().graph"
+      [human]="step['type_code'] === 'HUMAN_TASK'"
+      [nodes]="view().nodes()"
+      [selected]="view().selected()"
+      [version]="view().reference()"
+      (applied)="view().applyConnections($event)"
+    />
+  }
+  <details>
+    <summary>{{ "Expert configuration" | localize }}</summary>
+    <label for="step-json">{{
+      "Configuration, human views/actions, assignment policy and subprocess pins"
+        | localize
+    }}</label
+    ><textarea
+      class="font-mono"
+      id="step-json"
+      rows="14"
+      [disabled]="view().expertReadonly() || !view().selected()"
+      [(ngModel)]="view().selectedJson"
+      (ngModelChange)="view().markPending('node')"
+    ></textarea
+    ><button
+      pButton
+      severity="secondary"
+      type="button"
+      [disabled]="view().expertReadonly() || !view().selected()"
+      [outlined]="true"
+      (click)="view().applyNode()"
+    >
+      {{ "Apply step" | localize }}
+    </button>
+  </details>
+  <button
+    pButton
+    severity="secondary"
+    type="button"
+    [disabled]="
+      view().readonly() || !view().selected() || view().pending().length > 0
+    "
+    [outlined]="true"
+    (click)="view().remove()"
+  >
+    {{ "Remove step" | localize }}
+  </button>
+  <p>
+    {{
+      "Arrow keys move focused nodes; buttons select nodes. Control and data ports remain separate."
+        | localize
+    }}
+  </p>
+</section>

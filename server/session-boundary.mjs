@@ -1,4 +1,11 @@
 import { randomBytes, timingSafeEqual } from "node:crypto";
+import {
+  byteLimit,
+  readBoundedBody,
+  readBoundedJson,
+  boundedResponseBody,
+  TransferLimit,
+} from "./private-transfer.mjs";
 
 const unsafe = new Set(["POST", "PUT", "PATCH", "DELETE"]);
 const tokenRoutes = new Set([
@@ -21,7 +28,7 @@ const json = (status, value, headers = {}) =>
 async function publicError(response, error) {
   let body;
   try {
-    body = await response.json();
+    body = await readBoundedJson(response);
   } catch {
     return { error };
   }
@@ -62,6 +69,23 @@ export function createSessionBoundary(
   ) {
     throw new Error("Invalid server session-boundary configuration.");
   }
+  const requestLimit = byteLimit(config.maxBodyBytes, 11 * 1024 * 1024);
+  const responseLimit = byteLimit(config.maxResponseBytes, 11 * 1024 * 1024);
+  const transferTimeout = config.transferTimeoutMs ?? 60000;
+  if (
+    !Number.isSafeInteger(transferTimeout) ||
+    transferTimeout < 15000 ||
+    transferTimeout > 300000
+  )
+    throw Error("Invalid transfer deadline");
+  const maxInFlightRequests = config.maxInFlightRequests ?? 8;
+  if (
+    !Number.isSafeInteger(maxInFlightRequests) ||
+    maxInFlightRequests < 1 ||
+    maxInFlightRequests > 32
+  )
+    throw Error("Invalid proxy capacity");
+  let inFlightRequests = 0;
   const sessions = new Map();
   const maxSessions = config.maxSessions ?? 1024;
   if (
@@ -86,7 +110,10 @@ export function createSessionBoundary(
       ...init,
       redirect: "error",
       cache: "no-store",
-      signal: AbortSignal.timeout(15000),
+      signal: AbortSignal.any([
+        AbortSignal.timeout(init.transfer ? transferTimeout : 15000),
+        ...(init.signal ? [init.signal] : []),
+      ]),
     });
 
   const validTokens = (result) =>
@@ -108,7 +135,7 @@ export function createSessionBoundary(
           headers: { "content-type": "application/json" },
           body: JSON.stringify({ refresh_token: session.refreshToken }),
         });
-        const result = await response.json();
+        const result = await readBoundedJson(response);
         if (!response.ok || !validTokens(result)) {
           throw new Error("Refresh rejected");
         }
@@ -182,7 +209,7 @@ export function createSessionBoundary(
       }
       let credentials;
       try {
-        credentials = await request.json();
+        credentials = await readBoundedJson(request);
       } catch {
         return json(400, { error: "invalid_credentials_body" });
       }
@@ -239,7 +266,7 @@ export function createSessionBoundary(
       }
       let result;
       try {
-        result = await response.json();
+        result = await readBoundedJson(response);
       } catch {
         return json(502, { error: "invalid_authentication_response" });
       }
@@ -284,7 +311,7 @@ export function createSessionBoundary(
         return json(415, { error: "json_required" });
       let payload;
       try {
-        payload = await request.json();
+        payload = await readBoundedJson(request);
       } catch {
         return json(400, { error: "invalid_request" });
       }
@@ -390,77 +417,128 @@ export function createSessionBoundary(
         return json(401, { error: "session_expired" }, clearCookie);
       }
     }
-    const accessToken = session.accessToken;
-    const headers = new Headers({
-      authorization: `Bearer ${session.accessToken}`,
-    });
-    for (const key of ["content-type", "accept", "accept-language"]) {
-      if (request.headers.has(key)) {
-        headers.set(key, request.headers.get(key));
-      }
-    }
-    const body = ["GET", "HEAD"].includes(request.method)
-      ? undefined
-      : await request.arrayBuffer();
-    if (session.closed || sessions.get(id) !== session) {
-      return json(401, { error: "session_expired" }, clearCookie);
-    }
-    let response;
+    if (inFlightRequests >= maxInFlightRequests)
+      return json(503, { error: "proxy_capacity_reached", uncertain: false });
+    inFlightRequests++;
     try {
-      response = await call(url.pathname + url.search, {
-        method: request.method,
-        headers,
-        body,
+      const accessToken = session.accessToken;
+      const headers = new Headers({
+        authorization: `Bearer ${session.accessToken}`,
       });
-    } catch {
-      return json(503, {
-        error: "upstream_unavailable",
-        uncertain: unsafe.has(request.method),
-      });
-    }
-    if (response.status === 401) {
+      for (const key of ["content-type", "accept", "accept-language"]) {
+        if (request.headers.has(key)) {
+          headers.set(key, request.headers.get(key));
+        }
+      }
+      const transfer = /\/api\/v1\/(media|reports)\//.test(path);
+      let body;
       try {
-        if (session.accessToken === accessToken) {
-          await refresh(id, session);
-        }
-        if (unsafe.has(request.method)) {
-          return json(409, {
-            error: "request_not_replayed",
-            uncertain: true,
-            sessionValid: true,
-          });
-        }
-        headers.set("authorization", `Bearer ${session.accessToken}`);
+        body = ["GET", "HEAD"].includes(request.method)
+          ? undefined
+          : await readBoundedBody(
+              request,
+              requestLimit,
+              AbortSignal.any([
+                request.signal,
+                AbortSignal.timeout(transfer ? transferTimeout : 15000),
+              ]),
+            );
+      } catch (error) {
+        return json(error instanceof TransferLimit ? 413 : 400, {
+          error: "invalid_request_body",
+          uncertain: false,
+        });
+      }
+      if (session.closed || sessions.get(id) !== session) {
+        return json(401, { error: "session_expired" }, clearCookie);
+      }
+      let response;
+      try {
         response = await call(url.pathname + url.search, {
           method: request.method,
           headers,
+          body,
+          signal: request.signal,
+          transfer,
         });
       } catch {
-        return json(401, { error: "session_expired" }, clearCookie);
+        return json(503, {
+          error: "upstream_unavailable",
+          uncertain: unsafe.has(request.method),
+        });
       }
       if (response.status === 401) {
-        session.closed = true;
-        sessions.delete(id);
+        try {
+          if (session.accessToken === accessToken) {
+            await refresh(id, session);
+          }
+          if (unsafe.has(request.method)) {
+            return json(409, {
+              error: "request_not_replayed",
+              uncertain: true,
+              sessionValid: true,
+            });
+          }
+          headers.set("authorization", `Bearer ${session.accessToken}`);
+          response = await call(url.pathname + url.search, {
+            method: request.method,
+            headers,
+            signal: request.signal,
+            transfer,
+          });
+        } catch {
+          return json(401, { error: "session_expired" }, clearCookie);
+        }
+        if (response.status === 401) {
+          session.closed = true;
+          sessions.delete(id);
+          return json(401, { error: "session_expired" }, clearCookie);
+        }
+      }
+      if (session.closed || sessions.get(id) !== session) {
         return json(401, { error: "session_expired" }, clearCookie);
       }
-    }
-    if (session.closed || sessions.get(id) !== session) {
-      return json(401, { error: "session_expired" }, clearCookie);
-    }
-    const outgoing = new Headers({
-      "cache-control": "private, no-store",
-      "x-content-type-options": "nosniff",
-    });
-    for (const key of ["content-type", "content-disposition", "x-request-id"]) {
-      if (response.headers.has(key)) {
-        outgoing.set(key, response.headers.get(key));
+      const outgoing = new Headers({
+        "cache-control": "private, no-store",
+        "x-content-type-options": "nosniff",
+      });
+      for (const key of [
+        "content-type",
+        "content-disposition",
+        "x-request-id",
+      ]) {
+        if (response.headers.has(key)) {
+          outgoing.set(key, response.headers.get(key));
+        }
       }
+      try {
+        const signal = AbortSignal.any([
+          request.signal,
+          AbortSignal.timeout(transfer ? transferTimeout : 15000),
+        ]);
+        return new Response(
+          response.status === 204 || request.method === "HEAD"
+            ? null
+            : boundedResponseBody(
+                response,
+                responseLimit,
+                () =>
+                  !session.closed &&
+                  sessions.get(id) === session &&
+                  session.expiresAt > now(),
+                signal,
+              ),
+          { status: response.status, headers: outgoing },
+        );
+      } catch {
+        await response.body?.cancel().catch(() => {});
+        return json(502, {
+          error: "invalid_upstream_body",
+          uncertain: unsafe.has(request.method),
+        });
+      }
+    } finally {
+      inFlightRequests--;
     }
-    return new Response(
-      response.status === 204 || request.method === "HEAD"
-        ? null
-        : await response.arrayBuffer(),
-      { status: response.status, headers: outgoing },
-    );
   };
 }

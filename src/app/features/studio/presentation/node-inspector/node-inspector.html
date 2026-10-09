@@ -1,0 +1,114 @@
+@if (inspector(); as handler) {
+  <app-node-details [handler]="handler" />
+  <h3>{{ "Configuration" | localize }}</h3>
+  @for (field of fields(); track field.key) {
+    @if (field.selector === "form_versions") {
+      <p>{{ "Published form" | localize }}</p>
+      <app-studio-choice
+        controlId="node-form"
+        kind="form_versions"
+        [disabled]="disabled()"
+        [value]="String(draft()[field.key] || '')"
+        (picked)="update(field.key, $event)"
+      />
+    } @else if (field.selector) {
+      <p>{{ field.label | localize }} · {{ "Selected resource" | localize }}</p>
+      <p role="status">
+        {{
+          "Approved selector unavailable; existing pin is preserved." | localize
+        }}
+      </p>
+    } @else if (editable(field.key, field.schema)) {
+      <app-schema-input
+        [controlId]="'node-' + field.key"
+        [disabled]="disabled()"
+        [errors]="errors()"
+        [path]="field.key"
+        [required]="field.required"
+        [schema]="field.schema"
+        [value]="draft()[field.key]"
+        (valueChange)="update(field.key, $event)"
+      />
+    } @else {
+      <p>
+        {{ field.label | localize }} ·
+        {{
+          "Structured configuration is preserved; typed editing is unavailable."
+            | localize
+        }}
+      </p>
+    }
+  }
+  @if (extraKeys().length) {
+    <p role="status">
+      {{
+        "Unrecognized properties are preserved; server validation is required."
+          | localize
+      }}
+    </p>
+  }
+  @if (handler.handler_key === "human_task") {
+    <p>
+      {{
+        "Human completion does not establish protected business approval."
+          | localize
+      }}
+    </p>
+    <details>
+      <summary>{{ "Human views and actions" | localize }}</summary>
+      <app-schema-input
+        controlId="node-task"
+        path="task"
+        [disabled]="disabled()"
+        [errors]="errors()"
+        [schema]="taskSchema"
+        [value]="task()"
+        (valueChange)="updateSection('task', $event)"
+      />
+    </details>
+  }
+  <details>
+    <summary>{{ "Branch and loop policy" | localize }}</summary>
+    <app-schema-input
+      controlId="node-flow"
+      path="flow"
+      [disabled]="disabled()"
+      [errors]="errors()"
+      [schema]="flowSchema"
+      [value]="flow()"
+      (valueChange)="updateSection('flow', $event)"
+    />
+  </details>
+  @if (handler.handler_key === "subprocess") {
+    <app-subprocess-pin
+      [catalog]="children()"
+      [disabled]="disabled()"
+      [value]="child()"
+      (changed)="updateSection('child', $event)"
+      (draftChanged)="changed.emit()"
+      (validity)="childValid.set($event)"
+    />
+  }
+  @if (
+    handler.handler_key === "ai_decision" ||
+    handler.handler_key === "service_task" ||
+    handler.handler_key === "connection_status"
+  ) {
+    <p>
+      {{
+        "Configuration does not verify a connection or dispatch an operation."
+          | localize
+      }}
+    </p>
+  }
+  @if (hasErrors()) {
+    <p role="alert">{{ "Complete the required fields." | localize }}</p>
+  }
+  <button pButton type="button" [disabled]="disabled()" (click)="apply()">
+    {{ "Apply typed configuration" | localize }}
+  </button>
+} @else {
+  <p role="status">
+    {{ "Unsupported node metadata; configuration is preserved." | localize }}
+  </p>
+}

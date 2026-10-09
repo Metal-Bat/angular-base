@@ -1,11 +1,17 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { RecordSummary } from '../../../../shared/ui/record-summary/record-summary';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  input,
+} from '@angular/core';
 import type { AdminConsole } from './admin-console';
 import { ButtonDirective } from 'primeng/button';
 import { LocalizePipe } from '../../../../shared/ui/localize-pipe';
 
 @Component({
   selector: 'app-admin-command-result',
-  imports: [ButtonDirective, LocalizePipe],
+  imports: [RecordSummary, ButtonDirective, LocalizePipe],
   templateUrl: './admin-command-result.html',
   styleUrl: './admin-console.scss',
   host: { style: 'display: contents' },
@@ -20,4 +26,10 @@ export class AdminCommandResult {
         'busy' | 'execute' | 'json' | 'result' | 'rows' | 'use'
       >
     >();
+  readonly record = computed(() => {
+    const value = this.view().result()?.value;
+    return value && typeof value === 'object' && !Array.isArray(value)
+      ? (value as Readonly<Record<string, unknown>>)
+      : null;
+  });
 }

@@ -13,6 +13,7 @@
             {
               "component": "vertical",
               "label": "field",
+              "node_key": "field_1",
               "children": []
             }
           ]
@@ -34,6 +35,7 @@
             {
               "component": "horizontal",
               "label": "field",
+              "node_key": "field_1",
               "children": []
             }
           ]
@@ -55,6 +57,7 @@
             {
               "component": "grid",
               "label": "field",
+              "node_key": "field_1",
               "children": []
             }
           ]
@@ -80,6 +83,7 @@
             {
               "component": "text",
               "label": "field",
+              "node_key": "field_1",
               "scope": "/properties/field"
             }
           ]
@@ -105,6 +109,7 @@
             {
               "component": "textarea",
               "label": "field",
+              "node_key": "field_1",
               "scope": "/properties/field"
             }
           ]
@@ -130,6 +135,7 @@
             {
               "component": "integer",
               "label": "field",
+              "node_key": "field_1",
               "scope": "/properties/field"
             }
           ]
@@ -155,6 +161,7 @@
             {
               "component": "number",
               "label": "field",
+              "node_key": "field_1",
               "scope": "/properties/field"
             }
           ]
@@ -181,6 +188,7 @@
             {
               "component": "date",
               "label": "field",
+              "node_key": "field_1",
               "scope": "/properties/field"
             }
           ]
@@ -207,6 +215,7 @@
             {
               "component": "datetime",
               "label": "field",
+              "node_key": "field_1",
               "scope": "/properties/field"
             }
           ]
@@ -232,6 +241,7 @@
             {
               "component": "boolean",
               "label": "field",
+              "node_key": "field_1",
               "scope": "/properties/field"
             }
           ]
@@ -257,6 +267,7 @@
             {
               "component": "choice",
               "label": "field",
+              "node_key": "field_1",
               "scope": "/properties/field",
               "source": {
                 "kind": "custom",
@@ -291,6 +302,7 @@
             {
               "component": "calculated",
               "label": "field",
+              "node_key": "field_1",
               "scope": "/properties/field",
               "calculation": {
                 "expression": "\"\""
@@ -315,7 +327,8 @@
           "children": [
             {
               "component": "display",
-              "label": "field"
+              "label": "field",
+              "node_key": "field_1"
             }
           ]
         }
@@ -340,6 +353,7 @@
             {
               "component": "user",
               "label": "field",
+              "node_key": "field_1",
               "scope": "/properties/field",
               "source": {
                 "kind": "domain",
@@ -369,6 +383,7 @@
             {
               "component": "group",
               "label": "field",
+              "node_key": "field_1",
               "scope": "/properties/field",
               "source": {
                 "kind": "domain",
@@ -402,6 +417,7 @@
             {
               "component": "repeater",
               "label": "field",
+              "node_key": "field_1",
               "scope": "/properties/field",
               "children": []
             }
@@ -432,6 +448,7 @@
             {
               "component": "table",
               "label": "field",
+              "node_key": "field_1",
               "scope": "/properties/field",
               "children": []
             }
@@ -458,6 +475,7 @@
             {
               "component": "media",
               "label": "field",
+              "node_key": "field_1",
               "scope": "/properties/field"
             }
           ]
@@ -486,6 +504,7 @@
             {
               "component": "attachment_collection",
               "label": "field",
+              "node_key": "field_1",
               "scope": "/properties/field"
             }
           ]
@@ -507,6 +526,7 @@
             {
               "component": "action",
               "label": "field",
+              "node_key": "field_1",
               "outcome": "next"
             }
           ]

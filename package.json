@@ -25,10 +25,10 @@
     "format:check": "prettier --check .",
     "typecheck": "tsc --noEmit -p tsconfig.app.json",
     "api:inventory": "node scripts/api-inventory.mjs",
-    "api:check": "node scripts/api-inventory.mjs --check && node scripts/check-platform-contract.mjs && node scripts/generate-api.mjs --check && node scripts/generate-authoring-contracts.mjs --check && node scripts/generate-studio-fixtures.mjs --check && node scripts/generate-admin-contracts.mjs --check && node scripts/generate-record-contracts.mjs --check",
+    "api:check": "node scripts/api-inventory.mjs --check && node scripts/check-platform-contract.mjs && node scripts/generate-api.mjs --check && node scripts/generate-authoring-contracts.mjs --check && node scripts/generate-studio-fixtures.mjs --check && node scripts/generate-admin-contracts.mjs --check && node scripts/generate-record-contracts.mjs --check && node scripts/generate-node-inspectors.mjs --check && node scripts/generate-preferences-contract.mjs --check",
     "ci:gates": "node scripts/check-ci-gates.mjs",
     "dependencies:report": "node scripts/dependency-report.mjs",
-    "test:boundary": "node server/session-boundary.spec.mjs",
+    "test:boundary": "node server/session-boundary.spec.mjs && node --test server/http-boundary.spec.mjs",
     "session:dev": "node server/main.mjs",
     "test:browser-boundary": "node server/browser-boundary.spec.mjs",
     "api:generate": "node scripts/generate-api.mjs && node scripts/generate-authoring-contracts.mjs && node scripts/generate-studio-fixtures.mjs && node scripts/generate-admin-contracts.mjs && node scripts/generate-record-contracts.mjs",
@@ -47,7 +47,12 @@
     "test:deployment-https": "TLS_BROWSER_CHECKS=1 node server/browser-boundary.spec.mjs",
     "test:browser-quality": "node scripts/browser-quality-check.mjs",
     "test:browser-records": "RECORD_BROWSER_CHECKS=1 node server/browser-auth.spec.mjs",
-    "test:browser-catalogs": "STUDIO_CATALOG_BROWSER_CHECKS=1 node server/browser-auth.spec.mjs"
+    "test:browser-catalogs": "STUDIO_CATALOG_BROWSER_CHECKS=1 node server/browser-auth.spec.mjs",
+    "delivery:inventory": "node scripts/delivery-inventory.mjs",
+    "delivery:check": "node scripts/delivery-inventory.mjs --check && node scripts/check-delivery-ui.mjs && node scripts/check-peer-contract.mjs && node scripts/check-help-catalog.mjs",
+    "test:diagnostics": "node --test server/browser-diagnostics.spec.mjs",
+    "test:paired-smoke": "python3 scripts/paired-smoke.py",
+    "delivery:status": "node scripts/delivery-status.mjs"
   },
   "prettier": {
     "overrides": [
