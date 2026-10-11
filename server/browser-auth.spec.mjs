@@ -394,6 +394,22 @@ const script = `
   await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
   await wait(()=>prime.getAnimations().every(animation=>animation.playState!=='running'),'light input transition settled');
 
+  const ant=sample.querySelector('#ant-design-name');const antAction=sample.querySelector('.ant-btn');
+  await wait(()=>document.getElementById('ant-design-styles')?.sheet&&getComputedStyle(ant).borderTopStyle==='solid','Ant Design scoped stylesheet ready');
+  check(ant.classList.contains('ant-input')&&antAction.classList.contains('ant-btn-primary'),'NG-ZORRO directives rendered');
+  check(antAction.disabled,'Ant action requires input');
+  const antBackground=getComputedStyle(ant).backgroundColor;
+  ant.value='Ant ۱۲۳';ant.dispatchEvent(new Event('input',{bubbles:true}));
+  await wait(()=>!antAction.disabled,'Ant form enabled');antAction.click();
+  await wait(()=>sample.querySelector('output').textContent.includes('Ant ۱۲۳'),'Ant form output');
+  check(getComputedStyle(sample.querySelector('.ant-design')).display==='grid','Tailwind layout on Ant boundary');
+  check(getComputedStyle(ant).fontFamily.includes('system-ui'),'Ant shared typography');
+  sample.querySelector('.ant-select-selector').click();
+  await wait(()=>document.querySelector('.ant-select-dropdown .ant-select-item-option'),'Ant select overlay');
+  const antOption=[...document.querySelectorAll('.ant-select-item-option')].find(option=>option.textContent.trim()==='Example');
+  check(antOption&&getComputedStyle(document.querySelector('.ant-select-dropdown')).position==='relative','Ant overlay styled');
+  antOption.click();await wait(()=>window.ng.getComponent(sample).antStatus()==='example'&&!document.querySelector('.ant-select-dropdown'),'Ant overlay selection');
+
   const initialBackground=getComputedStyle(prime).backgroundColor;
   check(getComputedStyle(prime).fontFamily.includes('system-ui') && getComputedStyle(material).fontFamily.includes('system-ui'),'shared typography');
   for (const [input,value] of [[prime,'Ali ۱۲۳'],[material,'Review']]) { input.value=value; input.dispatchEvent(new Event('input',{bubbles:true})); }
@@ -402,6 +418,8 @@ const script = `
   await toggleTheme();
   await wait(()=>document.documentElement.classList.contains('app-dark'),'dark theme');
   await wait(()=>getComputedStyle(prime).backgroundColor!==initialBackground,'Prime dark theme (initial='+initialBackground+', current='+getComputedStyle(prime).backgroundColor+')');
+  await wait(()=>getComputedStyle(ant).backgroundColor!==antBackground,'Ant dark theme');
+  check(ant.value==='Ant ۱۲۳','Ant theme preserves input');
   window.fixtureStage='persian';
   await chooseLanguage('fa');
   await wait(()=>document.documentElement.dir==='rtl' && sample.textContent.includes('کنترل‌های فرم'),'Persian RTL');
@@ -410,7 +428,7 @@ const script = `
   await chooseTheme('blue-dark');
   check(document.documentElement.dataset.palette==='blue'&&document.documentElement.classList.contains('app-dark'),'RTL selection preserved');
   await auditAccessibility('shared-ui-persian-dark');
-  check(getComputedStyle(prime).fontFamily.includes('Yekan'),'Persian font stack missing on PrimeNG');check(getComputedStyle(material).fontFamily.includes('Yekan'),'Persian font stack missing on Material');
+  check(getComputedStyle(prime).fontFamily.includes('Yekan'),'Persian font stack missing on PrimeNG');check(getComputedStyle(material).fontFamily.includes('Yekan'),'Persian font stack missing on Material');check(getComputedStyle(ant).fontFamily.includes('Yekan')&&ant.closest('.ant-design').dir==='rtl'&&ant.value==='Ant ۱۲۳','Ant Persian font, direction and preserved input');
   const languagePicker=document.querySelector('[data-language-picker] select');check(languagePicker.options.length===3,'language dropdown');await chooseLanguage('ar');await wait(()=>document.documentElement.lang==='ar'&&sample.textContent.includes('عناصر النموذج')&&!languagePicker.disabled,'Arabic language and catalog rendered');check(document.documentElement.dir==='rtl','Arabic direction');check(sample.textContent.includes('عناصر النموذج'),'Arabic catalog');check(themeControl().getAttribute('aria-label')==='المظهر'&&themeControl().textContent.includes('أزرق'),'Arabic theme labels');check(prime.value==='Ali ۱۲۳'&&material.value==='Review','Arabic changed canonical values');await auditAccessibility('shared-ui-arabic-dark');await chooseLanguage('fa');await wait(()=>document.documentElement.lang==='fa'&&!languagePicker.disabled,'Persian restore');
 
   window.fixtureStage='prime-dialog';

@@ -27,124 +27,6 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
   schemas: {
-    /**
-     * ErrorResponse
-     * @description Localized failure with a stable application error number.
-     */
-    ErrorResponse: {
-      /** Code */
-      code: number;
-      /** Data */
-      data?: {
-        [key: string]: unknown;
-      } | null;
-      /** Error */
-      error: string;
-      /** Request Id */
-      request_id: string;
-      /**
-       * Success
-       * @default false
-       * @constant
-       */
-      success: false;
-    };
-    /** SuccessResponse[PreferencesDTO] */
-    SuccessResponse_PreferencesDTO_: {
-      /**
-       * Code
-       * @default 200
-       */
-      code: number;
-      data: components['schemas']['PreferencesDTO'];
-      /** Error */
-      error?: null;
-      /** Request Id */
-      request_id: string;
-      /**
-       * Success
-       * @default true
-       * @constant
-       */
-      success: true;
-    };
-    /** PreferencesDTO */
-    PreferencesDTO: {
-      /** @description Appearance settings. */
-      appearance?: components['schemas']['AppearancePreferences'];
-      /** @description Language, timezone, calendar and display digits. */
-      locale?: components['schemas']['LocalePreferences'];
-      notifications?: components['schemas']['NotificationPreferences'];
-      /**
-       * Ref Id
-       * @description Current self-owned optimistic reference; version zero represents unsaved defaults.
-       */
-      ref_id: string;
-      /**
-       * Schema Version
-       * @description Version of the typed personal settings contract.
-       * @default 1
-       * @constant
-       */
-      schema_version: 1;
-      /** @description Personal workspace defaults. */
-      workspace?: components['schemas']['WorkspacePreferences'];
-    };
-    /** WorkspacePreferences */
-    WorkspacePreferences: {
-      /**
-       * Landing Key
-       * @description Allowlisted landing route key; a preference grants no screen permission.
-       * @default requests
-       * @enum {string}
-       */
-      landing_key: 'requests' | 'work_items' | 'studio' | 'dashboard';
-      /**
-       * Page Size
-       * @description Default list page size, from 1 through 100 items.
-       * @default 20
-       */
-      page_size: number;
-    };
-    /** NotificationPreferences */
-    NotificationPreferences: {
-      /**
-       * Email Enabled
-       * @description Opt in to optional application email; mandatory security and approval notices remain enabled.
-       * @default false
-       */
-      email_enabled: boolean;
-    };
-    /** LocalePreferences */
-    LocalePreferences: {
-      /**
-       * Calendar
-       * @description Gregorian calendar only; Persian language does not select a different calendar.
-       * @default gregory
-       * @constant
-       */
-      calendar: 'gregory';
-      /**
-       * Language
-       * @description Preferred presentation language; canonical data stays unchanged.
-       * @default en
-       * @enum {string}
-       */
-      language: 'en' | 'fa';
-      /**
-       * Numbering
-       * @description Preferred display digits; stored numbers keep their canonical format.
-       * @default latn
-       * @enum {string}
-       */
-      numbering: 'latn' | 'arabext';
-      /**
-       * Timezone
-       * @description Valid IANA timezone for presentation; timestamps remain UTC.
-       * @default UTC
-       */
-      timezone: string;
-    };
     /** AppearancePreferences */
     AppearancePreferences: {
       /**
@@ -169,6 +51,89 @@ export interface components {
        * @enum {string}
        */
       theme_mode: 'light' | 'dark' | 'system';
+    };
+    /**
+     * ErrorResponse
+     * @description Localized failure with a stable application error number.
+     */
+    ErrorResponse: {
+      /** Code */
+      code: number;
+      /** Data */
+      data?: {
+        [key: string]: unknown;
+      } | null;
+      /** Error */
+      error: string;
+      /** Request Id */
+      request_id: string;
+      /**
+       * Success
+       * @default false
+       * @constant
+       */
+      success: false;
+    };
+    /** LocalePreferences */
+    LocalePreferences: {
+      /**
+       * Calendar
+       * @description Gregorian calendar only; Persian language does not select a different calendar.
+       * @default gregory
+       * @constant
+       */
+      calendar: 'gregory';
+      /**
+       * Language
+       * @description Preferred presentation language; canonical data stays unchanged.
+       * @default en
+       * @enum {string}
+       */
+      language: 'en' | 'fa' | 'ar';
+      /**
+       * Numbering
+       * @description Preferred display digits; stored numbers keep their canonical format.
+       * @default latn
+       * @enum {string}
+       */
+      numbering: 'latn' | 'arabext' | 'arab';
+      /**
+       * Timezone
+       * @description Valid IANA timezone for presentation; timestamps remain UTC.
+       * @default UTC
+       */
+      timezone: string;
+    };
+    /** NotificationPreferences */
+    NotificationPreferences: {
+      /**
+       * Email Enabled
+       * @description Opt in to optional application email; mandatory security and approval notices remain enabled.
+       * @default false
+       */
+      email_enabled: boolean;
+    };
+    /** PreferencesDTO */
+    PreferencesDTO: {
+      /** @description Appearance settings. */
+      appearance?: components['schemas']['AppearancePreferences'];
+      /** @description Language, timezone, calendar and display digits. */
+      locale?: components['schemas']['LocalePreferences'];
+      notifications?: components['schemas']['NotificationPreferences'];
+      /**
+       * Ref Id
+       * @description Current self-owned optimistic reference; version zero represents unsaved defaults.
+       */
+      ref_id: string;
+      /**
+       * Schema Version
+       * @description Version of the typed personal settings contract.
+       * @default 1
+       * @constant
+       */
+      schema_version: 1;
+      /** @description Personal workspace defaults. */
+      workspace?: components['schemas']['WorkspacePreferences'];
     };
     /**
      * PreferencesPatch
@@ -198,6 +163,41 @@ export interface components {
       /** @description Omitted preserves workspace; null resets this group; an object merges only supplied fields. */
       workspace?: components['schemas']['WorkspacePreferences'] | null;
     };
+    /** SuccessResponse[PreferencesDTO] */
+    SuccessResponse_PreferencesDTO_: {
+      /**
+       * Code
+       * @default 200
+       */
+      code: number;
+      data: components['schemas']['PreferencesDTO'];
+      /** Error */
+      error?: null;
+      /** Request Id */
+      request_id: string;
+      /**
+       * Success
+       * @default true
+       * @constant
+       */
+      success: true;
+    };
+    /** WorkspacePreferences */
+    WorkspacePreferences: {
+      /**
+       * Landing Key
+       * @description Allowlisted landing route key; a preference grants no screen permission.
+       * @default requests
+       * @enum {string}
+       */
+      landing_key: 'requests' | 'work_items' | 'studio' | 'dashboard';
+      /**
+       * Page Size
+       * @description Default list page size, from 1 through 100 items.
+       * @default 20
+       */
+      page_size: number;
+    };
   };
   responses: never;
   parameters: never;
@@ -219,7 +219,7 @@ export interface operations {
          */
         Date?: string;
         /**
-         * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+         * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
          * @example fa-IR
          */
         'Accept-Language'?: string;
@@ -368,7 +368,7 @@ export interface operations {
          */
         Date?: string;
         /**
-         * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+         * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
          * @example fa-IR
          */
         'Accept-Language'?: string;

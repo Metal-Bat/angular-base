@@ -123,27 +123,81 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
   schemas: {
-    /** InboxQuery */
-    InboxQuery: {
+    /** AccountTarget */
+    AccountTarget: {
+      /** Available */
+      available: boolean;
       /**
-       * Page
-       * @default 1
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
        */
-      page: number;
+      kind: 'account';
+      /** Ref Id */
+      ref_id?: string | null;
       /**
-       * Size
-       * @default 20
+       * Route Key
+       * @default me
+       * @constant
        */
-      size: number;
-      /** Filters */
-      filters?: components['schemas']['FilterCriteria'][];
-      /** Sort Orders */
-      sort_orders?: components['schemas']['SortOrder'][];
+      route_key: 'me';
+    };
+    /** CalendarTarget */
+    CalendarTarget: {
+      /** Available */
+      available: boolean;
       /**
-       * Unread
-       * @description True limits to unread rows; false limits to read rows; omitted/null includes both.
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
        */
-      unread?: boolean | null;
+      kind: 'calendar';
+      /** Ref Id */
+      ref_id?: string | null;
+      /**
+       * Route Key
+       * @default calendar_events
+       * @constant
+       */
+      route_key: 'calendar_events';
+    };
+    /** CaseTarget */
+    CaseTarget: {
+      /** Available */
+      available: boolean;
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      kind: 'case';
+      /** Ref Id */
+      ref_id?: string | null;
+      /**
+       * Route Key
+       * @default business_requests
+       * @constant
+       */
+      route_key: 'business_requests';
+    };
+    /**
+     * ErrorResponse
+     * @description Localized failure with a stable application error number.
+     */
+    ErrorResponse: {
+      /** Code */
+      code: number;
+      /** Data */
+      data?: {
+        [key: string]: unknown;
+      } | null;
+      /** Error */
+      error: string;
+      /** Request Id */
+      request_id: string;
+      /**
+       * Success
+       * @default false
+       * @constant
+       */
+      success: false;
     };
     /**
      * FilterCriteria
@@ -177,42 +231,101 @@ export interface components {
       | 'lte'
       | 'in'
       | 'nin';
-    /**
-     * SortOrder
-     * @description Sort one field or multiple fields using the same direction.
-     */
-    SortOrder: {
-      /** Multi Field */
-      multi_field?: string[];
-      /** Field Name */
-      field_name?: string | null;
-      /** @default asc */
-      operation: components['schemas']['SortOperation'];
+    /** FutureTarget */
+    FutureTarget: {
+      /** Available */
+      available: boolean;
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      kind: 'operation';
+      /** Ref Id */
+      ref_id?: string | null;
+      /** Route Key */
+      route_key?: null;
     };
-    /**
-     * SortOperation
-     * @description Sort direction for one field or a sequence of fields.
-     * @enum {string}
-     */
-    SortOperation: 'asc' | 'desc';
+    /** InboxDTO */
+    InboxDTO: {
+      /** Content */
+      content: string | null;
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
+      /** Locale */
+      locale: string;
+      /** Priority */
+      priority: number;
+      /** Read At */
+      read_at: string | null;
+      /** Ref Id */
+      ref_id: string;
+      /**
+       * Schema Version
+       * @default 1
+       * @constant
+       */
+      schema_version: 1;
+      /** Status */
+      status: string;
+      /** Subject */
+      subject: string;
+      /** Target */
+      target:
+        | components['schemas']['CaseTarget']
+        | components['schemas']['WorkTarget']
+        | components['schemas']['ReportTarget']
+        | components['schemas']['AccountTarget']
+        | components['schemas']['SupportTarget']
+        | components['schemas']['CalendarTarget']
+        | components['schemas']['FutureTarget'];
+      /** Template Key */
+      template_key: string;
+      /** Template Version */
+      template_version: string;
+    };
+    /** InboxQuery */
+    InboxQuery: {
+      /** Filters */
+      filters?: components['schemas']['FilterCriteria'][];
+      /**
+       * Page
+       * @default 1
+       */
+      page: number;
+      /**
+       * Size
+       * @default 20
+       */
+      size: number;
+      /** Sort Orders */
+      sort_orders?: components['schemas']['SortOrder'][];
+      /**
+       * Unread
+       * @description True limits to unread rows; false limits to read rows; omitted/null includes both.
+       */
+      unread?: boolean | null;
+    };
     /** PageResponse[Page[InboxDTO]] */
     PageResponse_Page_InboxDTO__: {
+      /**
+       * Code
+       * @default 200
+       */
+      code: number;
+      /** Error */
+      error?: null;
+      /** Request Id */
+      request_id: string;
+      result: components['schemas']['Page_InboxDTO_'];
       /**
        * Success
        * @default true
        * @constant
        */
       success: true;
-      /** Request Id */
-      request_id: string;
-      /** Error */
-      error?: null;
-      /**
-       * Code
-       * @default 200
-       */
-      code: number;
-      result: components['schemas']['Page_InboxDTO_'];
     };
     /** Page[InboxDTO] */
     Page_InboxDTO_: {
@@ -236,94 +349,19 @@ export interface components {
        */
       readonly total_pages: number;
     };
-    /** InboxDTO */
-    InboxDTO: {
-      /**
-       * Schema Version
-       * @default 1
-       * @constant
-       */
-      schema_version: 1;
-      /** Ref Id */
-      ref_id: string;
-      /** Template Key */
-      template_key: string;
-      /** Template Version */
-      template_version: string;
-      /** Locale */
-      locale: string;
-      /** Subject */
-      subject: string;
-      /** Content */
-      content: string | null;
-      /** Priority */
-      priority: number;
-      /** Status */
-      status: string;
-      /** Read At */
-      read_at: string | null;
-      /**
-       * Created At
-       * Format: date-time
-       */
-      created_at: string;
-      /** Target */
-      target:
-        | components['schemas']['CaseTarget']
-        | components['schemas']['WorkTarget']
-        | components['schemas']['ReportTarget']
-        | components['schemas']['AccountTarget']
-        | components['schemas']['SupportTarget']
-        | components['schemas']['CalendarTarget']
-        | components['schemas']['FutureTarget'];
-    };
-    /** CaseTarget */
-    CaseTarget: {
-      /** Available */
-      available: boolean;
-      /** Ref Id */
-      ref_id?: string | null;
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      kind: 'case';
-      /**
-       * Route Key
-       * @default business_requests
-       * @constant
-       */
-      route_key: 'business_requests';
-    };
-    /** WorkTarget */
-    WorkTarget: {
-      /** Available */
-      available: boolean;
-      /** Ref Id */
-      ref_id?: string | null;
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      kind: 'ai_approval' | 'work_item';
-      /**
-       * Route Key
-       * @default work_items
-       * @constant
-       */
-      route_key: 'work_items';
-    };
+    /** ReadCommand */
+    ReadCommand: Record<string, never>;
     /** ReportTarget */
     ReportTarget: {
       /** Available */
       available: boolean;
-      /** Ref Id */
-      ref_id?: string | null;
       /**
        * @description discriminator enum property added by openapi-typescript
        * @enum {string}
        */
       kind: 'report';
+      /** Ref Id */
+      ref_id?: string | null;
       /**
        * Route Key
        * @default reports
@@ -331,35 +369,73 @@ export interface components {
        */
       route_key: 'reports';
     };
-    /** AccountTarget */
-    AccountTarget: {
-      /** Available */
-      available: boolean;
-      /** Ref Id */
-      ref_id?: string | null;
+    /**
+     * SortOperation
+     * @description Sort direction for one field or a sequence of fields.
+     * @enum {string}
+     */
+    SortOperation: 'asc' | 'desc';
+    /**
+     * SortOrder
+     * @description Sort one field or multiple fields using the same direction.
+     */
+    SortOrder: {
+      /** Field Name */
+      field_name?: string | null;
+      /** Multi Field */
+      multi_field?: string[];
+      /** @default asc */
+      operation: components['schemas']['SortOperation'];
+    };
+    /** SuccessResponse[InboxDTO] */
+    SuccessResponse_InboxDTO_: {
       /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
+       * Code
+       * @default 200
        */
-      kind: 'account';
+      code: number;
+      data: components['schemas']['InboxDTO'];
+      /** Error */
+      error?: null;
+      /** Request Id */
+      request_id: string;
       /**
-       * Route Key
-       * @default me
+       * Success
+       * @default true
        * @constant
        */
-      route_key: 'me';
+      success: true;
+    };
+    /** SuccessResponse[UnreadDTO] */
+    SuccessResponse_UnreadDTO_: {
+      /**
+       * Code
+       * @default 200
+       */
+      code: number;
+      data: components['schemas']['UnreadDTO'];
+      /** Error */
+      error?: null;
+      /** Request Id */
+      request_id: string;
+      /**
+       * Success
+       * @default true
+       * @constant
+       */
+      success: true;
     };
     /** SupportTarget */
     SupportTarget: {
       /** Available */
       available: boolean;
-      /** Ref Id */
-      ref_id?: string | null;
       /**
        * @description discriminator enum property added by openapi-typescript
        * @enum {string}
        */
       kind: 'support';
+      /** Ref Id */
+      ref_id?: string | null;
       /**
        * Route Key
        * @default support_incidents
@@ -367,105 +443,29 @@ export interface components {
        */
       route_key: 'support_incidents';
     };
-    /** CalendarTarget */
-    CalendarTarget: {
-      /** Available */
-      available: boolean;
-      /** Ref Id */
-      ref_id?: string | null;
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      kind: 'calendar';
-      /**
-       * Route Key
-       * @default calendar_events
-       * @constant
-       */
-      route_key: 'calendar_events';
-    };
-    /** FutureTarget */
-    FutureTarget: {
-      /** Available */
-      available: boolean;
-      /** Ref Id */
-      ref_id?: string | null;
-      /**
-       * @description discriminator enum property added by openapi-typescript
-       * @enum {string}
-       */
-      kind: 'operation';
-      /** Route Key */
-      route_key?: null;
-    };
-    /**
-     * ErrorResponse
-     * @description Localized failure with a stable application error number.
-     */
-    ErrorResponse: {
-      /**
-       * Success
-       * @default false
-       * @constant
-       */
-      success: false;
-      /** Request Id */
-      request_id: string;
-      /** Error */
-      error: string;
-      /** Code */
-      code: number;
-      /** Data */
-      data?: {
-        [key: string]: unknown;
-      } | null;
-    };
-    /** SuccessResponse[UnreadDTO] */
-    SuccessResponse_UnreadDTO_: {
-      /**
-       * Success
-       * @default true
-       * @constant
-       */
-      success: true;
-      /** Request Id */
-      request_id: string;
-      /** Error */
-      error?: null;
-      /**
-       * Code
-       * @default 200
-       */
-      code: number;
-      data: components['schemas']['UnreadDTO'];
-    };
     /** UnreadDTO */
     UnreadDTO: {
       /** Total */
       total: number;
     };
-    /** SuccessResponse[InboxDTO] */
-    SuccessResponse_InboxDTO_: {
+    /** WorkTarget */
+    WorkTarget: {
+      /** Available */
+      available: boolean;
       /**
-       * Success
-       * @default true
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      kind: 'ai_approval' | 'work_item';
+      /** Ref Id */
+      ref_id?: string | null;
+      /**
+       * Route Key
+       * @default work_items
        * @constant
        */
-      success: true;
-      /** Request Id */
-      request_id: string;
-      /** Error */
-      error?: null;
-      /**
-       * Code
-       * @default 200
-       */
-      code: number;
-      data: components['schemas']['InboxDTO'];
+      route_key: 'work_items';
     };
-    /** ReadCommand */
-    ReadCommand: Record<string, never>;
   };
   responses: never;
   parameters: never;
@@ -489,7 +489,7 @@ export interface operations {
          */
         Date?: string;
         /**
-         * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+         * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
          * @example fa-IR
          */
         'Accept-Language'?: string;
@@ -511,13 +511,13 @@ export interface operations {
         headers: {
           'Cache-Control'?: 'private, no-store, no-transform';
           'X-Accel-Buffering'?: 'no';
-          'X-Content-Type-Options'?: 'nosniff';
-          /** @description Optional client Date reading: available, unavailable, or invalid. No request is rejected for this diagnostic. */
-          'X-Client-Date-Status'?: 'available' | 'unavailable' | 'invalid';
-          /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
-          'X-Client-Date-Delta-Seconds'?: number;
           /** @description Present as check-device-time only when the configured apparent difference threshold is reached. */
           'X-Client-Date-Advisory'?: 'check-device-time';
+          /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
+          'X-Client-Date-Delta-Seconds'?: number;
+          /** @description Optional client Date reading: available, unavailable, or invalid. No request is rejected for this diagnostic. */
+          'X-Client-Date-Status'?: 'available' | 'unavailable' | 'invalid';
+          'X-Content-Type-Options'?: 'nosniff';
           /** @description Server UTC receipt timestamp. Response Date, when present, is generated by the HTTP server or proxy. */
           'X-Server-Received-At'?: string;
           [name: string]: unknown;
@@ -540,22 +540,22 @@ export interface operations {
         };
         content: {
           'application/json': {
-            /**
-             * Success
-             * @default false
-             * @constant
-             */
-            success: false;
-            /** Request Id */
-            request_id: string;
-            /** Error */
-            error: string;
             /** Code */
             code: number;
             /** Data */
             data?: {
               [key: string]: unknown;
             } | null;
+            /** Error */
+            error: string;
+            /** Request Id */
+            request_id: string;
+            /**
+             * Success
+             * @default false
+             * @constant
+             */
+            success: false;
           };
         };
       };
@@ -566,22 +566,22 @@ export interface operations {
         };
         content: {
           'application/json': {
-            /**
-             * Success
-             * @default false
-             * @constant
-             */
-            success: false;
-            /** Request Id */
-            request_id: string;
-            /** Error */
-            error: string;
             /** Code */
             code: number;
             /** Data */
             data?: {
               [key: string]: unknown;
             } | null;
+            /** Error */
+            error: string;
+            /** Request Id */
+            request_id: string;
+            /**
+             * Success
+             * @default false
+             * @constant
+             */
+            success: false;
           };
         };
       };
@@ -592,22 +592,22 @@ export interface operations {
         };
         content: {
           'application/json': {
-            /**
-             * Success
-             * @default false
-             * @constant
-             */
-            success: false;
-            /** Request Id */
-            request_id: string;
-            /** Error */
-            error: string;
             /** Code */
             code: number;
             /** Data */
             data?: {
               [key: string]: unknown;
             } | null;
+            /** Error */
+            error: string;
+            /** Request Id */
+            request_id: string;
+            /**
+             * Success
+             * @default false
+             * @constant
+             */
+            success: false;
           };
         };
       };
@@ -618,22 +618,22 @@ export interface operations {
         };
         content: {
           'application/json': {
-            /**
-             * Success
-             * @default false
-             * @constant
-             */
-            success: false;
-            /** Request Id */
-            request_id: string;
-            /** Error */
-            error: string;
             /** Code */
             code: number;
             /** Data */
             data?: {
               [key: string]: unknown;
             } | null;
+            /** Error */
+            error: string;
+            /** Request Id */
+            request_id: string;
+            /**
+             * Success
+             * @default false
+             * @constant
+             */
+            success: false;
           };
         };
       };
@@ -644,22 +644,22 @@ export interface operations {
         };
         content: {
           'application/json': {
-            /**
-             * Success
-             * @default false
-             * @constant
-             */
-            success: false;
-            /** Request Id */
-            request_id: string;
-            /** Error */
-            error: string;
             /** Code */
             code: number;
             /** Data */
             data?: {
               [key: string]: unknown;
             } | null;
+            /** Error */
+            error: string;
+            /** Request Id */
+            request_id: string;
+            /**
+             * Success
+             * @default false
+             * @constant
+             */
+            success: false;
           };
         };
       };
@@ -670,22 +670,22 @@ export interface operations {
         };
         content: {
           'application/json': {
-            /**
-             * Success
-             * @default false
-             * @constant
-             */
-            success: false;
-            /** Request Id */
-            request_id: string;
-            /** Error */
-            error: string;
             /** Code */
             code: number;
             /** Data */
             data?: {
               [key: string]: unknown;
             } | null;
+            /** Error */
+            error: string;
+            /** Request Id */
+            request_id: string;
+            /**
+             * Success
+             * @default false
+             * @constant
+             */
+            success: false;
           };
         };
       };
@@ -696,22 +696,22 @@ export interface operations {
         };
         content: {
           'application/json': {
-            /**
-             * Success
-             * @default false
-             * @constant
-             */
-            success: false;
-            /** Request Id */
-            request_id: string;
-            /** Error */
-            error: string;
             /** Code */
             code: number;
             /** Data */
             data?: {
               [key: string]: unknown;
             } | null;
+            /** Error */
+            error: string;
+            /** Request Id */
+            request_id: string;
+            /**
+             * Success
+             * @default false
+             * @constant
+             */
+            success: false;
           };
         };
       };
@@ -722,22 +722,22 @@ export interface operations {
         };
         content: {
           'application/json': {
-            /**
-             * Success
-             * @default false
-             * @constant
-             */
-            success: false;
-            /** Request Id */
-            request_id: string;
-            /** Error */
-            error: string;
             /** Code */
             code: number;
             /** Data */
             data?: {
               [key: string]: unknown;
             } | null;
+            /** Error */
+            error: string;
+            /** Request Id */
+            request_id: string;
+            /**
+             * Success
+             * @default false
+             * @constant
+             */
+            success: false;
           };
         };
       };
@@ -748,22 +748,22 @@ export interface operations {
         };
         content: {
           'application/json': {
-            /**
-             * Success
-             * @default false
-             * @constant
-             */
-            success: false;
-            /** Request Id */
-            request_id: string;
-            /** Error */
-            error: string;
             /** Code */
             code: number;
             /** Data */
             data?: {
               [key: string]: unknown;
             } | null;
+            /** Error */
+            error: string;
+            /** Request Id */
+            request_id: string;
+            /**
+             * Success
+             * @default false
+             * @constant
+             */
+            success: false;
           };
         };
       };
@@ -774,22 +774,22 @@ export interface operations {
         };
         content: {
           'application/json': {
-            /**
-             * Success
-             * @default false
-             * @constant
-             */
-            success: false;
-            /** Request Id */
-            request_id: string;
-            /** Error */
-            error: string;
             /** Code */
             code: number;
             /** Data */
             data?: {
               [key: string]: unknown;
             } | null;
+            /** Error */
+            error: string;
+            /** Request Id */
+            request_id: string;
+            /**
+             * Success
+             * @default false
+             * @constant
+             */
+            success: false;
           };
         };
       };
@@ -800,22 +800,22 @@ export interface operations {
         };
         content: {
           'application/json': {
-            /**
-             * Success
-             * @default false
-             * @constant
-             */
-            success: false;
-            /** Request Id */
-            request_id: string;
-            /** Error */
-            error: string;
             /** Code */
             code: number;
             /** Data */
             data?: {
               [key: string]: unknown;
             } | null;
+            /** Error */
+            error: string;
+            /** Request Id */
+            request_id: string;
+            /**
+             * Success
+             * @default false
+             * @constant
+             */
+            success: false;
           };
         };
       };
@@ -833,7 +833,7 @@ export interface operations {
          */
         Date?: string;
         /**
-         * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+         * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
          * @example fa-IR
          */
         'Accept-Language'?: string;
@@ -859,12 +859,12 @@ export interface operations {
         headers: {
           /** @description Protected actor-specific response; persistent caching is prohibited. */
           'Cache-Control'?: 'private, no-store';
-          /** @description Optional client Date reading: available, unavailable, or invalid. No request is rejected for this diagnostic. */
-          'X-Client-Date-Status'?: 'available' | 'unavailable' | 'invalid';
-          /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
-          'X-Client-Date-Delta-Seconds'?: number;
           /** @description Present as check-device-time only when the configured apparent difference threshold is reached. */
           'X-Client-Date-Advisory'?: 'check-device-time';
+          /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
+          'X-Client-Date-Delta-Seconds'?: number;
+          /** @description Optional client Date reading: available, unavailable, or invalid. No request is rejected for this diagnostic. */
+          'X-Client-Date-Status'?: 'available' | 'unavailable' | 'invalid';
           /** @description Server UTC receipt timestamp. Response Date, when present, is generated by the HTTP server or proxy. */
           'X-Server-Received-At'?: string;
           [name: string]: unknown;
@@ -986,7 +986,7 @@ export interface operations {
          */
         Date?: string;
         /**
-         * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+         * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
          * @example fa-IR
          */
         'Accept-Language'?: string;
@@ -1012,12 +1012,12 @@ export interface operations {
         headers: {
           /** @description Protected actor-specific response; persistent caching is prohibited. */
           'Cache-Control'?: 'private, no-store';
-          /** @description Optional client Date reading: available, unavailable, or invalid. No request is rejected for this diagnostic. */
-          'X-Client-Date-Status'?: 'available' | 'unavailable' | 'invalid';
-          /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
-          'X-Client-Date-Delta-Seconds'?: number;
           /** @description Present as check-device-time only when the configured apparent difference threshold is reached. */
           'X-Client-Date-Advisory'?: 'check-device-time';
+          /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
+          'X-Client-Date-Delta-Seconds'?: number;
+          /** @description Optional client Date reading: available, unavailable, or invalid. No request is rejected for this diagnostic. */
+          'X-Client-Date-Status'?: 'available' | 'unavailable' | 'invalid';
           /** @description Server UTC receipt timestamp. Response Date, when present, is generated by the HTTP server or proxy. */
           'X-Server-Received-At'?: string;
           [name: string]: unknown;
@@ -1139,7 +1139,7 @@ export interface operations {
          */
         Date?: string;
         /**
-         * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+         * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
          * @example fa-IR
          */
         'Accept-Language'?: string;
@@ -1161,12 +1161,12 @@ export interface operations {
         headers: {
           /** @description Protected actor-specific response; persistent caching is prohibited. */
           'Cache-Control'?: 'private, no-store';
-          /** @description Optional client Date reading: available, unavailable, or invalid. No request is rejected for this diagnostic. */
-          'X-Client-Date-Status'?: 'available' | 'unavailable' | 'invalid';
-          /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
-          'X-Client-Date-Delta-Seconds'?: number;
           /** @description Present as check-device-time only when the configured apparent difference threshold is reached. */
           'X-Client-Date-Advisory'?: 'check-device-time';
+          /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
+          'X-Client-Date-Delta-Seconds'?: number;
+          /** @description Optional client Date reading: available, unavailable, or invalid. No request is rejected for this diagnostic. */
+          'X-Client-Date-Status'?: 'available' | 'unavailable' | 'invalid';
           /** @description Server UTC receipt timestamp. Response Date, when present, is generated by the HTTP server or proxy. */
           'X-Server-Received-At'?: string;
           [name: string]: unknown;
@@ -1288,7 +1288,7 @@ export interface operations {
          */
         Date?: string;
         /**
-         * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+         * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
          * @example fa-IR
          */
         'Accept-Language'?: string;
@@ -1312,12 +1312,12 @@ export interface operations {
         headers: {
           /** @description Protected actor-specific response; persistent caching is prohibited. */
           'Cache-Control'?: 'private, no-store';
-          /** @description Optional client Date reading: available, unavailable, or invalid. No request is rejected for this diagnostic. */
-          'X-Client-Date-Status'?: 'available' | 'unavailable' | 'invalid';
-          /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
-          'X-Client-Date-Delta-Seconds'?: number;
           /** @description Present as check-device-time only when the configured apparent difference threshold is reached. */
           'X-Client-Date-Advisory'?: 'check-device-time';
+          /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
+          'X-Client-Date-Delta-Seconds'?: number;
+          /** @description Optional client Date reading: available, unavailable, or invalid. No request is rejected for this diagnostic. */
+          'X-Client-Date-Status'?: 'available' | 'unavailable' | 'invalid';
           /** @description Server UTC receipt timestamp. Response Date, when present, is generated by the HTTP server or proxy. */
           'X-Server-Received-At'?: string;
           [name: string]: unknown;
@@ -1439,7 +1439,7 @@ export interface operations {
          */
         Date?: string;
         /**
-         * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+         * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
          * @example fa-IR
          */
         'Accept-Language'?: string;
@@ -1467,12 +1467,12 @@ export interface operations {
         headers: {
           /** @description Protected actor-specific response; persistent caching is prohibited. */
           'Cache-Control'?: 'private, no-store';
-          /** @description Optional client Date reading: available, unavailable, or invalid. No request is rejected for this diagnostic. */
-          'X-Client-Date-Status'?: 'available' | 'unavailable' | 'invalid';
-          /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
-          'X-Client-Date-Delta-Seconds'?: number;
           /** @description Present as check-device-time only when the configured apparent difference threshold is reached. */
           'X-Client-Date-Advisory'?: 'check-device-time';
+          /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
+          'X-Client-Date-Delta-Seconds'?: number;
+          /** @description Optional client Date reading: available, unavailable, or invalid. No request is rejected for this diagnostic. */
+          'X-Client-Date-Status'?: 'available' | 'unavailable' | 'invalid';
           /** @description Server UTC receipt timestamp. Response Date, when present, is generated by the HTTP server or proxy. */
           'X-Server-Received-At'?: string;
           [name: string]: unknown;

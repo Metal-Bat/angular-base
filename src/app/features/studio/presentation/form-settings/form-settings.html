@@ -9,6 +9,7 @@
         <th scope="col">{{ "Message key" | localize }}</th>
         <th scope="col">English</th>
         <th scope="col">فارسی</th>
+        <th scope="col">العربية</th>
         <th scope="col">{{ "Action" | localize }}</th>
       </tr>
     </thead>
@@ -20,6 +21,7 @@
           </td>
           <td>{{ message.en }}</td>
           <td dir="rtl" lang="fa">{{ message.fa }}</td>
+          <td dir="rtl" lang="ar">{{ message.ar }}</td>
           <td>
             <button
               pButton
@@ -65,6 +67,16 @@
   maxlength="2048"
   [disabled]="disabled() || busy()"
   [(ngModel)]="fa"
+  (ngModelChange)="changed.emit()"
+></textarea>
+<label for="message-ar">العربية</label
+><textarea
+  dir="rtl"
+  id="message-ar"
+  lang="ar"
+  maxlength="2048"
+  [disabled]="disabled() || busy()"
+  [(ngModel)]="ar"
   (ngModelChange)="changed.emit()"
 ></textarea>
 <button

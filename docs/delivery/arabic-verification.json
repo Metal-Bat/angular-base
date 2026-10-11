@@ -1,0 +1,125 @@
+{
+  "date": "2026-10-11",
+  "frontend_gate": {
+    "exitCode": 0,
+    "treeSha256": "2f22e768eb1a58e39962a59080b6aa6c0ad2ec03c13e789b5284dd7b6bade7ff",
+    "finalTreeSha256": "2f22e768eb1a58e39962a59080b6aa6c0ad2ec03c13e789b5284dd7b6bade7ff",
+    "sourceChangedDuringCheck": false,
+    "startedAt": "2026-10-11T19:49:35.698Z",
+    "endedAt": "2026-10-11T19:54:24.752Z",
+    "stages": [
+      {
+        "name": "format:check",
+        "exit_code": 0,
+        "diagnostic_count": 0
+      },
+      {
+        "name": "api:check",
+        "exit_code": 0,
+        "diagnostic_count": 0
+      },
+      {
+        "name": "delivery:check",
+        "exit_code": 0,
+        "diagnostic_count": 0
+      },
+      {
+        "name": "typecheck",
+        "exit_code": 0,
+        "diagnostic_count": 0
+      },
+      {
+        "name": "lint",
+        "exit_code": 0,
+        "diagnostic_count": 0
+      },
+      {
+        "name": "test:ci",
+        "exit_code": 0,
+        "diagnostic_count": 0
+      },
+      {
+        "name": "test:boundary",
+        "exit_code": 0,
+        "diagnostic_count": 0
+      },
+      {
+        "name": "test:deployment",
+        "exit_code": 0,
+        "diagnostic_count": 0
+      },
+      {
+        "name": "test:diagnostics",
+        "exit_code": 0,
+        "diagnostic_count": 0
+      },
+      {
+        "name": "build",
+        "exit_code": 0,
+        "diagnostic_count": 0
+      },
+      {
+        "name": "test:browser-quality",
+        "exit_code": 0,
+        "diagnostic_count": 0
+      },
+      {
+        "name": "release:evidence",
+        "exit_code": 0,
+        "diagnostic_count": 0
+      }
+    ],
+    "unit_tests": 597,
+    "browser_quality_scopes": 12
+  },
+  "paired_browser": {
+    "languages": ["en", "fa", "ar"],
+    "passed": 6,
+    "deselected": 53,
+    "seconds": 215.8,
+    "scenarios": [
+      "ordinary authentication",
+      "persisted locale and RTL",
+      "human approval",
+      "actual worker order receipt",
+      "read-only receipt",
+      "acknowledgment",
+      "lost approval response recovery",
+      "authorization denials"
+    ],
+    "fixture_scope": "disposable real backend services and actual frontend production browser build",
+    "full_transfer_profile_passed": 59,
+    "full_transfer_profile_seconds": 763.32
+  },
+  "release_pair": {
+    "schema_version": 1,
+    "backend_head": "9999641f8e37077829ebbe7159a6cd794fb94b91",
+    "producer_origin_head": "9999641f8e37077829ebbe7159a6cd794fb94b91",
+    "backend_source_sha256": "f98c98a8c58429d315621301eac4c4b4947753cde5e3a6e0df765eb0acf29ddb",
+    "frontend_head": "3638d8291d242ea48d25e5e1fdddd64aa88cf241",
+    "frontend_tree_sha256": "2f22e768eb1a58e39962a59080b6aa6c0ad2ec03c13e789b5284dd7b6bade7ff",
+    "contracts": {
+      "en": "49f59cb7804f07e820f7cb1f4d26adb4794b5496a7520d59df38d238fae907ed",
+      "fa": "3c038a929390f07aadd6092e5a023bd9b52de2927b1d4819b15dbe244fc3612d",
+      "ar": "232b0d0b4cfc847b51e6ed4070f95a351c73e391773200f4904654dbbcc5d363"
+    },
+    "migration_chain": ["0001_schema", "0002_required_data", "0003_arabic"],
+    "backend_lock_sha256": "e1408c8331d6c65d30d19a48a8c6a89617e468176f810b1ae42cdef6edba3141",
+    "frontend_lock_sha256": "0c3c53521eaf6fb5fb226d05fc158ea476c6a673070f86064ba59b214a941c4e",
+    "scenario": "purchase-connected/1",
+    "ai_mode": "scripted_no_network",
+    "worktrees": "Exact dirty source identity required in final gate evidence; HEAD alone is not the candidate",
+    "snapshot_comparison": "PASS",
+    "live_http_browser": "NOT_ATTESTED_BY_THIS_COMMAND",
+    "hosted": "NOT_RUN",
+    "deployed": "NOT_ATTESTED",
+    "user_accepted": "NOT_ATTESTED"
+  },
+  "scope": "APP-FE-008.1 local Arabic feature acceptance",
+  "limitations": [
+    "Hosted and deployed acceptance not established.",
+    "Native applications not tested.",
+    "Existing accessibility incomplete observations remain in browser artifacts.",
+    "Help persistence requires matching frontend release metadata configured on backend."
+  ]
+}

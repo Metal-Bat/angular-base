@@ -42,7 +42,8 @@
     [value]="preferences.settings()?.locale?.numbering || 'latn'"
     (selectionChanged)="numbering($event.target.value)"
     ><option value="latn">0123456789</option>
-    <option value="arabext">۰۱۲۳۴۵۶۷۸۹</option></app-select-control
+    <option value="arabext">۰۱۲۳۴۵۶۷۸۹</option>
+    <option value="arab">٠١٢٣٤٥٦٧٨٩</option></app-select-control
   >
   <label for="preference-page-size">{{ "Page size" | localize }}</label
   ><input

@@ -7,7 +7,7 @@
   "sources": [
     {
       "file": "platform-openapi.json",
-      "sha256": "78c06495ea694face5563620c11f13e1c981d046fc276046a2601640fbcdd6c6"
+      "sha256": "49f59cb7804f07e820f7cb1f4d26adb4794b5496a7520d59df38d238fae907ed"
     },
     {
       "file": "backend-platform.patch",
@@ -32,5 +32,5 @@
   ],
   "notificationIntakeManifest": "app-be-001/contract-manifest.json",
   "currentIntakeManifest": "app-be-001/contract-manifest.json",
-  "currentIntakeRecord": "app-be-031/contract-intake.json"
+  "currentIntakeRecord": "app-fe-008.1/contract-intake.json"
 }

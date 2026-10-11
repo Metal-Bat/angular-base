@@ -245,6 +245,16 @@ Change-Record: [APP-FE-008](../changes/APP-FE-008.md)
 
 Completed implementation plan removed. Scope and acceptance evidence remain in the linked change record.
 
+## APP-FE-008.1 — Persist Arabic and consume trilingual demo contracts
+
+Status: DONE
+
+User-authorized follow-up to APP-FE-008 and backend APP-BE-005.1. Preserve completed parent acceptance. Extend existing language controls and translations through persisted preferences, RTL runtime decoding/options, help catalogs, numbering choices and form catalog editing. Intake the exact en/fa/ar producer without changing canonical values or permissions.
+
+Acceptance: focused regressions, full `mise run check`, exact producer comparison and actual paired Arabic approval/receipt browser journey. Hosted/deployed acceptance remains separate.
+
+Change-Record: [APP-FE-008.1](../changes/APP-FE-008.1.md)
+
 ## APP-FE-009 — Add saved list views and reusable favorites navigation
 
 Status: DONE  

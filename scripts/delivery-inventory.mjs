@@ -450,7 +450,7 @@ for (const [path, text] of contents) {
     delta: /json|<textarea|<pre\b/i.test(template) ? "EXTEND" : "REUSE",
     controls,
     disposition:
-      "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material showcase and Foblex adapter",
+      "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter",
   });
   lines.forEach((line, i) => {
     if (/json|<textarea|<pre\b|diagnostics\(/i.test(line))
@@ -520,7 +520,7 @@ const outputs = {
     [
       "# Screen and control register",
       "",
-      "Generated from all current Angular external and static inline templates. PrimeNG-first applies to new or redesigned ordinary business UI. Retained exceptions: native exact-decimal/file controls preserve canonical values; shared temporal controls use PrimeNG time selection and a themed Intl calendar grid for Gregorian/Jalali/civil Hijri; native dialog provides confirmation; Material remains in the compatibility showcase; Foblex stays in its canvas adapter. Domain tickets own conversions of existing controls and JSON inspectors.",
+      "Generated from all current Angular external and static inline templates. PrimeNG-first applies to new or redesigned ordinary business UI. Retained exceptions: native exact-decimal/file controls preserve canonical values; shared temporal controls use PrimeNG time selection and a themed Intl calendar grid for Gregorian/Jalali/civil Hijri; native dialog provides confirmation; Material and user-requested Ant Design remain in the compatibility showcase; Foblex stays in its canvas adapter. Domain tickets own conversions of existing controls and JSON inspectors.",
       "",
       "| Template | Owner | Current controls | Disposition |",
       "|---|---|---|---|",

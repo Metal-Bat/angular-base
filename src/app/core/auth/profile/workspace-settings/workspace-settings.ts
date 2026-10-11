@@ -70,7 +70,7 @@ export class WorkspaceSettings {
     }
   }
   numbering(value: unknown): void {
-    if (value === 'latn' || value === 'arabext') {
+    if (value === 'latn' || value === 'arabext' || value === 'arab') {
       this.preferences.update({ locale: { numbering: value } });
     }
   }

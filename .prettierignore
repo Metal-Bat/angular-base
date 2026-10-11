@@ -22,3 +22,6 @@ artifacts/
 
 # Deterministic generator owns exact formatting
 src/app/core/transport/generated/
+
+# Generated scoped vendor stylesheet
+public/ui/ant-design.css

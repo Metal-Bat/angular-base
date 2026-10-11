@@ -55,7 +55,7 @@ export type RuntimeDocument = {
   };
   readonly purpose: 'edit' | 'summary' | 'print' | 'observer' | 'correction';
   readonly locale: {
-    readonly language: 'en' | 'fa';
+    readonly language: 'en' | 'fa' | 'ar';
     readonly direction: 'ltr' | 'rtl';
   };
   readonly canonical: JsonObject;

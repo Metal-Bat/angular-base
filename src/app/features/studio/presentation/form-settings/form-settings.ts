@@ -56,23 +56,26 @@ export class FormSettings {
     ] ?? {}) as JsonObject;
     const en = (catalogs['en'] ?? {}) as JsonObject;
     const fa = (catalogs['fa'] ?? {}) as JsonObject;
-    return [...new Set([...Object.keys(en), ...Object.keys(fa)])].map(
-      (key) => ({
-        key,
-        en:
-          typeof (en[key] as JsonObject | undefined)?.['text'] === 'string'
-            ? (en[key] as JsonObject)['text']
-            : 'Contract editor required',
-        fa:
-          typeof (fa[key] as JsonObject | undefined)?.['text'] === 'string'
-            ? (fa[key] as JsonObject)['text']
-            : 'Contract editor required',
-      }),
-    );
+    const ar = (catalogs['ar'] ?? {}) as JsonObject;
+    return [
+      ...new Set([...Object.keys(en), ...Object.keys(fa), ...Object.keys(ar)]),
+    ].map((key) => ({
+      key,
+      en:
+        typeof (en[key] as JsonObject | undefined)?.['text'] === 'string'
+          ? (en[key] as JsonObject)['text']
+          : 'Contract editor required',
+      ar: (ar[key] as JsonObject | undefined)?.['text'] ?? '',
+      fa:
+        typeof (fa[key] as JsonObject | undefined)?.['text'] === 'string'
+          ? (fa[key] as JsonObject)['text']
+          : 'Contract editor required',
+    }));
   });
   key = '';
   en = '';
   fa = '';
+  ar = '';
   pageKey = '';
   pageTitle = '';
   selectedScopes: string[] = [];
@@ -85,6 +88,7 @@ export class FormSettings {
       this.key = '';
       this.en = '';
       this.fa = '';
+      this.ar = '';
       this.selectedScopes = [];
       this.pageKey = '';
       this.pageTitle = '';
@@ -108,9 +112,15 @@ export class FormSettings {
       JsonObject | undefined;
     const persian = (catalogs?.['fa'] as JsonObject | undefined)?.[key] as
       JsonObject | undefined;
-    const message = { en: english?.['text'], fa: persian?.['text'] };
+    const arabic = (catalogs?.['ar'] as JsonObject | undefined)?.[key] as
+      JsonObject | undefined;
+    const message = {
+      en: english?.['text'],
+      fa: persian?.['text'],
+      ar: arabic?.['text'],
+    };
     if (
-      [english, persian].some(
+      [english, persian, arabic].some(
         (entry) =>
           entry &&
           (typeof entry['text'] !== 'string' ||
@@ -125,6 +135,7 @@ export class FormSettings {
     this.key = key;
     this.en = typeof message.en === 'string' ? message.en : '';
     this.fa = typeof message.fa === 'string' ? message.fa : '';
+    this.ar = typeof message.ar === 'string' ? message.ar : '';
     this.error.set('');
   }
   async applyTranslation(): Promise<void> {
@@ -133,7 +144,12 @@ export class FormSettings {
     }
     const generation = this.generation;
     const document = this.documents();
-    const translationDraft = { key: this.key, en: this.en, fa: this.fa };
+    const translationDraft = {
+      key: this.key,
+      en: this.en,
+      fa: this.fa,
+      ar: this.ar,
+    };
     this.busy.set(true);
     try {
       const next = await translateMessage(
@@ -141,6 +157,7 @@ export class FormSettings {
         translationDraft.key,
         translationDraft.en,
         translationDraft.fa,
+        translationDraft.ar || undefined,
       );
       if (
         generation === this.generation &&
@@ -148,6 +165,7 @@ export class FormSettings {
         this.key === translationDraft.key &&
         this.en === translationDraft.en &&
         this.fa === translationDraft.fa &&
+        this.ar === translationDraft.ar &&
         !this.disabled()
       ) {
         this.applied.emit(next);

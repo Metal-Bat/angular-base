@@ -59,7 +59,7 @@ export function choiceRequest(
         body: {
           ...body,
           kind: kind === 'component_versions' ? 'component' : 'data_type',
-          locale: locale === 'fa' ? 'fa' : 'en',
+          locale: locale === 'fa' || locale === 'ar' ? locale : 'en',
         },
         query,
       },

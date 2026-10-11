@@ -66,14 +66,6 @@ import { LocalizePipe } from '../../../shared/ui/localize-pipe';
         {{ 'Reset appearance' | localize }}
       </button>
       <p role="status">{{ statusText() | localize }}</p>
-      @if (preferences.sessionLanguage()) {
-        <p>
-          {{
-            'Arabic applies to this session; saved language supports English and Persian.'
-              | localize
-          }}
-        </p>
-      }
       @if (preferences.status() === 'error') {
         <button
           pButton

@@ -601,6 +601,118 @@
       "required_capabilities": []
     },
     {
+      "bindings": [
+        {
+          "pinned": false,
+          "pointer": "/connection_ref",
+          "scope": "connection_use",
+          "secret_reference": true,
+          "selector_kind": "connections"
+        }
+      ],
+      "code": "NOTIFICATION",
+      "config_dialect": "json-schema-2020-12",
+      "config_schema": {
+        "additionalProperties": false,
+        "properties": {
+          "channel": {
+            "const": "EMAIL",
+            "default": "EMAIL",
+            "title": "Channel",
+            "type": "string",
+            "enum": ["EMAIL"]
+          },
+          "connection_ref": {
+            "maxLength": 512,
+            "minLength": 1,
+            "type": "string"
+          },
+          "locale": {
+            "default": "en",
+            "enum": ["en", "fa", "ar"],
+            "title": "Locale",
+            "type": "string"
+          },
+          "template_key": {
+            "maxLength": 512,
+            "minLength": 1,
+            "type": "string"
+          },
+          "template_version": {
+            "default": "1",
+            "maxLength": 32,
+            "minLength": 1,
+            "title": "Template Version",
+            "type": "string"
+          }
+        },
+        "required": ["connection_ref", "template_key"],
+        "title": "NotificationConfigV3",
+        "type": "object"
+      },
+      "contract_fingerprint": "ea4bddd47d89881b9c5323bb6e58df9f2080acf3c3670cec37b43633cb28317e",
+      "examples": [],
+      "execution_mode": "BACKGROUND",
+      "handler_key": "notification",
+      "handler_version": "3",
+      "help_key": null,
+      "help_text": null,
+      "name": "Notification",
+      "name_key": null,
+      "outcome_source": "graph",
+      "outcomes": [],
+      "ports": [
+        {
+          "cardinality": "LIST",
+          "direction": "INPUT",
+          "nullable": false,
+          "port_key": "recipients",
+          "required": true,
+          "value_schema": {
+            "$defs": {
+              "Reference": {
+                "maxLength": 512,
+                "minLength": 1,
+                "type": "string"
+              }
+            },
+            "items": { "$ref": "#/$defs/Reference" },
+            "not": { "type": "null" },
+            "type": "array",
+            "x-reference-kind": "user"
+          }
+        },
+        {
+          "cardinality": "SCALAR",
+          "direction": "INPUT",
+          "nullable": false,
+          "port_key": "data",
+          "required": true,
+          "value_schema": {
+            "$defs": { "JsonValue": {} },
+            "additionalProperties": { "$ref": "#/$defs/JsonValue" },
+            "not": { "type": "null" },
+            "type": "object"
+          }
+        },
+        {
+          "cardinality": "SCALAR",
+          "direction": "OUTPUT",
+          "nullable": false,
+          "port_key": "notification",
+          "required": true,
+          "value_schema": {
+            "maxLength": 512,
+            "minLength": 1,
+            "not": { "type": "null" },
+            "type": "string",
+            "x-reference-kind": "notification"
+          }
+        }
+      ],
+      "required_capabilities": []
+    },
+    {
       "bindings": [],
       "code": "PERMISSION_CHECK",
       "config_dialect": "json-schema-2020-12",
@@ -989,6 +1101,13 @@
                 {
                   "additionalProperties": false,
                   "properties": {
+                    "ar": {
+                      "anyOf": [
+                        { "maxLength": 255, "minLength": 1, "type": "string" },
+                        { "type": "null" }
+                      ],
+                      "title": "Ar"
+                    },
                     "en": {
                       "maxLength": 255,
                       "minLength": 1,
@@ -1042,6 +1161,13 @@
             "title": {
               "additionalProperties": false,
               "properties": {
+                "ar": {
+                  "anyOf": [
+                    { "maxLength": 255, "minLength": 1, "type": "string" },
+                    { "type": "null" }
+                  ],
+                  "title": "Ar"
+                },
                 "en": {
                   "maxLength": 255,
                   "minLength": 1,
@@ -1112,6 +1238,13 @@
             "title": {
               "additionalProperties": false,
               "properties": {
+                "ar": {
+                  "anyOf": [
+                    { "maxLength": 255, "minLength": 1, "type": "string" },
+                    { "type": "null" }
+                  ],
+                  "title": "Ar"
+                },
                 "en": {
                   "maxLength": 255,
                   "minLength": 1,

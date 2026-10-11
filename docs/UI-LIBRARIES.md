@@ -1,18 +1,19 @@
 # Choosing UI libraries
 
-PrimeNG is the default for new or redesigned ordinary business controls. Tailwind handles layout. Keep PrimeNG, Angular Material and CDK installed; existing working controls are reused until their domain task changes them. The [screen register](delivery/screen-patterns.md) assigns each current template a migration owner.
+PrimeNG is the default for new or redesigned ordinary business controls. Tailwind handles layout. Keep PrimeNG, Angular Material, NG-ZORRO Ant Design and CDK installed; existing working controls are reused until their domain task changes them. The [screen register](delivery/screen-patterns.md) assigns each current template a migration owner.
 
-Retained exceptions have specific purposes: native exact-decimal/file controls preserve canonical values and browser file handling; the native confirmation dialog provides established focus containment/restoration; Material remains in the development compatibility showcase; Foblex remains the specialist canvas adapter. A new exception needs a documented interaction reason and focused browser evidence. This policy does not approve JSON editors as normal business UI.
+Retained exceptions have specific purposes: native exact-decimal/file controls preserve canonical values and browser file handling; the native confirmation dialog provides established focus containment/restoration; Material and user-requested Ant Design remain in the development compatibility showcase; Foblex remains the specialist canvas adapter. A new exception needs a documented interaction reason and focused browser evidence. This policy does not approve JSON editors as normal business UI.
 
 Reuse `ControlField`/`FieldWrapper` for linked label/help/error IDs, `SelectControl` for translated choices and form disabled/touched semantics, `RecordTable`/`ListQuery` for applied filters, `RecordSummary` for safe details, and `Feedback` for confirmation and uncertain-write reconciliation. Consumer controls must explicitly bind their error/hint IDs. No new universal form renderer is introduced.
 
 ## Available configuration
 
-| Library          | Configuration                                                                                 | How to select it                                                          |
-| ---------------- | --------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
-| PrimeNG          | Aura preset via `providePrimeNG` in `src/app/app.config.ts`; PrimeIcons CSS in `angular.json` | Import the needed PrimeNG components/modules into the consuming component |
-| Angular Material | `mat.theme()` in `src/styles.scss`; CDK installed                                             | Import the needed Material modules into the consuming component           |
-| Tailwind CSS     | `.postcssrc.json`, `src/tailwind.css`, and the global styles entry in `angular.json`          | Add utility classes to templates; no Angular component import needed      |
+| Library               | Configuration                                                                                 | How to select it                                                                |
+| --------------------- | --------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| PrimeNG               | Aura preset via `providePrimeNG` in `src/app/app.config.ts`; PrimeIcons CSS in `angular.json` | Import the needed PrimeNG components/modules into the consuming component       |
+| Ant Design (NG-ZORRO) | `AntDesign` boundary, optional scoped stylesheet, local en/fa/ar locale and CDK direction     | Import the required `ng-zorro-antd/*` modules and use Tailwind layout utilities |
+| Angular Material      | `mat.theme()` in `src/styles.scss`; CDK installed                                             | Import the needed Material modules into the consuming component                 |
+| Tailwind CSS          | `.postcssrc.json`, `src/tailwind.css`, and the global styles entry in `angular.json`          | Add utility classes to templates; no Angular component import needed            |
 
 ## Choosing components in code
 
@@ -57,7 +58,7 @@ Import only what the consuming component uses. The example demonstrates selectio
 
 Import `ButtonModule` and `MatButtonModule` in the consuming standalone component for that example. Semantic color utilities use PrimeNG tokens; Material controls retain their Material theme tokens. The shared workspace preset maps public PrimeNG color tokens to Material system tokens.
 
-PrimeNG styles use the `primeng` CSS layer. The global order is `theme, base, primeng, components, utilities`, allowing utilities to override layered PrimeNG rules. Material's generated styles remain under its own theme control; use its public theme APIs for colors and typography instead of relying on utility specificity against internal selectors.
+PrimeNG styles use the `primeng` CSS layer. The global order is `theme, base, antd, primeng, components, utilities`, allowing utilities to override layered PrimeNG rules. Material's generated styles remain under its own theme control; use its public theme APIs for colors and typography instead of relying on utility specificity against internal selectors.
 
 ## Shared dark mode
 
@@ -139,3 +140,13 @@ The existing public generic UI module is `src/app/features/administration/presen
 English defaults to Gregorian, Farsi to Jalali, Arabic to Islamic civil Hijri (`islamic-civil`, a deterministic tabular calendar). Each date control offers all three choices; an explicit choice applies consistently to the current actor's session and clears on actor reset. Date-only fields do not acquire a timezone. Event-local datetime controls keep the existing explicit DST-offset chooser, while instant controls resolve in the configured user timezone and require a choice on folds.
 
 The console page no longer has an 80rem cap. Record tables use available width, PrimeNG's regular spacing and readable data-cell minimums. Their existing scrollable viewport contains wide columns on small screens; long text wraps and remains complete. Input/editor-specific bounds and the existing shell grid are retained. See [implementation and verification](changes/APP-FE-004-TEMPORAL-CONTROLS.md).
+
+## Ant Design with Tailwind — 2026-10-11
+
+NG-ZORRO 21.3.3 is the Angular Ant Design implementation installed alongside Material and PrimeNG. Import the needed modules from `ng-zorro-antd/button`, `ng-zorro-antd/input`, etc. Use the shared `AntDesign` (`appAntDesign`) directive on their containing section and CDK `BidiModule`/`[dir]` for reactive RTL. The directive requests the optional local stylesheet once and supplies English, Persian or Arabic NG-ZORRO locale data from the existing language preference. The development `/ui-preview` demonstrates input, a popup select, disabled/enabled action and output with Tailwind grid/flex utilities.
+
+`pnpm run ui:prepare` generates `public/ui/ant-design.css` from the exact pinned vendor light/dark CSS. Install/start/build/watch hooks run preparation. CSS scopes contain vendor resets within `.ant-design`; styles switch with `.app-dark` and input/button tokens follow the workspace font, palette, border and surface. The layer order is `theme, base, antd, primeng, components, utilities`, so Tailwind utilities can override Ant styles. The stylesheet loads only when an Ant boundary is used; it is not part of the initial application bundle. This requires browsers supporting CSS `@scope`, verified by the current Firefox browser suite.
+
+NG-ZORRO popup panes are scoped separately through `.cdk-overlay-pane:has([class*="ant-"])`, so body-mounted Ant overlays are themed without applying their reset to Material overlays. The browser preview exercises an actual select popup. Date/time domain inputs continue to use the existing shared calendar-aware control. This integration does not automatically replace existing business screens or their PrimeNG contracts.
+
+Official references: [NG-ZORRO getting started](https://ng.ant.design/docs/getting-started/en), [themes](https://ng.ant.design/docs/customize-theme/en), [locales](https://ng.ant.design/docs/i18n/en).

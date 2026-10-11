@@ -66,7 +66,7 @@ export class HelpState {
           if (
             typeof row['help_key'] !== 'string' ||
             typeof row['revision'] !== 'string' ||
-            !['en', 'fa'].includes(String(row['locale']))
+            !['en', 'fa', 'ar'].includes(String(row['locale']))
           ) {
             throw Error('Invalid help identity');
           }

@@ -45,7 +45,7 @@ export const appConfig: ApplicationConfig = {
                 darkModeSelector: '.app-dark',
                 cssLayer: {
                   name: 'primeng',
-                  order: 'theme, base, primeng, components, utilities',
+                  order: 'theme, base, antd, primeng, components, utilities',
                 },
               },
             },

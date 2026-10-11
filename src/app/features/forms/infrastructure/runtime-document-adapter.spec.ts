@@ -41,6 +41,22 @@ function fixture(): Record<string, unknown> {
   };
 }
 describe('Actor-filtered runtime conformance', () => {
+  it('accepts Arabic RTL without changing canonical values or pins', () => {
+    const input = { ...fixture(), resolved_locale: 'ar', direction: 'rtl' };
+    const result = readRuntimeDocument(input);
+    expect(result.status).toBe('ready');
+    if (result.status === 'ready') {
+      expect(result.document.locale).toEqual({
+        language: 'ar',
+        direction: 'rtl',
+      });
+      expect(result.document.canonical).toEqual({ amount: '125.00' });
+      expect(result.document.identity.design).toBe('client-original');
+    }
+    expect(readRuntimeDocument({ ...input, direction: 'ltr' }).status).toBe(
+      'invalid',
+    );
+  });
   it('keeps canonical values, policy, identity, render and schema separate and immutable', () => {
     const input = fixture();
     const result = readRuntimeDocument(input);

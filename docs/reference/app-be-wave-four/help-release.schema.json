@@ -16,11 +16,12 @@
           "items": {
             "enum": [
               "en",
-              "fa"
+              "fa",
+              "ar"
             ],
             "type": "string"
           },
-          "maxItems": 2,
+          "maxItems": 3,
           "minItems": 1,
           "title": "Locales",
           "type": "array"

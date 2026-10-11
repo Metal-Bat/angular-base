@@ -7,11 +7,15 @@
   "schemas": {
     "en": {
       "path": "openapi-en.json",
-      "sha256": "78c06495ea694face5563620c11f13e1c981d046fc276046a2601640fbcdd6c6"
+      "sha256": "49f59cb7804f07e820f7cb1f4d26adb4794b5496a7520d59df38d238fae907ed"
     },
     "fa": {
       "path": "openapi-fa.json",
-      "sha256": "dc1cec356e0a1c47bcfa5ded878e6f53bceba28349aa1c56a9069283849f5cce"
+      "sha256": "3c038a929390f07aadd6092e5a023bd9b52de2927b1d4819b15dbe244fc3612d"
+    },
+    "ar": {
+      "path": "openapi-ar.json",
+      "sha256": "232b0d0b4cfc847b51e6ed4070f95a351c73e391773200f4904654dbbcc5d363"
     }
   },
   "permissions": {
@@ -91,16 +95,16 @@
   "notification_intake": {
     "backend_commit": "9999641f8e37077829ebbe7159a6cd794fb94b91",
     "source": "../inbox.openapi.json",
-    "sha256": "8cc7e0daffa3d80b855ba6c651aff7b10068fee891a2780e39fd0045dc4f9e59",
-    "scope": "Current unified inbox and SSE operations/schema closure; unrelated historical producer contract retained, current whole-pair drift remains separately recorded."
+    "sha256": "73bb25ced8034f33747ec40436bcc7c046263f3fbf69b8ef1b9d317d460eb945",
+    "scope": "Unified inbox and SSE schema closure from the same Arabic producer intake."
   },
   "current_intake": {
     "backend_commit": "9999641f8e37077829ebbe7159a6cd794fb94b91",
-    "owner": "APP-BE-031",
-    "scope": "Full effective localized paths, schemas, authorization and binary headers; only the two reviewed graph-field descriptions changed",
-    "producer_source_sha256": "dd3ec9595a1153c663970b07266c0e69a9abc5ffd50214928a56db45a6c9c0de",
-    "producer_manifest_sha256": "f8d5aeed5ef7fe7ff5b535be21d0d372355127bbcd0828f574d4925c994b5366",
-    "diff": "../app-be-031/contract-intake.json"
+    "owner": "APP-FE-008.1",
+    "scope": "Full en/fa/ar producer intake; additive Arabic locales, numbering, plural branches and task text. Operation IDs, security, wire values and operation structure are unchanged except the additive Arabic help-state query locale.",
+    "producer_source_sha256": "f98c98a8c58429d315621301eac4c4b4947753cde5e3a6e0df765eb0acf29ddb",
+    "producer_manifest_sha256": "35f9caf32cd11626b3699c9e258cca380cede2216b0f1efc2ec6604445294969",
+    "diff": "../app-fe-008.1/contract-intake.json"
   },
   "ordered_011_description_intake": {
     "date": "2026-10-09",
@@ -116,13 +120,13 @@
   "intake_history": [
     {
       "backend_commit": "9999641f8e37077829ebbe7159a6cd794fb94b91",
-      "owner": "APP-FE-006\u2013015",
+      "owner": "APP-FE-006–015",
       "scope": "full effective en/fa paths and models, preserving historical producer fields",
       "diff": "../app-fe-015/contract-intake.json"
     },
     {
       "backend_commit": "9999641f8e37077829ebbe7159a6cd794fb94b91",
-      "owner": "APP-FE-016\u2013020",
+      "owner": "APP-FE-016–020",
       "scope": "Compared and reconciled full frozen producer; form contracts unchanged",
       "diff": "../app-fe-016-020/contract-intake.json"
     },
@@ -148,6 +152,14 @@
       "scope": "Full effective localized paths, schemas, authorization and binary headers; only the two reviewed graph-field descriptions changed",
       "producer_source_sha256": "2cbb91c63907fa70af782430f177dcb4cc49fbadfeac3f7d052400af8d3fe99e",
       "producer_manifest_sha256": "120bb092f8abb04668c514f5f0dfd8018a22a53611f8754d16e2b9f0ab9577b1",
+      "diff": "../app-be-031/contract-intake.json"
+    },
+    {
+      "backend_commit": "9999641f8e37077829ebbe7159a6cd794fb94b91",
+      "owner": "APP-BE-031",
+      "scope": "Full effective localized paths, schemas, authorization and binary headers; only the two reviewed graph-field descriptions changed",
+      "producer_source_sha256": "dd3ec9595a1153c663970b07266c0e69a9abc5ffd50214928a56db45a6c9c0de",
+      "producer_manifest_sha256": "f8d5aeed5ef7fe7ff5b535be21d0d372355127bbcd0828f574d4925c994b5366",
       "diff": "../app-be-031/contract-intake.json"
     }
   ]

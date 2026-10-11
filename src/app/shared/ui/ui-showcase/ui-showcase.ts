@@ -1,3 +1,9 @@
+import { NzSelectModule } from 'ng-zorro-antd/select';
+import { BidiModule } from '@angular/cdk/bidi';
+import { NzButtonModule } from 'ng-zorro-antd/button';
+import { NzInputModule } from 'ng-zorro-antd/input';
+import { AntDesign } from '../ant-design/ant-design';
+import { Locale } from '../../../core/localization/locale';
 import { ControlField } from '../control-field/control-field';
 import { SelectControl } from '../select-control/select-control';
 import { FieldWrapper } from '../field-wrapper/field-wrapper';
@@ -19,6 +25,11 @@ import { LocalizePipe } from '../localize-pipe';
 @Component({
   selector: 'app-ui-showcase',
   imports: [
+    BidiModule,
+    AntDesign,
+    NzButtonModule,
+    NzInputModule,
+    NzSelectModule,
     FormsModule,
     MatFormFieldModule,
     MatInputModule,
@@ -35,6 +46,10 @@ import { LocalizePipe } from '../localize-pipe';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UiShowcase {
+  readonly locale = inject(Locale);
+  readonly antName = signal('');
+  readonly antStatus = signal('ready');
+  readonly antApplied = signal('');
   readonly feedback = inject(Feedback);
   readonly name = signal('');
   readonly department = signal('');

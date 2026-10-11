@@ -19,7 +19,7 @@ assert.equal(
 );
 assert.deepEqual(
   producerSchema.$defs.HelpReleaseItem.properties.locales.items.enum,
-  ["en", "fa"],
+  ["en", "fa", "ar"],
 );
 const rows = JSON.parse(
   await readFile("src/app/features/help/domain/help-catalog.json", "utf8"),
@@ -48,7 +48,7 @@ for (const topic of rows) {
           /^[a-z][a-z0-9_.]+$/.test(permission),
       ),
   );
-  for (const locale of ["en", "fa"]) {
+  for (const locale of ["en", "fa", "ar"]) {
     for (const key of ["title", "body"]) {
       assert.equal(typeof topic[key][locale], "string");
       assert.ok(
@@ -61,11 +61,11 @@ for (const topic of rows) {
 }
 const metadata = {
   schema_version: 1,
-  release_key: "app-fe-help-1",
+  release_key: "app-fe-help-2",
   items: rows.map((topic) => ({
     help_key: topic.help_key,
     revision: topic.revision,
-    locales: ["en", "fa"],
+    locales: ["en", "fa", "ar"],
   })),
 };
 const expected = await format(JSON.stringify(metadata), { parser: "json" });
@@ -78,5 +78,5 @@ else
     "Help metadata drift; run node scripts/check-help-catalog.mjs --write",
   );
 console.log(
-  `Verified ${rows.length} bilingual plain-text help topics and metadata-only release handoff.`,
+  `Verified ${rows.length} trilingual plain-text help topics and metadata-only release handoff.`,
 );

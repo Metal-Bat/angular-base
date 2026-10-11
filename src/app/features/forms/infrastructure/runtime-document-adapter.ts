@@ -127,15 +127,15 @@ function presentation(dto: Record<string, unknown>): {
     !['edit', 'summary', 'print', 'observer', 'correction'].includes(
       String(purpose),
     ) ||
-    !['en', 'fa'].includes(String(language)) ||
-    direction !== (language === 'fa' ? 'rtl' : 'ltr')
+    !['en', 'fa', 'ar'].includes(String(language)) ||
+    direction !== (language === 'en' ? 'ltr' : 'rtl')
   ) {
     throw new Error('shape');
   }
   return {
     purpose: purpose as RuntimeDocument['purpose'],
     locale: Object.freeze({
-      language: language as 'en' | 'fa',
+      language: language as 'en' | 'fa' | 'ar',
       direction: direction as 'ltr' | 'rtl',
     }),
   };

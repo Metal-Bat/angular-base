@@ -1,4 +1,4 @@
-// Generated; do not edit. Input SHA256: 78c06495ea694face5563620c11f13e1c981d046fc276046a2601640fbcdd6c6
+// Generated; do not edit. Input SHA256: 49f59cb7804f07e820f7cb1f4d26adb4794b5496a7520d59df38d238fae907ed
 export interface paths {
     "/api/v1/admin/audit-events/{ref_id}": {
         parameters: {
@@ -2839,7 +2839,7 @@ export interface paths {
         put?: never;
         /**
          * Create Versions
-         * @description Requires forms.manage. Creates a draft under an active form using its current revision-bearing ref_id. Invalid structure or parameters fail with VALIDATION_FAILED; translation gaps may be saved. Versioned bpms.messages/1 catalogs support en/fa, named typed parameters and one/other plurals. Draft validation reports missing or stale translations in warnings and returns source_revisions for translation acknowledgement. Publication requires every required-locale message and matching parameter types. Default text hashes track stale translations; published versions remain immutable. Null catalogs preserve legacy checksums. Field bpms.format/1 metadata declares direction, Gregorian calendar, IANA timezone, Latin/Persian digits and exact decimal/currency formatting. Canonical submission strings use Gregorian ISO dates, UTC datetimes and ungrouped decimals; localized or lossy values are rejected.
+         * @description Requires forms.manage. Creates a draft under an active form using its current revision-bearing ref_id. Invalid structure or parameters fail with VALIDATION_FAILED; translation gaps may be saved. Versioned bpms.messages/1 catalogs support en/fa/ar, named typed parameters and one/other plurals, with optional zero/two/few/many Arabic branches. Draft validation reports missing or stale translations in warnings and returns source_revisions for translation acknowledgement. Publication requires every required-locale message and matching parameter types. Default text hashes track stale translations; published versions remain immutable. Null catalogs preserve legacy checksums. Field bpms.format/1 metadata declares direction, Gregorian calendar, IANA timezone, Latin/Persian/Arabic digits and exact decimal/currency formatting. Canonical submission strings use Gregorian ISO dates, UTC datetimes and ungrouped decimals; localized or lossy values are rejected.
          */
         post: operations["create_versions_api_v1_form_versions_post"];
         delete?: never;
@@ -2859,7 +2859,7 @@ export interface paths {
         get: operations["get_versions_api_v1_form_versions__ref_id__get"];
         /**
          * Update Versions
-         * @description Requires forms.manage and the current draft revision-bearing ref_id. Replaces all documents atomically; published/retired or stale versions return VERSION_CONFLICT. Localization changes are recorded in version history. Versioned bpms.messages/1 catalogs support en/fa, named typed parameters and one/other plurals. Draft validation reports missing or stale translations in warnings and returns source_revisions for translation acknowledgement. Publication requires every required-locale message and matching parameter types. Default text hashes track stale translations; published versions remain immutable. Null catalogs preserve legacy checksums. Field bpms.format/1 metadata declares direction, Gregorian calendar, IANA timezone, Latin/Persian digits and exact decimal/currency formatting. Canonical submission strings use Gregorian ISO dates, UTC datetimes and ungrouped decimals; localized or lossy values are rejected.
+         * @description Requires forms.manage and the current draft revision-bearing ref_id. Replaces all documents atomically; published/retired or stale versions return VERSION_CONFLICT. Localization changes are recorded in version history. Versioned bpms.messages/1 catalogs support en/fa/ar, named typed parameters and one/other plurals, with optional zero/two/few/many Arabic branches. Draft validation reports missing or stale translations in warnings and returns source_revisions for translation acknowledgement. Publication requires every required-locale message and matching parameter types. Default text hashes track stale translations; published versions remain immutable. Null catalogs preserve legacy checksums. Field bpms.format/1 metadata declares direction, Gregorian calendar, IANA timezone, Latin/Persian/Arabic digits and exact decimal/currency formatting. Canonical submission strings use Gregorian ISO dates, UTC datetimes and ungrouped decimals; localized or lossy values are rejected.
          */
         put: operations["update_versions_api_v1_form_versions__ref_id__put"];
         post?: never;
@@ -2898,7 +2898,7 @@ export interface paths {
         put?: never;
         /**
          * Publish Form
-         * @description Requires forms.manage and the current draft version ref_id under an active form. Locks the version and validates all required translations before checksum/publication. Missing/stale required messages or incompatible parameters return VALIDATION_FAILED with pointer issues; stale or immutable versions return VERSION_CONFLICT. Versioned bpms.messages/1 catalogs support en/fa, named typed parameters and one/other plurals. Draft validation reports missing or stale translations in warnings and returns source_revisions for translation acknowledgement. Publication requires every required-locale message and matching parameter types. Default text hashes track stale translations; published versions remain immutable. Null catalogs preserve legacy checksums. Field bpms.format/1 metadata declares direction, Gregorian calendar, IANA timezone, Latin/Persian digits and exact decimal/currency formatting. Canonical submission strings use Gregorian ISO dates, UTC datetimes and ungrouped decimals; localized or lossy values are rejected.
+         * @description Requires forms.manage and the current draft version ref_id under an active form. Locks the version and validates all required translations before checksum/publication. Missing/stale required messages or incompatible parameters return VALIDATION_FAILED with pointer issues; stale or immutable versions return VERSION_CONFLICT. Versioned bpms.messages/1 catalogs support en/fa/ar, named typed parameters and one/other plurals, with optional zero/two/few/many Arabic branches. Draft validation reports missing or stale translations in warnings and returns source_revisions for translation acknowledgement. Publication requires every required-locale message and matching parameter types. Default text hashes track stale translations; published versions remain immutable. Null catalogs preserve legacy checksums. Field bpms.format/1 metadata declares direction, Gregorian calendar, IANA timezone, Latin/Persian/Arabic digits and exact decimal/currency formatting. Canonical submission strings use Gregorian ISO dates, UTC datetimes and ungrouped decimals; localized or lossy values are rejected.
          */
         post: operations["publish_form_api_v1_form_versions__ref_id__publish_post"];
         delete?: never;
@@ -3142,7 +3142,7 @@ export interface paths {
         put?: never;
         /**
          * Preview the form for the authenticated client
-         * @description Requires forms.manage. Validates all render variants and bounded client predicates, then selects the first matching variant in descending priority using authenticated session context. Conditions combine with client/range targets; version_in_range uses numeric release ordering. Shared design is the final fallback, including legacy clients unless a condition explicitly matches their null identity. Caller headers cannot replace the bound context or grant access. Returns page JSON, variant key and design revision. Expression issues include document pointer, one-based line and zero-based column. Evaluation errors or missing required renderer capabilities fail selection; they do not silently choose another branch. Preview does not publish or modify an interaction. Resolves message roles and option labels into a presentation copy using locale or Accept-Language. Regional tags use en/fa; unsupported locales fall back to the package default. Missing optional translations fall back to default then English; resolved locale is reported per message. format_values contains up to 32 node_pointer/value samples: returns exact canonical/display strings without changing data. Bad samples return valid false with localization.format_value. Design revision is stable across locale switches; catalog_revision changes when content changes. Responses use Cache-Control: private, no-store. Versioned bpms.messages/1 catalogs support en/fa, named typed parameters and one/other plurals. Draft validation reports missing or stale translations in warnings and returns source_revisions for translation acknowledgement. Publication requires every required-locale message and matching parameter types. Default text hashes track stale translations; published versions remain immutable. Null catalogs preserve legacy checksums. Field bpms.format/1 metadata declares direction, Gregorian calendar, IANA timezone, Latin/Persian digits and exact decimal/currency formatting. Canonical submission strings use Gregorian ISO dates, UTC datetimes and ungrouped decimals; localized or lossy values are rejected.
+         * @description Requires forms.manage. Validates all render variants and bounded client predicates, then selects the first matching variant in descending priority using authenticated session context. Conditions combine with client/range targets; version_in_range uses numeric release ordering. Shared design is the final fallback, including legacy clients unless a condition explicitly matches their null identity. Caller headers cannot replace the bound context or grant access. Returns page JSON, variant key and design revision. Expression issues include document pointer, one-based line and zero-based column. Evaluation errors or missing required renderer capabilities fail selection; they do not silently choose another branch. Preview does not publish or modify an interaction. Resolves message roles and option labels into a presentation copy using locale or Accept-Language. Regional tags use en/fa/ar; unsupported locales fall back to the package default. Missing optional translations fall back to default then English; resolved locale is reported per message. format_values contains up to 32 node_pointer/value samples: returns exact canonical/display strings without changing data. Bad samples return valid false with localization.format_value. Design revision is stable across locale switches; catalog_revision changes when content changes. Responses use Cache-Control: private, no-store. Versioned bpms.messages/1 catalogs support en/fa/ar, named typed parameters and one/other plurals, with optional zero/two/few/many Arabic branches. Draft validation reports missing or stale translations in warnings and returns source_revisions for translation acknowledgement. Publication requires every required-locale message and matching parameter types. Default text hashes track stale translations; published versions remain immutable. Null catalogs preserve legacy checksums. Field bpms.format/1 metadata declares direction, Gregorian calendar, IANA timezone, Latin/Persian/Arabic digits and exact decimal/currency formatting. Canonical submission strings use Gregorian ISO dates, UTC datetimes and ungrouped decimals; localized or lossy values are rejected.
          */
         post: operations["preview_form_api_v1_forms_preview_post"];
         delete?: never;
@@ -3233,7 +3233,7 @@ export interface paths {
         put?: never;
         /**
          * Validate Form
-         * @description Requires forms.manage. Checks draft documents and optional canonical data without saving. Returns at most 32 issues and 32 warnings with JSON pointers; warnings do not make draft valid false. Locale and format_values are preview-only inputs. Versioned bpms.messages/1 catalogs support en/fa, named typed parameters and one/other plurals. Draft validation reports missing or stale translations in warnings and returns source_revisions for translation acknowledgement. Publication requires every required-locale message and matching parameter types. Default text hashes track stale translations; published versions remain immutable. Null catalogs preserve legacy checksums. Field bpms.format/1 metadata declares direction, Gregorian calendar, IANA timezone, Latin/Persian digits and exact decimal/currency formatting. Canonical submission strings use Gregorian ISO dates, UTC datetimes and ungrouped decimals; localized or lossy values are rejected.
+         * @description Requires forms.manage. Checks draft documents and optional canonical data without saving. Returns at most 32 issues and 32 warnings with JSON pointers; warnings do not make draft valid false. Locale and format_values are preview-only inputs. Versioned bpms.messages/1 catalogs support en/fa/ar, named typed parameters and one/other plurals, with optional zero/two/few/many Arabic branches. Draft validation reports missing or stale translations in warnings and returns source_revisions for translation acknowledgement. Publication requires every required-locale message and matching parameter types. Default text hashes track stale translations; published versions remain immutable. Null catalogs preserve legacy checksums. Field bpms.format/1 metadata declares direction, Gregorian calendar, IANA timezone, Latin/Persian/Arabic digits and exact decimal/currency formatting. Canonical submission strings use Gregorian ISO dates, UTC datetimes and ungrouped decimals; localized or lossy values are rejected.
          */
         post: operations["validate_form_api_v1_forms_validate_post"];
         delete?: never;
@@ -5667,7 +5667,7 @@ export interface paths {
         };
         /**
          * Read the authorized versioned runtime form state
-         * @description Requires requests.start and per-item visibility. Returns bpms.runtime/1 with exact pinned form/design and current owning/submission refs, visible schema metadata, canonical data, stable row keys, effective writable/required scopes and available actions. Named key selects an edit/summary/print view; non-claimants and closed items are explicitly noneditable. Hidden schema/default/value/provenance data stays server-only. Accept-Language resolves en/fa without repinning. Unknown render dialects return 409; inaccessible resources return 404; private no-store response.
+         * @description Requires requests.start and per-item visibility. Returns bpms.runtime/1 with exact pinned form/design and current owning/submission refs, visible schema metadata, canonical data, stable row keys, effective writable/required scopes and available actions. Named key selects an edit/summary/print view; non-claimants and closed items are explicitly noneditable. Hidden schema/default/value/provenance data stays server-only. Accept-Language resolves en/fa/ar without repinning. Unknown render dialects return 409; inaccessible resources return 404; private no-store response.
          */
         get: operations["get_work_item_runtime_api_v1_work_items__ref_id__runtime_get"];
         put?: never;
@@ -7447,7 +7447,7 @@ export interface components {
             source_revision?: string | null;
             /**
              * Text
-             * @description Plain text with named {parameters}, or exactly one/other branches selected by integer count. No HTML, ICU, format specifiers or executable templates.
+             * @description Plain text with named {parameters}, or required one/other plural branches with optional zero/two/few/many branches for Arabic. Missing branches fall back to other. No HTML, ICU, format specifiers or executable templates.
              */
             text: string | components["schemas"]["PluralMessage"];
         };
@@ -8241,7 +8241,7 @@ export interface components {
              * @default en
              * @enum {string}
              */
-            locale: "en" | "fa";
+            locale: "en" | "fa" | "ar";
             /**
              * Page
              * @default 1
@@ -8601,7 +8601,7 @@ export interface components {
              * @default en
              * @enum {string}
              */
-            default_locale: "en" | "fa";
+            default_locale: "en" | "fa" | "ar";
             /**
              * Dialect
              * @default bpms.messages/1
@@ -8614,14 +8614,14 @@ export interface components {
              *       "en"
              *     ]
              */
-            required_locales: ("en" | "fa")[];
+            required_locales: ("en" | "fa" | "ar")[];
             /**
              * Supported Locales
              * @default [
              *       "en"
              *     ]
              */
-            supported_locales: ("en" | "fa")[];
+            supported_locales: ("en" | "fa" | "ar")[];
         };
         /** FormQuery */
         FormQuery: {
@@ -9058,7 +9058,7 @@ export interface components {
              * @description Locale actually opened or dismissed; locales are acknowledged independently.
              * @enum {string}
              */
-            locale: "en" | "fa";
+            locale: "en" | "fa" | "ar";
             /**
              * Revision
              * @description Exact frontend content revision; stale revisions are not persisted.
@@ -9125,7 +9125,7 @@ export interface components {
              * @description Locale actually opened or dismissed; locales are acknowledged independently.
              * @enum {string}
              */
-            locale: "en" | "fa";
+            locale: "en" | "fa" | "ar";
             /**
              * Revision
              * @description Exact frontend content revision; stale revisions are not persisted.
@@ -9590,7 +9590,7 @@ export interface components {
              * @default en
              * @enum {string}
              */
-            locale: "en" | "fa";
+            locale: "en" | "fa" | "ar";
             /**
              * Page
              * @default 1
@@ -9623,7 +9623,7 @@ export interface components {
              * @default en
              * @enum {string}
              */
-            locale: "en" | "fa";
+            locale: "en" | "fa" | "ar";
             /**
              * Page
              * @default 1
@@ -9737,14 +9737,14 @@ export interface components {
              * @default en
              * @enum {string}
              */
-            language: "en" | "fa";
+            language: "en" | "fa" | "ar";
             /**
              * Numbering
              * @description Preferred display digits; stored numbers keep their canonical format.
              * @default latn
              * @enum {string}
              */
-            numbering: "latn" | "arabext";
+            numbering: "latn" | "arabext" | "arab";
             /**
              * Timezone
              * @description Valid IANA timezone for presentation; timestamps remain UTC.
@@ -9754,6 +9754,8 @@ export interface components {
         };
         /** LocalizedTaskText */
         LocalizedTaskText: {
+            /** Ar */
+            ar?: string | null;
             /** En */
             en: string;
             /** Fa */
@@ -10120,7 +10122,7 @@ export interface components {
              * Locale
              * @description Author-only simulated option locale. Null uses Accept-Language; no canonical values or client identity change.
              */
-            locale?: ("en" | "fa") | null;
+            locale?: ("en" | "fa" | "ar") | null;
             query: components["schemas"]["OptionQuery"];
         };
         /** OptionQuery */
@@ -12693,10 +12695,18 @@ export interface components {
         };
         /** PluralMessage */
         PluralMessage: {
+            /** Few */
+            few?: string | null;
+            /** Many */
+            many?: string | null;
             /** One */
             one: string;
             /** Other */
             other: string;
+            /** Two */
+            two?: string | null;
+            /** Zero */
+            zero?: string | null;
         };
         /** @enum {string} */
         PortDirection: "INPUT" | "OUTPUT";
@@ -12824,7 +12834,7 @@ export interface components {
             format_values?: components["schemas"]["FormatSample"][];
             /**
              * Locale
-             * @description Preview locale override; regional tags use the base en/fa language. Omitted uses Accept-Language.
+             * @description Preview locale override; regional tags use the base en/fa/ar language. Omitted uses Accept-Language.
              */
             locale?: string | null;
             /** @description Optional bpms.messages/1 catalog pinned with this exact version. Null preserves legacy reads and checksums. Draft gaps are warnings; required translations and matching parameters are mandatory at publication. */
@@ -13893,7 +13903,7 @@ export interface components {
             required_scopes: string[];
             /**
              * Resolved Locale
-             * @description Locale selected by the pinned catalog, or negotiated en/fa fallback.
+             * @description Locale selected by the pinned catalog, or negotiated en/fa/ar fallback.
              */
             resolved_locale: string;
             /**
@@ -14252,7 +14262,7 @@ export interface components {
              * @default en
              * @enum {string}
              */
-            locale: "en" | "fa";
+            locale: "en" | "fa" | "ar";
             /**
              * Policy
              * @description Explicit simulated read/write/required/hidden scopes; not real actor entitlements. Null previews all declared scopes.
@@ -17744,7 +17754,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -17893,7 +17903,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -18044,7 +18054,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -18197,7 +18207,7 @@ export interface operations {
             };
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -18350,7 +18360,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -18501,7 +18511,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -18650,7 +18660,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -18803,7 +18813,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -18952,7 +18962,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -19105,7 +19115,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -19256,7 +19266,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -19407,7 +19417,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -19558,7 +19568,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -19707,7 +19717,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -19860,7 +19870,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -20009,7 +20019,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -20162,7 +20172,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -20313,7 +20323,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -20464,7 +20474,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -20615,7 +20625,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -20764,7 +20774,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -20917,7 +20927,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -21066,7 +21076,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -21219,7 +21229,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -21372,7 +21382,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -21521,7 +21531,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -21674,7 +21684,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -21825,7 +21835,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -21978,7 +21988,7 @@ export interface operations {
             };
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -22129,7 +22139,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -22280,7 +22290,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -22429,7 +22439,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -22582,7 +22592,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -22731,7 +22741,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -22884,7 +22894,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -23037,7 +23047,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -23187,7 +23197,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -23340,7 +23350,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -23491,7 +23501,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -23644,7 +23654,7 @@ export interface operations {
             };
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -23795,7 +23805,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -23946,7 +23956,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -24095,7 +24105,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -24248,7 +24258,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -24399,7 +24409,7 @@ export interface operations {
             };
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -24552,7 +24562,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -24705,7 +24715,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -24854,7 +24864,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -25006,7 +25016,7 @@ export interface operations {
             };
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -25161,7 +25171,7 @@ export interface operations {
             };
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -25312,7 +25322,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -25463,7 +25473,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -25613,7 +25623,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -25764,7 +25774,7 @@ export interface operations {
             };
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -25915,7 +25925,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -26066,7 +26076,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -26219,7 +26229,7 @@ export interface operations {
             };
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -26370,7 +26380,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -26522,7 +26532,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -26676,7 +26686,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -26825,7 +26835,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -26978,7 +26988,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -27129,7 +27139,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -27280,7 +27290,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -27431,7 +27441,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -27582,7 +27592,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -27729,7 +27739,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -27876,7 +27886,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -28027,7 +28037,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -28178,7 +28188,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -28329,7 +28339,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -28480,7 +28490,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -28629,7 +28639,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -28778,7 +28788,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -28929,7 +28939,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -29080,7 +29090,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -29231,7 +29241,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -29382,7 +29392,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -29531,7 +29541,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -29684,7 +29694,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -29833,7 +29843,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -29986,7 +29996,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -30139,7 +30149,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -30293,7 +30303,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -30443,7 +30453,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -30596,7 +30606,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -30745,7 +30755,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -30898,7 +30908,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -31051,7 +31061,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -31206,7 +31216,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -31359,7 +31369,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -31508,7 +31518,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -31661,7 +31671,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -31812,7 +31822,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -31963,7 +31973,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -32114,7 +32124,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -32267,7 +32277,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -32418,7 +32428,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -32573,7 +32583,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -32724,7 +32734,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -32879,7 +32889,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -33030,7 +33040,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -33183,7 +33193,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -33336,7 +33346,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -33487,7 +33497,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -33642,7 +33652,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -33793,7 +33803,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -33944,7 +33954,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -34093,7 +34103,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -34242,7 +34252,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -34395,7 +34405,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -34546,7 +34556,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -34700,7 +34710,7 @@ export interface operations {
             };
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -34851,7 +34861,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -35002,7 +35012,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -35151,7 +35161,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -35304,7 +35314,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -35453,7 +35463,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -35606,7 +35616,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -35755,7 +35765,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -35906,7 +35916,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -36059,7 +36069,7 @@ export interface operations {
             };
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -36210,7 +36220,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -36361,7 +36371,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -36512,7 +36522,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -36665,7 +36675,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -36818,7 +36828,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -37007,7 +37017,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -37156,7 +37166,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -37310,7 +37320,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -37460,7 +37470,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -37610,7 +37620,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -37764,7 +37774,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -37913,7 +37923,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -38066,7 +38076,7 @@ export interface operations {
             };
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -38217,7 +38227,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -38368,7 +38378,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -38519,7 +38529,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -38672,7 +38682,7 @@ export interface operations {
             };
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -38825,7 +38835,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -38976,7 +38986,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -39125,7 +39135,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -39278,7 +39288,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -39427,7 +39437,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -39580,7 +39590,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -39729,7 +39739,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -39878,7 +39888,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -40029,7 +40039,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -40180,7 +40190,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -40331,7 +40341,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -40480,7 +40490,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -40633,7 +40643,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -40782,7 +40792,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -40935,7 +40945,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -41085,7 +41095,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -41238,7 +41248,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -41389,7 +41399,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -41540,7 +41550,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -41691,7 +41701,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -41840,7 +41850,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -41993,7 +42003,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -42142,7 +42152,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -42295,7 +42305,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -42444,7 +42454,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -42593,7 +42603,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -42744,7 +42754,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -42895,7 +42905,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -43046,7 +43056,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -43195,7 +43205,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -43348,7 +43358,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -43497,7 +43507,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -43650,7 +43660,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -43800,7 +43810,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -43953,7 +43963,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -44104,7 +44114,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -44255,7 +44265,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -44406,7 +44416,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -44555,7 +44565,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -44708,7 +44718,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -44857,7 +44867,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -45010,7 +45020,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -45159,7 +45169,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -45308,7 +45318,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -45461,7 +45471,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -45612,7 +45622,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -45763,7 +45773,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -45914,7 +45924,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -46063,7 +46073,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -46216,7 +46226,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -46365,7 +46375,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -46518,7 +46528,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -46669,7 +46679,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -46820,7 +46830,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -46967,7 +46977,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -47120,7 +47130,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -47272,7 +47282,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Preferred English/Persian language, including regional tags such as fa-IR. Preview locale overrides this header for form content; envelope Content-Language follows the header. Canonical keys and submitted values do not change. */
+                /** @description Preferred English/Persian/Arabic language, including regional tags such as fa-IR and ar-SA. Preview locale overrides this header for form content; envelope Content-Language follows the header. Canonical keys and submitted values do not change. */
                 "Accept-Language"?: string | null;
                 /**
                  * @description Optional RFC 9110 HTTP-date generated by native clients for advisory diagnostics. Browser JavaScript cannot set Date. Missing or invalid values do not reject the request.
@@ -47423,7 +47433,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -47570,7 +47580,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -47721,7 +47731,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -47874,7 +47884,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -48024,7 +48034,7 @@ export interface operations {
         parameters: {
             query?: never;
             header?: {
-                /** @description Preferred English/Persian language, including regional tags such as fa-IR. Preview locale overrides this header for form content; envelope Content-Language follows the header. Canonical keys and submitted values do not change. */
+                /** @description Preferred English/Persian/Arabic language, including regional tags such as fa-IR and ar-SA. Preview locale overrides this header for form content; envelope Content-Language follows the header. Canonical keys and submitted values do not change. */
                 "Accept-Language"?: string | null;
                 /**
                  * @description Optional RFC 9110 HTTP-date generated by native clients for advisory diagnostics. Browser JavaScript cannot set Date. Missing or invalid values do not reject the request.
@@ -48173,7 +48183,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -48324,7 +48334,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -48479,7 +48489,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -48825,7 +48835,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -48978,7 +48988,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -49131,7 +49141,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -49280,7 +49290,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -49431,7 +49441,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -49580,7 +49590,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -49733,7 +49743,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -49882,7 +49892,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -50035,7 +50045,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -50185,7 +50195,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -50340,7 +50350,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -50493,7 +50503,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -50642,7 +50652,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -50795,7 +50805,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -50944,7 +50954,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -51095,7 +51105,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -51249,7 +51259,7 @@ export interface operations {
             };
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -51400,7 +51410,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -51553,7 +51563,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -51704,7 +51714,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -51855,7 +51865,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -52010,7 +52020,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -52163,7 +52173,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -52315,13 +52325,13 @@ export interface operations {
         parameters: {
             query?: {
                 /** @description Optional locale filter; omitted returns both locales. */
-                locale?: ("en" | "fa") | null;
+                locale?: ("en" | "fa" | "ar") | null;
                 page?: number;
                 size?: number;
             };
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -52470,7 +52480,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -52623,7 +52633,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -52776,7 +52786,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -52929,7 +52939,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -53078,7 +53088,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -53231,7 +53241,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -53380,7 +53390,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -53533,7 +53543,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -53686,7 +53696,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -53837,7 +53847,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -53992,7 +54002,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -54143,7 +54153,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -54298,7 +54308,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -54453,7 +54463,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -54608,7 +54618,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -54761,7 +54771,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -54914,7 +54924,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -55082,7 +55092,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -55246,7 +55256,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -55414,7 +55424,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -55574,7 +55584,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -55723,7 +55733,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -55872,7 +55882,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -56023,7 +56033,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -56174,7 +56184,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -56327,7 +56337,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -56476,7 +56486,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -56629,7 +56639,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -56782,7 +56792,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -56935,7 +56945,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -57088,7 +57098,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -57241,7 +57251,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -57394,7 +57404,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -57547,7 +57557,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -57700,7 +57710,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -57853,7 +57863,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -58006,7 +58016,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -58159,7 +58169,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -58312,7 +58322,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -58465,7 +58475,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -58618,7 +58628,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -58769,7 +58779,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -58920,7 +58930,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -59072,7 +59082,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -59227,7 +59237,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -59380,7 +59390,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -59531,7 +59541,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -59680,7 +59690,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -59833,7 +59843,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -59982,7 +59992,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -60135,7 +60145,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -60288,7 +60298,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -60439,7 +60449,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -60590,7 +60600,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -60743,7 +60753,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -60896,7 +60906,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -61049,7 +61059,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -61198,7 +61208,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -61347,7 +61357,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -61496,7 +61506,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -61643,7 +61653,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -61796,7 +61806,7 @@ export interface operations {
             };
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -61947,7 +61957,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -62100,7 +62110,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -62251,7 +62261,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -62406,7 +62416,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -62561,7 +62571,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -62716,7 +62726,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -62867,7 +62877,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -63020,7 +63030,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -63173,7 +63183,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -63322,7 +63332,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -63475,7 +63485,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -63626,7 +63636,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -63782,7 +63792,7 @@ export interface operations {
             };
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -63929,7 +63939,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -64078,7 +64088,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -64227,7 +64237,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -64376,7 +64386,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -64527,7 +64537,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -64683,7 +64693,7 @@ export interface operations {
             };
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -64830,7 +64840,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -64981,7 +64991,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -65132,7 +65142,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -65281,7 +65291,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -65434,7 +65444,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -65583,7 +65593,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -65736,7 +65746,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -65887,7 +65897,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -66038,7 +66048,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -66187,7 +66197,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -66340,7 +66350,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -66489,7 +66499,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -66642,7 +66652,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -66795,7 +66805,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -66949,7 +66959,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -67099,7 +67109,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -67252,7 +67262,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -67405,7 +67415,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -67558,7 +67568,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -67711,7 +67721,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -67864,7 +67874,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -68017,7 +68027,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -68170,7 +68180,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -68320,7 +68330,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -68473,7 +68483,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -68628,7 +68638,7 @@ export interface operations {
             };
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -68783,7 +68793,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -68936,7 +68946,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -69089,7 +69099,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -69242,7 +69252,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -69395,7 +69405,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -69548,7 +69558,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -69703,7 +69713,7 @@ export interface operations {
             };
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -69854,7 +69864,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -70007,7 +70017,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -70162,7 +70172,7 @@ export interface operations {
             };
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -70311,7 +70321,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -70464,7 +70474,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -70615,7 +70625,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -70766,7 +70776,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -70915,7 +70925,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -71068,7 +71078,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -71217,7 +71227,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -71372,7 +71382,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -71527,7 +71537,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -71676,7 +71686,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -71829,7 +71839,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -71982,7 +71992,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -72137,7 +72147,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -72286,7 +72296,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -72435,7 +72445,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -72586,7 +72596,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -72741,7 +72751,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -72896,7 +72906,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -73051,7 +73061,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -73202,7 +73212,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -73353,7 +73363,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -73504,7 +73514,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -73653,7 +73663,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -73806,7 +73816,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -73955,7 +73965,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -74108,7 +74118,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -74258,7 +74268,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -74413,7 +74423,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -74566,7 +74576,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -74717,7 +74727,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -74868,7 +74878,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -75019,7 +75029,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -75164,7 +75174,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;
@@ -75311,7 +75321,7 @@ export interface operations {
             query?: never;
             header?: {
                 /**
-                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
                  * @example fa-IR
                  */
                 "Accept-Language"?: string;

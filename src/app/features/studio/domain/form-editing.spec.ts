@@ -153,3 +153,42 @@ describe('Author-owned catalog revisions', () => {
     ).rejects.toThrow('Parameterized');
   });
 });
+
+describe('Arabic catalog editing', () => {
+  it('retains the Arabic source locale and computes translation acknowledgments from it', async () => {
+    const documents: JsonObject = {
+      localization: {
+        default_locale: 'ar',
+        supported_locales: ['en', 'fa', 'ar'],
+        catalogs: { ar: { title: { text: 'قديم', parameters: {} } } },
+      },
+    };
+    const result = await translateMessage(
+      documents,
+      'title',
+      'Amount',
+      'مبلغ',
+      'المبلغ',
+    );
+    const localization = result['localization'] as JsonObject;
+    expect(localization['default_locale']).toBe('ar');
+    expect(localization['supported_locales']).toEqual(['en', 'fa', 'ar']);
+    const catalogs = localization['catalogs'] as JsonObject;
+    expect(
+      ((catalogs['ar'] as JsonObject)['title'] as JsonObject)[
+        'source_revision'
+      ],
+    ).toBeNull();
+    expect(
+      ((catalogs['en'] as JsonObject)['title'] as JsonObject)[
+        'source_revision'
+      ],
+    ).toBe(await messageRevision('المبلغ'));
+    const legacyEdit = await translateMessage(result, 'title', 'Total', 'جمع');
+    expect(
+      ((legacyEdit['localization'] as JsonObject)['catalogs'] as JsonObject)[
+        'ar'
+      ],
+    ).toEqual(catalogs['ar']);
+  });
+});

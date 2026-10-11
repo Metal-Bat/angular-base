@@ -122,12 +122,22 @@ describe('Server-owned display preferences', () => {
     expect(preferences.locale.language()).toBe('en');
     expect(preferences.status()).toBe('idle');
   });
-  it('does not send unsupported Arabic to the backend or persist browser credentials', async () => {
+  it('persists Arabic with current references and restores it from the server', async () => {
     await loaded();
     await preferences.language('ar');
     expect(preferences.locale.language()).toBe('ar');
-    expect(preferences.sessionLanguage()).toBe(true);
-    http.expectNone(endpoint);
+    const write = http.expectOne(endpoint);
+    expect(write.request.body).toEqual({
+      ref_id: 'current-1',
+      locale: { language: 'ar' },
+    });
+    write.flush(data('arabic-2', 'blue', 'light', 'ar'));
+    await vi.waitFor(() => expect(preferences.status()).toBe('saved'));
+    const reload = preferences.load();
+    http.expectOne(endpoint).flush(data('arabic-2', 'blue', 'light', 'ar'));
+    await reload;
+    expect(preferences.locale.contentLanguage()).toBe('ar');
+    expect(document.documentElement.dir).toBe('rtl');
   });
   it('does not apply malformed or failed preference reads', async () => {
     http.expectOne(endpoint).flush(data('bad', 'unapproved'));

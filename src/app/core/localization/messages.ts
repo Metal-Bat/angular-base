@@ -4,6 +4,7 @@ import { crudMessages } from './crud-messages';
 export const persianMessages: Readonly<Record<string, string>> = {
   ...crudMessages,
   ...personalMessages,
+  Apply: 'اعمال',
   'Request failed': 'درخواست ناموفق بود',
   'Error code': 'کد خطا',
   'Copy error code': 'کپی کد خطا',

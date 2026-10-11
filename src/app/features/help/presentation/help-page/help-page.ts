@@ -38,9 +38,7 @@ export class HelpPage {
   readonly locale = inject(Locale);
   readonly persisted = inject(HELP_STATE);
   private openedIdentity = '';
-  readonly language = computed(() =>
-    this.locale.language() === 'fa' ? 'fa' : 'en',
-  );
+  readonly language = computed(() => this.locale.language());
   readonly selected = signal<HelpTopic | null>(null);
   readonly viewed = signal<readonly string[]>([]);
   readonly dismissed = signal<readonly string[]>([]);

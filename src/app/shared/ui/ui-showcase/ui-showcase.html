@@ -105,4 +105,42 @@
       </tr></ng-template
     >
   </p-table>
+  <section
+    appAntDesign
+    aria-labelledby="ant-design-heading"
+    class="grid gap-3 rounded-xl border border-console-border p-4"
+    [dir]="locale.language() === 'en' ? 'ltr' : 'rtl'"
+  >
+    <h2 class="text-xl font-semibold" id="ant-design-heading">Ant Design</h2>
+    <label for="ant-design-name">{{ "Name" | localize }}</label>
+    <input
+      id="ant-design-name"
+      nz-input
+      [ngModel]="antName()"
+      (ngModelChange)="antName.set($event)"
+    />
+    <label for="ant-design-status">{{ "Status" | localize }}</label>
+    <nz-select
+      nzId="ant-design-status"
+      [ngModel]="antStatus()"
+      (ngModelChange)="antStatus.set($event)"
+    >
+      <nz-option nzValue="ready" [nzLabel]="'Ready' | localize" />
+      <nz-option nzValue="example" [nzLabel]="'Example' | localize" />
+    </nz-select>
+    <div class="flex flex-wrap gap-3">
+      <button
+        nz-button
+        nzType="primary"
+        type="button"
+        [disabled]="!antName()"
+        (click)="antApplied.set(antName())"
+      >
+        {{ "Apply" | localize }}
+      </button>
+    </div>
+    <output aria-live="polite" for="ant-design-name"
+      ><bdi>{{ antApplied() }}</bdi></output
+    >
+  </section>
 </section>

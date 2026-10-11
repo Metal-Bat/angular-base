@@ -34,7 +34,7 @@ const endpoint = '/api/v1/me/preferences';
 function decode(value: unknown): {
   ref: string;
   appearance: Appearance;
-  language: 'en' | 'fa';
+  language: LocaleSettings['language'];
   settings: components['schemas']['PreferencesDTO'];
 } {
   const row = record(value);
@@ -54,9 +54,9 @@ function decode(value: unknown): {
     !themePalettes.some((p) => p.key === appearance['theme_key']) ||
     !['light', 'dark', 'system'].includes(String(appearance['theme_mode'])) ||
     !['comfortable', 'compact'].includes(String(appearance['density'])) ||
-    !['en', 'fa'].includes(String(locale['language'])) ||
+    !['en', 'fa', 'ar'].includes(String(locale['language'])) ||
     locale['calendar'] !== 'gregory' ||
-    !['latn', 'arabext'].includes(String(locale['numbering'])) ||
+    !['latn', 'arabext', 'arab'].includes(String(locale['numbering'])) ||
     !['requests', 'work_items', 'studio', 'dashboard'].includes(
       String(workspace['landing_key']),
     ) ||
@@ -70,7 +70,7 @@ function decode(value: unknown): {
   return {
     ref: row['ref_id'],
     appearance: appearance as Appearance,
-    language: locale['language'] as 'en' | 'fa',
+    language: locale['language'] as LocaleSettings['language'],
     settings: value as components['schemas']['PreferencesDTO'],
   };
 }
@@ -112,7 +112,6 @@ export class Preferences {
       }
     };
   }
-  readonly sessionLanguage = signal(false);
   private readonly revision = signal(0);
   private ref = '';
   private pending: Changes = {};
@@ -129,7 +128,6 @@ export class Preferences {
       delete this.document.documentElement.dataset['density'];
       this.pending = {};
       this.status.set('idle');
-      this.sessionLanguage.set(false);
       this.revision.update((value) => value + 1);
     });
     inject(DestroyRef).onDestroy(release);
@@ -174,7 +172,6 @@ export class Preferences {
       }
       this.acceptSettings(value.settings);
       this.ref = value.ref;
-      this.sessionLanguage.set(false);
       this.status.set('saved');
       if (
         this.feedback.state()?.message ===
@@ -230,11 +227,6 @@ export class Preferences {
     const generation = this.generation;
     await this.locale.set(value);
     if (generation !== this.generation) {
-      return;
-    }
-    this.sessionLanguage.set(value === 'ar');
-    if (value === 'ar') {
-      delete this.pending.locale;
       return;
     }
     this.queue({ locale: { language: value } });

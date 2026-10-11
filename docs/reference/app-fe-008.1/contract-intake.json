@@ -1,0 +1,29 @@
+{
+  "date": "2026-10-11",
+  "owner": "APP-FE-008.1",
+  "producer_source_sha256": "f98c98a8c58429d315621301eac4c4b4947753cde5e3a6e0df765eb0acf29ddb",
+  "producer_manifest_sha256": "35f9caf32cd11626b3699c9e258cca380cede2216b0f1efc2ec6604445294969",
+  "languages": [
+    "en",
+    "fa",
+    "ar"
+  ],
+  "changed_schema_names": [
+    "AIChoice",
+    "FieldInventoryQuery",
+    "FormLocalization",
+    "HelpAction",
+    "HelpStateDTO",
+    "LibrarySearch",
+    "LibrarySelectQuery",
+    "LocalePreferences",
+    "LocalizedTaskText",
+    "OptionPreviewRequest",
+    "PluralMessage",
+    "SimulatedRuntimePreviewRequest"
+  ],
+  "structural_operation_changes": [
+    "GET /api/v1/me/help-state: language query enum adds ar"
+  ],
+  "review": "Additive Arabic locale/numbering enums, optional Arabic task text and plural branches, and localization documentation. Existing published values, canonical keys and required fields are preserved. Actual paired acceptance is recorded separately."
+}

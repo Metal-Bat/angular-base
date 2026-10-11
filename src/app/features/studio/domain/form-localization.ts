@@ -19,10 +19,13 @@ export async function translateMessage(
   key: string,
   en: string,
   fa: string,
+  ar?: string,
 ): Promise<JsonObject> {
   if (
     !/^[A-Za-z0-9_.-]{1,128}$/.test(key) ||
-    [en, fa].some((text) => !text.trim() || text.length > 2048)
+    [en, fa, ...(ar === undefined ? [] : [ar])].some(
+      (text) => !text.trim() || text.length > 2048,
+    )
   ) {
     throw Error('Both languages require bounded text');
   }
@@ -30,7 +33,8 @@ export async function translateMessage(
   const catalogs = (localization['catalogs'] ?? {}) as JsonObject;
   const english = (catalogs['en'] ?? {}) as JsonObject;
   const persian = (catalogs['fa'] ?? {}) as JsonObject;
-  for (const message of [english[key], persian[key]]) {
+  const arabic = (catalogs['ar'] ?? {}) as JsonObject;
+  for (const message of [english[key], persian[key], arabic[key]]) {
     if (
       message &&
       (typeof (message as JsonObject)['text'] !== 'string' ||
@@ -42,8 +46,14 @@ export async function translateMessage(
       );
     }
   }
-  const defaultLocale = localization['default_locale'] === 'fa' ? 'fa' : 'en';
-  const revision = await messageRevision(defaultLocale === 'en' ? en : fa);
+  const defaultLocale = ['fa', 'ar'].includes(
+    String(localization['default_locale']),
+  )
+    ? String(localization['default_locale'])
+    : 'en';
+  const revision = await messageRevision(
+    sourceText(defaultLocale, en, fa, ar, arabic[key]),
+  );
   const entry = (
     old: JsonValue | undefined,
     text: string,
@@ -59,6 +69,7 @@ export async function translateMessage(
       ...((localization['required_locales'] ?? []) as string[]),
       'en',
       'fa',
+      ...(ar === undefined ? [] : ['ar']),
     ]),
   ];
   return {
@@ -67,13 +78,42 @@ export async function translateMessage(
       ...localization,
       dialect: 'bpms.messages/1',
       default_locale: defaultLocale,
-      supported_locales: ['en', 'fa'],
+      supported_locales: [
+        ...new Set([
+          ...((localization['supported_locales'] ?? []) as string[]),
+          'en',
+          'fa',
+          ...(ar === undefined ? [] : ['ar']),
+        ]),
+      ],
       required_locales: required,
       catalogs: {
         ...catalogs,
         en: { ...english, [key]: entry(english[key], en, 'en') },
         fa: { ...persian, [key]: entry(persian[key], fa, 'fa') },
+        ...(ar === undefined
+          ? {}
+          : { ar: { ...arabic, [key]: entry(arabic[key], ar, 'ar') } }),
       },
     },
   };
+}
+
+function sourceText(
+  locale: string,
+  en: string,
+  fa: string,
+  ar: string | undefined,
+  existing: JsonValue | undefined,
+): string {
+  const source =
+    locale === 'en'
+      ? en
+      : locale === 'fa'
+        ? fa
+        : (ar ?? (existing as JsonObject | undefined)?.['text']);
+  if (typeof source !== 'string' || !source.trim()) {
+    throw Error('Invalid translation');
+  }
+  return source;
 }

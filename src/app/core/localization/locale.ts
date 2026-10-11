@@ -27,7 +27,7 @@ const catalogLoaders: Record<
 @Injectable({ providedIn: 'root' })
 export class Locale {
   readonly languages = supportedLanguages;
-  readonly numbering = signal<'latn' | 'arabext'>('latn');
+  readonly numbering = signal<'latn' | 'arabext' | 'arab'>('latn');
   readonly timezone = signal('UTC');
   // Session-only presentation choice; no unsupported preference DTO field.
   readonly calendarOverride = signal<CalendarSystem | null>(null);
@@ -43,10 +43,7 @@ export class Locale {
   private readonly defaultLanguage = inject(RUNTIME_CONFIG).locale;
   private readonly document = inject(DOCUMENT);
   readonly language = signal<SupportedLocale>(inject(RUNTIME_CONFIG).locale);
-  // The released renderer DTOs currently accept en/fa, independently of UI languages.
-  readonly contentLanguage = computed<'en' | 'fa'>(() =>
-    this.language() === 'fa' ? 'fa' : 'en',
-  );
+  readonly contentLanguage = computed(() => this.language());
   private catalog: Readonly<Record<string, string>> = {};
   private readonly catalogs = new Map<
     SupportedLocale,

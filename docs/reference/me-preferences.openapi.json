@@ -44,7 +44,7 @@
             }
           },
           {
-            "description": "Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.",
+            "description": "Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.",
             "example": "fa-IR",
             "in": "header",
             "name": "Accept-Language",
@@ -285,7 +285,7 @@
             }
           },
           {
-            "description": "Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.",
+            "description": "Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.",
             "example": "fa-IR",
             "in": "header",
             "name": "Accept-Language",
@@ -502,6 +502,49 @@
   },
   "components": {
     "schemas": {
+      "AppearancePreferences": {
+        "additionalProperties": false,
+        "properties": {
+          "density": {
+            "default": "comfortable",
+            "description": "Workspace control density.",
+            "enum": [
+              "comfortable",
+              "compact"
+            ],
+            "title": "Density",
+            "type": "string"
+          },
+          "theme_key": {
+            "default": "blue",
+            "description": "Approved workspace palette key, shared with the frontend.",
+            "enum": [
+              "blue",
+              "indigo",
+              "violet",
+              "emerald",
+              "teal",
+              "rose",
+              "amber"
+            ],
+            "title": "Theme Key",
+            "type": "string"
+          },
+          "theme_mode": {
+            "default": "system",
+            "description": "Appearance mode; system follows the device preference.",
+            "enum": [
+              "light",
+              "dark",
+              "system"
+            ],
+            "title": "Theme Mode",
+            "type": "string"
+          }
+        },
+        "title": "AppearancePreferences",
+        "type": "object"
+      },
       "ErrorResponse": {
         "description": "Localized failure with a stable application error number.",
         "properties": {
@@ -544,36 +587,61 @@
         "title": "ErrorResponse",
         "type": "object"
       },
-      "SuccessResponse_PreferencesDTO_": {
+      "LocalePreferences": {
+        "additionalProperties": false,
         "properties": {
-          "code": {
-            "default": 200,
-            "title": "Code",
-            "type": "integer"
-          },
-          "data": {
-            "$ref": "#/components/schemas/PreferencesDTO"
-          },
-          "error": {
-            "title": "Error",
-            "type": "null"
-          },
-          "request_id": {
-            "title": "Request Id",
+          "calendar": {
+            "const": "gregory",
+            "default": "gregory",
+            "description": "Gregorian calendar only; Persian language does not select a different calendar.",
+            "title": "Calendar",
             "type": "string"
           },
-          "success": {
-            "const": true,
-            "default": true,
-            "title": "Success",
+          "language": {
+            "default": "en",
+            "description": "Preferred presentation language; canonical data stays unchanged.",
+            "enum": [
+              "en",
+              "fa",
+              "ar"
+            ],
+            "title": "Language",
+            "type": "string"
+          },
+          "numbering": {
+            "default": "latn",
+            "description": "Preferred display digits; stored numbers keep their canonical format.",
+            "enum": [
+              "latn",
+              "arabext",
+              "arab"
+            ],
+            "title": "Numbering",
+            "type": "string"
+          },
+          "timezone": {
+            "default": "UTC",
+            "description": "Valid IANA timezone for presentation; timestamps remain UTC.",
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Timezone",
+            "type": "string"
+          }
+        },
+        "title": "LocalePreferences",
+        "type": "object"
+      },
+      "NotificationPreferences": {
+        "additionalProperties": false,
+        "properties": {
+          "email_enabled": {
+            "default": false,
+            "description": "Opt in to optional application email; mandatory security and approval notices remain enabled.",
+            "title": "Email Enabled",
             "type": "boolean"
           }
         },
-        "required": [
-          "request_id",
-          "data"
-        ],
-        "title": "SuccessResponse[PreferencesDTO]",
+        "title": "NotificationPreferences",
         "type": "object"
       },
       "PreferencesDTO": {
@@ -611,131 +679,6 @@
           "ref_id"
         ],
         "title": "PreferencesDTO",
-        "type": "object"
-      },
-      "WorkspacePreferences": {
-        "additionalProperties": false,
-        "properties": {
-          "landing_key": {
-            "default": "requests",
-            "description": "Allowlisted landing route key; a preference grants no screen permission.",
-            "enum": [
-              "requests",
-              "work_items",
-              "studio",
-              "dashboard"
-            ],
-            "title": "Landing Key",
-            "type": "string"
-          },
-          "page_size": {
-            "default": 20,
-            "description": "Default list page size, from 1 through 100 items.",
-            "maximum": 100.0,
-            "minimum": 1.0,
-            "title": "Page Size",
-            "type": "integer"
-          }
-        },
-        "title": "WorkspacePreferences",
-        "type": "object"
-      },
-      "NotificationPreferences": {
-        "additionalProperties": false,
-        "properties": {
-          "email_enabled": {
-            "default": false,
-            "description": "Opt in to optional application email; mandatory security and approval notices remain enabled.",
-            "title": "Email Enabled",
-            "type": "boolean"
-          }
-        },
-        "title": "NotificationPreferences",
-        "type": "object"
-      },
-      "LocalePreferences": {
-        "additionalProperties": false,
-        "properties": {
-          "calendar": {
-            "const": "gregory",
-            "default": "gregory",
-            "description": "Gregorian calendar only; Persian language does not select a different calendar.",
-            "title": "Calendar",
-            "type": "string"
-          },
-          "language": {
-            "default": "en",
-            "description": "Preferred presentation language; canonical data stays unchanged.",
-            "enum": [
-              "en",
-              "fa"
-            ],
-            "title": "Language",
-            "type": "string"
-          },
-          "numbering": {
-            "default": "latn",
-            "description": "Preferred display digits; stored numbers keep their canonical format.",
-            "enum": [
-              "latn",
-              "arabext"
-            ],
-            "title": "Numbering",
-            "type": "string"
-          },
-          "timezone": {
-            "default": "UTC",
-            "description": "Valid IANA timezone for presentation; timestamps remain UTC.",
-            "maxLength": 64,
-            "minLength": 1,
-            "title": "Timezone",
-            "type": "string"
-          }
-        },
-        "title": "LocalePreferences",
-        "type": "object"
-      },
-      "AppearancePreferences": {
-        "additionalProperties": false,
-        "properties": {
-          "density": {
-            "default": "comfortable",
-            "description": "Workspace control density.",
-            "enum": [
-              "comfortable",
-              "compact"
-            ],
-            "title": "Density",
-            "type": "string"
-          },
-          "theme_key": {
-            "default": "blue",
-            "description": "Approved workspace palette key, shared with the frontend.",
-            "enum": [
-              "blue",
-              "indigo",
-              "violet",
-              "emerald",
-              "teal",
-              "rose",
-              "amber"
-            ],
-            "title": "Theme Key",
-            "type": "string"
-          },
-          "theme_mode": {
-            "default": "system",
-            "description": "Appearance mode; system follows the device preference.",
-            "enum": [
-              "light",
-              "dark",
-              "system"
-            ],
-            "title": "Theme Mode",
-            "type": "string"
-          }
-        },
-        "title": "AppearancePreferences",
         "type": "object"
       },
       "PreferencesPatch": {
@@ -809,6 +752,65 @@
           "ref_id"
         ],
         "title": "PreferencesPatch",
+        "type": "object"
+      },
+      "SuccessResponse_PreferencesDTO_": {
+        "properties": {
+          "code": {
+            "default": 200,
+            "title": "Code",
+            "type": "integer"
+          },
+          "data": {
+            "$ref": "#/components/schemas/PreferencesDTO"
+          },
+          "error": {
+            "title": "Error",
+            "type": "null"
+          },
+          "request_id": {
+            "title": "Request Id",
+            "type": "string"
+          },
+          "success": {
+            "const": true,
+            "default": true,
+            "title": "Success",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "request_id",
+          "data"
+        ],
+        "title": "SuccessResponse[PreferencesDTO]",
+        "type": "object"
+      },
+      "WorkspacePreferences": {
+        "additionalProperties": false,
+        "properties": {
+          "landing_key": {
+            "default": "requests",
+            "description": "Allowlisted landing route key; a preference grants no screen permission.",
+            "enum": [
+              "requests",
+              "work_items",
+              "studio",
+              "dashboard"
+            ],
+            "title": "Landing Key",
+            "type": "string"
+          },
+          "page_size": {
+            "default": 20,
+            "description": "Default list page size, from 1 through 100 items.",
+            "maximum": 100.0,
+            "minimum": 1.0,
+            "title": "Page Size",
+            "type": "integer"
+          }
+        },
+        "title": "WorkspacePreferences",
         "type": "object"
       }
     }

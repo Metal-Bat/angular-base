@@ -1,6 +1,6 @@
 # API/UI coverage
 
-Source: 379 operations; SHA256 `78c06495ea694face5563620c11f13e1c981d046fc276046a2601640fbcdd6c6`. Regenerate with `pnpm run delivery:inventory`.
+Source: 379 operations; SHA256 `49f59cb7804f07e820f7cb1f4d26adb4794b5496a7520d59df38d238fae907ed`. Regenerate with `pnpm run delivery:inventory`.
 
 This is a source inventory, not proof of integration. The APP-BE-001 producer handoff is consumed and hash checked. Live HTTP evidence is recorded separately. Every operation has an owner; no ordinary business operation is excluded. The companion JSON contains exact input/output schemas, parameters, direct TypeScript consumers, separate metadata references, direct operation test references, and state requirements. Generated JSON metadata is never counted as a direct code consumer. Configured actions require domain UI verification; metadata alone does not prove usable UI. An empty tests array means no direct operation-ID test was found, not that no feature tests exist. Screen assignments identify the owning area; they do not assert that every action already has purposeful UI.
 

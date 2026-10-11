@@ -94,7 +94,7 @@ describe('Extensible language selection', () => {
     expect(locale.text('Sign in')).toBe('تسجيل الدخول');
     expect(locale.text('Username')).toBe('اسم المستخدم');
     expect(locale.text('opaque/option')).toBe('opaque/option');
-    expect(locale.contentLanguage()).toBe('en');
+    expect(locale.contentLanguage()).toBe('ar');
     await locale.set('fa');
     expect(locale.text('Username')).toBe('نام کاربری');
     expect(locale.contentLanguage()).toBe('fa');

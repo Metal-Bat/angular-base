@@ -59,3 +59,6 @@ Thumbs.db
 # Python verification caches
 __pycache__/
 *.pyc
+
+# Optional vendor styles generated from pinned NG-ZORRO
+/public/ui/ant-design.css

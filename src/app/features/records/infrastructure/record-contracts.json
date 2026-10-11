@@ -1371,9 +1371,9 @@
                           },
                           "labels": {
                             "additionalProperties": { "type": "string" },
-                            "maxProperties": 2,
+                            "maxProperties": 3,
                             "minProperties": 1,
-                            "propertyNames": { "enum": ["en", "fa"] },
+                            "propertyNames": { "enum": ["en", "fa", "ar"] },
                             "title": "Labels",
                             "type": "object"
                           }
@@ -1671,9 +1671,9 @@
                           },
                           "labels": {
                             "additionalProperties": { "type": "string" },
-                            "maxProperties": 2,
+                            "maxProperties": 3,
                             "minProperties": 1,
-                            "propertyNames": { "enum": ["en", "fa"] },
+                            "propertyNames": { "enum": ["en", "fa", "ar"] },
                             "title": "Labels",
                             "type": "object"
                           }

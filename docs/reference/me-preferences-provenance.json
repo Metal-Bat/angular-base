@@ -1,7 +1,7 @@
 {
-  "source": "APP-BE-007 wave-four/openapi-en.json and users/presentation/personal.py",
-  "frozen_at": "2026-10-09",
-  "source_sha256": "cb61bfb17b23c4af8b56059a2cbaa16ae76cf57b5e876d48201e0bf0e07665b2",
+  "source": "Current producer en/fa/ar contract intake",
+  "frozen_at": "2026-10-11",
+  "source_sha256": "f98c98a8c58429d315621301eac4c4b4947753cde5e3a6e0df765eb0acf29ddb",
   "path": "/api/v1/me/preferences",
   "methods": [
     "get",
@@ -17,5 +17,5 @@
     "SuccessResponse_PreferencesDTO_",
     "WorkspacePreferences"
   ],
-  "baseline_transport": "APP-FE-001 remains unchanged; this freezes only the additive C02 preferences subset."
+  "baseline_transport": "Shares docs/reference/app-be-001/contract-manifest.json with main transport."
 }

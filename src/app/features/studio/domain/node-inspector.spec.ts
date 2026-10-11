@@ -19,7 +19,12 @@ const registered = source.handlers.map((handler) => ({
 })) as unknown as JsonObject[];
 describe('Frozen node inspector registry', () => {
   it('resolves every shipped handler/version against the current pin and exact schema', () => {
-    expect(handlers.length).toBe(17);
+    expect(handlers.length).toBe(18);
+    expect(
+      handlers
+        .filter((handler) => handler.handler_key === 'notification')
+        .map((handler) => handler.handler_version),
+    ).toEqual(['1', '2', '3']);
     for (const handler of source.handlers) {
       const step = {
         key: 'step',
