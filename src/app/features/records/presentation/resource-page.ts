@@ -1,3 +1,4 @@
+import { RepairReturn } from '../../../shared/ui/repair-return/repair-return';
 import { RecordPageHeader } from './record-page-header';
 import { RecordHistoryDialog } from './record-history-dialog';
 import { RecordRoleDialog } from './record-role-dialog';
@@ -39,6 +40,7 @@ import { ResourceRowActions } from './resource-row-actions';
   selector: 'app-resource-page',
   host: { class: 'console-page', '[attr.data-resource]': 'definition.key' },
   imports: [
+    RepairReturn,
     RecordPageHeader,
     RecordHistoryDialog,
     RecordRoleDialog,
@@ -126,7 +128,7 @@ export class ResourcePage extends ResourceRowActions {
     reference: string | undefined,
     message: string,
   ): Promise<RecordRow | null | undefined> {
-    if (!this.allowed() || this.actionBusy()) {
+    if (!this.canMutate()) {
       return undefined;
     }
     const generation = this.generation;
@@ -138,8 +140,7 @@ export class ResourcePage extends ResourceRowActions {
     if (
       generation !== this.generation ||
       epoch !== this.actor.epoch ||
-      !this.allowed() ||
-      this.actionBusy()
+      !this.canMutate()
     ) {
       return undefined;
     }
@@ -159,6 +160,7 @@ export class ResourcePage extends ResourceRowActions {
     } catch (error) {
       if (generation === this.generation) {
         this.error.set(this.message(error));
+        this.markMutationFailure(error);
         this.modalError.set(this.message(error));
         if (error instanceof ApiFailure) {
           this.fieldErrors = {
@@ -313,6 +315,8 @@ export class ResourcePage extends ResourceRowActions {
         ref_id: recordReference(row),
       });
       if (generation === this.historyGeneration) {
+        this.historyDetail = null;
+        this.modalError.set('');
         this.historyPage.set(page);
         this.historyQuery.set(structuredClone(query));
       }

@@ -45,7 +45,14 @@ export type StudioPort = {
     key: string,
     body: JsonObject | undefined,
     path?: Record<string, string>,
+    abort?: AbortSignal,
   ): Promise<unknown>;
+  choices(
+    kind: string,
+    query: JsonObject,
+    context: JsonObject,
+    abort?: AbortSignal,
+  ): Promise<AuthorPage>;
   workspace(version: string): Promise<WorkspaceState>;
   saveWorkspace(
     state: WorkspaceState,

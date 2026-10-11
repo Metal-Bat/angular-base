@@ -15,8 +15,10 @@ export async function checkDeliveryUi(root = ".") {
   const keys = new Set();
   for (const path of [
     "src/app/core/localization/messages.ts",
+    "src/app/core/localization/personal-messages.ts",
     "src/app/core/localization/crud-messages.ts",
     "src/app/core/localization/authoring-messages.ts",
+    "src/app/core/localization/temporal-messages.ts",
   ]) {
     const ast = ts.createSourceFile(
       path,
@@ -52,6 +54,11 @@ export async function checkDeliveryUi(root = ".") {
   const templates = (
     await Promise.all([
       walk(`${root}/src/app/shared/ui`),
+      walk(`${root}/src/app/core/auth/profile`),
+      walk(`${root}/src/app/features/support`),
+      walk(`${root}/src/app/features/readiness`),
+      walk(`${root}/src/app/features/records/presentation/favorites`),
+      walk(`${root}/src/app/features/operations/presentation/case-list`),
       walk(`${root}/src/app/features/help`),
       walk(`${root}/src/app/features/calendar`),
       walk(`${root}/src/app/features/analytics`),

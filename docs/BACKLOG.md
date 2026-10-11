@@ -4,6 +4,12 @@ Prepared October 2, 2026 for this Angular repository. This backlog turns the sup
 
 New application delivery deltas and APP-FE status are maintained in the [delivery supplement](delivery/FRONTEND-BACKLOG.md). Existing ticket IDs and completion history remain authoritative for their original scope.
 
+## Consistency and repair follow-up
+
+[Consistency backlog](delivery/consistency-2026-10-09/FRONTEND-CONSISTENCY-BACKLOG.md) ·
+[Repair register](delivery/consistency-2026-10-09/REPAIR-REGISTER.md) ·
+[Workflow and assistant follow-up](delivery/follow-up-2026-10-09/FRONTEND-FOLLOW-UP.md)
+
 ## Evidence and current baseline
 
 - [Readiness review](reference/frontend-readiness-review.md): source review of backend commit `8921841a866c190d794f41af7a41389400fea26b`. Its original findings are preserved as supplied evidence. Steps 6–8 now have separately tested local backend corrections; see the platform contract.

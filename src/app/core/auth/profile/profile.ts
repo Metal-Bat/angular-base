@@ -1,3 +1,6 @@
+import { ProfileSettings } from '../profile-settings';
+import { ProfileEditor } from './profile-editor/profile-editor';
+import { WorkspaceSettings } from './workspace-settings/workspace-settings';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -5,6 +8,7 @@ import {
   DestroyRef,
   inject,
   signal,
+  viewChild,
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { ButtonDirective } from 'primeng/button';
@@ -25,6 +29,8 @@ import { ProfileAppearance } from './profile-appearance';
     LocalizePipe,
     RecordSummary,
     ProfileAppearance,
+    ProfileEditor,
+    WorkspaceSettings,
   ],
   host: { class: 'console-page' },
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -33,11 +39,31 @@ import { ProfileAppearance } from './profile-appearance';
 })
 export class Profile {
   private readonly api = inject(ApiClient);
+  private readonly editor = viewChild(ProfileEditor);
+  private readonly workspace = viewChild(WorkspaceSettings);
+  async canLeave(): Promise<boolean> {
+    if (!(await (this.editor()?.canLeave() ?? true))) {
+      return false;
+    }
+    return this.workspace()?.canLeave() ?? true;
+  }
   readonly profile = signal<Readonly<Record<string, unknown>> | null>(null);
   readonly busy = signal(false);
   readonly error = signal('');
-  readonly name = computed(() => {
+  private readonly settings = inject(ProfileSettings);
+  readonly summary = computed(() => {
     const user = this.profile();
+    const settings = this.settings.value();
+    return user && settings
+      ? {
+          ...user,
+          first_name: settings.first_name,
+          last_name: settings.last_name,
+        }
+      : user;
+  });
+  readonly name = computed(() => {
+    const user = this.summary();
     return (
       [user?.['first_name'], user?.['last_name']].filter(Boolean).join(' ') ||
       String(user?.['username'] ?? '')

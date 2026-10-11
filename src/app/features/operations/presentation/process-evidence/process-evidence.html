@@ -1,0 +1,198 @@
+<section aria-labelledby="process-evidence-heading" [attr.aria-busy]="busy()">
+  <h2 id="process-evidence-heading">
+    {{ "Receipts and AI evidence" | localize }}
+  </h2>
+  <p>
+    {{
+      "Reading evidence never runs an operation or grants approval." | localize
+    }}
+  </p>
+  <button
+    pButton
+    severity="secondary"
+    type="button"
+    [disabled]="busy()"
+    [outlined]="true"
+    (click)="refresh()"
+  >
+    {{ "Refresh" | localize }}
+  </button>
+  @if (busy()) {
+    <p role="status">{{ "Loading…" | localize }}</p>
+  }
+  @if (error()) {
+    <p role="alert">{{ error() | localize }}</p>
+  }
+  @if (snapshot(); as evidence) {
+    <h3>{{ "Order receipts" | localize }}</h3>
+    <p>
+      {{
+        "An original creation receipt is historical evidence. It does not prove a later cancellation."
+          | localize
+      }}
+    </p>
+    <ul>
+      @for (order of evidence.orders.items; track order.operation) {
+        <li>
+          <dl>
+            <dt>{{ "Operation identity" | localize }}</dt>
+            <dd>
+              <bdi>{{ order.operation }}</bdi>
+            </dd>
+            <dt>{{ "Status" | localize }}</dt>
+            <dd>{{ order.state | localize }}</dd>
+          </dl>
+          @if (order.receipt; as receipt) {
+            <dl>
+              <dt>{{ "Receipt identity" | localize }}</dt>
+              <dd>
+                <bdi>{{ receipt.identity }}</bdi>
+              </dd>
+              <dt>{{ "Provider receipt state" | localize }}</dt>
+              <dd>{{ receipt.state | localize }}</dd>
+              <dt>{{ "Payload fingerprint" | localize }}</dt>
+              <dd>
+                <bdi>{{ receipt.payloadHash }}</bdi>
+              </dd>
+            </dl>
+          } @else {
+            <p>
+              {{
+                "No confirmed receipt is available. Do not repeat the operation."
+                  | localize
+              }}
+            </p>
+          }
+        </li>
+      } @empty {
+        <li>{{ "No order evidence" | localize }}</li>
+      }
+    </ul>
+    <button
+      pButton
+      severity="secondary"
+      type="button"
+      [disabled]="busy() || evidence.orders.page <= 1"
+      [outlined]="true"
+      (click)="refresh(evidence.orders.page - 1, evidence.ai.page)"
+    >
+      {{ "Previous order page" | localize }}
+    </button>
+    <span>{{ evidence.orders.page }} / {{ evidence.orders.totalPages }}</span>
+    <button
+      pButton
+      severity="secondary"
+      type="button"
+      [disabled]="busy() || evidence.orders.page >= evidence.orders.totalPages"
+      [outlined]="true"
+      (click)="refresh(evidence.orders.page + 1, evidence.ai.page)"
+    >
+      {{ "Next order page" | localize }}
+    </button>
+    <h3>{{ "AI execution evidence" | localize }}</h3>
+    <p>
+      {{
+        "A recommendation is not human approval. Agent and model identities refer to the pinned version."
+          | localize
+      }}
+    </p>
+    <ul>
+      @for (attempt of evidence.ai.items; track attempt.execution) {
+        <li>
+          <dl>
+            <dt>{{ "Attempt" | localize }}</dt>
+            <dd>{{ attempt.attempt }}</dd>
+            <dt>{{ "Status" | localize }}</dt>
+            <dd>{{ attempt.status | localize }}</dd>
+            <dt>{{ "Pinned agent" | localize }}</dt>
+            <dd>
+              <bdi>{{ attempt.agent ?? ("Unavailable" | localize) }}</bdi>
+            </dd>
+            <dt>{{ "Pinned metadata available" | localize }}</dt>
+            <dd>{{ (attempt.agentAvailable ? "Yes" : "No") | localize }}</dd>
+            <dt>{{ "Model" | localize }}</dt>
+            <dd>
+              <bdi>{{ attempt.model ?? ("Unavailable" | localize) }}</bdi>
+            </dd>
+            <dt>{{ "Approved input field names" | localize }}</dt>
+            <dd>
+              <bdi>{{ attempt.fields.join(", ") }}</bdi>
+            </dd>
+          </dl>
+          @if (attempt.recommendation; as recommendation) {
+            <dl>
+              <dt>{{ "Recommendation" | localize }}</dt>
+              <dd>
+                <bdi>{{ recommendation.choice }}</bdi>
+              </dd>
+              <dt>{{ "Confidence" | localize }}</dt>
+              <dd>{{ recommendation.confidence }}</dd>
+              <dt>{{ "Review required" | localize }}</dt>
+              <dd>
+                {{ (recommendation.needsReview ? "Yes" : "No") | localize }}
+              </dd>
+            </dl>
+          } @else {
+            <p>{{ "No recommendation is available" | localize }}</p>
+          }
+          @if (attempt.budget; as budget) {
+            <dl>
+              <dt>{{ "Currency" | localize }}</dt>
+              <dd>
+                <bdi>{{ budget.currency }}</bdi>
+              </dd>
+              <dt>{{ "Price version" | localize }}</dt>
+              <dd>
+                <bdi>{{ budget.priceVersion }}</bdi>
+              </dd>
+              <dt>{{ "Usage unknown" | localize }}</dt>
+              <dd>{{ (budget.unknown ? "Yes" : "No") | localize }}</dd>
+              <dt>{{ "Used spend" | localize }}</dt>
+              <dd>
+                <bdi>{{ budget.used }}</bdi>
+              </dd>
+              <dt>{{ "Reserved spend" | localize }}</dt>
+              <dd>
+                <bdi>{{ budget.reserved }}</bdi>
+              </dd>
+              <dt>{{ "Remaining spend" | localize }}</dt>
+              <dd>
+                <bdi>{{ budget.remaining }}</bdi>
+              </dd>
+            </dl>
+          } @else {
+            <p>{{ "Budget evidence unavailable" | localize }}</p>
+          }
+        </li>
+      } @empty {
+        <li>{{ "No AI evidence" | localize }}</li>
+      }
+    </ul>
+    <button
+      pButton
+      severity="secondary"
+      type="button"
+      [disabled]="busy() || evidence.ai.page <= 1"
+      [outlined]="true"
+      (click)="refresh(evidence.orders.page, evidence.ai.page - 1)"
+    >
+      {{ "Previous AI page" | localize }}
+    </button>
+    <span>{{ evidence.ai.page }} / {{ evidence.ai.totalPages }}</span>
+    <button
+      pButton
+      severity="secondary"
+      type="button"
+      [disabled]="busy() || evidence.ai.page >= evidence.ai.totalPages"
+      [outlined]="true"
+      (click)="refresh(evidence.orders.page, evidence.ai.page + 1)"
+    >
+      {{ "Next AI page" | localize }}
+    </button>
+  }
+</section>
+<app-order-recovery
+  [orders]="snapshot()?.orders ?? null"
+  [reference]="reference()"
+  (reconciled)="refresh()"
+/>

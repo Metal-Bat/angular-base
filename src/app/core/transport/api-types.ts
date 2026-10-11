@@ -3,7 +3,11 @@ import type { endpoints } from './generated/operations';
 
 export type OperationId = keyof operations;
 export type ApiOperationId = {
-  [K in OperationId]: (typeof endpoints)[K]['scope'] extends 'api' ? K : never;
+  [K in OperationId]: (typeof endpoints)[K]['scope'] extends 'api'
+    ? (typeof endpoints)[K]['responseType'] extends 'stream'
+      ? never
+      : K
+    : never;
 }[OperationId];
 export type Domain = (typeof endpoints)[ApiOperationId]['area'];
 export type DomainOperation<D extends Domain> = {

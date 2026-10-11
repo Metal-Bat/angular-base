@@ -23,7 +23,13 @@ export class AdminCommandResult {
     input.required<
       Pick<
         AdminConsole,
-        'busy' | 'execute' | 'json' | 'result' | 'rows' | 'use'
+        | 'busy'
+        | 'dismissResult'
+        | 'execute'
+        | 'json'
+        | 'result'
+        | 'rows'
+        | 'use'
       >
     >();
   readonly record = computed(() => {

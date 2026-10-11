@@ -1,0 +1,46 @@
+@let key = catalog().key;
+@if (key === "forms" || key === "workflows") {
+  @if (catalog().selected()) {
+    <app-favorite-action
+      [disabled]="catalog().busy() || catalog().dirty()"
+      [kind]="key"
+      [reference]="catalog().reference()"
+    />
+  }
+  <app-saved-views
+    [columnOptions]="catalog().columnOptions()"
+    [columns]="catalog().savedColumns()"
+    [kind]="key"
+    [query]="catalog().appliedQuery()"
+    (applied)="catalog().applySaved($event)"
+    (columnsChanged)="catalog().savedColumns.set($event)"
+  />
+}
+
+@if (key === "workflow-versions" && catalog().selected()) {
+  <section class="my-4 grid gap-3">
+    <h2>{{ "Client release" | localize }}</h2>
+    <p>{{ "Client" | localize }}</p>
+    <app-studio-choice
+      controlId="readiness-client"
+      kind="clients"
+      [disabled]="catalog().busy() || catalog().dirty()"
+      [value]="client()"
+      (picked)="chooseClient($event)"
+    />
+    <app-studio-choice
+      controlId="readiness-client-release"
+      kind="client_releases"
+      [context]="{ client_ref_id: client() }"
+      [disabled]="catalog().busy() || catalog().dirty()"
+      [value]="clientRelease()"
+      (picked)="clientRelease.set($event)"
+    />
+  </section>
+  <app-dependency-readiness
+    [clientRelease]="clientRelease()"
+    [contextNode]="repairNode()"
+    [inspect]="inspect()"
+    [reference]="catalog().reference()"
+  />
+}

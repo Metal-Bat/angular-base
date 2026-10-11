@@ -2,12 +2,12 @@
   "generator": "openapi-typescript",
   "version": "7.13.0",
   "input": "docs/reference/platform-openapi.json",
-  "sha256": "24609294ec8e087f84f2ab0b302b6abf8e0bd9e57d85366721400bba3f90ca7f",
+  "sha256": "78c06495ea694face5563620c11f13e1c981d046fc276046a2601640fbcdd6c6",
   "alphabetize": true,
   "binaryType": "Blob",
   "binaryFormats": [
     "format:binary",
     "contentMediaType:application/octet-stream"
   ],
-  "operationCount": 314
+  "operationCount": 379
 }

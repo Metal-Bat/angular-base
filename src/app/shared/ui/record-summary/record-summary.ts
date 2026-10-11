@@ -152,9 +152,11 @@ export class RecordSummary {
           new Intl.DateTimeFormat(this.locale.language(), {
             dateStyle: 'medium',
             timeStyle: 'short',
-            timeZone: 'UTC',
-            calendar: 'gregory',
-          }).format(instant) + ' UTC'
+            timeZone: this.locale.timezone(),
+            calendar: this.locale.calendar(),
+          }).format(instant) +
+          ' ' +
+          this.locale.timezone()
         );
       }
     }

@@ -1,3 +1,5 @@
+import { By } from '@angular/platform-browser';
+import { TemporalControl } from '../../../../shared/ui/temporal-control/temporal-control';
 import { TestBed } from '@angular/core/testing';
 import { RUNTIME_OPTIONS } from '../../bindings';
 import {
@@ -25,6 +27,53 @@ function render(input: Record<string, unknown>): {
   return { document: result.document, fixture };
 }
 describe('Primitive presentation matrix', () => {
+  it('renders the backend grid column option without changing canonical values', () => {
+    const input = runtimeFixture();
+    input['render_schema'] = {
+      dialect: 'bpms.render/1',
+      root: { component: 'grid', options: { columns: 3 }, children: [] },
+    };
+    const { document, fixture } = render(input);
+    const layout = (
+      fixture.nativeElement as HTMLElement
+    ).querySelector<HTMLElement>('.runtime-layout');
+    expect(layout?.style.getPropertyValue('--form-layout-columns')).toBe('3');
+    expect(document.canonical).toEqual(input['data']);
+  });
+  it('gives shared field placements distinct accessible IDs and a canonical focus target', () => {
+    const input = runtimeFixture();
+    input['render_schema'] = {
+      dialect: 'bpms.render/1',
+      root: {
+        component: 'vertical',
+        children: [
+          {
+            component: 'integer',
+            scope: '/properties/amount',
+            node_key: 'original',
+            label: 'Amount',
+          },
+          {
+            component: 'integer',
+            scope: '/properties/amount',
+            node_key: 'copy',
+            label: 'Repeated amount',
+          },
+        ],
+      },
+    };
+    const { document, fixture } = render(input);
+    const element = fixture.nativeElement as HTMLElement;
+    const controls = [...element.querySelectorAll<HTMLInputElement>('input')];
+    expect(controls).toHaveLength(2);
+    expect(new Set(controls.map((control) => control.id)).size).toBe(2);
+    expect(controls[0].id).toBe('field-' + encodeURIComponent('/amount'));
+    expect(controls[1].id).toContain('--copy');
+    expect(
+      [...element.querySelectorAll('label')].map((label) => label.htmlFor),
+    ).toEqual(controls.map((control) => control.id));
+    expect(document.canonical).toEqual(input['data']);
+  });
   beforeEach(() =>
     TestBed.configureTestingModule({
       providers: [
@@ -55,6 +104,10 @@ describe('Primitive presentation matrix', () => {
     'renders the supported %s primitive without manufacturing commands or values',
     (kind) => {
       const input = runtimeFixture();
+      if (kind === 'date' || kind === 'datetime') {
+        (input['data'] as Record<string, unknown>)['decimal'] =
+          kind === 'date' ? '2024-03-20' : '2024-03-20T08:00:00Z';
+      }
       input['render_schema'] = {
         dialect: 'bpms.render/1',
         root: ['vertical', 'horizontal', 'grid'].includes(kind)
@@ -126,5 +179,31 @@ describe('Primitive presentation matrix', () => {
     fixture.componentRef.setInput('busy', true);
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('input')).toBeNull();
+  });
+});
+
+describe('Temporal draft validation', () => {
+  it('emits a blocking client error for an invalid date even when legacy schema has no format', async () => {
+    const input = runtimeFixture();
+    (input['data'] as Record<string, unknown>)['decimal'] = '2024-03-20';
+    input['render_schema'] = {
+      dialect: 'bpms.render/1',
+      root: { component: 'date', scope: '/properties/decimal', label: 'Date' },
+    };
+    const { fixture } = render(input);
+    const edits: FieldEdit[] = [];
+    fixture.componentInstance.edit.subscribe((edit) => edits.push(edit));
+    const picker = fixture.debugElement.query(By.directive(TemporalControl))
+      .componentInstance as TemporalControl;
+    picker.typeDate('2024-02-30');
+    await fixture.whenStable();
+    expect(edits.at(-1)?.error).toBe('Enter a valid date or time.');
+    expect(edits.at(-1)?.value).toBe('2024-03-20');
+    expect(picker.dateText()).toBe('2024-02-30');
+    picker.typeDate('2024-02-29');
+    await fixture.whenStable();
+    expect(edits.at(-1)?.error).toBeUndefined();
+    expect(edits.at(-1)?.value).toBe('2024-02-29');
+    fixture.destroy();
   });
 });

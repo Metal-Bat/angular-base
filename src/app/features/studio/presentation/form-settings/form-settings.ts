@@ -98,7 +98,7 @@ export class FormSettings {
     });
   }
   editMessage(key: string): void {
-    if (this.disabled()) {
+    if (this.disabled() || this.busy()) {
       return;
     }
     const catalogs = ((this.documents()['localization'] ?? {}) as JsonObject)[
@@ -109,15 +109,23 @@ export class FormSettings {
     const persian = (catalogs?.['fa'] as JsonObject | undefined)?.[key] as
       JsonObject | undefined;
     const message = { en: english?.['text'], fa: persian?.['text'] };
-    if (typeof message?.en !== 'string' || typeof message.fa !== 'string') {
+    if (
+      [english, persian].some(
+        (entry) =>
+          entry &&
+          (typeof entry['text'] !== 'string' ||
+            Object.keys((entry['parameters'] ?? {}) as JsonObject).length > 0),
+      )
+    ) {
       this.error.set(
         'Parameterized messages require their existing contract editor',
       );
       return;
     }
     this.key = key;
-    this.en = message.en;
-    this.fa = message.fa;
+    this.en = typeof message.en === 'string' ? message.en : '';
+    this.fa = typeof message.fa === 'string' ? message.fa : '';
+    this.error.set('');
   }
   async applyTranslation(): Promise<void> {
     if (this.disabled() || this.busy()) {
@@ -125,10 +133,23 @@ export class FormSettings {
     }
     const generation = this.generation;
     const document = this.documents();
+    const translationDraft = { key: this.key, en: this.en, fa: this.fa };
     this.busy.set(true);
     try {
-      const next = await translateMessage(document, this.key, this.en, this.fa);
-      if (generation === this.generation && this.documents() === document) {
+      const next = await translateMessage(
+        document,
+        translationDraft.key,
+        translationDraft.en,
+        translationDraft.fa,
+      );
+      if (
+        generation === this.generation &&
+        this.documents() === document &&
+        this.key === translationDraft.key &&
+        this.en === translationDraft.en &&
+        this.fa === translationDraft.fa &&
+        !this.disabled()
+      ) {
         this.applied.emit(next);
         this.error.set('');
       }

@@ -21,3 +21,15 @@ Intermediate formatter/lint/template/test fixture failures and contract drift re
 Complex runtime/private file/duplicate/eligibility/uncertain real-backend acceptance and business outcome/receipt projection remain incomplete.
 
 The exact common handoff and boundary operation instructions are in [END-OF-BACKLOG.md](../delivery/END-OF-BACKLOG.md). Status remains BLOCKED; IMPLEMENTED does not mean complete, integrated, demo-ready, deployed or user-accepted. Graph refresh uses AST-only `graphify update .`.
+
+## Independent continuation — 2026-10-10
+
+APP-FE-028.1 extends the existing implementation. Scope, exact files, current contracts, verification and remaining acceptance are recorded in [APP-FE-026–030 acceptance](../delivery/APP-FE-026-030-ACCEPTANCE.md). Parent remains BLOCKED / IMPLEMENTED; original evidence above remains historical.
+
+## Authorized evidence continuation — 2026-10-11
+
+APP-FE-028.2 delivers the independent implementation recorded in [authorized receipt and recovery acceptance](../delivery/APP-FE-026-028-RECEIPTS.md). Current protected-operation and receipt capabilities are implemented; older unavailable/unverified producer statements above remain historical. Actual new-slice verification is being completed; parent status remains open.
+
+Current source-qualified evidence is in the [receipt/layout continuation](../delivery/APP-FE-026-028-RECEIPTS.md): successful strict 20-case backend rehearsal and two guarded resets, plus ten actual layout browser scenarios. Scope limits, failed earlier runs and current final gate remain explicit; parent acceptance is not changed.
+
+Observed complete frontend gate: 12 stages, 579 tests / 119 files and ten Firefox scopes passed with zero emitted warnings/required skips. The [continuation record](../delivery/APP-FE-026-028-RECEIPTS.md) retains its exact source hashes, preclosure manifest and final post-documentation gate location. Parent scope limitations remain unchanged.

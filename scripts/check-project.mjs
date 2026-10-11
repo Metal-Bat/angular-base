@@ -3,21 +3,12 @@ import { createHash } from "node:crypto";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 
 // Preserve the baseline sequence; add deterministic delivery and browser gates.
-const commands = [
-  "format:check",
-  "api:check",
-  "delivery:check",
-  "typecheck",
-  "lint",
-  "test:ci",
-  "test:boundary",
-  "test:deployment",
-  "test:diagnostics",
-  "build",
-  "test:browser-quality",
-  ...(process.env.DELIVERY_BACKEND_ROOT ? ["test:paired-smoke"] : []),
-  "release:evidence",
-];
+import { requiredCheckStages } from "./delivery-evidence.mjs";
+if (process.env.BROWSER_SANDBOX_SCOPE || process.env.BROWSER_SANDBOX_PROBE)
+  throw Error("Full check requires all unmodified browser scopes");
+const commands = [...requiredCheckStages];
+if (process.env.DELIVERY_BACKEND_ROOT)
+  commands.splice(commands.indexOf("release:evidence"), 0, "test:paired-smoke");
 const digest = (bytes) => createHash("sha256").update(bytes).digest("hex");
 const git = (args) => {
   const result = spawnSync("git", args, { encoding: "utf8" });
@@ -42,7 +33,7 @@ const manifest = {
   commit: git(["rev-parse", "HEAD"]),
   treeSha256: digest(JSON.stringify(tree)),
   sourceFiles: tree,
-  lockSha256: digest(await readFile("package-lock.json")),
+  lockSha256: digest(await readFile("pnpm-lock.yaml")),
   openapiSha256: digest(await readFile("docs/reference/platform-openapi.json")),
   node: process.version,
   browser: {
@@ -59,7 +50,7 @@ const manifest = {
       { encoding: "utf8" },
     ).stdout?.trim(),
   },
-  npm: spawnSync("npm", ["--version"], { encoding: "utf8" }).stdout.trim(),
+  pnpm: spawnSync("pnpm", ["--version"], { encoding: "utf8" }).stdout.trim(),
   evidence: "VERIFIED_LOCAL only after all commands pass",
   peer: "APP-BE-001 handoff/live HTTP recorded separately; fixtures never establish integration",
   commands: [],
@@ -67,11 +58,11 @@ const manifest = {
 let failed = false;
 try {
   for (const name of commands) {
-    console.log(`Check: npm run ${name}`);
+    console.log(`Check: pnpm run ${name}`);
     const startedAt = new Date().toISOString();
     let output = "";
     const code = await new Promise((resolve, reject) => {
-      const child = spawn("npm", ["run", name], {
+      const child = spawn("pnpm", ["run", name], {
         env: { ...process.env, NG_BUILD_MAX_WORKERS: "2" },
         stdio: ["ignore", "pipe", "pipe"],
       });
@@ -94,7 +85,7 @@ try {
       .filter(
         (line) =>
           /\[warn(?:ing)?\]/i.test(line) ||
-          /(?:^|\s)(?:WARNING|Warning|DeprecationWarning|ExperimentalWarning)\b|^npm warn\b|^stderr\s*\||Unhandled (?:Errors|Rejection)\b/.test(
+          /(?:^|\s)(?:WARNING|Warning|DeprecationWarning|ExperimentalWarning)\b|^(?:npm warn|\u2009?WARN)\b|^stderr\s*\||Unhandled (?:Errors|Rejection)\b/.test(
             line,
           ),
       );

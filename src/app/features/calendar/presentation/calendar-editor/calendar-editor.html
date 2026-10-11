@@ -1,0 +1,108 @@
+<form
+  class="grid gap-3 rounded-lg border border-console-border p-4"
+  (ngSubmit)="save()"
+>
+  <h2>{{ "Calendar event" | localize }}</h2>
+  @if (error()) {
+    <p role="alert">{{ error() | localize }}</p>
+  }
+  <label for="event-title">{{ "Title" | localize }}</label
+  ><input
+    id="event-title"
+    maxlength="120"
+    name="title"
+    pInputText
+    required
+    [disabled]="busy() || uncertain()"
+    [(ngModel)]="title"
+  />
+  <label for="event-kind">{{ "Schedule" | localize }}</label
+  ><app-select-control
+    inputId="event-kind"
+    [ariaLabel]="'Schedule' | localize"
+    [disabled]="busy() || uncertain()"
+    [value]="kind"
+    (selectionChanged)="changeKind($event.target.value)"
+    ><option value="timed">{{ "Timed" | localize }}</option>
+    <option value="all_day">
+      {{ "All day" | localize }}
+    </option></app-select-control
+  >
+  <label for="event-zone">{{ "Timezone" | localize }}</label
+  ><input
+    id="event-zone"
+    maxlength="64"
+    name="timezone"
+    pInputText
+    required
+    [disabled]="busy() || uncertain()"
+    [(ngModel)]="timezone"
+  />
+  <label for="event-start">{{ "Start" | localize }}</label
+  ><app-temporal-control
+    controlId="event-start"
+    [disabled]="busy() || uncertain()"
+    [kind]="kind === 'all_day' ? 'date' : 'datetime-local'"
+    [(value)]="start"
+  />
+  <app-select-control
+    name="startChoice"
+    [ariaLabel]="'Start offset' | localize"
+    [disabled]="busy() || uncertain()"
+    [(ngModel)]="startChoice"
+    ><option value="">
+      {{ "Choose offset when time is ambiguous" | localize }}
+    </option>
+    @for (candidate of candidates(start); track candidate) {
+      <option [value]="candidate">{{ candidate }}</option>
+    }
+  </app-select-control>
+  <label for="event-end">{{ "End (exclusive)" | localize }}</label
+  ><app-temporal-control
+    controlId="event-end"
+    [disabled]="busy() || uncertain()"
+    [kind]="kind === 'all_day' ? 'date' : 'datetime-local'"
+    [(value)]="end"
+  />
+  <app-select-control
+    name="endChoice"
+    [ariaLabel]="'End offset' | localize"
+    [disabled]="busy() || uncertain()"
+    [(ngModel)]="endChoice"
+    ><option value="">
+      {{ "Choose offset when time is ambiguous" | localize }}
+    </option>
+    @for (candidate of candidates(end); track candidate) {
+      <option [value]="candidate">{{ candidate }}</option>
+    }
+  </app-select-control>
+  <label for="event-reminder">{{ "Reminder" | localize }}</label
+  ><app-select-control
+    inputId="event-reminder"
+    name="reminder"
+    [ariaLabel]="'Reminder' | localize"
+    [disabled]="busy() || uncertain()"
+    [(ngModel)]="reminder"
+    ><option value="">{{ "Choose replacement reminders" | localize }}</option>
+    <option value="none">{{ "None" | localize }}</option>
+    <option value="0">{{ "At start" | localize }}</option>
+    <option value="900">{{ "15 minutes before" | localize }}</option>
+    <option value="3600">
+      {{ "1 hour before" | localize }}
+    </option></app-select-control
+  >
+  <button pButton type="submit" [disabled]="busy() || reconcileRequired()">
+    {{ (uncertain() ? "Retry unchanged command" : "Save") | localize }}
+  </button>
+</form>
+
+@if (reconcileRequired()) {
+  <button
+    pButton
+    type="button"
+    [disabled]="busy()"
+    (click)="reloadRequested.emit()"
+  >
+    {{ "Reload current event" | localize }}
+  </button>
+}

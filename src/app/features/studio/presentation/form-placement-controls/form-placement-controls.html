@@ -1,0 +1,48 @@
+<div class="grid gap-3 mt-4">
+  <label for="placement-destination">{{
+    "Destination layout" | localize
+  }}</label>
+  <app-select-control
+    inputId="placement-destination"
+    [disabled]="disabled() || !destinations().length"
+    [value]="destination()"
+    (selectionChanged)="destination.set($any($event.target.value))"
+  >
+    <option value="">{{ "Choose a layout" | localize }}</option>
+    @for (item of destinations(); track item.value) {
+      <option [value]="item.value">{{ item.label }}</option>
+    }
+  </app-select-control>
+  <button
+    pButton
+    severity="secondary"
+    type="button"
+    [disabled]="disabled() || !destination()"
+    [outlined]="true"
+    (click)="move()"
+  >
+    {{ "Move into layout" | localize }}
+  </button>
+  <button
+    pButton
+    severity="secondary"
+    type="button"
+    [disabled]="disabled() || !duplicable()"
+    [outlined]="true"
+    (click)="duplicateRequested.emit()"
+  >
+    {{ "Duplicate layout placement" | localize }}
+  </button>
+  <p class="muted">
+    {{
+      "Duplicated layouts share their existing field bindings. No new fields or collection data are created."
+        | localize
+    }}
+  </p>
+  <p class="muted">
+    {{
+      "Layouts stack on small screens. Grid columns follow the grid presentation options."
+        | localize
+    }}
+  </p>
+</div>

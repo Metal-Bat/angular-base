@@ -1,3 +1,6 @@
+@if (item().summary; as summary) {
+  <app-record-summary [record]="summary" [title]="'Case activity' | localize" />
+}
 <dl class="grid gap-2">
   <dt>{{ "Status" | localize }}</dt>
   <dd>{{ item().status | localize }}</dd>
@@ -16,6 +19,21 @@
     </dd>
   }
 </dl>
+@if (kind() === "task" && item().request) {
+  <button
+    pButton
+    severity="secondary"
+    type="button"
+    [disabled]="opening() || disabled()"
+    [outlined]="true"
+    (click)="openProcess()"
+  >
+    {{ "Process tracking" | localize }}
+  </button>
+}
+@if (destinationError()) {
+  <p role="alert">{{ destinationError() | localize }}</p>
+}
 @if (kind() === "task" && item().kind !== "HUMAN_TASK") {
   <p role="status">
     {{
@@ -38,7 +56,7 @@
 @if (kind() === "request" && item().status !== "DRAFT") {
   <p>
     {{
-      "Business outcomes and receipts are unavailable here. Follow process tracking for recorded events."
+      "Follow process tracking for authorized receipts and execution evidence."
         | localize
     }}
   </p>

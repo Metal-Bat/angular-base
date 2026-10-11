@@ -1,8 +1,7 @@
 <p-table
-  size="small"
   [rowHover]="true"
   [scrollable]="true"
-  [tableStyle]="{ 'min-width': columns().length <= 2 ? '100%' : '36rem' }"
+  [tableStyle]="{ 'min-width': '100%', 'table-layout': 'auto' }"
   [value]="$any(rows())"
 >
   <ng-template #header
@@ -28,7 +27,6 @@
         <div class="flex items-center justify-end gap-1">
           <p-button
             severity="secondary"
-            size="small"
             type="button"
             [ariaLabel]="actionLabel() | localize"
             [disabled]="busy()"
@@ -53,7 +51,6 @@
             <p-button
               icon="pi pi-pencil"
               severity="secondary"
-              size="small"
               type="button"
               [ariaLabel]="'Edit' | localize"
               [disabled]="busy()"
@@ -73,7 +70,6 @@
             <p-button
               icon="pi pi-ellipsis-v"
               severity="secondary"
-              size="small"
               type="button"
               [ariaLabel]="'More actions' | localize"
               [disabled]="busy()"

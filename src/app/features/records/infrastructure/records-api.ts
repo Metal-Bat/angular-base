@@ -52,14 +52,24 @@ export class RecordsApi implements RecordsPort {
     path?: Record<string, string>,
     abort?: AbortSignal,
   ): Promise<RecordPage> {
+    if (
+      definition.selectQuery &&
+      (query.filters.length ||
+        query.sort_orders.length ||
+        Object.keys(query.extras).length)
+    ) {
+      throw Error('Unsupported step-version query');
+    }
     return readResultPage(
       await this.request(
         definition.operations.search,
-        queryBody(
-          query,
-          definition.fixed,
-          definition.extras.map((e) => e.key),
-        ) as RecordRow,
+        definition.selectQuery
+          ? { page: query.page, size: query.size }
+          : (queryBody(
+              query,
+              definition.fixed,
+              definition.extras.map((e) => e.key),
+            ) as RecordRow),
         path,
         definition.selector ? { response_format: 'page' } : undefined,
         abort,

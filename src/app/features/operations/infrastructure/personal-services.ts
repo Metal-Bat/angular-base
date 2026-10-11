@@ -1,3 +1,4 @@
+import { InboxApi, InboxItem } from '../../../core/notifications/inbox-api';
 import { HttpResponse } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { firstValueFrom, fromEvent, takeUntil } from 'rxjs';
@@ -24,7 +25,7 @@ import {
 const query = (
   page: number,
   options?: NotificationOptions,
-): RequestBody<'search_notifications_api_v1_notifications_search_post'> => ({
+): RequestBody<'search_reports_api_v1_reports_search_post'> => ({
   page,
   size: 20,
   filters: [
@@ -55,6 +56,25 @@ const query = (
 @Injectable({ providedIn: 'root' })
 export class PersonalServices implements PersonalServicesPort {
   private readonly api = inject(ApiClient);
+  private readonly inbox = inject(InboxApi);
+  private notification(value: InboxItem): ServiceItem {
+    return {
+      ref: value.ref_id,
+      title: value.subject,
+      status: value.status,
+      content: value.content ?? '',
+      createdAt: value.created_at,
+      read: value.read_at !== null,
+      request: null,
+      process: null,
+      password: null,
+      target: {
+        kind: value.target.kind,
+        available: value.target.available,
+        ref_id: value.target.ref_id ?? null,
+      },
+    };
+  }
   private request<I extends ApiOperationId>(
     id: I,
     input: RequestInput<I>,
@@ -106,18 +126,23 @@ export class PersonalServices implements PersonalServicesPort {
     signal?: AbortSignal,
     options?: NotificationOptions,
   ): Promise<Page<ServiceItem>> {
-    const id =
-      kind === 'reports'
-        ? 'search_reports_api_v1_reports_search_post'
-        : report
-          ? 'report_notifications_api_v1_notifications_report_post'
-          : 'search_notifications_api_v1_notifications_search_post';
-    return readResultPage(
-      await this.request(
-        id,
-        { body: query(page, kind === 'notifications' ? options : undefined) },
+    if (kind === 'notifications') {
+      const result = await this.inbox.search(
+        {
+          ...query(page, options),
+          unread: options?.read === 'all' ? null : options?.read === 'unread',
+        },
         signal,
-      ),
+        report,
+      );
+      return {
+        ...result,
+        items: result.items.map((item) => this.notification(item)),
+      };
+    }
+    const id = 'search_reports_api_v1_reports_search_post';
+    return readResultPage(
+      await this.request(id, { body: query(page) }, signal),
       (raw) => this.decode(kind, raw),
     );
   }
@@ -126,11 +151,12 @@ export class PersonalServices implements PersonalServicesPort {
     ref: string,
     signal?: AbortSignal,
   ): Promise<ServiceItem> {
+    if (kind === 'notifications') {
+      return this.notification(await this.inbox.detail(ref, signal));
+    }
     return readData(
       await this.request(
-        kind === 'reports'
-          ? 'get_report_api_v1_reports__ref_id__get'
-          : 'notification_detail_api_v1_notifications__ref_id__get',
+        'get_report_api_v1_reports__ref_id__get',
         { path: { ref_id: ref } },
         signal,
       ),
@@ -138,13 +164,7 @@ export class PersonalServices implements PersonalServicesPort {
     );
   }
   async read(ref: string): Promise<ServiceItem> {
-    return readData(
-      await this.request(
-        'mark_notification_read_api_v1_notifications__ref_id__read_post',
-        { path: { ref_id: ref } },
-      ),
-      (raw) => this.decode('notifications', raw),
-    );
+    return this.notification(await this.inbox.read(ref));
   }
   async remove(ref: string): Promise<void> {
     const response = await this.request(

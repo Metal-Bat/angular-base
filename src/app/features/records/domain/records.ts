@@ -30,6 +30,7 @@ export type RecordDefinition = {
   permission: string;
   userPartition?: boolean;
   selector?: boolean;
+  selectQuery?: boolean;
   adminGroup?: string;
   commandBase?: string;
   immutableStatuses?: readonly string[];

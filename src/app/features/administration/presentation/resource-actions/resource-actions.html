@@ -79,6 +79,16 @@
       </div>
     </form>
     @if (response(); as result) {
+      <button
+        pButton
+        severity="secondary"
+        type="button"
+        [disabled]="busy()"
+        [outlined]="true"
+        (click)="dismissResult()"
+      >
+        {{ "Clear result" | localize }}
+      </button>
       @if (resultRows().length || result.totalPages > 1) {
         <app-record-table
           actionLabel="Select"

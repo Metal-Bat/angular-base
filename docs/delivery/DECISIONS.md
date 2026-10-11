@@ -42,3 +42,7 @@ Later-release candidates, **not silently added to this initial scope**: external
 | Demonstration harness + environment reset        | APP-BE-005/028/029                | APP-FE-037                        | A25/A26             |
 | Zero-warning mise run check and actual readiness | APP-BE-002/031/032                | APP-FE-002/034–038                | A24/A26             |
 | Private attachments, reports, sessions, recovery | APP-BE-024/027/028/032            | APP-FE-028/029/032/036/037        | A19/A21/A22         |
+
+## D05 current hardware selection — 2026-10-11
+
+User response: **“Use this machine for measurements.”** Use the current Intel i7-1250U / approximately 16 GB machine for the measurement run. This resolves hardware selection only; it does not approve numerical budgets, the complete supported-device/browser profile, or performance/user acceptance. [Actual conditions, measurements and remaining owners](APP-FE-035-CURRENT-MACHINE.md) supplement the original D05 proposal without rewriting its history.

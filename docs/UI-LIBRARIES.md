@@ -2,7 +2,7 @@
 
 PrimeNG is the default for new or redesigned ordinary business controls. Tailwind handles layout. Keep PrimeNG, Angular Material and CDK installed; existing working controls are reused until their domain task changes them. The [screen register](delivery/screen-patterns.md) assigns each current template a migration owner.
 
-Retained exceptions have specific purposes: native exact-decimal/date/file controls preserve canonical values and browser file handling; the native confirmation dialog provides established focus containment/restoration; Material remains in the development compatibility showcase; Foblex remains the specialist canvas adapter. A new exception needs a documented interaction reason and focused browser evidence. This policy does not approve JSON editors as normal business UI.
+Retained exceptions have specific purposes: native exact-decimal/file controls preserve canonical values and browser file handling; the native confirmation dialog provides established focus containment/restoration; Material remains in the development compatibility showcase; Foblex remains the specialist canvas adapter. A new exception needs a documented interaction reason and focused browser evidence. This policy does not approve JSON editors as normal business UI.
 
 Reuse `ControlField`/`FieldWrapper` for linked label/help/error IDs, `SelectControl` for translated choices and form disabled/touched semantics, `RecordTable`/`ListQuery` for applied filters, `RecordSummary` for safe details, and `Feedback` for confirmation and uncertain-write reconciliation. Consumer controls must explicitly bind their error/hint IDs. No new universal form renderer is introduced.
 
@@ -16,7 +16,7 @@ Reuse `ControlField`/`FieldWrapper` for linked label/help/error IDs, `SelectCont
 
 ## Choosing components in code
 
-A standalone component can use either library, or both when the screen calls for it:
+A standalone component can technically import either library or both. Standard touched business UI follows the PrimeNG-first policy above; retain Material/CDK/native/canvas use only through documented, tested exceptions:
 
 ```ts
 import { ChangeDetectionStrategy, Component } from "@angular/core";
@@ -109,3 +109,33 @@ New metric tables/cards and authoring selectors/buttons use the existing PrimeNG
 ## APP-FE-021–025 typed workflow inspectors
 
 Workflow inspector/reference/mapping/transition controls use PrimeNG buttons, text inputs and the existing PrimeNG selector/SchemaInput composition. Existing labeled native checkboxes, textareas, semantic details/fieldsets and short lists remain the simple structural/form exceptions. Common readonly details, draft configuration, exact version selection and graph mapping are cohesive components, not a new arbitrary OpenAPI editor. Foblex stays in the existing lazy infrastructure adapter. Uncovered normal workflows remain explicit acceptance gaps; the collapsed expert panel cannot satisfy them. No library, framework, stylesheet layer or warning budget was replaced.
+
+## Consistency instruction clarification (2026-10-09)
+
+Follow the [software design contract](delivery/consistency-2026-10-09/SOFTWARE-DESIGN-CONTRACT.md) and [scoped skill amendments](delivery/consistency-2026-10-09/SKILL-AMENDMENTS.md). Reuse existing shared controls and semantic tokens. A cross-feature import needs a documented public seam without domain/presentation inversion; do not duplicate Administration schema controls into Studio or substitute them for domain-specific configuration.
+
+A single frozen producer manifest governs the main transport and reviewed metadata slices. Backend persisted defaults govern explicit preference reset; neutral logout/actor-cleanup defaults are a separate concern. These rules record the intended consistency contract; they do not claim current reset, density or manifest discrepancies have been implemented or verified. Their concrete repairs remain with the repair register's existing owners.
+
+## APP-FE-006–015 current-contract controls
+
+Profile, settings, saved views, favorites, calendar, support, readiness and metric screens reuse PrimeNG buttons, input text, shared PrimeNG selection controls and semantic tokens. Shared `TemporalControl` now handles civil dates, local event minutes, timezone-aware instants and clock-only values. It uses PrimeNG InputText/Select/Button/Dialog and DatePicker time selection. Its Intl-backed calendar grid is the documented calendar exception: the pinned DatePicker date arithmetic is Gregorian, so localized month names alone cannot provide Jalali or Hijri selection. The grid uses the same semantic tokens and labelled keyboard controls. Gregorian/Jalali/civil Hijri affect display only; wire dates remain Gregorian ISO and instants remain UTC. Calendar overrides are actor-scoped/session-only because the current preferences DTO accepts only Gregorian; no unsupported backend preference or form-format metadata is sent. Native checkboxes use existing labels and focus tokens. Metrics use decorative CSS bars and the exact accessible data table, without a new chart dependency.
+
+`core/resources/PersonalCollections`, `ResourceLinks`, `WorkspaceDefaults` and `ListNavigation` are the public actor-scoped seams for shared personal metadata, current resource resolution, persisted defaults and one-use authorized drill-down. Studio imports the presentation-only dependency panel through `features/readiness/public-api.ts` and passes a read-only inspection callback. Readiness does not import Studio infrastructure or execute repairs. Shared bounded JSON validation has a framework-free owner at `shared/domain/json-value.ts`; the existing Forms exports retain compatibility.
+
+Actual browser acceptance and contract gaps are recorded in [the current peer handoff](delivery/APP-FE-006-015-PEER-HANDOFF.md). Local preview screenshots or worker startup are not integrated acceptance.
+
+The APP-FE-006 key/label decoder is owned by framework-free `shared/domain/reference-choice.ts`. Administration retains a compatibility re-export; Studio imports the shared owner. Studio's route-provided port owns typed paged choice loading, and its infrastructure adapter alone maps the frozen generated operation IDs and context inputs. Shared presentation controls never import feature infrastructure.
+
+## Studio schema-control public seam (APP-FE-016–020, 2026-10-10)
+
+The existing public generic UI module is `src/app/features/administration/presentation/schema-input/schema-input.ts`, exporting `SchemaInput`. Its public seam is bounded JSON-schema presentation through `schema`, `value`, `controlId`, `disabled`, labels/errors and `valueChange`; it owns no Administration resource adapter, permissions or business commands. Its schema-form helpers are pure presentation codecs using shared JSON values. Studio presentation may import this existing export; Studio domain/application code may not import it. This retains the current lazy component composition and avoids duplicating controls.
+
+`FormGeometry` wraps this seam with the exact C11 grid/accessibility schemas and owning form validation. Calculation, placement and canvas controls retain their domain-specific behavior. This scoped seam documentation does not complete CONS-FE-004's wider import/bundle review. PrimeNG/shared selectors/buttons/input directives and semantic tokens are reused; native labeled calculation checkboxes remain the existing tested simple-form exception. No component framework was replaced.
+
+## Shared temporal controls and flexible tables — 2026-10-11
+
+`shared/ui/temporal-control` is the common presentation seam, with `controlId`, `kind`, `value`/`valueChange`, disabled/invalid state and linked description IDs. Use it for date/time/datetime controls rather than a timestamp text placeholder. `shared/domain/calendar-value` owns presentation conversion and date validity; `shared/domain/wall-time` owns timezone/DST candidate resolution. The calendar domain reexports its existing local-time helpers from this shared seam. Canonical clocks are independent of the calendar. ISO dates are parsed without browser timezone shifts; display calendars never change saved/query values. Invalid drafts retain text and emit an invalid sentinel that existing domain validation rejects; consumers must validate before submitting, as the wired filters, schemas, runtime, event editor and metric ranges do. Original fractional instants are preserved until a deliberate value edit.
+
+English defaults to Gregorian, Farsi to Jalali, Arabic to Islamic civil Hijri (`islamic-civil`, a deterministic tabular calendar). Each date control offers all three choices; an explicit choice applies consistently to the current actor's session and clears on actor reset. Date-only fields do not acquire a timezone. Event-local datetime controls keep the existing explicit DST-offset chooser, while instant controls resolve in the configured user timezone and require a choice on folds.
+
+The console page no longer has an 80rem cap. Record tables use available width, PrimeNG's regular spacing and readable data-cell minimums. Their existing scrollable viewport contains wide columns on small screens; long text wraps and remains complete. Input/editor-specific bounds and the existing shell grid are retained. See [implementation and verification](changes/APP-FE-004-TEMPORAL-CONTROLS.md).

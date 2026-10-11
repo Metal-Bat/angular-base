@@ -59,6 +59,8 @@ export async function finishSessionBootstrap(
           theme_mode: 'light',
           density: 'comfortable',
         },
+        workspace: { landing_key: 'requests', page_size: 20 },
+        notifications: { email_enabled: true },
         locale: {
           language: 'en',
           timezone: 'UTC',

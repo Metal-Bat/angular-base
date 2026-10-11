@@ -271,6 +271,13 @@
     <app-workflow-editor-pane [view]="this" />
   </div>
 </div>
+<app-canvas-connections
+  [disabled]="readonly() || pending().length > 0"
+  [edges]="connections()"
+  [nodes]="nodes()"
+  (connectRequested)="connect($event.source, $event.target, $event.outcome)"
+  (reconnectRequested)="reconnect($event.id, $event.source, $event.target)"
+/>
 <details class="graph-editor">
   <summary>{{ "Connections and graph" | localize }}</summary>
   <section [attr.aria-label]="'Connections and graph' | localize">

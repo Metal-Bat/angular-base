@@ -42,7 +42,17 @@ export async function readBoundedBody(
       parts.push(value);
     }
   } catch (error) {
-    await reader.cancel().catch(() => {});
+    if (error instanceof TransferLimit) {
+      // Discard without retaining chunks, bounded by the existing transfer signal.
+      // Cancelling the IncomingMessage destroys its socket before the 413 can settle.
+      try {
+        while (!signal.aborted && !(await reader.read()).done) {}
+      } catch {
+        await reader.cancel().catch(() => {});
+      }
+    } else {
+      await reader.cancel().catch(() => {});
+    }
     throw error;
   } finally {
     signal.removeEventListener("abort", aborted);

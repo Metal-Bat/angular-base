@@ -21,3 +21,7 @@ Intermediate formatter/lint/template/test fixture failures and contract drift re
 Provider/agent/governed-operation setup and version selectors, grant/lifecycle/secret and real sandbox/supervised budget journeys remain incomplete.
 
 The exact common handoff and boundary operation instructions are in [END-OF-BACKLOG.md](../delivery/END-OF-BACKLOG.md). Status remains BLOCKED; IMPLEMENTED does not mean complete, integrated, demo-ready, deployed or user-accepted. Graph refresh uses AST-only `graphify update .`.
+
+## Independent continuation — 2026-10-10
+
+APP-FE-030.1 extends the existing implementation. Scope, exact files, current contracts, verification and remaining acceptance are recorded in [APP-FE-026–030 acceptance](../delivery/APP-FE-026-030-ACCEPTANCE.md). Parent remains BLOCKED / IMPLEMENTED; original evidence above remains historical.

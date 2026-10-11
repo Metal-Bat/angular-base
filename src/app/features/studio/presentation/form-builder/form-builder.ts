@@ -1,3 +1,4 @@
+import { FormFieldPlacement } from '../form-field-placement/form-field-placement';
 import { Locale } from '../../../../core/localization/locale';
 import { componentCategory, componentLabels } from './form-palette';
 import { SelectControl } from '../../../../shared/ui/select-control/select-control';
@@ -35,6 +36,12 @@ import {
   renderOf,
 } from '../../domain/form-editing';
 import { FormBuilderCommands } from './form-builder-commands';
+import { FormPlacementControls } from '../form-placement-controls/form-placement-controls';
+import {
+  duplicateLayout,
+  reparentPlacement,
+} from '../../domain/form-placement';
+import { FormEditState } from '../../domain/form-editing';
 @Component({
   host: { class: 'console-page' },
   selector: 'app-form-builder',
@@ -57,6 +64,8 @@ import { FormBuilderCommands } from './form-builder-commands';
     },
   ],
   imports: [
+    FormFieldPlacement,
+    FormPlacementControls,
     FormInspector,
     FormSettings,
     SelectControl,
@@ -76,6 +85,7 @@ export class FormBuilder extends FormBuilderCommands {
     this.initialize();
     const release = inject(ActorState).register(() => {
       this.history.clear();
+      this.cancelDrag();
       this.paletteSearch.set('');
       this.paletteCategory.set('');
       this.componentLabel = '';
@@ -94,6 +104,7 @@ export class FormBuilder extends FormBuilderCommands {
   componentLabel = '';
   protected override resetEditorHistory(): void {
     this.history.clear();
+    this.cancelDrag();
   }
   private readonly translation = inject(Locale);
   readonly componentLabels = componentLabels;
@@ -122,27 +133,68 @@ export class FormBuilder extends FormBuilderCommands {
     );
   });
   private dragPath: readonly number[] | null = null;
+  private dragDocuments: JsonObject | null = null;
+  cancelDrag(): void {
+    this.dragPath = null;
+    this.dragDocuments = null;
+  }
   drag(event: DragEvent, path: readonly number[]): void {
     if (this.readonly() || this.pending().length) {
       event.preventDefault();
       return;
     }
     this.dragPath = [...path];
-    event.dataTransfer?.setData('application/x-form-placement', 'same-parent');
+    this.dragDocuments = this.documents();
+    event.dataTransfer?.setData('application/x-form-placement', 'placement');
   }
   drop(event: DragEvent, target: readonly number[]): void {
     event.preventDefault();
     const path = this.dragPath;
     this.dragPath = null;
+    if (this.dragDocuments !== this.documents()) {
+      return;
+    }
+    if (!path || !path.length || this.readonly() || this.pending().length) {
+      return;
+    }
+    const node = authoredNode(renderOf(this.documents()), target);
     if (
-      !path ||
-      !path.length ||
-      path.slice(0, -1).join('.') !== target.slice(0, -1).join('.')
+      ['vertical', 'horizontal', 'grid', 'repeater', 'table'].includes(
+        String(node['component']),
+      )
     ) {
+      this.placementEdit(() =>
+        reparentPlacement(this.documents(), path, target),
+      );
+      return;
+    }
+    if (path.slice(0, -1).join('.') !== target.slice(0, -1).join('.')) {
       return;
     }
     this.selected.set(path);
     this.move(target.at(-1)! - path.at(-1)!);
+  }
+  reparent(destination: readonly number[]): void {
+    this.placementEdit(() =>
+      reparentPlacement(this.documents(), this.selected(), destination),
+    );
+  }
+  duplicate(): void {
+    this.placementEdit(() =>
+      duplicateLayout(this.documents(), this.selected()),
+    );
+  }
+  private placementEdit(change: () => FormEditState): void {
+    let selection = this.selected();
+    this.editDocument(
+      () => {
+        const result = change();
+        selection = result.selection;
+        return result.documents;
+      },
+      undefined,
+      () => selection,
+    );
   }
   applyProperties(documents: JsonObject, panel = 'inspector'): void {
     this.editDocument(() => documents, panel);
@@ -294,7 +346,11 @@ export class FormBuilder extends FormBuilderCommands {
       'settings',
     );
   }
-  private editDocument(change: () => JsonObject, applied?: string): void {
+  private editDocument(
+    change: () => JsonObject,
+    applied?: string,
+    selection?: () => readonly number[],
+  ): void {
     if (this.pending().some((key) => key !== applied)) {
       this.error.set('Apply pending JSON editors first');
       return;
@@ -310,6 +366,9 @@ export class FormBuilder extends FormBuilderCommands {
         selection: this.selected(),
       });
       this.documents.set(next);
+      if (selection) {
+        this.selected.set([...selection()]);
+      }
       try {
         authoredNode(renderOf(next), this.selected());
       } catch {

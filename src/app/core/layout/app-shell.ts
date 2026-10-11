@@ -87,6 +87,13 @@ export class AppShell {
     administration: 'pi pi-shield',
   };
   readonly shortcuts = [
+    { label: 'Calendar', path: '/operations/calendar', icon: 'pi pi-calendar' },
+    {
+      label: 'Dashboard',
+      path: '/operations/dashboard',
+      icon: 'pi pi-chart-bar',
+    },
+    { label: 'Favorites', path: '/operations/favorites', icon: 'pi pi-star' },
     { label: 'My requests', path: '/operations/requests', icon: 'pi pi-file' },
     { label: 'Task inbox', path: '/operations/tasks', icon: 'pi pi-inbox' },
     {
@@ -109,6 +116,13 @@ export class AppShell {
         accept: this.locale.text('Continue'),
         reject: this.locale.text('Cancel'),
         emptyMessage: this.locale.text('Nothing to show.'),
+        chooseDate: this.locale.text('Choose date'),
+        prevHour: this.locale.text('Previous hour'),
+        nextHour: this.locale.text('Next hour'),
+        prevMinute: this.locale.text('Previous minute'),
+        nextMinute: this.locale.text('Next minute'),
+        prevSecond: this.locale.text('Previous second'),
+        nextSecond: this.locale.text('Next second'),
         aria: { ...prime.translation.aria, close: this.locale.text('Close') },
       });
     });

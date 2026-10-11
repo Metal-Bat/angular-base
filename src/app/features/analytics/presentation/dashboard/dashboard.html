@@ -1,0 +1,58 @@
+<h1 tabindex="-1">{{ "Dashboard" | localize }}</h1>
+@if (error()) {
+  <p role="alert">{{ error() | localize }}</p>
+}
+<form class="my-4 grid gap-3 sm:grid-cols-2" (ngSubmit)="load()">
+  <label for="metric-key">{{ "Metric" | localize }}</label
+  ><app-select-control
+    inputId="metric-key"
+    name="metric"
+    [ariaLabel]="'Metric' | localize"
+    [(ngModel)]="metric"
+  >
+    @for (item of catalog(); track item.metric_key) {
+      <option [value]="item.metric_key">
+        {{ metricTitle(item.metric_key) | localize }}
+      </option>
+    }
+  </app-select-control>
+  <label for="metric-start">{{ "Start date" | localize }}</label
+  ><app-temporal-control controlId="metric-start" [(value)]="start" />
+  <label for="metric-end">{{ "End date (exclusive)" | localize }}</label
+  ><app-temporal-control controlId="metric-end" [(value)]="end" />
+  <label for="metric-zone">{{ "Timezone" | localize }}</label
+  ><input
+    id="metric-zone"
+    maxlength="64"
+    name="timezone"
+    pInputText
+    required
+    [(ngModel)]="timezone"
+  />
+  <label for="metric-dimension">{{ "Breakdown" | localize }}</label
+  ><app-select-control
+    inputId="metric-dimension"
+    name="dimension"
+    [ariaLabel]="'Breakdown' | localize"
+    [(ngModel)]="dimension"
+    ><option value="none">{{ "Total" | localize }}</option>
+    <option value="status">
+      {{ "Status" | localize }}
+    </option></app-select-control
+  >
+  <button pButton type="submit" [disabled]="state() === 'loading'">
+    {{ "Apply" | localize }}
+  </button>
+</form>
+@if (range(); as dates) {
+  <app-metric-card
+    [canDrillDown]="true"
+    [end]="dates.end"
+    [result]="result()"
+    [stale]="stale()"
+    [start]="dates.start"
+    [state]="state()"
+    [title]="metricTitle(result()?.metric_key || '')"
+    (drilldown)="open($event)"
+  />
+}

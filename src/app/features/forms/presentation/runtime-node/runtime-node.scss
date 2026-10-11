@@ -2,6 +2,20 @@
   display: block;
   min-inline-size: 0;
 }
+.runtime-layout {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: minmax(0, 1fr);
+}
+@media (min-width: 40rem) {
+  .runtime-layout > app-runtime-node {
+    grid-column: var(--form-grid-column, auto);
+    grid-row: var(--form-grid-row, auto);
+  }
+  .runtime-layout {
+    grid-template-columns: repeat(var(--form-layout-columns), minmax(0, 1fr));
+  }
+}
 input:not([type="checkbox"]):not([type="radio"]),
 textarea,
 select {

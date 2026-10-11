@@ -24,6 +24,7 @@ export const administrationRoutes: Routes = [
         'groups',
         'integrations',
         'agents',
+        'step-types',
       ].map((key) => recordRoute(key)),
       {
         path: 'processes',

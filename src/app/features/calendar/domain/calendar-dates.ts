@@ -1,3 +1,12 @@
+import {
+  calendarMonth,
+  CalendarSystem,
+} from '../../../shared/domain/calendar-value';
+import { wallParts } from '../../../shared/domain/wall-time';
+export {
+  localTimeCandidates,
+  localTimeToInstant,
+} from '../../../shared/domain/wall-time';
 /** Gregorian presentation helpers; no C09 endpoint or wire DTO is assumed. */
 export type CalendarView = 'agenda' | 'week' | 'month';
 export type DateWindow = { start: string; end: string };
@@ -28,13 +37,15 @@ export function validateWindow(window: DateWindow): void {
     throw Error('Calendar range must be between one and 93 days');
   }
 }
-export function calendarWindow(anchor: string, view: CalendarView): DateWindow {
+export function calendarWindow(
+  anchor: string,
+  view: CalendarView,
+  calendar: CalendarSystem = 'gregory',
+): DateWindow {
   const day = new Date(dateMillis(anchor));
   if (view === 'month') {
-    const start = anchor.slice(0, 7) + '-01';
-    day.setUTCDate(1);
-    day.setUTCMonth(day.getUTCMonth() + 1);
-    return { start, end: day.toISOString().slice(0, 10) };
+    const days = calendarMonth(anchor, calendar);
+    return { start: days[0], end: shiftDate(days[days.length - 1], 1) };
   }
   const start =
     view === 'week' ? shiftDate(anchor, -((day.getUTCDay() + 6) % 7)) : anchor;
@@ -71,63 +82,6 @@ export function zonedDate(instant: string, zone: string): string {
   const get = (key: string): string =>
     fields.find((field) => field.type === key)!.value;
   return `${get('year').padStart(4, '0')}-${get('month')}-${get('day')}`;
-}
-function wallParts(time: number, zone: string): string {
-  const parts = new Intl.DateTimeFormat('en', {
-    timeZone: zone,
-    calendar: 'gregory',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-    hourCycle: 'h23',
-  }).formatToParts(time);
-  const get = (key: string): string =>
-    parts.find((field) => field.type === key)!.value;
-  const date = `${get('year').padStart(4, '0')}-${get('month')}-${get('day')}`;
-  return `${date}T${get('hour')}:${get('minute')}:${get('second')}`;
-}
-/** Return all real instants for a local minute; zero means a DST gap, two a fold. */
-export function localTimeCandidates(local: string, zone: string): string[] {
-  validateZone(zone);
-  if (!/^\d{4}-\d{2}-\d{2}T(?:[01]\d|2[0-3]):[0-5]\d$/.test(local)) {
-    throw Error('Invalid local time');
-  }
-  dateMillis(local.slice(0, 10));
-  const nominal = Date.parse(local + ':00Z');
-  const offsets = new Set<number>();
-  for (let hour = -36; hour <= 36; hour += 6) {
-    const probe = nominal + hour * 3600000;
-    offsets.add(Date.parse(wallParts(probe, zone) + 'Z') - probe);
-  }
-  return [
-    ...new Set(
-      [...offsets]
-        .map((offset) => nominal - offset)
-        .filter((time) => wallParts(time, zone) === local + ':00'),
-    ),
-  ]
-    .sort((a, b) => a - b)
-    .map((time) => new Date(time).toISOString());
-}
-export function localTimeToInstant(
-  local: string,
-  zone: string,
-  choice?: string,
-): string {
-  const candidates = localTimeCandidates(local, zone);
-  if (!candidates.length) {
-    throw Error('This local time does not exist');
-  }
-  if (candidates.length === 1) {
-    return candidates[0];
-  }
-  if (choice && candidates.includes(choice)) {
-    return choice;
-  }
-  throw Error('Choose an offset for this ambiguous local time');
 }
 
 export function instantMicroseconds(instant: string): bigint {

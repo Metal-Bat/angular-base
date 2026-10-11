@@ -1,3 +1,4 @@
+import { TemporalControl } from '../../../../shared/ui/temporal-control/temporal-control';
 import { SchemaArray } from './schema-array';
 import { SchemaObject } from './schema-object';
 import {
@@ -25,6 +26,7 @@ import {
 @Component({
   selector: 'app-schema-input',
   imports: [
+    TemporalControl,
     SchemaArray,
     SchemaObject,
     FormsModule,

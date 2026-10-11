@@ -1,0 +1,67 @@
+<h3>{{ "Control transitions" | localize }}</h3>
+<p>
+  {{
+    "Higher priorities are evaluated first; default is the final else."
+      | localize
+  }}
+</p>
+<label for="transition-selection">{{ "Transition to edit" | localize }}</label>
+<app-select-control
+  inputId="transition-selection"
+  [disabled]="disabled() || dirty()"
+  [ngModel]="id()"
+  (ngModelChange)="id.set($event)"
+>
+  @for (item of rows(); track item.id) {
+    <option [value]="item.id">
+      {{ item.edge["outcome"] }} → {{ item.edge["target"] }}
+    </option>
+  }
+</app-select-control>
+@if (current()) {
+  <label for="transition-priority">{{ "Priority" | localize }}</label>
+  <input
+    id="transition-priority"
+    pInputText
+    type="number"
+    [disabled]="disabled()"
+    [ngModel]="draft()['priority']"
+    (ngModelChange)="update('priority', $event)"
+  />
+  <label for="transition-default">{{ "Default transition" | localize }}</label>
+  <input
+    id="transition-default"
+    type="checkbox"
+    [disabled]="disabled()"
+    [ngModel]="draft()['is_default']"
+    (ngModelChange)="update('is_default', $event)"
+  />
+  <label for="transition-condition">{{ "Condition" | localize }}</label>
+  <input
+    id="transition-condition"
+    pInputText
+    [disabled]="disabled()"
+    [ngModel]="draft()['condition'] || ''"
+    (ngModelChange)="update('condition', $event || null)"
+  />
+  <button
+    pButton
+    type="button"
+    [disabled]="disabled() || !dirty()"
+    (click)="apply()"
+  >
+    {{ "Apply transition" | localize }}
+  </button>
+  <button
+    pButton
+    severity="secondary"
+    type="button"
+    [disabled]="disabled() || !dirty()"
+    (click)="discard()"
+  >
+    {{ "Discard transition edits" | localize }}
+  </button>
+}
+@if (error()) {
+  <p role="alert">{{ error() | localize }}</p>
+}

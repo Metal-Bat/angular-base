@@ -8,6 +8,7 @@ import { ActorState } from '../../../../core/auth/actor-state';
 import { Feedback } from '../../../../core/feedback/feedback';
 import { STUDIO_API } from '../../bindings';
 import { FormBuilder } from './form-builder';
+import { BehaviorSubject } from 'rxjs';
 const row = {
   ref_id: 'current',
   status: 'DRAFT',
@@ -15,24 +16,57 @@ const row = {
   render_schema: { root: { component: 'vertical', children: [] } },
 };
 describe('Form authoring commands', () => {
+  let parameters: BehaviorSubject<ReturnType<typeof convertToParamMap>>;
   const api = {
     get: vi.fn(async () => structuredClone(row)),
     write: vi.fn(async () => ({ ...row, ref_id: 'next' })),
   };
   beforeEach(() => {
     vi.clearAllMocks();
+    parameters = new BehaviorSubject(convertToParamMap({ ref: 'old' }));
     TestBed.configureTestingModule({
       providers: [
         provideRouter([]),
         {
           provide: ActivatedRoute,
           useValue: {
+            paramMap: parameters,
             snapshot: { paramMap: convertToParamMap({ ref: 'old' }) },
           },
         },
         { provide: STUDIO_API, useValue: api },
       ],
     });
+  });
+  it('reloads a changed route reference and fences the previous draft during the new read', async () => {
+    const fixture = TestBed.createComponent(FormBuilder);
+    await fixture.whenStable();
+    const vm = fixture.componentInstance;
+    vm.primitive = 'grid';
+    vm.add();
+    const before = structuredClone(vm.documents());
+    parameters.next(convertToParamMap({ ref: 'published' }));
+    TestBed.inject(Feedback).answer(false);
+    await fixture.whenStable();
+    expect(vm.documents()).toEqual(before);
+    expect(vm.reference()).toBe('current');
+    api.get.mockResolvedValueOnce({
+      ...row,
+      ref_id: 'published',
+      status: 'PUBLISHED',
+    });
+    parameters.next(convertToParamMap({ ref: 'another-published' }));
+    TestBed.inject(Feedback).answer(true);
+    await fixture.whenStable();
+    expect(api.get).toHaveBeenLastCalledWith(
+      'form-versions',
+      'another-published',
+    );
+    await vi.waitFor(() => expect(vm.reference()).toBe('published'));
+    expect(vm.readonly()).toBe(true);
+    expect(vm.outline()).toHaveLength(1);
+    vm.undo();
+    expect(vm.outline()).toHaveLength(1);
   });
   it('saves through the current reference, restores edits with undo, and fences published mutations', async () => {
     const fixture = TestBed.createComponent(FormBuilder);
@@ -99,5 +133,48 @@ describe('Form authoring commands', () => {
     expect(vm.outline()).toHaveLength(1);
     vm.undo();
     expect(vm.outline()).toHaveLength(1);
+  });
+  it('preserves placement history, pending edits and published fences', async () => {
+    const fixture = TestBed.createComponent(FormBuilder);
+    await fixture.whenStable();
+    const vm = fixture.componentInstance;
+    vm.primitive = 'grid';
+    vm.add();
+    vm.primitive = 'horizontal';
+    vm.add();
+    vm.select([0]);
+    vm.primitive = 'text';
+    vm.propertyName = 'name';
+    vm.add();
+    vm.select([0, 0]);
+    const before = structuredClone(vm.documents());
+    vm.markPending('inspector');
+    vm.reparent([1]);
+    expect(vm.documents()).toEqual(before);
+    vm.pending.set([]);
+    vm.reparent([1]);
+    expect(vm.selected()).toEqual([1, 0]);
+    const moved = structuredClone(vm.documents());
+    vm.undo();
+    expect(vm.documents()).toEqual(before);
+    expect(vm.selected()).toEqual([0, 0]);
+    vm.undo(true);
+    expect(vm.documents()).toEqual(moved);
+    expect(vm.selected()).toEqual([1, 0]);
+    vm.select([1]);
+    vm.duplicate();
+    expect(vm.selected()).toEqual([2]);
+    const duplicated = structuredClone(vm.documents());
+    expect(duplicated['data_schema']).toEqual(before['data_schema']);
+    await vm.save();
+    expect(api.write).toHaveBeenCalledWith(
+      'form-versions',
+      'current',
+      duplicated,
+    );
+    vm.status.set('PUBLISHED');
+    vm.reparent([]);
+    vm.duplicate();
+    expect(vm.documents()).toEqual(duplicated);
   });
 });

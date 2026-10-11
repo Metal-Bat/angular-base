@@ -1,3 +1,4 @@
+<app-repair-return />
 <app-catalog-header [view]="this" />
 @if (error()) {
   <p role="alert">{{ error() | localize }}</p>
@@ -5,9 +6,6 @@
 @if (notice()) {
   <p role="status">
     {{ notice() | localize }}
-    @if (queuedReport()) {
-      <a routerLink="/operations/reports">{{ "My Reports" | localize }}</a>
-    }
   </p>
 }
 @if (busy()) {
@@ -111,4 +109,25 @@
   @if (parentError()) {
     <p role="alert">{{ parentError() | localize }}</p>
   }
+</p-dialog>
+
+<app-catalog-extras [catalog]="this" [inspect]="inspectDependencies" />
+
+<p-dialog
+  appendTo="body"
+  [closeAriaLabel]="'Close' | localize"
+  [draggable]="false"
+  [header]="'Report preview' | localize"
+  [modal]="true"
+  [resizable]="false"
+  [style]="{ width: '60rem', maxWidth: 'calc(100vw - 2rem)' }"
+  [visible]="reportResult() !== null"
+  (visibleChange)="reportResult.set(null)"
+>
+  <p>{{ "Report preview shows the current page." | localize }}</p>
+  <app-record-table
+    [columns]="columns()"
+    [rows]="reportResult() ?? []"
+    (opened)="reportResult.set(null); open(ref($any($event)))"
+  />
 </p-dialog>

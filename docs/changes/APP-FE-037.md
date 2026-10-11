@@ -21,3 +21,21 @@ Intermediate formatter/lint/template/test fixture failures and contract drift re
 Fresh run failed on 53 paths/121 schemas. Full service/persona/fault and guarded reset-twice demo cannot proceed until C13/C14 and peer prerequisites are reconciled.
 
 The exact common handoff and boundary operation instructions are in [END-OF-BACKLOG.md](../delivery/END-OF-BACKLOG.md). Status remains BLOCKED; IMPLEMENTED does not mean complete, integrated, demo-ready, deployed or user-accepted. Graph refresh uses AST-only `graphify update .`.
+
+## 2026-10-09 extension — Actual worker/SSE/Firefox paired profile
+
+Extended the existing implementation for the backend's implemented unified inbox and live stream. Exact contracts, reused/changed ownership, stream limits, actual paired command, source identity, focused/final evidence, retained failures and remaining acceptance are recorded in [NOTIFICATION-PUSH-ACCEPTANCE.md](../delivery/NOTIFICATION-PUSH-ACCEPTANCE.md). Historical results above remain unchanged. Parent status remains BLOCKED / IMPLEMENTED until its broader required acceptance passes.
+
+## 2026-10-11 continuation — APP-FE-037.1
+
+Extended the existing implementation through the independently scoped behavior in [the five-slice continuation record](../delivery/APP-FE-036-038-CONTINUATION.md). That record names changed/reused files, actual contract provenance, focused tests, retained failures and remaining criteria with owners. Parent acceptance remains BLOCKED / IMPLEMENTED; no historical result is replaced. Full final gate and repeated paired results are appended there from observed execution.
+
+Observed closure: the finalized-source actual pair passed 16 browser scenarios with exact HTTP contract and unchanged peer/runtime identities; the full gate passed all twelve stages with zero diagnostics, 559 Angular tests and ten Firefox scopes. Final exact-current-tree evidence after documentation closure lives in `artifacts/check/manifest.json` and `artifacts/app-fe-036-038/final-check/`. The linked continuation record preserves initial failures, scoped claims and precise remaining owners. Parent status remains unchanged.
+
+## Owned locale snapshot continuation — 2026-10-11
+
+Existing paired infrastructure now captures required ignored compiled en/fa gettext artifacts with explicit start/end hashes. This repairs a discovered temporary-runtime omission without changing backend source or weakening producer comparison. Actual receipt/recovery rehearsal failures, reruns and remaining parent acceptance are retained in [receipt continuation](../delivery/APP-FE-026-028-RECEIPTS.md). Parent remains open.
+
+Current source-qualified evidence is in the [receipt/layout continuation](../delivery/APP-FE-026-028-RECEIPTS.md): successful strict 20-case backend rehearsal and two guarded resets, plus ten actual layout browser scenarios. Scope limits, failed earlier runs and current final gate remain explicit; parent acceptance is not changed.
+
+Observed complete frontend gate: 12 stages, 579 tests / 119 files and ten Firefox scopes passed with zero emitted warnings/required skips. The [continuation record](../delivery/APP-FE-026-028-RECEIPTS.md) retains its exact source hashes, preclosure manifest and final post-documentation gate location. Parent scope limitations remain unchanged.

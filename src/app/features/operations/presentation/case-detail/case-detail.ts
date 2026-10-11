@@ -1,3 +1,4 @@
+import { SessionContext } from '../../../../core/auth/session-context';
 import { ButtonDirective } from 'primeng/button';
 import { RequestActions } from '../request-actions/request-actions';
 import { BoundedPolling } from '../../../../core/transport/bounded-polling';
@@ -63,6 +64,7 @@ import { AdvancedTask } from '../advanced-task/advanced-task';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CaseDetail {
+  private readonly session = inject(SessionContext);
   readonly resources = inject(FORM_RESOURCES);
   readonly editor = inject(CASE_EDITOR);
   readonly kind =
@@ -123,6 +125,9 @@ export class CaseDetail {
     );
   }
   canLeave(): boolean | Promise<boolean> {
+    if (this.session.snapshot().status === 'signed-out') {
+      return true;
+    }
     if (this.editor.busy() || this.resources.transferBusy()) {
       return false;
     }

@@ -18,7 +18,7 @@ import { ApiFailure } from '../../../../core/transport/api-failure';
 import { ControlField } from '../../../../shared/ui/control-field/control-field';
 import { LocalizePipe } from '../../../../shared/ui/localize-pipe';
 import { RecordSummary } from '../../../../shared/ui/record-summary/record-summary';
-import { JsonObject } from '../../../forms/domain/runtime-document';
+import { JsonObject, JsonValue } from '../../../forms/domain/runtime-document';
 import { ADMIN_API } from '../../bindings';
 import { ResourceActions } from '../resource-actions/resource-actions';
 
@@ -89,7 +89,13 @@ export class ProcessControls {
     if (this.busy() || !this.allowed()) {
       return;
     }
-    if (!((await this.actions()?.canLeave()) ?? true)) {
+    const beforeLeave = this.generation;
+    if (
+      !((await this.actions()?.canLeave()) ?? true) ||
+      beforeLeave !== this.generation ||
+      !this.allowed() ||
+      this.busy()
+    ) {
       return;
     }
     const target = reference.trim();
@@ -123,15 +129,7 @@ export class ProcessControls {
       if (generation !== this.generation) {
         return;
       }
-      if (
-        !result.value ||
-        typeof result.value !== 'object' ||
-        Array.isArray(result.value)
-      ) {
-        throw Error('Invalid process response');
-      }
-      this.row.set({ ...(result.value as JsonObject), ref_id: target });
-      this.currentReference = target;
+      this.acceptCurrent(result.value);
     } catch (error) {
       if (generation === this.generation) {
         this.error.set(
@@ -145,6 +143,18 @@ export class ProcessControls {
         this.busy.set(false);
       }
     }
+  }
+  private acceptCurrent(value: JsonValue): void {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) {
+      throw Error('Invalid process response');
+    }
+    const record = value as JsonObject;
+    if (typeof record['ref_id'] !== 'string' || !record['ref_id'].trim()) {
+      throw Error('Missing current process reference');
+    }
+    this.row.set(record);
+    this.currentReference = record['ref_id'];
+    this.reference = this.currentReference;
   }
   async refresh(): Promise<void> {
     this.notice.set('Command accepted. Checking current state.');

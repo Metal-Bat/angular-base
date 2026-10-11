@@ -35,7 +35,7 @@
     <app-record-summary
       caption="My information"
       icon="pi pi-user"
-      [record]="user"
+      [record]="summary()!"
       [title]="name()"
     />
     <dl class="account-kind">
@@ -45,5 +45,7 @@
       </dd>
     </dl>
   </section>
+  <app-profile-editor />
   <app-profile-appearance />
+  <app-workspace-settings />
 }

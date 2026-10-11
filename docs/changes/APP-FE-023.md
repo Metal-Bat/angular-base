@@ -23,3 +23,9 @@ No dependencies, migrations, seeds, shared/backend data, credentials, paid calls
 List/cardinality/ordinal handling, nested destination/collection editing, conversion composition, drag mapping, targeted actual server validation and authorized/redacted sample preview remain incomplete. Expression-only context values are excluded. No full private execution payload is fetched; real graph validate/save/reopen is still required.
 
 The parent remains BLOCKED; the available implementation does not constitute complete normal authoring or integrated execution.
+
+## Independent continuation — 2026-10-10
+
+023.1 adds authorized whole-object SCALAR sources, preserving exact pinned source schemas; object constants remain unsupported. Existing subtask IDs are reused; parent status remains BLOCKED / IMPLEMENTED. Current backend capabilities and producer/client were reconciled before use; historical results above are preserved.
+
+Delivered files, actual satisfied acceptance, all commands/results (including intermediate failures), exact source/contract identities, remaining criteria and owners are recorded in [APP-FE-021–025 continuation acceptance](../delivery/APP-FE-021-025-ACCEPTANCE.md). This slice does not establish full parent publication/execution or strict paired readiness.

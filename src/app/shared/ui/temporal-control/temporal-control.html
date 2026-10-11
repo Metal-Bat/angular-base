@@ -1,0 +1,162 @@
+<div class="temporal-fields">
+  @if (kind() !== "time") {
+    <div class="date-entry">
+      <input
+        autocomplete="off"
+        dir="ltr"
+        pInputText
+        placeholder="YYYY-MM-DD"
+        [attr.aria-describedby]="describedBy() || null"
+        [attr.aria-invalid]="invalid() || !!error()"
+        [attr.aria-label]="ariaLabel() || null"
+        [disabled]="disabled()"
+        [id]="controlId()"
+        [value]="dateText()"
+        (input)="typeDate($any($event.target).value)"
+      />
+      <button
+        #calendarTrigger
+        aria-haspopup="dialog"
+        pButton
+        severity="secondary"
+        type="button"
+        [attr.aria-expanded]="opened()"
+        [attr.aria-label]="'Choose date' | localize"
+        [disabled]="disabled()"
+        [outlined]="true"
+        (click)="showCalendar()"
+      >
+        <i aria-hidden="true" class="pi pi-calendar"></i>
+      </button>
+    </div>
+    <app-select-control
+      [ariaLabel]="'Calendar system' | localize"
+      [disabled]="disabled() || !!error()"
+      [inputId]="controlId() + '-calendar'"
+      [ngModel]="calendar()"
+      [ngModelOptions]="{ standalone: true }"
+      (ngModelChange)="calendarChanged($event)"
+    >
+      @for (calendar of calendars; track calendar) {
+        <option [value]="calendar">
+          {{ calendarLabels[calendar] | localize }}
+        </option>
+      }
+    </app-select-control>
+  }
+  @if (kind() !== "date") {
+    <p-datepicker
+      appendTo="body"
+      hourFormat="24"
+      iconDisplay="input"
+      [ariaLabel]="ariaLabel() || 'Time' | localize"
+      [disabled]="disabled()"
+      [fluid]="true"
+      [inputId]="kind() === 'time' ? controlId() : controlId() + '-time'"
+      [invalid]="invalid() || !!error()"
+      [ngModel]="time()"
+      [ngModelOptions]="{ standalone: true }"
+      [pt]="timePt()"
+      [readonlyInput]="true"
+      [showIcon]="true"
+      [showSeconds]="kind() !== 'datetime-local'"
+      [timeOnly]="true"
+      (ngModelChange)="timeChanged($event)"
+    />
+  }
+  <button
+    pButton
+    severity="secondary"
+    type="button"
+    [attr.aria-label]="'Clear date or time' | localize"
+    [disabled]="disabled()"
+    [text]="true"
+    (click)="clear()"
+  >
+    <i aria-hidden="true" class="pi pi-times"></i>
+  </button>
+</div>
+@if (kind() === "datetime") {
+  <small
+    >{{ "Timezone" | localize }}: <bdi>{{ zone() }}</bdi></small
+  >
+}
+@if (error()) {
+  <small role="alert">{{ error() | localize }}</small>
+}
+@if (candidates().length > 1) {
+  <app-select-control
+    [ariaLabel]="'Choose offset when time is ambiguous' | localize"
+    [disabled]="disabled()"
+    [inputId]="controlId() + '-offset'"
+    [ngModel]="''"
+    [ngModelOptions]="{ standalone: true }"
+    (ngModelChange)="chooseInstant($event)"
+  >
+    <option value="">
+      {{ "Choose offset when time is ambiguous" | localize }}
+    </option>
+    @for (instant of candidates(); track instant) {
+      <option [value]="instant">{{ instant }}</option>
+    }
+  </app-select-control>
+}
+<p-dialog
+  appendTo="body"
+  [closeAriaLabel]="'Close' | localize"
+  [header]="'Choose date' | localize"
+  [modal]="true"
+  [style]="{ width: '24rem', maxWidth: 'calc(100vw - 2rem)' }"
+  [(visible)]="opened"
+  (onHide)="restoreDateFocus()"
+>
+  <div class="calendar-navigation">
+    <button
+      pButton
+      severity="secondary"
+      type="button"
+      [attr.aria-label]="'Previous month' | localize"
+      [disabled]="disabled()"
+      [text]="true"
+      (click)="moveMonth(-1)"
+    >
+      <i aria-hidden="true" class="pi pi-chevron-left"></i>
+    </button>
+    <strong aria-live="polite">{{ monthTitle() }}</strong>
+    <button
+      pButton
+      severity="secondary"
+      type="button"
+      [attr.aria-label]="'Next month' | localize"
+      [disabled]="disabled()"
+      [text]="true"
+      (click)="moveMonth(1)"
+    >
+      <i aria-hidden="true" class="pi pi-chevron-right"></i>
+    </button>
+  </div>
+  <div class="calendar-days" role="group" [attr.aria-label]="monthTitle()">
+    @for (day of weekdays(); track $index) {
+      <span aria-hidden="true">{{ day }}</span>
+    }
+    @for (blank of blanks(); track blank) {
+      <span></span>
+    }
+    <!-- Month-day positions stay stable; their date bindings change with the month. -->
+    @for (day of days(); track $index) {
+      <button
+        pButton
+        type="button"
+        [attr.aria-label]="dayLabel(day)"
+        [attr.aria-pressed]="day === selectedDate()"
+        [attr.data-calendar-day]="day"
+        [disabled]="disabled()"
+        [text]="day !== selectedDate()"
+        (click)="chooseDate(day)"
+        (keydown)="navigateDay($event, day)"
+      >
+        {{ dayNumber(day) }}
+      </button>
+    }
+  </div>
+</p-dialog>

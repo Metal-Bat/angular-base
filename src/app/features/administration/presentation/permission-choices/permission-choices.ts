@@ -39,6 +39,7 @@ export class PermissionChoices {
   readonly error = input('');
   readonly rows = signal<readonly { name: string; description: string }[]>([]);
   readonly search = signal('');
+  readonly appliedSearch = signal('');
   readonly busy = signal(false);
   readonly failure = signal('');
   readonly page = signal(1);
@@ -81,11 +82,17 @@ export class PermissionChoices {
     this.busy.set(false);
     this.failure.set('');
     this.search.set('');
+    this.appliedSearch.set('');
     this.page.set(1);
     this.pages.set(0);
   }
   toggle(name: string): void {
-    if (this.disabled() || this.busy()) {
+    if (
+      this.disabled() ||
+      this.busy() ||
+      (!this.selected().includes(name) &&
+        !this.rows().some((row) => row.name === name))
+    ) {
       return;
     }
     const next = this.selected().includes(name)
@@ -94,7 +101,7 @@ export class PermissionChoices {
     this.selected.set(next);
     this.valueChange.emit([...next]);
   }
-  async load(page = 1): Promise<void> {
+  async load(page = 1, applySearch = true): Promise<void> {
     if (this.disabled() || this.busy()) {
       return;
     }
@@ -112,6 +119,9 @@ export class PermissionChoices {
       );
       return;
     }
+    const search = (applySearch ? this.search() : this.appliedSearch())
+      .trim()
+      .slice(0, 255);
     const generation = ++this.generation;
     this.busy.set(true);
     this.failure.set('');
@@ -126,12 +136,12 @@ export class PermissionChoices {
             size: 20,
             filters: [
               { field_name: 'deleted_at', operation: 'isNull', value: null },
-              ...(this.search().trim()
+              ...(search
                 ? [
                     {
                       field_name: 'name',
                       operation: 'contains',
-                      value: this.search().trim().slice(0, 255),
+                      value: search,
                     },
                   ]
                 : []),
@@ -166,6 +176,7 @@ export class PermissionChoices {
         };
       });
       this.rows.set(rows);
+      this.appliedSearch.set(search);
       this.page.set(result.page);
       this.pages.set(result.totalPages);
     } catch {

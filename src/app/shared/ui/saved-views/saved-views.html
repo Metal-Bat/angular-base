@@ -1,0 +1,113 @@
+<section class="my-4 grid gap-3 rounded-lg border border-console-border p-4">
+  <h2>{{ "Saved views" | localize }}</h2>
+  @if (error()) {
+    <p role="alert">{{ error() | localize }}</p>
+  }
+  <app-select-control
+    [ariaLabel]="'Saved views' | localize"
+    [disabled]="busy() || uncertain() || reconcileRequired()"
+    [value]="selected()"
+    (selectionChanged)="choose($event.target.value)"
+  >
+    <option value="">{{ "Choose" | localize }}</option>
+    @for (view of views(); track view.ref_id) {
+      <option [value]="view.ref_id">
+        {{ view.name }} {{ view.is_default ? "★" : "" }}
+      </option>
+    }
+  </app-select-control>
+  <app-select-control
+    [ariaLabel]="'Columns' | localize"
+    [disabled]="busy() || uncertain() || reconcileRequired()"
+    [multiple]="true"
+    [value]="columns()"
+    (selectionChanged)="selectColumns($event.target.value)"
+  >
+    @for (column of columnOptions(); track column.key) {
+      <option [value]="column.key">{{ column.label | localize }}</option>
+    }
+  </app-select-control>
+  @if (selected() && !compatible()) {
+    <p role="status">
+      {{
+        "This saved view is incompatible. Replace it explicitly or remove it."
+          | localize
+      }}
+    </p>
+  }
+  <form class="flex flex-wrap gap-2" (ngSubmit)="run('save')">
+    <label for="saved-view-name">{{ "Name" | localize }}</label
+    ><input
+      id="saved-view-name"
+      maxlength="120"
+      name="viewName"
+      pInputText
+      required
+      [disabled]="busy() || uncertain() || reconcileRequired()"
+      [(ngModel)]="name"
+    />
+    <button
+      pButton
+      type="submit"
+      [disabled]="busy() || reconcileRequired() || !query()"
+    >
+      {{
+        (uncertain() ? "Retry unchanged command" : "Save applied view")
+          | localize
+      }}
+    </button>
+  </form>
+  <div class="flex flex-wrap gap-2">
+    <button
+      pButton
+      type="button"
+      [disabled]="busy() || reconcileRequired() || uncertain() || !compatible()"
+      (click)="run('apply')"
+    >
+      {{ "Apply" | localize }}
+    </button>
+    <button
+      pButton
+      type="button"
+      [disabled]="busy() || reconcileRequired() || !selected() || !query()"
+      (click)="run('update')"
+    >
+      {{ "Update" | localize }}
+    </button>
+    <button
+      pButton
+      type="button"
+      [disabled]="busy() || reconcileRequired() || uncertain() || !selected()"
+      (click)="run('default')"
+    >
+      {{ "Make default" | localize }}
+    </button>
+    <button
+      pButton
+      severity="danger"
+      type="button"
+      [disabled]="busy() || reconcileRequired() || uncertain() || !selected()"
+      (click)="run('remove')"
+    >
+      {{ "Remove" | localize }}
+    </button>
+    <button
+      pButton
+      severity="secondary"
+      type="button"
+      [disabled]="busy()"
+      (click)="load()"
+    >
+      {{ "Reload" | localize }}
+    </button>
+  </div>
+</section>
+
+<app-saved-view-repair
+  [original]="original()"
+  [replacement]="query()"
+  [replacementColumns]="columns()"
+  [visible]="repairOpen()"
+  (cancelled)="repairOpen.set(false)"
+  (confirmed)="repairOpen.set(false); run('update', true)"
+/>

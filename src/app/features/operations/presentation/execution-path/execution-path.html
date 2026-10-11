@@ -6,8 +6,18 @@
   <p>
     {{ "Execution status is separate from the business outcome." | localize }}
   </p>
-  <ul class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+  <app-select-control
+    [ariaLabel]="'Execution step' | localize"
+    [value]="selectedStep()"
+    (selectionChanged)="selectStep($event.target.value)"
+  >
+    <option value="">{{ "All execution steps" | localize }}</option>
     @for (step of process().steps; track step.key) {
+      <option [value]="step.key">{{ step.key }}</option>
+    }
+  </app-select-control>
+  <ul class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+    @for (step of steps(); track step.key) {
       <li class="rounded border p-3">
         <h3>
           <bdi>{{ step.key }}</bdi> · {{ step.status | localize }}
@@ -54,11 +64,9 @@
                 <li>
                   {{ attempt.number }} · {{ attempt.status | localize }} ·
                   <time>{{ attempt.started }}</time>
-                  @if (attempt.ended) {
-                    <span>
-                      — <time>{{ attempt.ended }}</time></span
-                    >
-                  }
+                  <span [hidden]="!attempt.ended">
+                    — <time>{{ attempt.ended }}</time></span
+                  >
                   @if (attempt.error) {
                     <span>
                       · {{ "Error code" | localize }}:

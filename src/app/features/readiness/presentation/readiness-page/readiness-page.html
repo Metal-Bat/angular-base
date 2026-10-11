@@ -1,0 +1,17 @@
+<h1 tabindex="-1">{{ "Readiness" | localize }}</h1>
+<p>
+  {{
+    "Read-only installation checks. Worker execution requires separate operator evidence."
+      | localize
+  }}
+</p>
+@if (error()) {
+  <p role="alert">{{ error() | localize }}</p>
+}
+<app-readiness-panel
+  [canRecheck]="!busy()"
+  [checks]="checks()"
+  [receivedAt]="receivedAt()"
+  [stale]="stale()"
+  (recheck)="load()"
+/>

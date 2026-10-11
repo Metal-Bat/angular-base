@@ -298,6 +298,22 @@ for (const [definition, group, base] of [
     "Search, open and manage " + definition.title.toLowerCase() + ".";
 }
 agents.immutableStatuses = ["PUBLISHED", "RETIRED"];
+const stepTypes = config(
+  "step-types",
+  "Step versions",
+  "/api/v1/step-types",
+  "StepTypeVersionDTO",
+  ["code", "name", "number", "status", "is_available"],
+  [],
+  undefined,
+  undefined,
+  "workflows.manage",
+);
+stepTypes.description =
+  "Inspect pinned step metadata without publishing or changing it.";
+stepTypes.queryFields = [];
+stepTypes.selectQuery = true;
+stepTypes.immutableStatuses = ["DRAFT", "PUBLISHED", "RETIRED"];
 const output = await format(
   JSON.stringify({
     users,
@@ -310,6 +326,7 @@ const output = await format(
     groups,
     integrations,
     agents,
+    "step-types": stepTypes,
     "task-definitions": taskDefinitions,
     "task-schedules": taskSchedules,
     "task-executions": taskExecutions,

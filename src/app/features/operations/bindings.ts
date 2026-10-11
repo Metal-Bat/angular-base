@@ -1,4 +1,9 @@
-import { ProcessReader } from './domain/process-tracking';
+import {
+  ProcessDestinationReader,
+  ProcessReader,
+} from './domain/process-tracking';
+import { ProcessEvidenceReader } from './domain/process-evidence';
+import { OrderRecoveryPort } from './domain/order-recovery';
 import { InjectionToken } from '@angular/core';
 import {
   CreationPort,
@@ -20,6 +25,15 @@ export const WORKSPACE_PAGES_FACTORY = new InjectionToken<() => PagesPort>(
 
 export const PROCESS_READER = new InjectionToken<ProcessReader>(
   'Authorized process reader',
+);
+export const PROCESS_DESTINATION = new InjectionToken<ProcessDestinationReader>(
+  'Authorized task process destination',
+);
+export const PROCESS_EVIDENCE = new InjectionToken<ProcessEvidenceReader>(
+  'Authorized process evidence',
+);
+export const ORDER_RECOVERY = new InjectionToken<OrderRecoveryPort>(
+  'Authorized order reconciliation',
 );
 
 export const FORM_RESOURCE_FACTORY = new InjectionToken<

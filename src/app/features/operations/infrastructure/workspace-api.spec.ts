@@ -32,7 +32,7 @@ describe('Workspace wire contracts', () => {
       expect(call).toHaveBeenCalledWith(
         'search_work_items_api_v1_work_items_search_post',
         {
-          body: { page: 2, size: 20, cartable },
+          body: { size: 20, cartable, time_field: 'created_at', page: 2 },
         },
         undefined,
       );

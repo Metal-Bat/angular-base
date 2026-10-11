@@ -32,6 +32,9 @@ import {
   MISSING,
 } from '../../domain/canonical-values';
 import { isLayout } from '../../domain/primitive-registry';
+import { placementInstance } from '../../domain/placement-instance';
+import { gridPlacement } from '../../domain/grid-placement';
+import { layoutColumns } from '../../domain/layout-columns';
 @Component({
   host: { class: 'console-fragment' },
   selector: 'app-runtime-node',
@@ -51,6 +54,14 @@ export class RuntimeNode {
   readonly document = input.required<RuntimeDocument>();
   readonly data = input.required<JsonObject>();
   readonly path = input('/root');
+  readonly renderRoot = input<RenderNode | null>(null);
+  readonly instance = computed(() =>
+    placementInstance(
+      this.renderRoot() ?? this.document().render,
+      this.node(),
+      this.path(),
+    ),
+  );
   readonly indices = input<readonly number[]>([]);
   readonly resources = inject(FORM_RESOURCES, { optional: true });
   readonly fieldControl = computed(
@@ -115,6 +126,25 @@ export class RuntimeNode {
   readonly edit = output<FieldEdit>();
   readonly locale = inject(Locale);
   readonly layout = computed(() => isLayout(this.node().component));
+  readonly columns = computed(() => layoutColumns(this.node()));
+  placement(child: RenderNode): { column: string; row: string } {
+    return this.node().component === 'grid'
+      ? gridPlacement(child, this.columns())
+      : { column: 'auto', row: 'auto' };
+  }
+  readonly accessibility = computed(
+    () => (this.node().display['accessibility'] ?? {}) as JsonObject,
+  );
+  readonly accessibleLabel = computed(() =>
+    typeof this.accessibility()['label'] === 'string'
+      ? (this.accessibility()['label'] as string)
+      : (this.node().label ?? this.node().scope ?? ''),
+  );
+  readonly description = computed(() =>
+    typeof this.accessibility()['description'] === 'string'
+      ? (this.accessibility()['description'] as string)
+      : '',
+  );
   readonly choice = computed(() =>
     ['choice', 'user', 'group'].includes(this.node().component),
   );
@@ -181,6 +211,17 @@ export class RuntimeNode {
     }
   }
   inputValue(raw: string): void {
+    if (
+      ['date', 'datetime'].includes(this.node().component) &&
+      raw.startsWith('invalid:')
+    ) {
+      this.set(
+        this.value() === MISSING ? MISSING : (this.value() as JsonValue),
+        'Enter a valid date or time.',
+      );
+      return;
+    }
+
     if (['integer', 'number'].includes(this.node().component)) {
       const value = Number(raw);
       const valid =

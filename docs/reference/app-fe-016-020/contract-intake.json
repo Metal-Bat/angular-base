@@ -1,0 +1,32 @@
+{
+  "date": "2026-10-10",
+  "owner": "APP-FE-016\u2013020",
+  "backend_head": "9999641f8e37077829ebbe7159a6cd794fb94b91",
+  "producer_manifest_sha256": "e8a671a3b247cc13c55d4022bec64e1756b87608d23d10e7807e4764ef6c7d54",
+  "changed_paths": [
+    "/api/v1/processes/{ref_id}/ai-evidence/search",
+    "/api/v1/processes/{ref_id}/orders/reconcile",
+    "/api/v1/processes/{ref_id}/orders/reconcile-cancellation",
+    "/api/v1/processes/{ref_id}/orders/search",
+    "/api/v1/processes/{ref_id}/resume",
+    "/api/v1/step-types/operations"
+  ],
+  "changed_schemas": [
+    "AIDecision",
+    "AIProcessEvidenceDTO",
+    "BusinessOperationDTO",
+    "OrderDispatchState",
+    "OrderReconciliationDTO",
+    "PageResponse_Page_AIProcessEvidenceDTO__",
+    "PageResponse_Page_SandboxOperationDTO__",
+    "Page_AIProcessEvidenceDTO_",
+    "Page_SandboxOperationDTO_",
+    "SandboxCancellationRecoveryDTO",
+    "SandboxOperationDTO",
+    "SandboxOrderReceipt",
+    "SuccessResponse_SandboxCancellationRecoveryDTO_",
+    "SuccessResponse_SandboxOperationDTO_",
+    "SuccessResponse_list_BusinessOperationDTO__"
+  ],
+  "compatibility": "No removed paths or changed existing operation IDs. Form/workspace contracts unchanged. Added protected operation/evidence/recovery metadata and AI/order state schemas; resume description/summary updated. No new operation execution UI or business approval invented. Actual HTTP equality required separately."
+}

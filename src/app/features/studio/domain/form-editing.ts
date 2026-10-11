@@ -50,6 +50,7 @@ export function patchNode(
   path: readonly number[],
   patch: JsonObject,
 ): JsonObject {
+  validatePresentation(patch);
   const node = authoredNode(renderOf(documents), path);
   if (
     patch['scope'] !== undefined ||
@@ -170,5 +171,37 @@ function validateConstraints(
     ) {
       throw Error('Invalid validation constraint');
     }
+  }
+}
+
+function validatePresentation(patch: JsonObject): void {
+  const grid = patch['grid'] as JsonObject | undefined;
+  if (grid) {
+    const values = [grid['column'] ?? 1, grid['span'] ?? 12, grid['row'] ?? 1];
+    if (
+      values.some(
+        (value, index) =>
+          typeof value !== 'number' ||
+          !Number.isInteger(value) ||
+          value < 1 ||
+          value > (index === 2 ? 256 : 12),
+      ) ||
+      Number(values[0]) + Number(values[1]) > 13
+    ) {
+      throw Error('Invalid grid placement');
+    }
+  }
+  const accessibility = patch['accessibility'] as JsonObject | undefined;
+  if (
+    accessibility &&
+    (typeof accessibility['label'] !== 'string' ||
+      !accessibility['label'].trim() ||
+      accessibility['label'].length > 255 ||
+      (accessibility['description'] !== undefined &&
+        accessibility['description'] !== null &&
+        (typeof accessibility['description'] !== 'string' ||
+          accessibility['description'].length > 1024)))
+  ) {
+    throw Error('Invalid accessibility label');
   }
 }

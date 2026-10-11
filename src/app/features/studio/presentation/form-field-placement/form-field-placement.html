@@ -1,0 +1,30 @@
+@if (fields().length) {
+  <label for="existing-field">{{
+    "Existing canonical field" | localize
+  }}</label>
+  <app-select-control
+    inputId="existing-field"
+    [disabled]="disabled()"
+    [value]="scope()"
+    (selectionChanged)="scope.set($any($event.target.value))"
+  >
+    <option value="">{{ "Choose" | localize }}</option>
+    @for (field of fields(); track field.scope) {
+      <option [value]="field.scope">{{ field.name }}</option>
+    }
+  </app-select-control>
+  <button
+    pButton
+    type="button"
+    [disabled]="disabled() || !scope()"
+    (click)="place()"
+  >
+    {{ "Place existing field" | localize }}
+  </button>
+  <p>
+    {{
+      "Existing fields and collections keep their configuration, canonical schema and shared values."
+        | localize
+    }}
+  </p>
+}

@@ -1,3 +1,4 @@
+import { HELP_STATE } from '../../bindings';
 import {
   afterRenderEffect,
   ChangeDetectionStrategy,
@@ -35,6 +36,8 @@ export class HelpPage {
   private readonly session = inject(SessionContext);
   private readonly feedback = inject(Feedback);
   readonly locale = inject(Locale);
+  readonly persisted = inject(HELP_STATE);
+  private openedIdentity = '';
   readonly language = computed(() =>
     this.locale.language() === 'fa' ? 'fa' : 'en',
   );
@@ -70,11 +73,24 @@ export class HelpPage {
     afterRenderEffect(() => {
       if (this.selected()) {
         this.title()?.nativeElement.focus();
+        const topic = this.selected()!;
+        const identity = helpIdentity(topic, this.language());
+        if (this.openedIdentity !== identity) {
+          this.openedIdentity = identity;
+          void this.persisted.acknowledge(topic, this.language());
+        }
       }
     });
   }
   status(topic: HelpTopic): string {
     const identity = helpIdentity(topic, this.language());
+    const saved = this.persisted.saved(topic, this.language());
+    if (saved?.dismissed_at) {
+      return 'Dismissed';
+    }
+    if (saved?.last_viewed_at) {
+      return 'Viewed';
+    }
     return this.dismissed().includes(identity)
       ? 'Dismissed this session'
       : this.viewed().includes(identity)
@@ -90,6 +106,7 @@ export class HelpPage {
     const identity = helpIdentity(topic, this.language());
     this.viewed.update((items) => [...new Set([...items, identity])]);
     this.dismissed.update((items) => items.filter((item) => item !== identity));
+    this.openedIdentity = '';
     this.selected.set(topic);
   }
   dismiss(topic: HelpTopic): void {
@@ -99,6 +116,7 @@ export class HelpPage {
     this.dismissed.update((items) => [
       ...new Set([...items, helpIdentity(topic, this.language())]),
     ]);
+    void this.persisted.acknowledge(topic, this.language(), true);
     this.selected.set(null);
   }
   close(): void {
@@ -111,12 +129,14 @@ export class HelpPage {
   async reset(): Promise<void> {
     const generation = this.generation;
     if (
-      (await this.feedback.confirm('Reset help for this session?')) &&
+      (await this.feedback.confirm('Reset your saved help acknowledgments?')) &&
       generation === this.generation
     ) {
-      this.viewed.set([]);
-      this.dismissed.set([]);
-      this.selected.set(null);
+      if (await this.persisted.reset()) {
+        this.viewed.set([]);
+        this.dismissed.set([]);
+        this.selected.set(null);
+      }
     }
   }
 }

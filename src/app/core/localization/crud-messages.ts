@@ -1,6 +1,8 @@
+import { temporalMessages } from './temporal-messages';
 import { authoringMessages } from './authoring-messages';
 import { fieldTranslations } from '../../shared/domain/field-label';
 export const crudMessages: Readonly<Record<string, string>> = {
+  ...temporalMessages,
   'This resource changed. Reload it before making another change.':
     'این منبع تغییر کرده است. پیش از تغییر دوباره، آن را بارگذاری کنید.',
   'Check the highlighted fields before continuing.':

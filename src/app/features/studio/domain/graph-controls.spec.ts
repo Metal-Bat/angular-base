@@ -2,8 +2,10 @@ import { connectionKey } from './workflow-authoring';
 import {
   addCandidate,
   addMapping,
+  candidateKey,
   mappingSources,
   patchTransition,
+  removeCandidate,
   removeMapping,
 } from './graph-controls';
 import { JsonObject } from '../../forms/domain/runtime-document';
@@ -223,4 +225,99 @@ it('removes a selected constant mapping without changing control edges or other 
   expect(() =>
     removeMapping(removed, connectionKey('data', bindings[0])),
   ).toThrow();
+});
+
+it('maps authorized whole object outputs without creating constants or changing control flow', () => {
+  const schema = {
+    type: 'object',
+    properties: { amount: { type: 'integer' } },
+    additionalProperties: false,
+  };
+  const objectNodes: CanvasNode[] = [
+    {
+      ...nodes[0],
+      key: 'first',
+      ports: [
+        {
+          key: 'submission',
+          direction: 'OUTPUT',
+          cardinality: 'SCALAR',
+          schema,
+        },
+      ],
+    },
+    {
+      ...nodes[0],
+      ports: [
+        {
+          key: 'data',
+          direction: 'INPUT',
+          cardinality: 'SCALAR',
+          schema: { type: 'object' },
+        },
+      ],
+    },
+  ];
+  const sources = mappingSources(
+    [
+      {
+        path: 'steps.first.outputs.submission',
+        source: 'step_output',
+        source_step: 'first',
+        cardinality: 'SCALAR',
+        type_schema: schema,
+      },
+    ],
+    graph,
+    'review',
+  );
+  const mapped = addMapping(
+    graph,
+    'review',
+    'data',
+    objectNodes,
+    sources[0],
+    undefined,
+  );
+  expect((mapped['bindings'] as JsonObject[])[0]).toMatchObject({
+    source_kind: 'STEP_OUTPUT',
+    source_step: 'first',
+    source_port: 'submission',
+    source_schema: schema,
+  });
+  expect(mapped['transitions']).toBe(graph['transitions']);
+  expect(() =>
+    addMapping(graph, 'review', 'data', objectNodes, null, {}),
+  ).toThrow('Invalid');
+  const changed = objectNodes.map((node) =>
+    node.key === 'first' ? { ...node, ports: [] } : node,
+  );
+  expect(() =>
+    addMapping(graph, 'review', 'data', changed, sources[0], undefined),
+  ).toThrow('Source port');
+});
+it('removes only the selected candidate row with unrelated policies and targets intact', () => {
+  const row = {
+    step: 'review',
+    user_ref: 'selected',
+    priority: 4,
+    condition: 'request.flag',
+  };
+  const other = { ...row, step: 'future' };
+  const mapped = { ...graph, targets: [row, other] };
+  const removed = removeCandidate(mapped, 'review', candidateKey(row));
+  expect(removed['targets']).toEqual([other]);
+  expect(removed['transitions']).toBe(graph['transitions']);
+  expect(() => removeCandidate(mapped, 'future', candidateKey(row))).toThrow(
+    'unavailable',
+  );
+});
+
+it('matches current server branch condition and nonnegative priority bounds', () => {
+  for (const patch of [
+    { priority: -1, is_default: false, condition: null },
+    { priority: 1, is_default: false, condition: 'x'.repeat(1025) },
+  ]) {
+    expect(() => patchTransition(graph, 0, patch)).toThrow('Invalid');
+  }
 });

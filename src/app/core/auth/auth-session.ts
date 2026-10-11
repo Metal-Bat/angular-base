@@ -1,3 +1,4 @@
+import { WorkspaceDefaults } from '../resources/workspace-defaults';
 import { HttpClient } from '@angular/common/http';
 import { DestroyRef, inject, Injectable, signal } from '@angular/core';
 import { Router } from '@angular/router';
@@ -13,6 +14,7 @@ export type ActorProfile = { ref: string; username: string };
 @Injectable({ providedIn: 'root' })
 export class AuthSession {
   private readonly http = inject(HttpClient);
+  private readonly defaults = inject(WorkspaceDefaults);
   private readonly api = inject(ApiClient);
   private readonly context = inject(SessionContext);
   private readonly router = inject(Router);
@@ -239,16 +241,26 @@ export class AuthSession {
       }
       throw new Error('Sign-in cancelled.');
     }
-    await this.bootstrap();
-    if (!this.profile()) {
+    const bootstrap = this.bootstrap();
+    const verifiedGeneration = this.generation;
+    await bootstrap;
+    if (verifiedGeneration !== this.generation || !this.profile()) {
       throw new Error('Could not verify the signed-in account.');
     }
     this.channel?.postMessage('changed');
     const snapshot = this.context.snapshot();
     const permissions =
       snapshot.status === 'authenticated' ? snapshot.permissions : [];
+    const returnPath = safeReturnPath(returnTo);
+    if (!returnPath) {
+      await this.defaults.load(this.http);
+    }
+    if (verifiedGeneration !== this.generation || !this.profile()) {
+      throw Error('Sign-in cancelled.');
+    }
     const destination =
-      safeReturnPath(returnTo) ??
+      returnPath ??
+      this.defaults.destination(permissions) ??
       (['operations', 'studio', 'administration'] as const)
         .filter((area) => canEnterArea(permissions, area))
         .map((area) => '/' + area)[0] ??

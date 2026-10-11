@@ -1,3 +1,4 @@
+import { ApplicationErrorHandler } from './core/feedback/application-error-handler.handler';
 import { errorInterceptor } from './core/feedback/error-interceptor';
 import { Locale } from './core/localization/locale';
 import {
@@ -9,6 +10,7 @@ import { AuthSession } from './core/auth/auth-session';
 import { sessionInterceptor } from './core/auth/session-interceptor';
 import {
   ApplicationConfig,
+  ErrorHandler,
   inject,
   provideAppInitializer,
   provideBrowserGlobalErrorListeners,
@@ -22,6 +24,7 @@ import { routes } from './app.routes';
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
+    { provide: ErrorHandler, useClass: ApplicationErrorHandler },
     provideZonelessChangeDetection(),
     provideRouter(routes),
     provideHttpClient(

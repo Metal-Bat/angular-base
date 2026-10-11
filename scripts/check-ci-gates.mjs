@@ -8,6 +8,7 @@ try {
   for (const entry of [
     "src",
     "public",
+    "docs/reference",
     "angular.json",
     "vitest.config.ts",
     "package.json",

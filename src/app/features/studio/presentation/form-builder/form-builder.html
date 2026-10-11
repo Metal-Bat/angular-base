@@ -94,6 +94,7 @@
         <li
           [draggable]="!readonly()"
           [style.padding-inline-start.rem]="item.path.length"
+          (dragend)="cancelDrag()"
           (dragover)="$event.preventDefault()"
           (dragstart)="drag($event, item.path)"
           (drop)="drop($event, item.path)"
@@ -129,6 +130,19 @@
     >
       {{ "Move down" | localize }}
     </button>
+    <app-form-field-placement
+      [disabled]="readonly() || pending().length > 0"
+      [documents]="documents()"
+      [path]="selected()"
+      (applied)="applyProperties($event)"
+    />
+    <app-form-placement-controls
+      [disabled]="readonly() || pending().length > 0"
+      [documents]="documents()"
+      [path]="selected()"
+      (duplicateRequested)="duplicate()"
+      (moveRequested)="reparent($event)"
+    />
   </section>
   <section aria-label="Component inspector">
     <h2>{{ "Selected component" | localize }}</h2>

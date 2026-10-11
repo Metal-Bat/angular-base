@@ -97,6 +97,22 @@
         [step]="type() === 'integer' ? 1 : 'any'"
         (ngModelChange)="changeNumber($event)"
       />
+    } @else if (
+      ["date", "date-time", "time"].includes($any(shape()["format"]))
+    ) {
+      <app-temporal-control
+        [ariaLabel]="title() | localize"
+        [controlId]="controlId()"
+        [disabled]="disabled()"
+        [invalid]="!!errors()[path()]"
+        [kind]="
+          shape()['format'] === 'date-time'
+            ? 'datetime'
+            : $any(shape()['format'])
+        "
+        [value]="text()"
+        (valueChange)="changeText($event)"
+      />
     } @else if (Number(shape()["maxLength"] || 0) > 1024) {
       <textarea
         rows="4"
@@ -123,9 +139,6 @@
           [id]="controlId()"
           [ngModel]="canPick() ? (referenceText() | localize) : text()"
           [ngModelOptions]="{ standalone: true }"
-          [placeholder]="
-            shape()['format'] === 'date-time' ? 'YYYY-MM-DDTHH:mm:ssZ' : ''
-          "
           [readOnly]="canPick()"
           [required]="required()"
           [type]="

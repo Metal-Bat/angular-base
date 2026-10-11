@@ -1,4 +1,47 @@
 export const authoringMessages: Readonly<Record<string, string>> = {
+  'Published versions are immutable. Create a draft to make changes.':
+    'نسخه‌های منتشرشده تغییرناپذیرند. برای تغییر، پیش‌نویس بسازید.',
+  'Apply or discard pending inspector edits before saving.':
+    'پیش از ذخیره، ویرایش‌های معلق را اعمال یا لغو کنید.',
+  'Save workspace changes before promotion.':
+    'پیش از ارتقا، تغییرات فضای کاری را ذخیره کنید.',
+  'The saved workspace has not been promoted.':
+    'فضای کاری ذخیره‌شده هنوز ارتقا نیافته است.',
+  'A promoted graph exists. Validate intended changes before publication.':
+    'نمودار ارتقایافته وجود دارد. پیش از انتشار تغییرات موردنظر را اعتبارسنجی کنید.',
+  'Case activity': 'فعالیت پرونده',
+  'You own this task.': 'این کار در اختیار شماست.',
+  'This task is claimed by another reviewer. Read-only access does not grant permission to decide.':
+    'این کار در اختیار بازبین دیگری است. دسترسی فقط خواندنی مجوز تصمیم‌گیری نمی‌دهد.',
+  'Read current state before attempting another task action.':
+    'پیش از اقدام دوباره، وضعیت فعلی کار را بخوانید.',
+  'Execution step': 'مرحله اجرا',
+  'All execution steps': 'همه مراحل اجرا',
+  'Clear result': 'پاک کردن نتیجه',
+
+  'Look up the receipt before retrying.':
+    'پیش از تلاش مجدد، رسید را جستجو کنید.',
+  'Look up the original receipt.': 'رسید اصلی را جستجو کنید.',
+  'Diagnostic retry': 'تلاش مجدد تشخیصی',
+  'Discard configuration edits': 'لغو ویرایش‌های پیکربندی',
+  'Remove candidate': 'حذف نامزد',
+  'Registered operation': 'عملیات ثبت‌شده',
+  'Unavailable operation; existing configuration is preserved.':
+    'عملیات در دسترس نیست؛ پیکربندی فعلی حفظ می‌شود.',
+  'Business effect': 'اثر تجاری',
+  'Required approval policy': 'سیاست تأیید الزامی',
+  'Retry policy': 'سیاست تلاش مجدد',
+  Reconciliation: 'تطبیق نتیجه',
+  'Allowed providers': 'ارائه‌دهندگان مجاز',
+  'Operation metadata does not verify a connection or authorize execution.':
+    'فراداده عملیات، اتصال را تأیید یا اجرای آن را مجاز نمی‌کند.',
+  'Reload operations': 'بارگذاری مجدد عملیات',
+  'Transition to edit': 'گذار برای ویرایش',
+  'Apply transition': 'اعمال گذار',
+  'Discard transition edits': 'لغو ویرایش‌های گذار',
+  'Choose an authorized source for this structured port.':
+    'برای این درگاه ساختاریافته، منبع مجاز انتخاب کنید.',
+
   'Add page': 'افزودن صفحه',
   'Add rule': 'افزودن قانون',
   'Apply pending editor changes before saving.':

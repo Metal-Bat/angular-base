@@ -26,7 +26,7 @@ import { LocalizePipe } from '../../../../shared/ui/localize-pipe';
 import { RecordSummary } from '../../../../shared/ui/record-summary/record-summary';
 import { RecordTable } from '../../../../shared/ui/record-table/record-table';
 import { emptyQuery } from '../../../../shared/domain/list-query';
-import { fieldLabel } from '../../../../shared/domain/field-label';
+import { resultColumns } from '../../domain/result-columns';
 import { JsonObject, JsonValue } from '../../../forms/domain/runtime-document';
 import { ADMIN_API } from '../../bindings';
 import {
@@ -139,13 +139,7 @@ export class ResourceActions {
       ? (this.response()!.value as JsonObject[])
       : [],
   );
-  readonly columns = computed(() => {
-    const keys = new Set(this.resultRows().flatMap((row) => Object.keys(row)));
-    return [...keys]
-      .filter((key) => !/(ref|secret|password|token)/.test(key))
-      .slice(0, 6)
-      .map((key) => ({ key, label: fieldLabel(key) }));
-  });
+  readonly columns = computed(() => resultColumns(this.resultRows()));
   readonly resultRecord = computed(() => {
     const value = this.response()?.value;
     return value && typeof value === 'object' && !Array.isArray(value)
@@ -262,6 +256,12 @@ export class ResourceActions {
       !this.busy() &&
       (!this.dirty || (await this.feedback.confirm('Discard unsaved changes?')))
     );
+  }
+  dismissResult(): void {
+    if (!this.busy()) {
+      this.response.set(null);
+      this.notice.set('');
+    }
   }
   async close(): Promise<void> {
     if (this.busy()) {

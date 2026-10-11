@@ -4,6 +4,19 @@ export type NotificationOptions = {
 };
 export type ServiceKind = 'notifications' | 'reports';
 export type ServiceItem = {
+  target?: {
+    kind:
+      | 'case'
+      | 'work_item'
+      | 'ai_approval'
+      | 'report'
+      | 'account'
+      | 'support'
+      | 'calendar'
+      | 'operation';
+    available: boolean;
+    ref_id: string | null;
+  };
   ref: string;
   title: string;
   status: string;

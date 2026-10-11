@@ -1,5 +1,24 @@
 <details class="console-panel my-4">
   <summary>{{ "Publication review" | localize }}</summary>
+  <p role="status">
+    @if (status() === "PUBLISHED") {
+      {{
+        "Published versions are immutable. Create a draft to make changes."
+          | localize
+      }}
+    } @else if (pending()) {
+      {{ "Apply or discard pending inspector edits before saving." | localize }}
+    } @else if (dirty()) {
+      {{ "Save workspace changes before promotion." | localize }}
+    } @else if (!state()?.promoted) {
+      {{ "The saved workspace has not been promoted." | localize }}
+    } @else {
+      {{
+        "A promoted graph exists. Validate intended changes before publication."
+          | localize
+      }}
+    }
+  </p>
   <dl class="grid gap-2 break-all">
     <dt>{{ "Editing state" | localize }}</dt>
     <dd>{{ status() | localize }}</dd>

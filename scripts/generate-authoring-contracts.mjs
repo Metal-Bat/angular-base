@@ -120,6 +120,18 @@ for (const [key, title] of Object.entries(names)) {
     const operation = api.paths[base + suffix]?.[method];
     if (!operation) continue;
     operations[action] = operation.operationId;
+    if (action === "report") {
+      let response =
+        operation.responses?.["200"]?.content?.["application/json"]?.schema;
+      while (response?.$ref)
+        response = api.components.schemas[response.$ref.split("/").at(-1)];
+      assert.ok(
+        response?.properties?.result && !response.properties.data,
+        key +
+          " report envelope changed: reconcile before changing the page preview",
+      );
+    }
+
     let shape = operation.requestBody?.content?.["application/json"]?.schema;
     while (shape?.$ref)
       shape = api.components.schemas[shape.$ref.split("/").at(-1)];
@@ -156,7 +168,7 @@ if (process.argv.includes("--check"))
   assert.equal(
     await readFile(target, "utf8"),
     output,
-    "Regenerate studio contracts with npm run api:generate",
+    "Regenerate studio contracts with pnpm run api:generate",
   );
 else await writeFile(target, output);
 console.log(

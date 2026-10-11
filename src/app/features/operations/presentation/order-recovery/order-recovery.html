@@ -1,0 +1,82 @@
+@if (allowed()) {
+  <section aria-labelledby="order-recovery-heading" [attr.aria-busy]="busy()">
+    <h3 id="order-recovery-heading">
+      {{ "Operator receipt recovery" | localize }}
+    </h3>
+    <p>
+      {{
+        "The backend enforces eligible unknown or abandoned executions. Recovery never authorizes another order creation."
+          | localize
+      }}
+    </p>
+    <app-control-field controlId="recovery-order" label="Recorded operation">
+      <app-select-control
+        inputId="recovery-order"
+        name="operation"
+        [ariaLabel]="'Recorded operation' | localize"
+        [disabled]="busy() || !!frozen()"
+        [ngModel]="operation()"
+        (ngModelChange)="operation.set($event)"
+      >
+        <option value="">{{ "Choose an operation" | localize }}</option>
+        @for (order of orders()?.items ?? []; track order.operation) {
+          <option [value]="order.operation">
+            {{ order.state | localize }} ·
+            {{ order.receipt?.identity ?? order.operation }}
+          </option>
+        }
+      </app-select-control>
+    </app-control-field>
+    <app-control-field
+      controlId="recovery-reason"
+      hint="Use 1–64 ASCII letters, digits, dots, underscores, colons or hyphens. Start with a letter or digit."
+      label="Incident reference"
+    >
+      <input
+        id="recovery-reason"
+        maxlength="64"
+        name="reason"
+        pInputText
+        type="text"
+        [disabled]="busy() || !!frozen()"
+        [ngModel]="reason()"
+        (ngModelChange)="reason.set($event)"
+      />
+    </app-control-field>
+    <button
+      pButton
+      severity="secondary"
+      type="button"
+      [disabled]="busy() || !valid() || !!frozen()"
+      [outlined]="true"
+      (click)="lookup('order')"
+    >
+      {{ "Look up order receipt" | localize }}
+    </button>
+    <button
+      pButton
+      severity="secondary"
+      type="button"
+      [disabled]="busy() || !valid() || !!frozen()"
+      [outlined]="true"
+      (click)="lookup('cancellation')"
+    >
+      {{ "Reconcile existing cancellation" | localize }}
+    </button>
+    @if (uncertain()) {
+      <button
+        pButton
+        severity="secondary"
+        type="button"
+        [disabled]="busy()"
+        [outlined]="true"
+        (click)="reconcileOriginal()"
+      >
+        {{ "Reconcile original command" | localize }}
+      </button>
+    }
+    @if (message()) {
+      <p role="status">{{ message() | localize }}</p>
+    }
+  </section>
+}

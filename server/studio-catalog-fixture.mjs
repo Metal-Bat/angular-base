@@ -137,8 +137,7 @@ export function createStudioCatalogFixture() {
           return page([], body);
         return page(rows.get(key), body);
       }
-      if (reference === "report")
-        return data({ ref_id: "fixture-report", status: "QUEUED" });
+      if (reference === "report") return page(rows.get(key), body);
       if (action === "history")
         return page(
           [
@@ -200,7 +199,7 @@ export const studioCatalogBrowserScript = String.raw`
  await click(root(),'Back to list');await wait(()=>root().querySelector('tbody button[aria-label="Edit"]'),'Studio direct edit');await click(root(),'Edit');await wait(()=>modal()?.querySelector('#author-name'),'Edit dialog');fill('author-name','Renamed form');await click(modal(),'Save');await wait(()=>!modal()&&root().textContent.includes('Renamed form'),'Saved detail');
  await click(root(),'History');await wait(()=>modal()?.querySelector('tbody button'),'Studio history list');await click(modal(),'Open');await wait(()=>modal()?.querySelector('.change-comparison tbody tr'),'Studio history comparison');const historyRow=modal().querySelector('.change-comparison tbody tr');check(historyRow.textContent.includes('Name')&&historyRow.textContent.includes('No value')&&historyRow.textContent.includes('Changed'),'Studio comparison values');check(!modal().querySelector('pre')&&!modal().textContent.includes('hidden'),'Studio raw history or secret');await auditAccessibility('studio-history-comparison',modal());modal().querySelector('.p-dialog-close-button').click();await wait(()=>!modal(),'Studio history closed');
  await click(root(),'Back to list');await wait(()=>root()?.querySelector('tbody button')&&!root().textContent.includes('Loading…'),'Back to list');await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
- await click(root(),'Advanced filters');await click(root(),'Add filter');await wait(()=>root().querySelector('input[data-query-value="0"]'),'Filter');const val=root().querySelector('input[data-query-value="0"]');val.value='example';val.dispatchEvent(new Event('input',{bubbles:true}));await click(root(),'Apply');await wait(()=>!root().textContent.includes('Loading…'),'Apply');val.value='unapplied';val.dispatchEvent(new Event('input',{bubbles:true}));await click(root(),'Request report');await confirm();await wait(()=>root().textContent.includes('Report requested.'),'Report');check(root().querySelector('tbody').textContent.includes('Renamed form'),'Report replaced list');
+ await click(root(),'Advanced filters');await click(root(),'Add filter');await wait(()=>root().querySelector('input[data-query-value="0"]'),'Filter');const val=root().querySelector('input[data-query-value="0"]');val.value='example';val.dispatchEvent(new Event('input',{bubbles:true}));await click(root(),'Apply');await wait(()=>!root().textContent.includes('Loading…'),'Apply');val.value='unapplied';val.dispatchEvent(new Event('input',{bubbles:true}));await click(root(),'Preview report');await confirm();await wait(()=>modal()?.textContent.includes('Report preview'),'Report');check(modal().textContent.includes('Renamed form'),'Typed report result');modal().querySelector('.p-dialog-close-button').click();await wait(()=>!modal(),'Report preview closed');check(root().querySelector('tbody').textContent.includes('Renamed form'),'Report replaced list');
  for(const key of ['workflows','clients','request-types','form-components','form-data-types']){await navigate(key);await wait(()=>root().querySelector('tbody button'),'Table '+key);await auditAccessibility('studio-'+key);
  if(key==='workflows'){
    await click(root(),'Create');await wait(()=>modal()?.querySelector('p-select'),'Workflow access dropdown');

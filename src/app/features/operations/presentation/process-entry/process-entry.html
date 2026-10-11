@@ -32,6 +32,16 @@
   <a [routerLink]="['/operations/requests', process.request]">{{
     "Request detail" | localize
   }}</a>
+  @if (canOpenControls()) {
+    <a
+      pButton
+      routerLink="/administration/processes"
+      severity="secondary"
+      [outlined]="true"
+      [queryParams]="{ ref_id: process.reference }"
+      >{{ "Process controls" | localize }}</a
+    >
+  }
   <h2>{{ "Current positions" | localize }}</h2>
   <ul>
     @for (position of process.positions; track $index) {
@@ -44,6 +54,7 @@
     }
   </ul>
   <app-execution-path [process]="process" />
+  <app-process-evidence [reference]="process.reference" />
   <h2>{{ "Child processes" | localize }}</h2>
   <ul>
     @for (child of process.children; track child.reference) {

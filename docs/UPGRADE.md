@@ -8,7 +8,7 @@ The compatible stack is Angular 21.2.25, Angular CLI/build 21.2.24, Material/CDK
 
 ## Changes
 
-- Pin Node, npm, RTK, graphifyy, and Husky through mise; retain Husky as a project dependency.
+- Pin Node, pnpm, RTK and graphifyy through mise; retain Husky as a pinned project dependency.
 - Keep Angular Material and Tailwind and add PrimeNG, Aura, PrimeIcons, and the official Tailwind integration plugin.
 - Replace Karma/Jasmine with Angular's Vitest unit-test builder and jsdom.
 - Set the application and test TypeScript source roots explicitly.

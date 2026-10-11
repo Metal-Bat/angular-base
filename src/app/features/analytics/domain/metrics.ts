@@ -151,3 +151,19 @@ export function readMetric(input: unknown): MetricProjection {
     drilldown,
   };
 }
+
+/** Presentation captions for the frozen metric keys; wire values remain unchanged. */
+export function metricTitle(key: string): string {
+  const labels: Readonly<Record<string, string>> = {
+    submitted_requests: 'Submitted requests',
+    active_requests: 'Active requests',
+    available_work: 'Available work',
+    claimed_work: 'Claimed work',
+    overdue_work: 'Overdue work',
+    terminal_duration: 'Time to completion',
+    correction_frequency: 'Correction count',
+    integration_outcomes: 'Integration outcomes',
+    business_outcomes: 'Business outcomes',
+  };
+  return labels[key] ?? 'Metric';
+}

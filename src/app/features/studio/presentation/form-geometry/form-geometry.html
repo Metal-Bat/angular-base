@@ -1,0 +1,22 @@
+<h3>{{ "Grid placement" | localize }}</h3>
+<p>
+  {{
+    "Grid placement fits the configured columns. Small screens follow document order."
+      | localize
+  }}
+</p>
+<app-schema-input
+  controlId="field-grid"
+  [disabled]="disabled()"
+  [schema]="gridSchema"
+  [value]="node()['grid']"
+  (valueChange)="patch.emit({ key: 'grid', value: $event })"
+/>
+<h3>{{ "Accessibility" | localize }}</h3>
+<app-schema-input
+  controlId="field-accessibility"
+  [disabled]="disabled()"
+  [schema]="accessibilitySchema"
+  [value]="node()['accessibility']"
+  (valueChange)="patch.emit({ key: 'accessibility', value: $event })"
+/>

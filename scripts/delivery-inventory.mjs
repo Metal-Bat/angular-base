@@ -38,6 +38,13 @@ const adminCommands = Object.values(contracts).flatMap(
   (group) => group.commands,
 );
 const groups = {
+  inbox: [
+    "Unified notifications",
+    "APP-FE-012",
+    "OPS-01",
+    "authenticated user",
+    "src/app/features/operations/presentation/personal-services/personal-services.html",
+  ],
   auth: [
     "Account/session",
     "APP-FE-005",
@@ -200,6 +207,64 @@ groups.health = [
   "deployment operator",
   null,
 ];
+Object.assign(groups, {
+  setup: [
+    "Installation readiness",
+    "APP-FE-011",
+    "A06",
+    "installation operator",
+    "src/app/features/readiness/presentation/readiness-page/readiness-page.html",
+  ],
+  "resource-links": [
+    "Resource links and selected summaries",
+    "APP-FE-006",
+    "A02/A11",
+    "authorized user",
+    "src/app/features/studio/presentation/studio-choice/studio-choice.html",
+  ],
+  me: [
+    "Self profile, preferences and help state",
+    "APP-FE-008/010",
+    "A03/A04",
+    "authenticated user",
+    "src/app/core/auth/profile/profile.html",
+  ],
+  "saved-views": [
+    "Saved views",
+    "APP-FE-009",
+    "A03/A05",
+    "authenticated user",
+    "src/app/shared/ui/saved-views/saved-views.html",
+  ],
+  favorites: [
+    "Favorites",
+    "APP-FE-009",
+    "A03/A05",
+    "authenticated user",
+    "src/app/features/records/presentation/favorites/favorites.html",
+  ],
+  "support-incidents": [
+    "Support incidents",
+    "APP-FE-013",
+    "A20",
+    "authorized support operator",
+    "src/app/features/support/presentation/support-page/support-page.html",
+  ],
+  "calendar-events": [
+    "Operational calendar",
+    "APP-FE-014",
+    "A08",
+    "authorized user",
+    "src/app/features/calendar/presentation/calendar-page/calendar-page.html",
+  ],
+  analytics: [
+    "Analytics",
+    "APP-FE-015",
+    "A09",
+    "authorized user",
+    "src/app/features/analytics/presentation/dashboard/dashboard.html",
+  ],
+});
 const methods = new Set([
   "get",
   "post",
@@ -219,7 +284,10 @@ for (const [path, item] of Object.entries(api.paths))
     const [screen, owner, legacy, persona, template] = group;
     const consumers = [...contents]
       .filter(
-        ([p, text]) => !p.endsWith(".spec.ts") && text.includes(op.operationId),
+        ([p, text]) =>
+          p.endsWith(".ts") &&
+          !p.endsWith(".spec.ts") &&
+          text.includes(op.operationId),
       )
       .map(([p]) => p);
     const tests = [...contents]
@@ -253,6 +321,16 @@ for (const [path, item] of Object.entries(api.paths))
             : "NEW",
       template,
       consumers,
+      metadataSources: [...contents]
+        .filter(
+          ([p, text]) => p.endsWith(".json") && text.includes(op.operationId),
+        )
+        .map(([p]) => p),
+      consumerDiscovery: consumers.length
+        ? "DIRECT_CODE_REFERENCE"
+        : admin
+          ? "CONFIGURED_ACTION_REQUIRES_UI_VERIFICATION"
+          : "NO_DIRECT_CODE_REFERENCE",
       tests,
       permission:
         admin?.permission ??
@@ -284,7 +362,24 @@ if (
 )
   throw Error("Operation coverage mismatch");
 const ownerFor = (p) => {
-  if (p.includes("/form-builder/")) return "APP-FE-016";
+  if (p.includes("/permission-choices/")) return "APP-FE-031";
+  if (p.includes("/execution-path/")) return "APP-FE-026";
+  if (p.includes("/publication-review/")) return "APP-FE-027";
+  if (p.includes("/task-controls/")) return "APP-FE-029";
+  if (p.includes("/candidate-targets/")) return "APP-FE-022";
+  if (p.includes("/transition-editor/")) return "APP-FE-024";
+  if (p.includes("/operation-choice/")) return "APP-FE-025";
+  if (p.includes("/node-inspector/") || p.includes("/node-details/"))
+    return "APP-FE-021";
+  if (p.includes("/graph-connections/")) return "APP-FE-023";
+  if (p.includes("/form-geometry/")) return "APP-FE-017";
+  if (p.includes("/canvas-connections/")) return "APP-FE-020";
+  if (
+    p.includes("/form-builder/") ||
+    p.includes("/form-placement-controls/") ||
+    p.includes("/form-field-placement/")
+  )
+    return "APP-FE-016";
   if (p.includes("/workflow-diagnostics")) return "APP-FE-026";
   if (p.includes("/workflow-board/")) return "APP-FE-021";
   if (p.includes("/library-tools/")) return "APP-FE-027";
@@ -397,9 +492,9 @@ const outputs = {
     [
       "# API/UI coverage",
       "",
-      `Source: ${operations.length} operations; SHA256 \`${hash}\`. Regenerate with \`npm run delivery:inventory\`.`,
+      `Source: ${operations.length} operations; SHA256 \`${hash}\`. Regenerate with \`pnpm run delivery:inventory\`.`,
       "",
-      "This is a source inventory, not proof of integration. The APP-BE-001 producer handoff is consumed and hash checked. Live HTTP evidence is recorded separately. Every operation has an owner; no ordinary business operation is excluded. The companion JSON contains exact input/output schemas, parameters, discovered consumers, direct operation test references, and state requirements. An empty tests array means no direct operation-ID test was found, not that no feature tests exist. Screen assignments identify the owning area; they do not assert that every action already has purposeful UI.",
+      "This is a source inventory, not proof of integration. The APP-BE-001 producer handoff is consumed and hash checked. Live HTTP evidence is recorded separately. Every operation has an owner; no ordinary business operation is excluded. The companion JSON contains exact input/output schemas, parameters, direct TypeScript consumers, separate metadata references, direct operation test references, and state requirements. Generated JSON metadata is never counted as a direct code consumer. Configured actions require domain UI verification; metadata alone does not prove usable UI. An empty tests array means no direct operation-ID test was found, not that no feature tests exist. Screen assignments identify the owning area; they do not assert that every action already has purposeful UI.",
       "",
       "| Operation | Method/path | Persona/screen | Owner | Disposition/delta |",
       "|---|---|---|---|---|",
@@ -425,7 +520,7 @@ const outputs = {
     [
       "# Screen and control register",
       "",
-      "Generated from all current Angular external and static inline templates. PrimeNG-first applies to new or redesigned ordinary business UI. Retained exceptions: native exact-decimal/file/date controls preserve canonical values; native dialog provides confirmation; Material remains in the compatibility showcase; Foblex stays in its canvas adapter. Domain tickets own conversions of existing controls and JSON inspectors.",
+      "Generated from all current Angular external and static inline templates. PrimeNG-first applies to new or redesigned ordinary business UI. Retained exceptions: native exact-decimal/file controls preserve canonical values; shared temporal controls use PrimeNG time selection and a themed Intl calendar grid for Gregorian/Jalali/civil Hijri; native dialog provides confirmation; Material remains in the compatibility showcase; Foblex stays in its canvas adapter. Domain tickets own conversions of existing controls and JSON inspectors.",
       "",
       "| Template | Owner | Current controls | Disposition |",
       "|---|---|---|---|",

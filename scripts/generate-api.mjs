@@ -7,7 +7,9 @@ const generatorPackage = JSON.parse(
   await readFile("node_modules/openapi-typescript/package.json", "utf8"),
 );
 if (generatorPackage.version !== "7.13.0") {
-  throw Error("Install the pinned API generator with npm ci.");
+  throw Error(
+    "Install the pinned API generator with pnpm install --frozen-lockfile.",
+  );
 }
 const input = "docs/reference/platform-openapi.json";
 const bytes = await readFile(input);
@@ -56,13 +58,15 @@ for (const [path, item] of Object.entries(schema.paths)) {
       scope: path.startsWith("/api/v1/") ? "api" : "root",
       requestMedia:
         Object.keys(operation.requestBody?.content ?? {})[0] ?? null,
-      responseType: binary
-        ? "blob"
-        : content.some((type) => type === "application/json")
-          ? "json"
-          : content.length
-            ? "blob"
-            : "text",
+      responseType: content.includes("text/event-stream")
+        ? "stream"
+        : binary
+          ? "blob"
+          : content.some((type) => type === "application/json")
+            ? "json"
+            : content.length
+              ? "blob"
+              : "text",
     };
   }
 }
@@ -93,7 +97,7 @@ for (const [path, value] of Object.entries(outputs)) {
   if (process.argv.includes("--check")) {
     if ((await readFile(path, "utf8").catch(() => null)) !== value)
       throw Error(
-        "Generated API drift: " + path + "; run npm run api:generate",
+        "Generated API drift: " + path + "; run pnpm run api:generate",
       );
   } else {
     await mkdir(path.slice(0, path.lastIndexOf("/")), { recursive: true });

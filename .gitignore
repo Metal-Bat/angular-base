@@ -55,3 +55,7 @@ Thumbs.db
 
 # Local validation reports
 /artifacts/
+
+# Python verification caches
+__pycache__/
+*.pyc

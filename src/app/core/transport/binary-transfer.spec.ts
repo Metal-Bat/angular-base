@@ -16,6 +16,7 @@ import {
 } from './binary-transfer';
 import { ApiFailure } from './api-failure';
 describe('Private binary transfers', () => {
+  let http: HttpTestingController;
   beforeEach(async () => {
     await import('./generated/operations');
     TestBed.configureTestingModule({
@@ -25,8 +26,9 @@ describe('Private binary transfers', () => {
         BinaryTransfer,
       ],
     });
+    http = TestBed.inject(HttpTestingController);
   });
-  afterEach(() => TestBed.inject(HttpTestingController).verify());
+  afterEach(() => http.verify());
   it('sanitizes traversal, controls and encoded filenames', () => {
     expect(safeFilename('../a\\b\u0000.pdf')).not.toContain('/');
     expect(safeFilename('\u202e.exe')).not.toContain('\u202e');
@@ -123,6 +125,77 @@ describe('Private binary transfers', () => {
       statusText: 'Not Found',
     });
     expect(await pending).toBeInstanceOf(ApiFailure);
+    expect(transfer.busy()).toBe(false);
+  });
+  it('keeps error-body decoding cancellable and fences late completion from a new transfer', async () => {
+    const transfer = TestBed.inject(BinaryTransfer);
+    const pending = transfer
+      .run('download_file_api_v1_media_files__ref_id__get', {
+        path: { ref_id: 'old' },
+      })
+      .catch((error: unknown) => error);
+    const request = await vi.waitFor(() =>
+      TestBed.inject(HttpTestingController).expectOne(
+        '/api/v1/media/files/old',
+      ),
+    );
+    let decode!: (value: string) => void;
+    const body = new Blob(['private error']);
+    vi.spyOn(body, 'text').mockReturnValue(
+      new Promise((resolve) => {
+        decode = resolve;
+      }),
+    );
+    request.flush(body, { status: 403, statusText: 'Forbidden' });
+    expect(transfer.busy()).toBe(true);
+    await expect(
+      transfer.run('download_file_api_v1_media_files__ref_id__get', {
+        path: { ref_id: 'blocked' },
+      }),
+    ).rejects.toThrow('already running');
+    TestBed.inject(ActorState).reset();
+    expect(await pending).toEqual(Error('Transfer cancelled'));
+    const next = transfer.run('download_file_api_v1_media_files__ref_id__get', {
+      path: { ref_id: 'new' },
+    });
+    const current = await vi.waitFor(() =>
+      TestBed.inject(HttpTestingController).expectOne(
+        '/api/v1/media/files/new',
+      ),
+    );
+    decode('{"success":false,"code":403}');
+    await Promise.resolve();
+    expect(transfer.busy()).toBe(true);
+    expect(transfer.progress()).toBeNull();
+    const bytes = new Blob(['new account file']);
+    current.flush(bytes);
+    expect((await next).body).toBe(bytes);
+    expect(transfer.busy()).toBe(false);
+  });
+  it('cancels an error body still being consumed when its owner is destroyed', async () => {
+    const transfer = TestBed.inject(BinaryTransfer);
+    const pending = transfer
+      .run('download_file_api_v1_media_files__ref_id__get', {
+        path: { ref_id: 'owned' },
+      })
+      .catch((error: unknown) => error);
+    const request = await vi.waitFor(() =>
+      TestBed.inject(HttpTestingController).expectOne(
+        '/api/v1/media/files/owned',
+      ),
+    );
+    let decode!: (value: string) => void;
+    const body = new Blob(['private']);
+    vi.spyOn(body, 'text').mockReturnValue(
+      new Promise((resolve) => {
+        decode = resolve;
+      }),
+    );
+    request.flush(body, { status: 403, statusText: 'Forbidden' });
+    TestBed.resetTestingModule();
+    expect(await pending).toEqual(Error('Transfer cancelled'));
+    decode('{}');
+    await Promise.resolve();
     expect(transfer.busy()).toBe(false);
   });
 });

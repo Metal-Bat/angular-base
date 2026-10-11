@@ -1,0 +1,13 @@
+saveExact: true
+engineStrict: true
+strictPeerDependencies: true
+strictDepBuilds: true
+verifyDepsBeforeRun: error
+overrides:
+  "release-it>undici": 7.30.0
+  "@angular/build>piscina": 5.3.2
+allowBuilds:
+  "@parcel/watcher@2.6.0": true
+  "esbuild@0.28.1": true
+  "lmdb@3.5.1": true
+  "msgpackr-extract@3.0.4": true

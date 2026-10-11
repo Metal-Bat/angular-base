@@ -78,6 +78,21 @@ describe('List-first CRUD controller', () => {
     page = TestBed.runInInjectionContext(() => new ResourcePage());
     await vi.waitFor(() => expect(page.page()).toEqual(result));
   });
+  it('clears old history detail only after a successful query and retains it on failure', async () => {
+    page.detail.set(user);
+    page.historyDefinition.set(recordDefinitions['history']);
+    page.historyDetail = { operation: 'update', from_values: { name: 'Old' } };
+    const old = page.historyDetail;
+    list.mockRejectedValueOnce(new Error('offline'));
+    await page.loadHistory({ ...emptyQuery(), page: 2 });
+    expect(page.historyDetail).toBe(old);
+    expect(page.modalError()).not.toBe('');
+    await page.loadHistory({ ...emptyQuery(), page: 2 });
+    expect(page.historyDetail).toBeNull();
+    expect(page.historyQuery().page).toBe(2);
+    expect(page.modalError()).toBe('');
+    expect(command).not.toHaveBeenCalled();
+  });
   it('loads the first list without opening a command form', () => {
     expect(list.mock.calls[0][0].key).toBe('admin-users');
     expect(page.mode()).toBeNull();
@@ -202,16 +217,27 @@ describe('List-first CRUD controller', () => {
     expect(command.mock.calls[1][2]).toEqual({ ref_id: 'deleted-v3' });
     expect(page.detail()?.['ref_id']).toBe('user-v3');
   });
-  it('retains a stale edit for explicit reload and never retries mutation', async () => {
-    page.detail.set(user);
-    page.edit();
-    page.values['username'] = 'Edited';
-    command.mockRejectedValueOnce(new ApiFailure(409, 'conflict', null, []));
-    const work = page.saveForm();
-    TestBed.inject(Feedback).answer(true);
-    await work;
-    expect(command).toHaveBeenCalledTimes(1);
-    expect(page.mode()).toBe('edit');
-    expect(page.error()).toContain('Reload');
-  });
+  it.each([
+    new ApiFailure(409, 'conflict', null, []),
+    new ApiFailure(0, null, null, [], true),
+  ])(
+    'retains a failed edit and blocks another confirmation until reload: %s',
+    async (failure) => {
+      page.detail.set(user);
+      page.edit();
+      page.values['username'] = 'Edited';
+      command.mockRejectedValueOnce(failure);
+      const work = page.saveForm();
+      TestBed.inject(Feedback).answer(true);
+      await work;
+      expect(command).toHaveBeenCalledTimes(1);
+      expect(page.mode()).toBe('edit');
+      expect(page.error()).toBeTruthy();
+      page.values['username'] = 'Another edit';
+      const retry = page.saveForm();
+      expect(TestBed.inject(Feedback).confirmation()).toBeNull();
+      await retry;
+      expect(command).toHaveBeenCalledTimes(1);
+    },
+  );
 });

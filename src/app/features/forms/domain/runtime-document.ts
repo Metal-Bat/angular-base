@@ -1,11 +1,5 @@
-export type JsonValue =
-  | null
-  | boolean
-  | number
-  | string
-  | readonly JsonValue[]
-  | { readonly [key: string]: JsonValue };
-export type JsonObject = { readonly [key: string]: JsonValue };
+import { JsonObject } from '../../../shared/domain/json-value';
+export type { JsonObject, JsonValue } from '../../../shared/domain/json-value';
 export const primitiveKinds = [
   'action',
   'attachment_collection',

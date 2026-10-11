@@ -28,7 +28,7 @@
           pButton
           severity="secondary"
           type="button"
-          [disabled]="vm.busy() || vm.dirty()"
+          [disabled]="vm.busy() || vm.dirty() || vm.reconcileRequired()"
           [outlined]="true"
           (click)="vm.act(action)"
         >
@@ -85,7 +85,7 @@
         pButton
         severity="secondary"
         type="button"
-        [disabled]="vm.busy() || vm.dirty()"
+        [disabled]="vm.busy() || vm.dirty() || vm.reconcileRequired()"
         [outlined]="true"
         (click)="vm.grant()"
       >
@@ -97,7 +97,7 @@
         pButton
         severity="secondary"
         type="button"
-        [disabled]="vm.busy() || vm.dirty()"
+        [disabled]="vm.busy() || vm.dirty() || vm.reconcileRequired()"
         [outlined]="true"
         (click)="vm.grant(true)"
       >

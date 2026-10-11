@@ -1,3 +1,4 @@
+import { TemporalControl } from '../temporal-control/temporal-control';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -17,6 +18,7 @@ import { ControlContainer } from '@angular/forms';
 @Component({
   selector: 'app-query-filters',
   imports: [
+    TemporalControl,
     ListValues,
     SelectControl,
     FormsModule,

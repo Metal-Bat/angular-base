@@ -1,0 +1,60 @@
+<section [attr.aria-label]="'Keyboard connections' | localize">
+  <h2>{{ "Keyboard connections" | localize }}</h2>
+  <label for="keyboard-edge">{{ "Connection to edit" | localize }}</label>
+  <app-select-control
+    inputId="keyboard-edge"
+    [disabled]="disabled()"
+    [ngModel]="edgeId()"
+    (ngModelChange)="edgeId.set($event)"
+  >
+    <option value="">{{ "New connection" | localize }}</option>
+    @for (item of edges(); track item.id) {
+      <option [value]="item.id">
+        {{ item.source }} → {{ item.target }} · {{ item.label }}
+      </option>
+    }
+  </app-select-control>
+  <label for="keyboard-source">{{ "Source port" | localize }}</label>
+  <app-select-control
+    inputId="keyboard-source"
+    [disabled]="disabled()"
+    [ngModel]="source()"
+    (ngModelChange)="source.set($event); target.set('')"
+  >
+    <option value="">{{ "Choose" | localize }}</option>
+    @for (port of sources(); track port.value) {
+      <option [value]="port.value">{{ port.label }}</option>
+    }
+  </app-select-control>
+  <label for="keyboard-target">{{ "Target port" | localize }}</label>
+  <app-select-control
+    inputId="keyboard-target"
+    [disabled]="disabled()"
+    [ngModel]="target()"
+    (ngModelChange)="target.set($event)"
+  >
+    <option value="">{{ "Choose" | localize }}</option>
+    @for (port of targets(); track port.value) {
+      <option [value]="port.value">{{ port.label }}</option>
+    }
+  </app-select-control>
+  @if (!edge() && source().startsWith("control:")) {
+    <label for="keyboard-outcome">{{ "Control outcome" | localize }}</label>
+    <input
+      id="keyboard-outcome"
+      maxlength="64"
+      pInputText
+      [disabled]="disabled()"
+      [ngModel]="outcome()"
+      (ngModelChange)="outcome.set($event)"
+    />
+  }
+  <button
+    pButton
+    type="button"
+    [disabled]="disabled() || !valid()"
+    (click)="submit()"
+  >
+    {{ (edge() ? "Reconnect" : "Connect") | localize }}
+  </button>
+</section>

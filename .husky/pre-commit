@@ -1,1 +1,1 @@
-mise exec -- npx --no-install lint-staged
+mise exec -- pnpm exec lint-staged

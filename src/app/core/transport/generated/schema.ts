@@ -1,4 +1,4 @@
-// Generated; do not edit. Input SHA256: 24609294ec8e087f84f2ab0b302b6abf8e0bd9e57d85366721400bba3f90ca7f
+// Generated; do not edit. Input SHA256: 78c06495ea694face5563620c11f13e1c981d046fc276046a2601640fbcdd6c6
 export interface paths {
     "/api/v1/admin/audit-events/{ref_id}": {
         parameters: {
@@ -71,7 +71,7 @@ export interface paths {
         put?: never;
         /**
          * Query History
-         * @description Return a filtered page from one registered entity history table.
+         * @description Return registered operational history; self-only personal documents remain inaccessible.
          */
         post: operations["query_history_api_v1_admin_history__entity_name__search_post"];
         delete?: never;
@@ -968,6 +968,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/analytics/catalog": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read the registered business metric dictionary
+         * @description Requires requests.start. Returns versioned units, exact populations, timestamp and explicit unavailable reasons. No arbitrary SQL, monetary sum or inferred business approval is exposed. Private no-store success envelope.
+         */
+        get: operations["catalog_api_v1_analytics_catalog_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/analytics/query": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Aggregate authorized business metrics
+         * @description Requires requests.start and a live actor. Uses the registered metric's owner predicates before aggregation, never a first result page. Requests are requester-owned; work uses the same direct/group/archive cartable policy as list search. Accepts an exclusive end civil date, 1–366 day window, valid IANA timezone, day granularity and only none/status dimensions. DST boundaries are exact UTC instants; nonexistent midnights fail 422. Returns unit, as_of, generated_at, typed buckets and drill-down descriptors accepted by existing request/work-item searches. Current-state metrics are snapshots, not historical occupancy. Live soft-deleted records are excluded. Null or negative terminal timing is unknown and excluded from mean; unknown_count remains explicit. Integration receipts and business outcomes without configured mappings return unavailable with null totals, never false zeros. No shared cache, credentials or private submission values. Empty count populations return zero; empty duration populations return null. Private no-store envelope.
+         */
+        post: operations["query_metrics_api_v1_analytics_query_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/auth/change-password": {
         parameters: {
             query?: never;
@@ -1526,6 +1566,162 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/calendar/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Create a calendar event
+         * @description Authenticated Gregorian calendar. Personal events belong to their creator; a team event is visible only to current active members of its explicitly selected active work group. Only the creator can update/delete. No superuser bypass grants another person's calendar. Timed events use aware ISO-8601 instants and an IANA timezone; storage/output are UTC. A supplied non-UTC offset must match the named local wall time, rejecting DST gaps; explicit offsets disambiguate folds. All-day events retain start_date/end_date, exclusive end, without conversion into timed events. Each event spans at most 366 days. command_key binds exact create/update intent; same-key replay returns the current result, another intent conflicts. Updates/deletes require a current revision ref (409 stale); unavailable source is 404. Search/report require a half-open Gregorian date range of 1–93 days and IANA timezone, size 1–100, at most 20 filters and 10 sorts. Actual live work_item.due_at values appear as read-only deadline points only with requests.start and current available/claimed cartable authority. Live visibility and overlap precede filtering, count, ordering and pagination. Derived items link to work_items and cannot be edited as calendar events. Manual links use calendar_events. History returns only transition timestamps/operations, at most 1000, without private snapshots. Delete is soft and cancels pending reminders in the same transaction. Up to three distinct reminder offsets of 0–2592000 seconds are supported. Existing envelopes, snake_case, en/fa localization, and private no-store apply.
+         */
+        post: operations["create_api_v1_calendar_events_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/calendar/events/{ref_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Detail
+         * @description Authenticated Gregorian calendar. Personal events belong to their creator; a team event is visible only to current active members of its explicitly selected active work group. Only the creator can update/delete. No superuser bypass grants another person's calendar. Timed events use aware ISO-8601 instants and an IANA timezone; storage/output are UTC. A supplied non-UTC offset must match the named local wall time, rejecting DST gaps; explicit offsets disambiguate folds. All-day events retain start_date/end_date, exclusive end, without conversion into timed events. Each event spans at most 366 days. command_key binds exact create/update intent; same-key replay returns the current result, another intent conflicts. Updates/deletes require a current revision ref (409 stale); unavailable source is 404. Search/report require a half-open Gregorian date range of 1–93 days and IANA timezone, size 1–100, at most 20 filters and 10 sorts. Actual live work_item.due_at values appear as read-only deadline points only with requests.start and current available/claimed cartable authority. Live visibility and overlap precede filtering, count, ordering and pagination. Derived items link to work_items and cannot be edited as calendar events. Manual links use calendar_events. History returns only transition timestamps/operations, at most 1000, without private snapshots. Delete is soft and cancels pending reminders in the same transaction. Up to three distinct reminder offsets of 0–2592000 seconds are supported. Existing envelopes, snake_case, en/fa localization, and private no-store apply.
+         */
+        get: operations["detail_api_v1_calendar_events__ref_id__get"];
+        /**
+         * Update a calendar event
+         * @description Authenticated Gregorian calendar. Personal events belong to their creator; a team event is visible only to current active members of its explicitly selected active work group. Only the creator can update/delete. No superuser bypass grants another person's calendar. Timed events use aware ISO-8601 instants and an IANA timezone; storage/output are UTC. A supplied non-UTC offset must match the named local wall time, rejecting DST gaps; explicit offsets disambiguate folds. All-day events retain start_date/end_date, exclusive end, without conversion into timed events. Each event spans at most 366 days. command_key binds exact create/update intent; same-key replay returns the current result, another intent conflicts. Updates/deletes require a current revision ref (409 stale); unavailable source is 404. Search/report require a half-open Gregorian date range of 1–93 days and IANA timezone, size 1–100, at most 20 filters and 10 sorts. Actual live work_item.due_at values appear as read-only deadline points only with requests.start and current available/claimed cartable authority. Live visibility and overlap precede filtering, count, ordering and pagination. Derived items link to work_items and cannot be edited as calendar events. Manual links use calendar_events. History returns only transition timestamps/operations, at most 1000, without private snapshots. Delete is soft and cancels pending reminders in the same transaction. Up to three distinct reminder offsets of 0–2592000 seconds are supported. Existing envelopes, snake_case, en/fa localization, and private no-store apply.
+         */
+        put: operations["update_api_v1_calendar_events__ref_id__put"];
+        post?: never;
+        /**
+         * Delete
+         * @description Authenticated Gregorian calendar. Personal events belong to their creator; a team event is visible only to current active members of its explicitly selected active work group. Only the creator can update/delete. No superuser bypass grants another person's calendar. Timed events use aware ISO-8601 instants and an IANA timezone; storage/output are UTC. A supplied non-UTC offset must match the named local wall time, rejecting DST gaps; explicit offsets disambiguate folds. All-day events retain start_date/end_date, exclusive end, without conversion into timed events. Each event spans at most 366 days. command_key binds exact create/update intent; same-key replay returns the current result, another intent conflicts. Updates/deletes require a current revision ref (409 stale); unavailable source is 404. Search/report require a half-open Gregorian date range of 1–93 days and IANA timezone, size 1–100, at most 20 filters and 10 sorts. Actual live work_item.due_at values appear as read-only deadline points only with requests.start and current available/claimed cartable authority. Live visibility and overlap precede filtering, count, ordering and pagination. Derived items link to work_items and cannot be edited as calendar events. Manual links use calendar_events. History returns only transition timestamps/operations, at most 1000, without private snapshots. Delete is soft and cancels pending reminders in the same transaction. Up to three distinct reminder offsets of 0–2592000 seconds are supported. Existing envelopes, snake_case, en/fa localization, and private no-store apply.
+         */
+        delete: operations["delete_api_v1_calendar_events__ref_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/calendar/events/{ref_id}/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * History
+         * @description Authenticated Gregorian calendar. Personal events belong to their creator; a team event is visible only to current active members of its explicitly selected active work group. Only the creator can update/delete. No superuser bypass grants another person's calendar. Timed events use aware ISO-8601 instants and an IANA timezone; storage/output are UTC. A supplied non-UTC offset must match the named local wall time, rejecting DST gaps; explicit offsets disambiguate folds. All-day events retain start_date/end_date, exclusive end, without conversion into timed events. Each event spans at most 366 days. command_key binds exact create/update intent; same-key replay returns the current result, another intent conflicts. Updates/deletes require a current revision ref (409 stale); unavailable source is 404. Search/report require a half-open Gregorian date range of 1–93 days and IANA timezone, size 1–100, at most 20 filters and 10 sorts. Actual live work_item.due_at values appear as read-only deadline points only with requests.start and current available/claimed cartable authority. Live visibility and overlap precede filtering, count, ordering and pagination. Derived items link to work_items and cannot be edited as calendar events. Manual links use calendar_events. History returns only transition timestamps/operations, at most 1000, without private snapshots. Delete is soft and cancels pending reminders in the same transaction. Up to three distinct reminder offsets of 0–2592000 seconds are supported. Existing envelopes, snake_case, en/fa localization, and private no-store apply.
+         */
+        post: operations["history_api_v1_calendar_events__ref_id__history_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/calendar/events/{ref_id}/reminders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Event Reminders
+         * @description Authenticated source-owned reminder state. Manual configuration is part of event create/update; work reminders require requests.start and current available/claimed cartable responsibility, a current source revision ref, and an actual due_at. Configure one to three distinct offsets 0–2592000 seconds; command_key binds exact intent, changed intent conflicts 409. DELETE cancels this actor's work reminders without changing the workflow deadline. Read exposes at most the latest 100 owned reminder states, never another recipient's schedule or destination. Existing database clocked one-off scheduling, durable outbox and MAP-10/11 own delivery. Event edits/deletes and terminal/forwarded work changes cancel old state in the source transaction; recipient authority and source revision/deadline are checked again at fire and delivery. Replays cannot create duplicate notices. Late reminders deliver once within 24 hours if still relevant; older occurrences expire and record bounded support lag. This never changes business state, guarantees provider receipt, or creates a second timer loop. Private no-store, existing snake_case envelopes and en/fa localization apply.
+         */
+        get: operations["event_reminders_api_v1_calendar_events__ref_id__reminders_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/calendar/events/report": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Search
+         * @description Authenticated Gregorian calendar. Personal events belong to their creator; a team event is visible only to current active members of its explicitly selected active work group. Only the creator can update/delete. No superuser bypass grants another person's calendar. Timed events use aware ISO-8601 instants and an IANA timezone; storage/output are UTC. A supplied non-UTC offset must match the named local wall time, rejecting DST gaps; explicit offsets disambiguate folds. All-day events retain start_date/end_date, exclusive end, without conversion into timed events. Each event spans at most 366 days. command_key binds exact create/update intent; same-key replay returns the current result, another intent conflicts. Updates/deletes require a current revision ref (409 stale); unavailable source is 404. Search/report require a half-open Gregorian date range of 1–93 days and IANA timezone, size 1–100, at most 20 filters and 10 sorts. Actual live work_item.due_at values appear as read-only deadline points only with requests.start and current available/claimed cartable authority. Live visibility and overlap precede filtering, count, ordering and pagination. Derived items link to work_items and cannot be edited as calendar events. Manual links use calendar_events. History returns only transition timestamps/operations, at most 1000, without private snapshots. Delete is soft and cancels pending reminders in the same transaction. Up to three distinct reminder offsets of 0–2592000 seconds are supported. Existing envelopes, snake_case, en/fa localization, and private no-store apply.
+         */
+        post: operations["search_api_v1_calendar_events_report_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/calendar/events/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Search calendar events and deadlines
+         * @description Authenticated Gregorian calendar. Personal events belong to their creator; a team event is visible only to current active members of its explicitly selected active work group. Only the creator can update/delete. No superuser bypass grants another person's calendar. Timed events use aware ISO-8601 instants and an IANA timezone; storage/output are UTC. A supplied non-UTC offset must match the named local wall time, rejecting DST gaps; explicit offsets disambiguate folds. All-day events retain start_date/end_date, exclusive end, without conversion into timed events. Each event spans at most 366 days. command_key binds exact create/update intent; same-key replay returns the current result, another intent conflicts. Updates/deletes require a current revision ref (409 stale); unavailable source is 404. Search/report require a half-open Gregorian date range of 1–93 days and IANA timezone, size 1–100, at most 20 filters and 10 sorts. Actual live work_item.due_at values appear as read-only deadline points only with requests.start and current available/claimed cartable authority. Live visibility and overlap precede filtering, count, ordering and pagination. Derived items link to work_items and cannot be edited as calendar events. Manual links use calendar_events. History returns only transition timestamps/operations, at most 1000, without private snapshots. Delete is soft and cancels pending reminders in the same transaction. Up to three distinct reminder offsets of 0–2592000 seconds are supported. Existing envelopes, snake_case, en/fa localization, and private no-store apply.
+         */
+        post: operations["search_api_v1_calendar_events_search_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/calendar/work-reminders/{ref_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Work Reminders
+         * @description Authenticated source-owned reminder state. Manual configuration is part of event create/update; work reminders require requests.start and current available/claimed cartable responsibility, a current source revision ref, and an actual due_at. Configure one to three distinct offsets 0–2592000 seconds; command_key binds exact intent, changed intent conflicts 409. DELETE cancels this actor's work reminders without changing the workflow deadline. Read exposes at most the latest 100 owned reminder states, never another recipient's schedule or destination. Existing database clocked one-off scheduling, durable outbox and MAP-10/11 own delivery. Event edits/deletes and terminal/forwarded work changes cancel old state in the source transaction; recipient authority and source revision/deadline are checked again at fire and delivery. Replays cannot create duplicate notices. Late reminders deliver once within 24 hours if still relevant; older occurrences expire and record bounded support lag. This never changes business state, guarantees provider receipt, or creates a second timer loop. Private no-store, existing snake_case envelopes and en/fa localization apply.
+         */
+        get: operations["work_reminders_api_v1_calendar_work_reminders__ref_id__get"];
+        /**
+         * Configure Reminders
+         * @description Authenticated source-owned reminder state. Manual configuration is part of event create/update; work reminders require requests.start and current available/claimed cartable responsibility, a current source revision ref, and an actual due_at. Configure one to three distinct offsets 0–2592000 seconds; command_key binds exact intent, changed intent conflicts 409. DELETE cancels this actor's work reminders without changing the workflow deadline. Read exposes at most the latest 100 owned reminder states, never another recipient's schedule or destination. Existing database clocked one-off scheduling, durable outbox and MAP-10/11 own delivery. Event edits/deletes and terminal/forwarded work changes cancel old state in the source transaction; recipient authority and source revision/deadline are checked again at fire and delivery. Replays cannot create duplicate notices. Late reminders deliver once within 24 hours if still relevant; older occurrences expire and record bounded support lag. This never changes business state, guarantees provider receipt, or creates a second timer loop. Private no-store, existing snake_case envelopes and en/fa localization apply.
+         */
+        put: operations["configure_reminders_api_v1_calendar_work_reminders__ref_id__put"];
+        post?: never;
+        /**
+         * Cancel Reminders
+         * @description Authenticated source-owned reminder state. Manual configuration is part of event create/update; work reminders require requests.start and current available/claimed cartable responsibility, a current source revision ref, and an actual due_at. Configure one to three distinct offsets 0–2592000 seconds; command_key binds exact intent, changed intent conflicts 409. DELETE cancels this actor's work reminders without changing the workflow deadline. Read exposes at most the latest 100 owned reminder states, never another recipient's schedule or destination. Existing database clocked one-off scheduling, durable outbox and MAP-10/11 own delivery. Event edits/deletes and terminal/forwarded work changes cancel old state in the source transaction; recipient authority and source revision/deadline are checked again at fire and delivery. Replays cannot create duplicate notices. Late reminders deliver once within 24 hours if still relevant; older occurrences expire and record bounded support lag. This never changes business state, guarantees provider receipt, or creates a second timer loop. Private no-store, existing snake_case envelopes and en/fa localization apply.
+         */
+        delete: operations["cancel_reminders_api_v1_calendar_work_reminders__ref_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/client-releases": {
         parameters: {
             query?: never;
@@ -1818,6 +2014,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/designer/config-validation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Validate an exact handler configuration without execution
+         * @description Requires workflows.manage. Accepts a deployed handler key/version and at most 128 configuration properties within 16 KiB. Performs typed configuration validation only; never invokes handlers, connections, providers or pure previews. Unknown handler returns valid=false with handler_unavailable; wrong unions, nulls and unknown fields return safe JSON-pointer diagnostics without echoed values or exception details. Unknown field names are omitted from diagnostics. Success does not imply publication or use authorization. Excess or malformed request bodies fail 422. Private no-store success envelope.
+         */
+        post: operations["config_validation_api_v1_designer_config_validation_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/designer/dependency-readiness": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Inspect exact definition dependencies and repair guidance
+         * @description Requires workflows.manage and ownership of the workflow, or a superuser. Validates the exact current saved workflow version through the publication validator and workspace promotion policy. Stale references fail 409; inaccessible versions fail 404. Returns at most 256 safe code/pointer issues with selected node keys and allowlisted owning repair destinations, plus authorized exact version pins. Inaccessible dependencies expose no title, reference or content. Retired pins are preserved for deliberate repair; no dependency is replaced with latest. Empty candidate groups are reported. Author readiness never establishes requester or service-principal eligibility. An optional exact client_release_ref_id checks renderer compatibility through the existing form resolver; omitted/null remains not_checked. Requester eligibility still belongs to existing request/runtime contracts. This bounded private no-store projection never writes, grants, promotes, publishes, executes a handler or calls a provider. Re-read after each repair using refreshed current refs; malformed bodies fail 422.
+         */
+        post: operations["dependency_readiness_api_v1_designer_dependency_readiness_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/designer/field-inventory": {
         parameters: {
             query?: never;
@@ -1832,6 +2068,26 @@ export interface paths {
          * @description Requires workflows.manage and forms.manage. Reads only the named workflow revision, the explicitly named start form version, pinned human forms and accessible pinned subprocesses. Returns a bounded, sorted field table with technical dependency evidence, source snapshots, diagnostics, summary counts and conservative review suggestions. No form is changed and no business handler, provider or submission is executed. A missing start form is excluded rather than resolved to a latest version. Stale version references fail; inaccessible workflow or subprocess detail is not exposed. Example request: {"workflow_version_ref_id":"<exact-ref>","start_form_version_ref_id":"<exact-ref>","locale":"fa","page":1,"size":25}.
          */
         post: operations["field_inventory_api_v1_designer_field_inventory_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/designer/inspector-contract": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read versioned authoring inspector contracts
+         * @description Requires workflows.manage. Returns the deployed handler/version configuration schemas, ports, exact fingerprints, outcomes, capabilities and twenty primitive field contracts. This is code discovery, not a list of operator-published versions or permission to use a connection, agent or form. Existing selectors and publication policies still apply. Configuration dialect is JSON Schema 2020-12; diagnostics use JSON pointers. Examples are synthetic and contain no credentials. Preview permits bounded pure evaluation only; this read never executes a handler or changes a published checksum. Unknown configuration must be validated against its exact handler version. Private no-store response uses the existing success envelope; authentication and permission failures use the existing 401/403 error envelopes.
+         */
+        get: operations["inspectors_api_v1_designer_inspector_contract_get"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -2986,6 +3242,126 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/inbox/{ref_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read unified notification
+         * @description Authenticated recipient-only unified inbox version 1. Case, work_item, ai_approval, report and account destinations resolve current owner-authorized references on every read. Calendar/support/operation targets are reserved and unavailable until their producers exist. An unavailable, deleted, revoked, expired or cancelled target exposes no private subject, content or reference. Stored labels never confer authority. Search is bounded and deterministic with existing filters/order/page/size plus unread=true/false; report is the same paginated search, not a queued archive. Unread totals count live ACTIVE unread inbox rows, including redacted unavailable destinations. Mark-read changes only read metadata, requires a current optimistic ref (409 when stale), and never decides or acts on a workflow. Non-owned refs fail 403; missing/deleted refs fail 404. Null read bodies are rejected; actions accept an empty object. UTC timestamps; en/fa template locale is chosen when staged with en fallback. Private no-store success/page envelopes, existing 401/403/404/409/422 errors. Refresh refs from mutation responses. Optional email defaults off; mandatory notices ignore optional opt-out. No delivery is performed by these reads.
+         */
+        get: operations["detail_api_v1_inbox__ref_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/inbox/{ref_id}/read": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Mark unified notification read
+         * @description Authenticated recipient-only unified inbox version 1. Case, work_item, ai_approval, report and account destinations resolve current owner-authorized references on every read. Calendar/support/operation targets are reserved and unavailable until their producers exist. An unavailable, deleted, revoked, expired or cancelled target exposes no private subject, content or reference. Stored labels never confer authority. Search is bounded and deterministic with existing filters/order/page/size plus unread=true/false; report is the same paginated search, not a queued archive. Unread totals count live ACTIVE unread inbox rows, including redacted unavailable destinations. Mark-read changes only read metadata, requires a current optimistic ref (409 when stale), and never decides or acts on a workflow. Non-owned refs fail 403; missing/deleted refs fail 404. Null read bodies are rejected; actions accept an empty object. UTC timestamps; en/fa template locale is chosen when staged with en fallback. Private no-store success/page envelopes, existing 401/403/404/409/422 errors. Refresh refs from mutation responses. Optional email defaults off; mandatory notices ignore optional opt-out. No delivery is performed by these reads.
+         */
+        post: operations["mark_read_api_v1_inbox__ref_id__read_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/inbox/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Stream private inbox updates
+         * @description Recipient-only SSE invalidations over the persisted unified inbox. Requires an active bearer access token, user, session and registered client. No query parameters or user_id are accepted. Native EventSource needs an authenticated Node proxy; direct clients use streaming fetch with Authorization. Subscribe then refresh inbox/search and inbox/unread on inbox.resync, on reconnect and at least every 60 seconds. Last-Event-ID is an optional bounded reconnect hint, not an authorized replay cursor. inbox.changed contains only schema_version and notification_ref_id; its SSE id is the same reference. Deduplicate ids and coalesce refreshes. No subject, business data, password, URL or error is streamed. Heartbeat and authorization checks have a 15-second cadence; authorization probes are bounded to 3 seconds and changed events recheck authorization before sending. A stream lasts at most 300 seconds, receives at most 256 signals, and times out blocked sends after 5 seconds. Limit 3 streams per recipient and 200 per configured cache namespace across processes. No stream-long database session. Offline/missed signals remain in persisted search. Authentication or service failure after headers closes the stream; pre-stream errors use existing JSON envelopes. Success is text/event-stream, never a JSON success envelope. Private no-store/no-transform; proxies must disable buffering/compression and propagate disconnects. This backend contract does not establish browser or Node proxy acceptance.
+         */
+        get: operations["events_api_v1_inbox_events_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/inbox/report": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Report unified notifications
+         * @description Authenticated recipient-only unified inbox version 1. Case, work_item, ai_approval, report and account destinations resolve current owner-authorized references on every read. Calendar/support/operation targets are reserved and unavailable until their producers exist. An unavailable, deleted, revoked, expired or cancelled target exposes no private subject, content or reference. Stored labels never confer authority. Search is bounded and deterministic with existing filters/order/page/size plus unread=true/false; report is the same paginated search, not a queued archive. Unread totals count live ACTIVE unread inbox rows, including redacted unavailable destinations. Mark-read changes only read metadata, requires a current optimistic ref (409 when stale), and never decides or acts on a workflow. Non-owned refs fail 403; missing/deleted refs fail 404. Null read bodies are rejected; actions accept an empty object. UTC timestamps; en/fa template locale is chosen when staged with en fallback. Private no-store success/page envelopes, existing 401/403/404/409/422 errors. Refresh refs from mutation responses. Optional email defaults off; mandatory notices ignore optional opt-out. No delivery is performed by these reads.
+         */
+        post: operations["search_api_v1_inbox_report_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/inbox/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Search unified notifications
+         * @description Authenticated recipient-only unified inbox version 1. Case, work_item, ai_approval, report and account destinations resolve current owner-authorized references on every read. Calendar/support/operation targets are reserved and unavailable until their producers exist. An unavailable, deleted, revoked, expired or cancelled target exposes no private subject, content or reference. Stored labels never confer authority. Search is bounded and deterministic with existing filters/order/page/size plus unread=true/false; report is the same paginated search, not a queued archive. Unread totals count live ACTIVE unread inbox rows, including redacted unavailable destinations. Mark-read changes only read metadata, requires a current optimistic ref (409 when stale), and never decides or acts on a workflow. Non-owned refs fail 403; missing/deleted refs fail 404. Null read bodies are rejected; actions accept an empty object. UTC timestamps; en/fa template locale is chosen when staged with en fallback. Private no-store success/page envelopes, existing 401/403/404/409/422 errors. Refresh refs from mutation responses. Optional email defaults off; mandatory notices ignore optional opt-out. No delivery is performed by these reads.
+         */
+        post: operations["search_api_v1_inbox_search_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/inbox/unread": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read unified unread total
+         * @description Authenticated recipient-only unified inbox version 1. Case, work_item, ai_approval, report and account destinations resolve current owner-authorized references on every read. Calendar/support/operation targets are reserved and unavailable until their producers exist. An unavailable, deleted, revoked, expired or cancelled target exposes no private subject, content or reference. Stored labels never confer authority. Search is bounded and deterministic with existing filters/order/page/size plus unread=true/false; report is the same paginated search, not a queued archive. Unread totals count live ACTIVE unread inbox rows, including redacted unavailable destinations. Mark-read changes only read metadata, requires a current optimistic ref (409 when stale), and never decides or acts on a workflow. Non-owned refs fail 403; missing/deleted refs fail 404. Null read bodies are rejected; actions accept an empty object. UTC timestamps; en/fa template locale is chosen when staged with en fallback. Private no-store success/page envelopes, existing 401/403/404/409/422 errors. Refresh refs from mutation responses. Optional email defaults off; mandatory notices ignore optional opt-out. No delivery is performed by these reads.
+         */
+        get: operations["unread_api_v1_inbox_unread_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/integration-connections": {
         parameters: {
             query?: never;
@@ -3198,6 +3574,386 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/me/favorites": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Create an authorized private favorite
+         * @description Self-only favorites for the exact resource-link kind allowlist. Create accepts kind and current target ref_id, authorizes through its existing owner and stores canonical UUID identity, never a revision reference or target label. Repeated creation converges to one favorite; recreating an explicitly removed favorite restores that personal item only. At most 100 per kind and 500 live favorites per user. Search resolves current authorization and live targets before paging/count; forbidden/deleted targets are omitted without titles. Version favorites remain pinned to the named version. Possession grants no authority. Detail rechecks target permission; history returns only safe metadata. DELETE accepts the favorite's current ref, remains available after target revocation and never deletes the target. Wrong owner/missing is 404; stale delete is 409. Work-item favorites continue using the existing work-item personal pin state and are not duplicated here. Report aliases search; no archive generation, sharing, public URL or shared cache. Private no-store envelopes.
+         */
+        post: operations["create_favorite_api_v1_me_favorites_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/favorites/{ref_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read an authorized private favorite
+         * @description Self-only favorites for the exact resource-link kind allowlist. Create accepts kind and current target ref_id, authorizes through its existing owner and stores canonical UUID identity, never a revision reference or target label. Repeated creation converges to one favorite; recreating an explicitly removed favorite restores that personal item only. At most 100 per kind and 500 live favorites per user. Search resolves current authorization and live targets before paging/count; forbidden/deleted targets are omitted without titles. Version favorites remain pinned to the named version. Possession grants no authority. Detail rechecks target permission; history returns only safe metadata. DELETE accepts the favorite's current ref, remains available after target revocation and never deletes the target. Wrong owner/missing is 404; stale delete is 409. Work-item favorites continue using the existing work-item personal pin state and are not duplicated here. Report aliases search; no archive generation, sharing, public URL or shared cache. Private no-store envelopes.
+         */
+        get: operations["read_favorite_api_v1_me_favorites__ref_id__get"];
+        put?: never;
+        post?: never;
+        /**
+         * Delete Favorite
+         * @description Self-only favorites for the exact resource-link kind allowlist. Create accepts kind and current target ref_id, authorizes through its existing owner and stores canonical UUID identity, never a revision reference or target label. Repeated creation converges to one favorite; recreating an explicitly removed favorite restores that personal item only. At most 100 per kind and 500 live favorites per user. Search resolves current authorization and live targets before paging/count; forbidden/deleted targets are omitted without titles. Version favorites remain pinned to the named version. Possession grants no authority. Detail rechecks target permission; history returns only safe metadata. DELETE accepts the favorite's current ref, remains available after target revocation and never deletes the target. Wrong owner/missing is 404; stale delete is 409. Work-item favorites continue using the existing work-item personal pin state and are not duplicated here. Report aliases search; no archive generation, sharing, public URL or shared cache. Private no-store envelopes.
+         */
+        delete: operations["delete_favorite_api_v1_me_favorites__ref_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/favorites/{ref_id}/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Favorite History
+         * @description Self-only favorites for the exact resource-link kind allowlist. Create accepts kind and current target ref_id, authorizes through its existing owner and stores canonical UUID identity, never a revision reference or target label. Repeated creation converges to one favorite; recreating an explicitly removed favorite restores that personal item only. At most 100 per kind and 500 live favorites per user. Search resolves current authorization and live targets before paging/count; forbidden/deleted targets are omitted without titles. Version favorites remain pinned to the named version. Possession grants no authority. Detail rechecks target permission; history returns only safe metadata. DELETE accepts the favorite's current ref, remains available after target revocation and never deletes the target. Wrong owner/missing is 404; stale delete is 409. Work-item favorites continue using the existing work-item personal pin state and are not duplicated here. Report aliases search; no archive generation, sharing, public URL or shared cache. Private no-store envelopes.
+         */
+        post: operations["favorite_history_api_v1_me_favorites__ref_id__history_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/favorites/report": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Search Favorites
+         * @description Self-only favorites for the exact resource-link kind allowlist. Create accepts kind and current target ref_id, authorizes through its existing owner and stores canonical UUID identity, never a revision reference or target label. Repeated creation converges to one favorite; recreating an explicitly removed favorite restores that personal item only. At most 100 per kind and 500 live favorites per user. Search resolves current authorization and live targets before paging/count; forbidden/deleted targets are omitted without titles. Version favorites remain pinned to the named version. Possession grants no authority. Detail rechecks target permission; history returns only safe metadata. DELETE accepts the favorite's current ref, remains available after target revocation and never deletes the target. Wrong owner/missing is 404; stale delete is 409. Work-item favorites continue using the existing work-item personal pin state and are not duplicated here. Report aliases search; no archive generation, sharing, public URL or shared cache. Private no-store envelopes.
+         */
+        post: operations["search_favorites_api_v1_me_favorites_report_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/favorites/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Search private favorites
+         * @description Self-only favorites for the exact resource-link kind allowlist. Create accepts kind and current target ref_id, authorizes through its existing owner and stores canonical UUID identity, never a revision reference or target label. Repeated creation converges to one favorite; recreating an explicitly removed favorite restores that personal item only. At most 100 per kind and 500 live favorites per user. Search resolves current authorization and live targets before paging/count; forbidden/deleted targets are omitted without titles. Version favorites remain pinned to the named version. Possession grants no authority. Detail rechecks target permission; history returns only safe metadata. DELETE accepts the favorite's current ref, remains available after target revocation and never deletes the target. Wrong owner/missing is 404; stale delete is 409. Work-item favorites continue using the existing work-item personal pin state and are not duplicated here. Report aliases search; no archive generation, sharing, public URL or shared cache. Private no-store envelopes.
+         */
+        post: operations["search_favorites_api_v1_me_favorites_search_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/help-state": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read personal multilingual help state
+         * @description Read only this authenticated user's acknowledgment metadata with page/size bounds and optional en/fa locale filter. Ordered by help_key, revision, locale. This read records no seen or dismissal action and grants no business access. release_key is null when paired frontend metadata is unavailable. Help content remains frontend-owned and is never stored here.
+         */
+        get: operations["read_help_state_api_v1_me_help_state_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/help-state/dismiss": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Record an explicit help dismissal
+         * @description Record a deliberate dismissal for this authenticated actor and exact frontend help key/revision/locale. Repeats preserve the first dismissed_at. Dismissing unopened help leaves viewed timestamps null; it does not pretend the content was read. Compatibility and bounded-state behavior match seen. Neither dismissal nor acknowledgment changes business permissions or workflow state.
+         */
+        post: operations["dismiss_help_api_v1_me_help_state_dismiss_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/help-state/reset": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Reset only personal help state
+         * @description Deliberately remove only the authenticated actor's help acknowledgment metadata. The body must be an empty object; actor fields are forbidden. Repeat is safe and returns zero removed records. Preferences, profiles, accounts and business data survive. This command does not restore definitions or reset an installation.
+         */
+        post: operations["reset_help_api_v1_me_help_state_reset_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/help-state/seen": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Record an explicit help open
+         * @description Call only after the user actually opens this help revision in the supplied locale. Ownership and timestamps are server-derived. An atomic tuple upsert preserves first_viewed_at and updates last_viewed_at; another locale/revision is independent. Missing/stale metadata returns saved=false with a compatibility reason and writes nothing. Maximum 512 records per actor; deliberate self reset frees this small state. No content, duration, form values, actor identifiers or arbitrary event payloads are accepted. Static help must still render if this save fails.
+         */
+        post: operations["see_help_api_v1_me_help_state_seen_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/preferences": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read personal workspace preferences
+         * @description Read only the authenticated user's preferences. Missing settings return typed defaults and a version-zero reference without inserting a row. No other actor identifier is accepted. Returns private, no-store JSON. Authentication and user deactivation follow existing auth rules.
+         */
+        get: operations["read_preferences_api_v1_me_preferences_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Apply personal workspace preferences
+         * @description Atomically update self settings with the current ref_id from GET. Omitted groups and nested fields are preserved; null resets an entire supplied group to documented defaults. Nested scalar nulls and unknown keys are rejected with 422. Wrong-owner references return non-disclosing 404; stale references return 409 without applying changes. A no-op keeps the current reference. Returns a fresh reference after change. Locale supports en/fa, Gregorian calendar and valid IANA zones; settings never grant screen permissions.
+         */
+        patch: operations["apply_preferences_api_v1_me_preferences_patch"];
+        trace?: never;
+    };
+    "/api/v1/me/profile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read personal profile
+         * @description Return editable given/family names and the current owned private image reference. No public URL is returned. Contact details, passwords and sessions use the existing /auth APIs. Missing or removed image bindings resolve to null. This read does not modify preferences or media.
+         */
+        get: operations["read_profile_api_v1_me_profile_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Apply personal profile changes
+         * @description Update only self given/family names and an owned private avatar using the current profile ref_id. Omitted fields survive; null clears a name or detaches the avatar. Upload images through the existing authenticated media image endpoint, which enforces size/type and strips metadata. An avatar reference must identify an existing live image owned by this actor; missing, stale, wrong-kind and outsider images return non-disclosing 404. Detachment preserves the private upload because it may be referenced by retained case data. Security/privilege fields are rejected. Stale profile references return 409. Returns the authoritative current profile reference.
+         */
+        patch: operations["apply_profile_api_v1_me_profile_patch"];
+        trace?: never;
+    };
+    "/api/v1/me/saved-views": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Create a private saved view
+         * @description Self-only saved list presets for forms, workflows, business_requests and work_items. Current live actor and list permission are checked on every read/apply. Creation and full PUT use schema_version=1, name 1–120, command_key 1–128, an at most 8 KiB validated query, up to 20 filters/10 sorts, distinct allowlisted columns and page_size 1–100. Page offsets, result bodies, actor/privilege fields, reference-valued filters and unknown fields are rejected. 100 live views per scope; unique name per self/scope. Creation keys bind the original payload; a changed replay conflicts 409. PUT is a full replacement and requires the current path ref; scope is immutable and the last identical update-key replay is safe. Default selection is explicit, serializes on the user and preserves exactly one default per scope. GET/search preserve an incompatible original preset with compatible=false; apply then returns no query, never a broadened query. Compatible apply returns page=1 and the stored size but executes no search. DELETE is idempotent for the same owned item, including after permission revocation. Wrong owner/missing is non-disclosing 404; stale write is 409, invalid contract is 422. History returns only safe self metadata, not private filters or historical identities. Report aliases search, not an archive job. Private no-store envelopes; no sharing or cache.
+         */
+        post: operations["create_view_api_v1_me_saved_views_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/saved-views/{ref_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read a private saved view
+         * @description Self-only saved list presets for forms, workflows, business_requests and work_items. Current live actor and list permission are checked on every read/apply. Creation and full PUT use schema_version=1, name 1–120, command_key 1–128, an at most 8 KiB validated query, up to 20 filters/10 sorts, distinct allowlisted columns and page_size 1–100. Page offsets, result bodies, actor/privilege fields, reference-valued filters and unknown fields are rejected. 100 live views per scope; unique name per self/scope. Creation keys bind the original payload; a changed replay conflicts 409. PUT is a full replacement and requires the current path ref; scope is immutable and the last identical update-key replay is safe. Default selection is explicit, serializes on the user and preserves exactly one default per scope. GET/search preserve an incompatible original preset with compatible=false; apply then returns no query, never a broadened query. Compatible apply returns page=1 and the stored size but executes no search. DELETE is idempotent for the same owned item, including after permission revocation. Wrong owner/missing is non-disclosing 404; stale write is 409, invalid contract is 422. History returns only safe self metadata, not private filters or historical identities. Report aliases search, not an archive job. Private no-store envelopes; no sharing or cache.
+         */
+        get: operations["read_view_api_v1_me_saved_views__ref_id__get"];
+        /**
+         * Replace a private saved view
+         * @description Self-only saved list presets for forms, workflows, business_requests and work_items. Current live actor and list permission are checked on every read/apply. Creation and full PUT use schema_version=1, name 1–120, command_key 1–128, an at most 8 KiB validated query, up to 20 filters/10 sorts, distinct allowlisted columns and page_size 1–100. Page offsets, result bodies, actor/privilege fields, reference-valued filters and unknown fields are rejected. 100 live views per scope; unique name per self/scope. Creation keys bind the original payload; a changed replay conflicts 409. PUT is a full replacement and requires the current path ref; scope is immutable and the last identical update-key replay is safe. Default selection is explicit, serializes on the user and preserves exactly one default per scope. GET/search preserve an incompatible original preset with compatible=false; apply then returns no query, never a broadened query. Compatible apply returns page=1 and the stored size but executes no search. DELETE is idempotent for the same owned item, including after permission revocation. Wrong owner/missing is non-disclosing 404; stale write is 409, invalid contract is 422. History returns only safe self metadata, not private filters or historical identities. Report aliases search, not an archive job. Private no-store envelopes; no sharing or cache.
+         */
+        put: operations["update_view_api_v1_me_saved_views__ref_id__put"];
+        post?: never;
+        /**
+         * Delete View
+         * @description Self-only saved list presets for forms, workflows, business_requests and work_items. Current live actor and list permission are checked on every read/apply. Creation and full PUT use schema_version=1, name 1–120, command_key 1–128, an at most 8 KiB validated query, up to 20 filters/10 sorts, distinct allowlisted columns and page_size 1–100. Page offsets, result bodies, actor/privilege fields, reference-valued filters and unknown fields are rejected. 100 live views per scope; unique name per self/scope. Creation keys bind the original payload; a changed replay conflicts 409. PUT is a full replacement and requires the current path ref; scope is immutable and the last identical update-key replay is safe. Default selection is explicit, serializes on the user and preserves exactly one default per scope. GET/search preserve an incompatible original preset with compatible=false; apply then returns no query, never a broadened query. Compatible apply returns page=1 and the stored size but executes no search. DELETE is idempotent for the same owned item, including after permission revocation. Wrong owner/missing is non-disclosing 404; stale write is 409, invalid contract is 422. History returns only safe self metadata, not private filters or historical identities. Report aliases search, not an archive job. Private no-store envelopes; no sharing or cache.
+         */
+        delete: operations["delete_view_api_v1_me_saved_views__ref_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/saved-views/{ref_id}/apply": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Resolve a saved view without executing its query
+         * @description Self-only saved list presets for forms, workflows, business_requests and work_items. Current live actor and list permission are checked on every read/apply. Creation and full PUT use schema_version=1, name 1–120, command_key 1–128, an at most 8 KiB validated query, up to 20 filters/10 sorts, distinct allowlisted columns and page_size 1–100. Page offsets, result bodies, actor/privilege fields, reference-valued filters and unknown fields are rejected. 100 live views per scope; unique name per self/scope. Creation keys bind the original payload; a changed replay conflicts 409. PUT is a full replacement and requires the current path ref; scope is immutable and the last identical update-key replay is safe. Default selection is explicit, serializes on the user and preserves exactly one default per scope. GET/search preserve an incompatible original preset with compatible=false; apply then returns no query, never a broadened query. Compatible apply returns page=1 and the stored size but executes no search. DELETE is idempotent for the same owned item, including after permission revocation. Wrong owner/missing is non-disclosing 404; stale write is 409, invalid contract is 422. History returns only safe self metadata, not private filters or historical identities. Report aliases search, not an archive job. Private no-store envelopes; no sharing or cache.
+         */
+        post: operations["apply_view_api_v1_me_saved_views__ref_id__apply_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/saved-views/{ref_id}/default": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Select the personal default view
+         * @description Self-only saved list presets for forms, workflows, business_requests and work_items. Current live actor and list permission are checked on every read/apply. Creation and full PUT use schema_version=1, name 1–120, command_key 1–128, an at most 8 KiB validated query, up to 20 filters/10 sorts, distinct allowlisted columns and page_size 1–100. Page offsets, result bodies, actor/privilege fields, reference-valued filters and unknown fields are rejected. 100 live views per scope; unique name per self/scope. Creation keys bind the original payload; a changed replay conflicts 409. PUT is a full replacement and requires the current path ref; scope is immutable and the last identical update-key replay is safe. Default selection is explicit, serializes on the user and preserves exactly one default per scope. GET/search preserve an incompatible original preset with compatible=false; apply then returns no query, never a broadened query. Compatible apply returns page=1 and the stored size but executes no search. DELETE is idempotent for the same owned item, including after permission revocation. Wrong owner/missing is non-disclosing 404; stale write is 409, invalid contract is 422. History returns only safe self metadata, not private filters or historical identities. Report aliases search, not an archive job. Private no-store envelopes; no sharing or cache.
+         */
+        post: operations["default_view_api_v1_me_saved_views__ref_id__default_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/saved-views/{ref_id}/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * View History
+         * @description Self-only saved list presets for forms, workflows, business_requests and work_items. Current live actor and list permission are checked on every read/apply. Creation and full PUT use schema_version=1, name 1–120, command_key 1–128, an at most 8 KiB validated query, up to 20 filters/10 sorts, distinct allowlisted columns and page_size 1–100. Page offsets, result bodies, actor/privilege fields, reference-valued filters and unknown fields are rejected. 100 live views per scope; unique name per self/scope. Creation keys bind the original payload; a changed replay conflicts 409. PUT is a full replacement and requires the current path ref; scope is immutable and the last identical update-key replay is safe. Default selection is explicit, serializes on the user and preserves exactly one default per scope. GET/search preserve an incompatible original preset with compatible=false; apply then returns no query, never a broadened query. Compatible apply returns page=1 and the stored size but executes no search. DELETE is idempotent for the same owned item, including after permission revocation. Wrong owner/missing is non-disclosing 404; stale write is 409, invalid contract is 422. History returns only safe self metadata, not private filters or historical identities. Report aliases search, not an archive job. Private no-store envelopes; no sharing or cache.
+         */
+        post: operations["view_history_api_v1_me_saved_views__ref_id__history_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/saved-views/report": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Search Views
+         * @description Self-only saved list presets for forms, workflows, business_requests and work_items. Current live actor and list permission are checked on every read/apply. Creation and full PUT use schema_version=1, name 1–120, command_key 1–128, an at most 8 KiB validated query, up to 20 filters/10 sorts, distinct allowlisted columns and page_size 1–100. Page offsets, result bodies, actor/privilege fields, reference-valued filters and unknown fields are rejected. 100 live views per scope; unique name per self/scope. Creation keys bind the original payload; a changed replay conflicts 409. PUT is a full replacement and requires the current path ref; scope is immutable and the last identical update-key replay is safe. Default selection is explicit, serializes on the user and preserves exactly one default per scope. GET/search preserve an incompatible original preset with compatible=false; apply then returns no query, never a broadened query. Compatible apply returns page=1 and the stored size but executes no search. DELETE is idempotent for the same owned item, including after permission revocation. Wrong owner/missing is non-disclosing 404; stale write is 409, invalid contract is 422. History returns only safe self metadata, not private filters or historical identities. Report aliases search, not an archive job. Private no-store envelopes; no sharing or cache.
+         */
+        post: operations["search_views_api_v1_me_saved_views_report_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me/saved-views/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Search private saved views
+         * @description Self-only saved list presets for forms, workflows, business_requests and work_items. Current live actor and list permission are checked on every read/apply. Creation and full PUT use schema_version=1, name 1–120, command_key 1–128, an at most 8 KiB validated query, up to 20 filters/10 sorts, distinct allowlisted columns and page_size 1–100. Page offsets, result bodies, actor/privilege fields, reference-valued filters and unknown fields are rejected. 100 live views per scope; unique name per self/scope. Creation keys bind the original payload; a changed replay conflicts 409. PUT is a full replacement and requires the current path ref; scope is immutable and the last identical update-key replay is safe. Default selection is explicit, serializes on the user and preserves exactly one default per scope. GET/search preserve an incompatible original preset with compatible=false; apply then returns no query, never a broadened query. Compatible apply returns page=1 and the stored size but executes no search. DELETE is idempotent for the same owned item, including after permission revocation. Wrong owner/missing is non-disclosing 404; stale write is 409, invalid contract is 422. History returns only safe self metadata, not private filters or historical identities. Report aliases search, not an archive job. Private no-store envelopes; no sharing or cache.
+         */
+        post: operations["search_views_api_v1_me_saved_views_search_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/media/files": {
         parameters: {
             query?: never;
@@ -3227,7 +3983,7 @@ export interface paths {
         };
         /**
          * Download a private user file
-         * @description Requires an authenticated owner or an explicit trusted access policy. Resolves the versioned upload reference and authorization before object storage. Streams verified passive-format bytes as an attachment with a server-owned filename, nosniff and Cache-Control: private, no-store. The optional Content-Disposition request value may only be attachment; inline, filenames, extra parameters and duplicates return 422. Missing and unauthorized uploads return the same 404.
+         * @description Requires an authenticated owner or an explicit trusted access policy. Resolves the versioned upload reference and authorization before object storage. Streams verified passive-format bytes as an attachment with a server-owned filename, nosniff and Cache-Control: private, no-store. The optional Content-Disposition request value may only be attachment; inline, filenames, extra parameters and duplicates return 422. Missing and unauthorized uploads return the same 404. Database authorization reads finish before streaming. Storage is read in chunks of at most 64 KiB and the final byte count must match metadata preflight. A late storage failure, changed size or disconnect closes the binary stream; it cannot become a JSON success response.
          */
         get: operations["download_file_api_v1_media_files__ref_id__get"];
         put?: never;
@@ -3267,7 +4023,7 @@ export interface paths {
         };
         /**
          * Download a private WebP image
-         * @description Requires an authenticated owner or an explicit trusted access policy. Resolves the versioned upload reference and authorization before object storage. Streams verified normalized WebP bytes with nosniff and Cache-Control: private, no-store. By default the browser may display the image inline without a Content-Disposition header. Send Content-Disposition: inline or attachment to select a server-named response; filenames, extra parameters and duplicates return 422. Missing and unauthorized images return the same 404.
+         * @description Requires an authenticated owner or an explicit trusted access policy. Resolves the versioned upload reference and authorization before object storage. Streams verified normalized WebP bytes with nosniff and Cache-Control: private, no-store. By default the browser may display the image inline without a Content-Disposition header. Send Content-Disposition: inline or attachment to select a server-named response; filenames, extra parameters and duplicates return 422. Missing and unauthorized images return the same 404. Database authorization reads finish before streaming. Storage is read in chunks of at most 64 KiB and the final byte count must match metadata preflight. A late storage failure, changed size or disconnect closes the binary stream; it cannot become a JSON success response.
          */
         get: operations["download_image_api_v1_media_images__ref_id__get"];
         put?: never;
@@ -3383,6 +4139,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/processes/{ref_id}/ai-evidence/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Inspect supervised AI process evidence
+         * @description Requires an authenticated active session, requests.start and request participant view authorization. Returns the latest AI attempt per execution, ordered by creation time and ID; page defaults to 1, size defaults to 20 and is bounded to 100. Exposes the historical agent pin, available model identity, allowed input field names, typed recommendation and existing task budget/unknown usage. No input values, prompt, checkpoint, raw response trace, secret, private URL or connection credential is returned. Human outcomes remain in the authorized work-item/process timeline. A normal/high-confidence recommendation never authorizes a protected order; that requires the exact committed human approval. Missing historical agent metadata is marked unavailable, never replaced with a latest agent. Missing/expired authentication returns 401, missing permission 403, outsider or wrong process 404, invalid pagination 422. This read makes no model call. Deterministic tests are not live-model quality or calibration evidence.
+         */
+        post: operations["search_process_ai_evidence_api_v1_processes__ref_id__ai_evidence_search_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/processes/{ref_id}/cancel": {
         parameters: {
             query?: never;
@@ -3411,6 +4187,66 @@ export interface paths {
         put?: never;
         /** Compensate Process */
         post: operations["compensate_process_api_v1_processes__ref_id__compensate_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/processes/{ref_id}/orders/reconcile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Reconcile an uncertain sandbox order
+         * @description Requires an authenticated active session, processes.recover and superuser recovery authorization. Supply current process and step execution refs, a 1–128 character command_key and a 1–64 character incident reason code. Receipt lookup uses the original pinned publisher, connection, credential version and operation identity; revoked authority or rotated pins fail closed. Never sends another create request. UNKNOWN can be queried immediately; DISPATCHING must be at least 20 seconds old. A matching receipt confirms the existing operation and applies the ordinary idempotent completion callback. Missing receipt remains UNKNOWN and does not authorize retry. Same command and intent return current evidence even with old refs; changed intent conflicts. Failed/uncertain lookup requires a fresh lookup command, never an effect replay. Errors: 401 missing/expired session, 403 non-superuser, 404 wrong process/step, 409 stale refs, wrong state, changed command intent or revoked pins, 422 invalid input, 503 unavailable lookup. No DB session is held across HTTPS; no production purchase is made.
+         */
+        post: operations["reconcile_sandbox_order_api_v1_processes__ref_id__orders_reconcile_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/processes/{ref_id}/orders/reconcile-cancellation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Reconcile an uncertain sandbox cancellation
+         * @description Requires an authenticated active session, processes.recover and superuser authorization. Supply current process/step execution refs, command_key and an incident reason code. Requeues only a previously dispatched sandbox reversal through the existing outbox/worker. The worker uses receipt lookup with the original connection, credential and stable reversal identity; it never resends cancellation or creates an order. Failed records are eligible immediately; EXECUTING records must be at least 20 seconds old. Current publisher/grant/pin revocation fails closed. RUNNING means queued, not provider-confirmed success. Inspect the ordinary process timeline for compensation.receipt_confirmed and compensation.completed. Same command/intent returns current state; changed intent conflicts. Errors: 401 missing authentication, 403 non-superuser, 404 wrong process/step or missing reversal, 409 stale refs, revoked pins, changed intent or wrong state, 422 invalid input. A missing receipt remains failed/manual intervention; no blind effect replay is permitted.
+         */
+        post: operations["reconcile_sandbox_cancellation_api_v1_processes__ref_id__orders_reconcile_cancellation_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/processes/{ref_id}/orders/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Inspect sandbox operation receipts
+         * @description Requires an authenticated active session, requests.start and request participant view authorization. Returns one latest attempt per sandbox order, ordered by step creation time and ID. page defaults to 1; size defaults to 20 and is bounded to 100. PREPARED means staged, DISPATCHING means a request may be in flight, UNKNOWN requires operator lookup, and CONFIRMED includes an actual validated provider receipt. Queued does not mean completed. The opaque step_execution_ref_id is current; operation_id is the stable external idempotency identity. No inputs, approval records, credentials or private URLs are exposed. Outsiders receive 404; missing permission receives 403. This inspection never dispatches an order.
+         */
+        post: operations["search_sandbox_orders_api_v1_processes__ref_id__orders_search_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -3460,7 +4296,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Resume Process */
+        /**
+         * Resume a supported single process wait
+         * @description Requires an authenticated active session, requests.start, request participant view and requester control (or superuser). Supply a current process ref, command_key, declared outcome and handler-valid outputs for an eligible single wait. Existing unprotected wait semantics are retained. Subprocess results are settled by their owning worker. A sandbox.order.create/1 wait cannot accept caller-supplied receipts: only the protected worker or authorized receipt lookup may confirm it. Human business approval must use the actual eligible work-item completion action. Replay follows the existing command-key behavior; this is not an arbitrary effect executor. Errors: 401 missing/expired authentication, 403 missing permission/control, 404 outsider/missing process, 409 stale ref, ambiguous/ineligible wait or invented protected receipt, 422 invalid input. Queued sandbox work is never confirmed by this command.
+         */
         post: operations["resume_process_api_v1_processes__ref_id__resume_post"];
         delete?: never;
         options?: never;
@@ -3589,7 +4428,7 @@ export interface paths {
         };
         /**
          * Download Report
-         * @description Stream an owned report through a masked application URL.
+         * @description Requires the authenticated report owner. Only ready, unexpired private archives within the configured byte limit may download. Metadata preflight precedes recording an authorized download start; download_count does not prove complete delivery. The database session closes before streaming. Storage uses chunks of at most 64 KiB and the final byte count must match preflight. A late storage failure, changed size or disconnect closes the binary stream without a JSON success envelope. Report generation status is independent of a browser download. The response is private, no-store, nosniff and attachment-only with a server-selected filename; no direct storage URL.
          */
         get: operations["download_report_api_v1_reports__ref_id__download_get"];
         put?: never;
@@ -3747,6 +4586,86 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/resource-links": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Create an authorized stable resource link
+         * @description Requires an authenticated live user and the target's existing read permission. Owner/grant policies are rechecked on every call; locators grant no access. Missing, deleted, forged and forbidden targets return the same safe 404 envelope. Inactive or retired readable records report available=false. A version link remains bound to that exact version, while ref_id refreshes to its current optimistic revision. Only code-owned route keys are returned, never arbitrary URLs or table names. Signing-key replacement invalidates locators. Responses use private no-store headers.
+         */
+        post: operations["mint_link_api_v1_resource_links_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/resource-links/resolve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Resolve a stable link to a current reference
+         * @description Requires an authenticated live user and the target's existing read permission. Owner/grant policies are rechecked on every call; locators grant no access. Missing, deleted, forged and forbidden targets return the same safe 404 envelope. Inactive or retired readable records report available=false. A version link remains bound to that exact version, while ref_id refreshes to its current optimistic revision. Only code-owned route keys are returned, never arbitrary URLs or table names. Signing-key replacement invalidates locators. Responses use private no-store headers.
+         */
+        post: operations["resolve_link_api_v1_resource_links_resolve_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/resource-links/selected": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Read eligible selected values outside search pages
+         * @description Reads at most 50 selected values in request order, independent of page or search. Uses existing selector permissions and owner policies, not detail authorization: workflow designers may read only safe user/group labels and use-granted connection labels. Forms must be actor-owned or superuser-visible; versions must be published. Selection grants no execution permission. A revoked/deleted/ineligible value fails the whole request with a safe 404, without partial titles. Unknown kinds or excess items return 422. Private no-store success envelope contains current references.
+         */
+        post: operations["selected_api_v1_resource_links_selected_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/setup/readiness": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Inspect development installation readiness
+         * @description Requires a current superuser; ordinary administrators and requesters receive 403. Bounded read-only database facts and internal connectivity probes return ready, blocked, unknown or not_applicable. Required unknown checks prevent green overall readiness. Worker and scheduler execution remain unknown until separately verified by an explicit operator command; broker connectivity is insufficient. This read never installs roles, grants access, publishes definitions, enqueues tasks or invokes live providers. Repair keys identify owning screens; operations requires an operator. Refresh after 30 seconds and display checked_at UTC. Results contain no hosts, DSNs, credentials, user lists or raw errors. Private no-store success envelope; authenticated 401/403 errors use existing public codes.
+         */
+        get: operations["setup_readiness_api_v1_setup_readiness_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/step-types/{ref_id}": {
         parameters: {
             query?: never;
@@ -3787,6 +4706,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/step-types/operations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Inspect governed business operations
+         * @description Requires an authenticated active session and workflows.manage. Returns the bounded code-owned catalog (currently three operations), typed input/output JSON Schemas, allowed provider/kind, publisher identity policy, approval policy and retry behavior. Sandbox orders require an explicit committed human approve action covering the exact workflow and input. Timeouts after dispatch require receipt lookup before retry. Metadata is not proof of executable credentials: connections must separately be active, authorized, verified and pinned to the exact revision and secret version. Endpoints and secrets are never returned. This read has no business side effects. Missing/expired/revoked authentication returns 401; missing permission returns 403.
+         */
+        get: operations["get_business_operations_api_v1_step_types_operations_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/step-types/search": {
         parameters: {
             query?: never;
@@ -3821,6 +4760,166 @@ export interface paths {
          * @description Requires workflows.manage. Returns only currently registered, matching published versions as key/value choices. response_format=items returns the same bounded page without its envelope.
          */
         post: operations["select_step_types_api_v1_step_types_select_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/support/client-failures": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Record a safe client failure
+         * @description Authenticated safe client failure intake. Only screen_key from calendar/work_items/requests/designer/reports/preferences/support, build 1–80 ASCII version characters, one of client.render_failed/client.network_failed/client.unexpected_error and a UUID request_id are accepted; unknown fields, text, HTML, stack and arbitrary error codes are rejected 422. The actor comes from authentication. Ten new reports per actor per UTC calendar minute, serialized on the user; replay among the last 100 episode correlations does not increment. Excess is 429. The returned support_ref is a correlation identity, never an authorization capability. persisted=false and support_ref=null explicitly report sink failure. No business operation is executed. Private no-store, existing envelope and en/fa messages.
+         */
+        post: operations["client_failure_api_v1_support_client_failures_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/support/incidents/{ref_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read a support incident
+         * @description Support incidents require the current support.incidents.manage capability or superuser authority. Possession of a support_ref grants no access. Search/report apply live records and thirty-day retention before count and paging (size 1–100). Safe fields contain category, numeric public error code, registered operation, episode state/count and timestamps; no body, stack, prompt, credential or provider message is stored or returned. Identical operation episodes coalesce for one day, count is capped at 1000000 and the last 100 correlation identities deduplicate replay. A resolved recurrence starts a new episode. Acknowledge requires OPEN; resolve accepts OPEN or ACKNOWLEDGED. Both require the current revision ref and audit the transition. A stale or invalid transition conflicts 409; outsider is 403, absent/expired is 404. History returns at most 1000 safe state transitions through page/size, not diagnostic snapshots. Report aliases search. Failure persistence uses an independent transaction after business rollback; a sink outage returns support_persisted=false with correlation only. No recursive alert: one bounded MAP-13 fanout per episode, excluding notification failures. Private no-store.
+         */
+        get: operations["detail_api_v1_support_incidents__ref_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/support/incidents/{ref_id}/acknowledge": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Acknowledge a support incident
+         * @description Support incidents require the current support.incidents.manage capability or superuser authority. Possession of a support_ref grants no access. Search/report apply live records and thirty-day retention before count and paging (size 1–100). Safe fields contain category, numeric public error code, registered operation, episode state/count and timestamps; no body, stack, prompt, credential or provider message is stored or returned. Identical operation episodes coalesce for one day, count is capped at 1000000 and the last 100 correlation identities deduplicate replay. A resolved recurrence starts a new episode. Acknowledge requires OPEN; resolve accepts OPEN or ACKNOWLEDGED. Both require the current revision ref and audit the transition. A stale or invalid transition conflicts 409; outsider is 403, absent/expired is 404. History returns at most 1000 safe state transitions through page/size, not diagnostic snapshots. Report aliases search. Failure persistence uses an independent transaction after business rollback; a sink outage returns support_persisted=false with correlation only. No recursive alert: one bounded MAP-13 fanout per episode, excluding notification failures. Private no-store.
+         */
+        post: operations["acknowledge_api_v1_support_incidents__ref_id__acknowledge_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/support/incidents/{ref_id}/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * History
+         * @description Support incidents require the current support.incidents.manage capability or superuser authority. Possession of a support_ref grants no access. Search/report apply live records and thirty-day retention before count and paging (size 1–100). Safe fields contain category, numeric public error code, registered operation, episode state/count and timestamps; no body, stack, prompt, credential or provider message is stored or returned. Identical operation episodes coalesce for one day, count is capped at 1000000 and the last 100 correlation identities deduplicate replay. A resolved recurrence starts a new episode. Acknowledge requires OPEN; resolve accepts OPEN or ACKNOWLEDGED. Both require the current revision ref and audit the transition. A stale or invalid transition conflicts 409; outsider is 403, absent/expired is 404. History returns at most 1000 safe state transitions through page/size, not diagnostic snapshots. Report aliases search. Failure persistence uses an independent transaction after business rollback; a sink outage returns support_persisted=false with correlation only. No recursive alert: one bounded MAP-13 fanout per episode, excluding notification failures. Private no-store.
+         */
+        post: operations["history_api_v1_support_incidents__ref_id__history_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/support/incidents/{ref_id}/resolve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Resolve a support incident
+         * @description Support incidents require the current support.incidents.manage capability or superuser authority. Possession of a support_ref grants no access. Search/report apply live records and thirty-day retention before count and paging (size 1–100). Safe fields contain category, numeric public error code, registered operation, episode state/count and timestamps; no body, stack, prompt, credential or provider message is stored or returned. Identical operation episodes coalesce for one day, count is capped at 1000000 and the last 100 correlation identities deduplicate replay. A resolved recurrence starts a new episode. Acknowledge requires OPEN; resolve accepts OPEN or ACKNOWLEDGED. Both require the current revision ref and audit the transition. A stale or invalid transition conflicts 409; outsider is 403, absent/expired is 404. History returns at most 1000 safe state transitions through page/size, not diagnostic snapshots. Report aliases search. Failure persistence uses an independent transaction after business rollback; a sink outage returns support_persisted=false with correlation only. No recursive alert: one bounded MAP-13 fanout per episode, excluding notification failures. Private no-store.
+         */
+        post: operations["resolve_api_v1_support_incidents__ref_id__resolve_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/support/incidents/by-support/{support_ref}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Resolve an authorized support correlation
+         * @description Support incidents require the current support.incidents.manage capability or superuser authority. Possession of a support_ref grants no access. Search/report apply live records and thirty-day retention before count and paging (size 1–100). Safe fields contain category, numeric public error code, registered operation, episode state/count and timestamps; no body, stack, prompt, credential or provider message is stored or returned. Identical operation episodes coalesce for one day, count is capped at 1000000 and the last 100 correlation identities deduplicate replay. A resolved recurrence starts a new episode. Acknowledge requires OPEN; resolve accepts OPEN or ACKNOWLEDGED. Both require the current revision ref and audit the transition. A stale or invalid transition conflicts 409; outsider is 403, absent/expired is 404. History returns at most 1000 safe state transitions through page/size, not diagnostic snapshots. Report aliases search. Failure persistence uses an independent transaction after business rollback; a sink outage returns support_persisted=false with correlation only. No recursive alert: one bounded MAP-13 fanout per episode, excluding notification failures. Private no-store.
+         */
+        get: operations["by_support_api_v1_support_incidents_by_support__support_ref__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/support/incidents/report": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Search
+         * @description Support incidents require the current support.incidents.manage capability or superuser authority. Possession of a support_ref grants no access. Search/report apply live records and thirty-day retention before count and paging (size 1–100). Safe fields contain category, numeric public error code, registered operation, episode state/count and timestamps; no body, stack, prompt, credential or provider message is stored or returned. Identical operation episodes coalesce for one day, count is capped at 1000000 and the last 100 correlation identities deduplicate replay. A resolved recurrence starts a new episode. Acknowledge requires OPEN; resolve accepts OPEN or ACKNOWLEDGED. Both require the current revision ref and audit the transition. A stale or invalid transition conflicts 409; outsider is 403, absent/expired is 404. History returns at most 1000 safe state transitions through page/size, not diagnostic snapshots. Report aliases search. Failure persistence uses an independent transaction after business rollback; a sink outage returns support_persisted=false with correlation only. No recursive alert: one bounded MAP-13 fanout per episode, excluding notification failures. Private no-store.
+         */
+        post: operations["search_api_v1_support_incidents_report_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/support/incidents/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Search support incidents
+         * @description Support incidents require the current support.incidents.manage capability or superuser authority. Possession of a support_ref grants no access. Search/report apply live records and thirty-day retention before count and paging (size 1–100). Safe fields contain category, numeric public error code, registered operation, episode state/count and timestamps; no body, stack, prompt, credential or provider message is stored or returned. Identical operation episodes coalesce for one day, count is capped at 1000000 and the last 100 correlation identities deduplicate replay. A resolved recurrence starts a new episode. Acknowledge requires OPEN; resolve accepts OPEN or ACKNOWLEDGED. Both require the current revision ref and audit the transition. A stale or invalid transition conflicts 409; outsider is 403, absent/expired is 404. History returns at most 1000 safe state transitions through page/size, not diagnostic snapshots. Report aliases search. Failure persistence uses an independent transaction after business rollback; a sink outage returns support_persisted=false with correlation only. No recursive alert: one bounded MAP-13 fanout per episode, excluding notification failures. Private no-store.
+         */
+        post: operations["search_api_v1_support_incidents_search_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -4078,7 +5177,7 @@ export interface paths {
         put?: never;
         /**
          * Create Schedule
-         * @description Register a periodic task for pickup by the database scheduler.
+         * @description Requires an active authenticated actor with admin.tasks.manage. Persists schedule configuration in one transaction; execution occurs later through the existing database scheduler and outbox. Only registered tasks and configured queues are accepted. Positional and keyword arguments must bind the task signature. Interval, crontab and clocked fields are mutually exclusive. Clocked schedules require one_off=true; instants include timezone and expiry follows start/clocked time. Invalid commands return 422, unknown task definitions 404 and denied actors 403. The 201 success/data response carries the current ref_id; no task result is returned.
          */
         post: operations["create_schedule_api_v1_tasks_schedules_post"];
         delete?: never;
@@ -4101,7 +5200,7 @@ export interface paths {
         get: operations["get_schedule_api_v1_tasks_schedules__ref_id__get"];
         /**
          * Update Schedule
-         * @description Update, pause, or resume a periodic schedule with optimistic locking.
+         * @description Requires admin.tasks.manage and the current versioned ref_id. Omitted fields preserve stored values; queue/start_at/expires_at null clears the override, while enabled/interval_seconds explicit null is invalid. Interval changes belong to interval schedules. Enabling or changing configuration revalidates the merged schedule; disabling a retained legacy row remains possible. A no-op preserves its reference. Stale or concurrent writes return 409; invalid merged commands return 422. The success/data response contains the refreshed reference; history is retained.
          */
         put: operations["update_schedule_api_v1_tasks_schedules__ref_id__put"];
         post?: never;
@@ -4706,6 +5805,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/workflow-versions/{ref_id}/default-apply": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Apply the reviewed workflow default
+         * @description Requires live workflows.manage and current template visibility. Preview freezes the exact target/workspace revisions, published template checksum and symbolic reference bindings for ten minutes. An unassociated workflow requires explicit source_ref_id. Dependencies are validated through existing publication rules; blockers return no plan_token. replace_draft changes only DRAFT; successor creates a new DRAFT for any live target including PUBLISHED/RETIRED. Apply requires the reviewed token and command_key; replay returns the same result and changed-plan key reuse conflicts. Stale target/workspace, expired plan or changed dependencies conflict 409; unavailable source is 404 and invalid bindings/graph are 422. Graph/workspace and the replay receipt commit atomically. No automatic publication, request-type retargeting, form edit, execution-pin change, secret/grant reset or provider operation occurs. Existing private no-store snake_case success envelopes and en/fa localization apply.
+         */
+        post: operations["default_apply_api_v1_workflow_versions__ref_id__default_apply_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workflow-versions/{ref_id}/default-preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Preview a workflow default restoration
+         * @description Requires live workflows.manage and current template visibility. Preview freezes the exact target/workspace revisions, published template checksum and symbolic reference bindings for ten minutes. An unassociated workflow requires explicit source_ref_id. Dependencies are validated through existing publication rules; blockers return no plan_token. replace_draft changes only DRAFT; successor creates a new DRAFT for any live target including PUBLISHED/RETIRED. Apply requires the reviewed token and command_key; replay returns the same result and changed-plan key reuse conflicts. Stale target/workspace, expired plan or changed dependencies conflict 409; unavailable source is 404 and invalid bindings/graph are 422. Graph/workspace and the replay receipt commit atomically. No automatic publication, request-type retargeting, form edit, execution-pin change, secret/grant reset or provider operation occurs. Existing private no-store snake_case success envelopes and en/fa localization apply.
+         */
+        post: operations["default_preview_api_v1_workflow_versions__ref_id__default_preview_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/workflow-versions/{ref_id}/graph": {
         parameters: {
             query?: never;
@@ -4741,6 +5880,26 @@ export interface paths {
         put?: never;
         /** Version History */
         post: operations["version_history_api_v1_workflow_versions__ref_id__history_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workflow-versions/{ref_id}/layout-reset": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Reset draft workspace layout
+         * @description Requires workflows.manage and current DRAFT/workspace revisions. Clears positions, routes, collapsed nodes and viewport; preserves graph and promotion checksum. This never restores a definition, discards server graph changes, publishes or resets environment data. Local unsaved-edit discard belongs to the client. Private no-store.
+         */
+        post: operations["layout_reset_api_v1_workflow_versions__ref_id__layout_reset_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -5107,6 +6266,24 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** AccountTarget */
+        AccountTarget: {
+            /** Available */
+            available: boolean;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "account";
+            /** Ref Id */
+            ref_id?: string | null;
+            /**
+             * Route Key
+             * @default me
+             * @constant
+             */
+            route_key: "me";
+        };
         /** AdminResetPasswordDTO */
         AdminResetPasswordDTO: {
             /** New Password */
@@ -5298,6 +6475,15 @@ export interface components {
              */
             transport_attempts: number;
         };
+        /** AIDecision */
+        AIDecision: {
+            /** Choice */
+            choice: string;
+            /** Confidence */
+            confidence: number;
+            /** Needs Review */
+            needs_review: boolean;
+        };
         /** AIDecisionContract */
         AIDecisionContract: {
             /** Options */
@@ -5383,6 +6569,48 @@ export interface components {
             output_per_million_usd: string;
             /** Version */
             version: string;
+        };
+        /** AIProcessEvidenceDTO */
+        AIProcessEvidenceDTO: {
+            /**
+             * Agent Available
+             * @description Whether the exact pinned published/retired agent metadata remains available.
+             */
+            agent_available: boolean;
+            /**
+             * Agent Ref Id
+             * @description Exact historical agent pin; never a substituted latest agent.
+             */
+            agent_ref_id: string | null;
+            /**
+             * Allowed Input Fields
+             * @description Approved field names only; no copied input values.
+             */
+            allowed_input_fields: string[];
+            /**
+             * Attempt Number
+             * @description Latest persisted attempt number within the logical AI execution.
+             */
+            attempt_number: number;
+            /** @description Existing task-wide budget, reservation and unknown-usage evidence; no new provider call. */
+            budget: components["schemas"]["AIBudgetStatus"] | null;
+            /**
+             * Model Id
+             * @description Model identity from the exact agent pin, not a substituted latest model.
+             */
+            model_id: string | null;
+            /** @description Typed model recommendation; confidence never grants business approval. */
+            recommendation: components["schemas"]["AIDecision"] | null;
+            /**
+             * Status
+             * @description Existing automation attempt state; queued or failed does not imply a recommendation.
+             */
+            status: string;
+            /**
+             * Step Execution Ref Id
+             * @description Current opaque AI execution reference; this endpoint is read-only.
+             */
+            step_execution_ref_id: string;
         };
         /** AIProviderMetadataDTO */
         AIProviderMetadataDTO: {
@@ -5513,6 +6741,72 @@ export interface components {
              * @description Current version-bearing work-item reference; claim it through the normal work-item API before inspecting or deciding the tool call.
              */
             work_item_ref: string;
+        };
+        /** AllDaySchedule */
+        AllDaySchedule: {
+            /**
+             * End Date
+             * Format: date
+             * @description Exclusive Gregorian end date.
+             */
+            end_date: string;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "all_day";
+            /**
+             * Start Date
+             * Format: date
+             * @description Inclusive Gregorian date; no conversion into a timed event.
+             */
+            start_date: string;
+            /**
+             * Timezone
+             * @description IANA timezone for local presentation; canonical dates remain Gregorian.
+             */
+            timezone: string;
+        };
+        /** AppearancePreferences */
+        AppearancePreferences: {
+            /**
+             * Density
+             * @description Workspace control density.
+             * @default comfortable
+             * @enum {string}
+             */
+            density: "comfortable" | "compact";
+            /**
+             * Theme Key
+             * @description Approved workspace palette key, shared with the frontend.
+             * @default blue
+             * @enum {string}
+             */
+            theme_key: "blue" | "indigo" | "violet" | "emerald" | "teal" | "rose" | "amber";
+            /**
+             * Theme Mode
+             * @description Appearance mode; system follows the device preference.
+             * @default system
+             * @enum {string}
+             */
+            theme_mode: "light" | "dark" | "system";
+        };
+        /** AppliedView */
+        AppliedView: {
+            /** Column Keys */
+            column_keys?: string[];
+            /** Compatible */
+            compatible: boolean;
+            /** Query */
+            query?: {
+                [key: string]: components["schemas"]["JsonValue"];
+            } | null;
+            /**
+             * Reason
+             * @enum {string}
+             */
+            reason: "compatible" | "schema_changed";
+            resource_kind: components["schemas"]["ViewScope"];
         };
         /** AssignRoleDTO */
         AssignRoleDTO: {
@@ -5719,6 +7013,108 @@ export interface components {
             /** Targets */
             targets: components["schemas"]["UpgradeTarget"][];
         };
+        /** BusinessOperationDTO */
+        BusinessOperationDTO: {
+            /**
+             * Allowed Providers
+             * @description Compatible registered connection providers.
+             */
+            allowed_providers: string[];
+            /**
+             * Approval Policy
+             * @description Versioned required human approval policy for create, otherwise null; tool approval is distinct.
+             */
+            approval_policy: string | null;
+            /**
+             * Authentication
+             * @description Credential mode; secret values and references remain private.
+             * @default bearer_secret
+             * @constant
+             */
+            authentication: "bearer_secret";
+            /**
+             * Compensation
+             * @description Supported explicit reversal family; null means no registered automated reversal.
+             */
+            compensation?: "cancel_order" | null;
+            /**
+             * Connection Kind
+             * @description Required connection kind; AI and notification connections are incompatible.
+             * @default SERVICE
+             * @constant
+             */
+            connection_kind: "SERVICE";
+            /**
+             * Endpoint Source
+             * @description Endpoint resolved by an administrator-owned key, never an authored URL.
+             * @default admin_owned
+             * @constant
+             */
+            endpoint_source: "admin_owned";
+            /**
+             * Execution Principal
+             * @description Pinned workflow publisher; protected sandbox effects require an active ordinary publisher.
+             * @default publisher
+             * @constant
+             */
+            execution_principal: "publisher";
+            /**
+             * Execution Scopes
+             * @description Allowed execution contexts; sandbox cancellation is compensation-only.
+             */
+            execution_scopes: ("NORMAL" | "COMPENSATION")[];
+            /**
+             * Handler Key
+             * @description Required deployed step handler key.
+             */
+            handler_key: string;
+            /**
+             * Handler Version
+             * @description Required exact deployed handler version.
+             */
+            handler_version: string;
+            /**
+             * Has Business Effect
+             * @description Whether execution changes sandbox business state; metadata inspection has no effect.
+             */
+            has_business_effect: boolean;
+            /**
+             * Input Schema
+             * @description Code-owned JSON Schema, not authored HTTP configuration.
+             */
+            input_schema: {
+                [key: string]: unknown;
+            };
+            /**
+             * Operation Key
+             * @description Exact code-owned operation identifier and version; no arbitrary HTTP scripting.
+             */
+            operation_key: string;
+            /**
+             * Output Schema
+             * @description Code-owned JSON Schema for the bounded result port.
+             */
+            output_schema: {
+                [key: string]: unknown;
+            };
+            /**
+             * Reconciliation
+             * @description Supported operation-specific receipt lookup, otherwise null.
+             */
+            reconciliation: "receipt_lookup" | null;
+            /**
+             * Retry Policy
+             * @description Diagnostic retries or lookup-only recovery after uncertain business dispatch.
+             * @enum {string}
+             */
+            retry_policy: "diagnostic_retry" | "reconcile_before_retry";
+            /**
+             * Timeout Seconds
+             * @description Total network deadline in seconds; a timeout does not prove provider rollback.
+             * @default 10
+             */
+            timeout_seconds: number;
+        };
         /** BusinessRequestCreateDTO */
         BusinessRequestCreateDTO: {
             /** Data */
@@ -5790,6 +7186,13 @@ export interface components {
              */
             page: number;
             /**
+             * Scope
+             * @description Visible uses current read policy; mine additionally requires requester ownership.
+             * @default visible
+             * @enum {string}
+             */
+            scope: "visible" | "mine";
+            /**
              * Size
              * @default 20
              */
@@ -5811,13 +7214,110 @@ export interface components {
             /** Priority */
             priority?: number | null;
         };
-        /** @enum {string} */
-        Cardinality: "SCALAR" | "LIST";
-        /** @enum {string} */
-        CartableKind: "available" | "claimed" | "completed" | "watching" | "submitted" | "unread";
-        /** CartableQueryDTO */
-        CartableQueryDTO: {
-            cartable: components["schemas"]["CartableKind"];
+        /** CalendarHistoryDTO */
+        CalendarHistoryDTO: {
+            /**
+             * Changed At
+             * Format: date-time
+             */
+            changed_at: string;
+            /** Operation */
+            operation: string;
+        };
+        /**
+         * CalendarInput
+         * @example {
+         *       "command_key": "meeting-create-1",
+         *       "reminder_offsets": [
+         *         900
+         *       ],
+         *       "schedule": {
+         *         "end_at": "2028-02-29T11:00:00+04:00",
+         *         "kind": "timed",
+         *         "start_at": "2028-02-29T10:00:00+04:00",
+         *         "timezone": "Asia/Dubai"
+         *       },
+         *       "title": "Team meeting"
+         *     }
+         * @example {
+         *       "command_key": "date-create-1",
+         *       "reminder_offsets": [],
+         *       "schedule": {
+         *         "end_date": "2028-03-01",
+         *         "kind": "all_day",
+         *         "start_date": "2028-02-29",
+         *         "timezone": "UTC"
+         *       },
+         *       "title": "Leap day"
+         *     }
+         */
+        CalendarInput: {
+            /** Command Key */
+            command_key: string;
+            /**
+             * Reminder Offsets
+             * @description Seconds before start; up to three distinct integers from zero to thirty days. Empty disables reminders.
+             */
+            reminder_offsets?: number[];
+            /** Schedule */
+            schedule: components["schemas"]["TimedSchedule"] | components["schemas"]["AllDaySchedule"];
+            /** Title */
+            title: string;
+            /**
+             * Work Group Ref Id
+             * @description Current authorized team reference; null creates a personal event.
+             */
+            work_group_ref_id?: string | null;
+        };
+        /** CalendarItemDTO */
+        CalendarItemDTO: {
+            /** Editable */
+            editable: boolean;
+            /** Ref Id */
+            ref_id: string;
+            /**
+             * Route Key
+             * @enum {string}
+             */
+            route_key: "calendar_events" | "work_items";
+            /** Schedule */
+            schedule: components["schemas"]["TimedSchedule"] | components["schemas"]["AllDaySchedule"] | components["schemas"]["DeadlineSchedule"];
+            /**
+             * Source Kind
+             * @enum {string}
+             */
+            source_kind: "manual" | "work_item";
+            /** Title */
+            title: string;
+            /** Work Group Ref Id */
+            work_group_ref_id?: string | null;
+        };
+        /**
+         * CalendarQuery
+         * @example {
+         *       "end_date": "2028-03-01",
+         *       "filters": [],
+         *       "include_work_deadlines": true,
+         *       "page": 1,
+         *       "size": 20,
+         *       "sort_orders": [],
+         *       "start_date": "2028-02-01",
+         *       "timezone": "Asia/Dubai"
+         *     }
+         */
+        CalendarQuery: {
+            /**
+             * End Date
+             * Format: date
+             */
+            end_date: string;
+            /** Filters */
+            filters?: components["schemas"]["FilterCriteria"][];
+            /**
+             * Include Work Deadlines
+             * @default true
+             */
+            include_work_deadlines: boolean;
             /**
              * Page
              * @default 1
@@ -5828,6 +7328,96 @@ export interface components {
              * @default 20
              */
             size: number;
+            /** Sort Orders */
+            sort_orders?: components["schemas"]["SortOrder"][];
+            /**
+             * Start Date
+             * Format: date
+             */
+            start_date: string;
+            /**
+             * Timezone
+             * @default UTC
+             */
+            timezone: string;
+        };
+        /** CalendarTarget */
+        CalendarTarget: {
+            /** Available */
+            available: boolean;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "calendar";
+            /** Ref Id */
+            ref_id?: string | null;
+            /**
+             * Route Key
+             * @default calendar_events
+             * @constant
+             */
+            route_key: "calendar_events";
+        };
+        /** @enum {string} */
+        Cardinality: "SCALAR" | "LIST";
+        /** @enum {string} */
+        CartableKind: "available" | "claimed" | "completed" | "watching" | "submitted" | "unread";
+        /** CartableQueryDTO */
+        CartableQueryDTO: {
+            /**
+             * After
+             * @description Inclusive UTC instant lower bound.
+             */
+            after?: string | null;
+            /**
+             * Before
+             * @description Exclusive UTC instant upper bound.
+             */
+            before?: string | null;
+            cartable: components["schemas"]["CartableKind"];
+            /**
+             * Overdue Before
+             * @description Only items with a non-null deadline strictly before this instant.
+             */
+            overdue_before?: string | null;
+            /**
+             * Page
+             * @default 1
+             */
+            page: number;
+            /**
+             * Size
+             * @default 20
+             */
+            size: number;
+            /** Status */
+            status?: ("OPEN" | "CLAIMED" | "IN_PROGRESS" | "COMPLETED" | "REJECTED" | "RETURNED" | "CANCELLED" | "EXPIRED") | null;
+            /**
+             * Time Field
+             * @description Timestamp used by optional half-open date bounds.
+             * @default created_at
+             * @enum {string}
+             */
+            time_field: "created_at" | "closed_at";
+        };
+        /** CaseTarget */
+        CaseTarget: {
+            /** Available */
+            available: boolean;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "case";
+            /** Ref Id */
+            ref_id?: string | null;
+            /**
+             * Route Key
+             * @default business_requests
+             * @constant
+             */
+            route_key: "business_requests";
         };
         /** CatalogItemDTO */
         CatalogItemDTO: {
@@ -5836,14 +7426,12 @@ export interface components {
             /** Key */
             key: string;
             /** Metadata */
-            metadata?: {
-                [key: string]: unknown;
-            };
+            metadata?: components["schemas"]["StepCatalogMetadata"] | components["schemas"]["SubprocessCatalogMetadata"] | components["schemas"]["FieldContract"] | components["schemas"]["ProcessStatusMetadata"] | components["schemas"]["EmptyCatalogMetadata"];
             /** Title */
             title: string;
             /** Type Schema */
             type_schema?: {
-                [key: string]: unknown;
+                [key: string]: components["schemas"]["JsonValue"];
             };
         };
         /** CatalogMessage */
@@ -5914,6 +7502,40 @@ export interface components {
             platform: string;
             /** Ref Id */
             ref_id: string;
+        };
+        /**
+         * ClientFailure
+         * @example {
+         *       "build": "release.1",
+         *       "error_code": "client.render_failed",
+         *       "request_id": "00000000-0000-4000-8000-000000000001",
+         *       "screen_key": "calendar"
+         *     }
+         */
+        ClientFailure: {
+            /**
+             * Build
+             * @description Public build identifier, 1 to 80 ASCII letters, digits, dots, underscores or hyphens.
+             */
+            build: string;
+            /**
+             * Error Code
+             * @description Stable safe error code; exception messages and stack traces are never accepted.
+             * @enum {string}
+             */
+            error_code: "client.render_failed" | "client.network_failed" | "client.unexpected_error";
+            /**
+             * Request Id
+             * Format: uuid
+             * @description UUID correlation identity; do not send stack, message or request body.
+             */
+            request_id: string;
+            /**
+             * Screen Key
+             * @description Known client screen identifier; arbitrary paths are not accepted.
+             * @enum {string}
+             */
+            screen_key: "calendar" | "work_items" | "requests" | "designer" | "reports" | "preferences" | "support";
         };
         /** ClientQuery */
         ClientQuery: {
@@ -6258,6 +7880,21 @@ export interface components {
             /** Scope */
             scope: string;
         };
+        /** DeadlineSchedule */
+        DeadlineSchedule: {
+            /**
+             * Due At
+             * Format: date-time
+             */
+            due_at: string;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "deadline";
+            /** Timezone */
+            timezone: string;
+        };
         /** DeclaredPort */
         DeclaredPort: {
             /** Cardinality */
@@ -6296,6 +7933,8 @@ export interface components {
                 [key: string]: unknown;
             };
         };
+        /** DefaultCommand */
+        DefaultCommand: Record<string, never>;
         /** DefinitionPin */
         DefinitionPin: {
             /** Checksum */
@@ -6340,6 +7979,71 @@ export interface components {
             latency_ms: number;
             /** Status */
             status: string;
+        };
+        /** DependencyPin */
+        DependencyPin: {
+            /** Checksum */
+            checksum?: string | null;
+            /** Pointer */
+            pointer: string;
+            /** Requested Ref Id */
+            requested_ref_id: string;
+            resource: components["schemas"]["ResourceLink"];
+        };
+        /** DependencyReadiness */
+        DependencyReadiness: {
+            /**
+             * Checked At
+             * Format: date-time
+             */
+            checked_at: string;
+            /**
+             * Client Readiness
+             * @default not_checked
+             * @enum {string}
+             */
+            client_readiness: "not_checked" | "ready" | "blocked";
+            /** Graph Checksum */
+            graph_checksum: string | null;
+            /** Issues */
+            issues: components["schemas"]["RepairIssue"][];
+            /** Pins */
+            pins: components["schemas"]["DependencyPin"][];
+            /** Ready */
+            ready: boolean;
+            /**
+             * Requester Eligibility
+             * @default not_checked
+             * @constant
+             */
+            requester_eligibility: "not_checked";
+            /**
+             * Schema Version
+             * @default 1
+             * @constant
+             */
+            schema_version: 1;
+            /**
+             * Scope
+             * @default author_publication
+             * @constant
+             */
+            scope: "author_publication";
+            /** Workflow Version Ref Id */
+            workflow_version_ref_id: string;
+        };
+        /** DependencyReadinessQuery */
+        DependencyReadinessQuery: {
+            /**
+             * Client Release Ref Id
+             * @description Optional exact registered release for renderer compatibility; omitted/null does not check a client.
+             */
+            client_release_ref_id?: string | null;
+            /**
+             * Workflow Version Ref Id
+             * @description Exact current workflow version reference; stale plans fail 409.
+             */
+            workflow_version_ref_id: string;
         };
         /** DesignerQuery */
         DesignerQuery: {
@@ -6389,6 +8093,8 @@ export interface components {
              */
             supported_render_dialects?: string[];
         };
+        /** EmptyCatalogMetadata */
+        EmptyCatalogMetadata: Record<string, never>;
         /**
          * ErrorResponse
          * @description Localized failure with a stable application error number.
@@ -6437,6 +8143,25 @@ export interface components {
         };
         /** @enum {string} */
         ExecutionMode: "SYNC" | "HUMAN" | "BACKGROUND" | "WAIT";
+        /** FavoriteDTO */
+        FavoriteDTO: {
+            /** Ref Id */
+            ref_id: string;
+            target: components["schemas"]["ResourceLink"];
+        };
+        /**
+         * FavoriteInput
+         * @description Only existing resource-link kinds; work items retain their own pin state.
+         */
+        FavoriteInput: {
+            /** @description Code-owned resource kind; never a table or URL. */
+            kind: components["schemas"]["ResourceKind"];
+            /**
+             * Ref Id
+             * @description Opaque resource reference.
+             */
+            ref_id: string;
+        };
         /** FieldContract */
         FieldContract: {
             /** Children */
@@ -7034,6 +8759,20 @@ export interface components {
             /** Sort Orders */
             sort_orders?: components["schemas"]["SortOrder"][];
         };
+        /** FutureTarget */
+        FutureTarget: {
+            /** Available */
+            available: boolean;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "operation";
+            /** Ref Id */
+            ref_id?: string | null;
+            /** Route Key */
+            route_key?: null;
+        };
         /** GrantDTO */
         GrantDTO: {
             /**
@@ -7074,7 +8813,10 @@ export interface components {
             source_path?: string | null;
             /** Source Port */
             source_port?: string | null;
-            /** Source Schema */
+            /**
+             * Source Schema
+             * @description For STEP_OUTPUT, the exact pinned output-port schema, including generic service metadata. Registered sandbox receipt guarantees refine server-side compatibility without changing persisted port metadata or graph checksums. Caller-supplied schema assertions cannot replace the trusted operation contract.
+             */
             source_schema?: {
                 [key: string]: unknown;
             } | null;
@@ -7164,7 +8906,10 @@ export interface components {
              * @default 0
              */
             display_order: number;
-            /** Field Policy */
+            /**
+             * Field Policy
+             * @description Pinned human-task read/write/required/hidden JSON Schema scopes. A nonempty read policy with an empty write list permits read-only acknowledgment; every changed field remains forbidden. Runtime writable_scopes is authoritative.
+             */
             field_policy?: {
                 [key: string]: string[];
             } | null;
@@ -7235,6 +8980,53 @@ export interface components {
             /** Valid */
             valid: boolean;
         };
+        /** HandlerInspector */
+        HandlerInspector: {
+            /** Bindings */
+            bindings?: components["schemas"]["InspectorBinding"][];
+            /** Code */
+            code: string;
+            /**
+             * Config Dialect
+             * @default json-schema-2020-12
+             * @constant
+             */
+            config_dialect: "json-schema-2020-12";
+            /** Config Schema */
+            config_schema: {
+                [key: string]: components["schemas"]["JsonValue"];
+            };
+            /** Contract Fingerprint */
+            contract_fingerprint: string;
+            /** Examples */
+            examples?: {
+                [key: string]: components["schemas"]["JsonValue"];
+            }[];
+            execution_mode: components["schemas"]["ExecutionMode"];
+            /** Handler Key */
+            handler_key: string;
+            /** Handler Version */
+            handler_version: string;
+            /** Help Key */
+            help_key?: string | null;
+            /** Help Text */
+            help_text?: string | null;
+            /** Name */
+            name: string;
+            /** Name Key */
+            name_key?: string | null;
+            /**
+             * Outcome Source
+             * @enum {string}
+             */
+            outcome_source: "handler" | "graph";
+            /** Outcomes */
+            outcomes?: string[];
+            /** Ports */
+            ports: components["schemas"]["PortDTO"][];
+            /** Required Capabilities */
+            required_capabilities?: string[];
+        };
         /**
          * HealthReport
          * @description Aggregate application readiness report.
@@ -7246,6 +9038,109 @@ export interface components {
             };
             /** Status */
             status: string;
+        };
+        /**
+         * HelpAction
+         * @example {
+         *       "help_key": "requests.start",
+         *       "locale": "fa",
+         *       "revision": "1"
+         *     }
+         */
+        HelpAction: {
+            /**
+             * Help Key
+             * @description Help actually opened or dismissed by this authenticated user.
+             */
+            help_key: string;
+            /**
+             * Locale
+             * @description Locale actually opened or dismissed; locales are acknowledged independently.
+             * @enum {string}
+             */
+            locale: "en" | "fa";
+            /**
+             * Revision
+             * @description Exact frontend content revision; stale revisions are not persisted.
+             */
+            revision: string;
+        };
+        /** HelpActionResult */
+        HelpActionResult: {
+            /**
+             * Reason
+             * @description Safe compatibility result; failure to save never authorizes or completes business work.
+             * @enum {string}
+             */
+            reason: "saved" | "manifest_unavailable" | "unknown_key" | "stale_revision" | "unsupported_locale" | "state_limit";
+            /**
+             * Saved
+             * @description True only when the explicit help action was persisted.
+             */
+            saved: boolean;
+            /** @description Authoritative saved state; null for an incompatible or unavailable release. */
+            state?: components["schemas"]["HelpStateDTO"] | null;
+        };
+        /** HelpReset */
+        HelpReset: Record<string, never>;
+        /** HelpResetResult */
+        HelpResetResult: {
+            /**
+             * Deleted Records
+             * @description Number of self help-state records removed; preferences and business data are preserved.
+             */
+            deleted_records: number;
+        };
+        /**
+         * HelpStateDTO
+         * @example {
+         *       "help_key": "requests.start",
+         *       "locale": "fa",
+         *       "revision": "1"
+         *     }
+         */
+        HelpStateDTO: {
+            /**
+             * Dismissed At
+             * @description First explicit dismissal in UTC, or null.
+             */
+            dismissed_at: string | null;
+            /**
+             * First Viewed At
+             * @description First explicit open in UTC, preserved on repeats; null if only dismissed.
+             */
+            first_viewed_at: string | null;
+            /**
+             * Help Key
+             * @description Help actually opened or dismissed by this authenticated user.
+             */
+            help_key: string;
+            /**
+             * Last Viewed At
+             * @description Latest explicit open in UTC; list reads never update it.
+             */
+            last_viewed_at: string | null;
+            /**
+             * Locale
+             * @description Locale actually opened or dismissed; locales are acknowledged independently.
+             * @enum {string}
+             */
+            locale: "en" | "fa";
+            /**
+             * Revision
+             * @description Exact frontend content revision; stale revisions are not persisted.
+             */
+            revision: string;
+        };
+        /** HelpStatePage */
+        HelpStatePage: {
+            /**
+             * Release Key
+             * @description Configured frontend metadata release, or null when unavailable.
+             */
+            release_key: string | null;
+            /** @description Only the authenticated user's bounded help-state page. */
+            states: components["schemas"]["Page_HelpStateDTO_"];
         };
         /** HistoryQuery */
         HistoryQuery: {
@@ -7325,7 +9220,253 @@ export interface components {
             /** Views */
             views: components["schemas"]["TaskView"][];
         };
+        /** InboxDTO */
+        InboxDTO: {
+            /** Content */
+            content: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Locale */
+            locale: string;
+            /** Priority */
+            priority: number;
+            /** Read At */
+            read_at: string | null;
+            /** Ref Id */
+            ref_id: string;
+            /**
+             * Schema Version
+             * @default 1
+             * @constant
+             */
+            schema_version: 1;
+            /** Status */
+            status: string;
+            /** Subject */
+            subject: string;
+            /** Target */
+            target: components["schemas"]["CaseTarget"] | components["schemas"]["WorkTarget"] | components["schemas"]["ReportTarget"] | components["schemas"]["AccountTarget"] | components["schemas"]["SupportTarget"] | components["schemas"]["CalendarTarget"] | components["schemas"]["FutureTarget"];
+            /** Template Key */
+            template_key: string;
+            /** Template Version */
+            template_version: string;
+        };
+        /** InboxQuery */
+        InboxQuery: {
+            /** Filters */
+            filters?: components["schemas"]["FilterCriteria"][];
+            /**
+             * Page
+             * @default 1
+             */
+            page: number;
+            /**
+             * Size
+             * @default 20
+             */
+            size: number;
+            /** Sort Orders */
+            sort_orders?: components["schemas"]["SortOrder"][];
+            /**
+             * Unread
+             * @description True limits to unread rows; false limits to read rows; omitted/null includes both.
+             */
+            unread?: boolean | null;
+        };
+        /** IncidentCommand */
+        IncidentCommand: Record<string, never>;
+        /** IncidentDTO */
+        IncidentDTO: {
+            /**
+             * Category
+             * @description Canonical incident category; localized labels do not change this value.
+             * @enum {string}
+             */
+            category: "technical" | "database" | "cache" | "storage" | "broker" | "client" | "notification";
+            /**
+             * Error Code
+             * @description Stable safe error code; exception messages and stack traces are never accepted.
+             */
+            error_code: number;
+            /**
+             * Expires At
+             * Format: date-time
+             * @description Timezone-aware UTC retention deadline; expired incidents may be removed.
+             */
+            expires_at: string;
+            /**
+             * First Seen At
+             * Format: date-time
+             * @description Timezone-aware UTC instant of the first grouped occurrence.
+             */
+            first_seen_at: string;
+            /**
+             * Last Seen At
+             * Format: date-time
+             * @description Timezone-aware UTC instant of the latest grouped occurrence.
+             */
+            last_seen_at: string;
+            /**
+             * Occurrence Count
+             * @description Number of grouped occurrences retained for this incident.
+             */
+            occurrence_count: number;
+            /**
+             * Operation
+             * @description Safe operation identifier; contains no submitted business payload.
+             */
+            operation: string;
+            /**
+             * Ref Id
+             * @description Opaque incident reference containing its current version.
+             */
+            ref_id: string;
+            /**
+             * State
+             * @description Incident lifecycle state: OPEN, ACKNOWLEDGED or RESOLVED.
+             * @enum {string}
+             */
+            state: "OPEN" | "ACKNOWLEDGED" | "RESOLVED";
+            /**
+             * Support Ref
+             * Format: uuid
+             * @description Correlation UUID; inspection requires support.incidents.manage.
+             */
+            support_ref: string;
+        };
+        /** IncidentHistoryDTO */
+        IncidentHistoryDTO: {
+            /**
+             * Changed At
+             * Format: date-time
+             * @description Timezone-aware UTC instant of this lifecycle transition.
+             */
+            changed_at: string;
+            /**
+             * From State
+             * @description Previous canonical state; null for the initial transition.
+             */
+            from_state: string | null;
+            /**
+             * Operation
+             * @description Safe operation identifier; contains no submitted business payload.
+             */
+            operation: string;
+            /**
+             * To State
+             * @description Resulting canonical state; null when no destination state is recorded.
+             */
+            to_state: string | null;
+        };
+        /** IncidentQuery */
+        IncidentQuery: {
+            /** Filters */
+            filters?: components["schemas"]["FilterCriteria"][];
+            /**
+             * Page
+             * @default 1
+             */
+            page: number;
+            /**
+             * Size
+             * @default 20
+             */
+            size: number;
+            /** Sort Orders */
+            sort_orders?: components["schemas"]["SortOrder"][];
+        };
+        /** InspectorBinding */
+        InspectorBinding: {
+            /**
+             * Pinned
+             * @description Whether the field selects an exact immutable version.
+             */
+            pinned: boolean;
+            /**
+             * Pointer
+             * @description JSON pointer within the handler configuration.
+             */
+            pointer: string;
+            /**
+             * Scope
+             * @description Owning service eligibility policy applied again at publication.
+             * @enum {string}
+             */
+            scope: "published_form" | "connection_use" | "published_agent";
+            /**
+             * Secret Reference
+             * @description Selects a protected resource; never enter or return credentials.
+             */
+            secret_reference: boolean;
+            /**
+             * Selector Kind
+             * @description Existing authorized selector; selection does not grant use permission.
+             * @enum {string}
+             */
+            selector_kind: "form_versions" | "connections" | "agent_versions";
+        };
+        /** InspectorContract */
+        InspectorContract: {
+            /**
+             * Diagnostic Pointer Format
+             * @default json-pointer
+             * @constant
+             */
+            diagnostic_pointer_format: "json-pointer";
+            /** Fields */
+            fields: components["schemas"]["FieldContract"][];
+            /** Handlers */
+            handlers: components["schemas"]["HandlerInspector"][];
+            /**
+             * Preview Policy
+             * @default bounded-pure-synthetic-only
+             * @constant
+             */
+            preview_policy: "bounded-pure-synthetic-only";
+            /**
+             * Schema Version
+             * @default 1
+             * @constant
+             */
+            schema_version: 1;
+        };
+        /** InspectorDiagnostic */
+        InspectorDiagnostic: {
+            /**
+             * Code
+             * @enum {string}
+             */
+            code: "handler_unavailable" | "invalid_config" | "unknown_field";
+            /** Pointer */
+            pointer: string;
+        };
+        /** InspectorValidationQuery */
+        InspectorValidationQuery: {
+            /** Config */
+            config: {
+                [key: string]: components["schemas"]["JsonValue"];
+            };
+            /** Handler Key */
+            handler_key: string;
+            /** Handler Version */
+            handler_version: string;
+        };
+        /** InspectorValidationResult */
+        InspectorValidationResult: {
+            /** Diagnostics */
+            diagnostics?: components["schemas"]["InspectorDiagnostic"][];
+            /** Valid */
+            valid: boolean;
+        };
         JsonValue: unknown;
+        /** LayoutResetInput */
+        LayoutResetInput: {
+            /** Workspace Ref Id */
+            workspace_ref_id: string;
+        };
         /** LibraryCard */
         LibraryCard: {
             /** Available Locales */
@@ -7581,12 +9722,50 @@ export interface components {
                 [key: string]: unknown;
             };
         };
+        /** LocalePreferences */
+        LocalePreferences: {
+            /**
+             * Calendar
+             * @description Gregorian calendar only; Persian language does not select a different calendar.
+             * @default gregory
+             * @constant
+             */
+            calendar: "gregory";
+            /**
+             * Language
+             * @description Preferred presentation language; canonical data stays unchanged.
+             * @default en
+             * @enum {string}
+             */
+            language: "en" | "fa";
+            /**
+             * Numbering
+             * @description Preferred display digits; stored numbers keep their canonical format.
+             * @default latn
+             * @enum {string}
+             */
+            numbering: "latn" | "arabext";
+            /**
+             * Timezone
+             * @description Valid IANA timezone for presentation; timestamps remain UTC.
+             * @default UTC
+             */
+            timezone: string;
+        };
         /** LocalizedTaskText */
         LocalizedTaskText: {
             /** En */
             en: string;
             /** Fa */
             fa?: string | null;
+        };
+        /** LocatorQuery */
+        LocatorQuery: {
+            /**
+             * Locator
+             * @description Opaque stable locator previously returned by the server.
+             */
+            locator: string;
         };
         /** LoginDTO */
         LoginDTO: {
@@ -7647,6 +9826,147 @@ export interface components {
         MemberChangeDTO: {
             /** User Ref Id */
             user_ref_id: string;
+        };
+        /** MetricBucket */
+        MetricBucket: {
+            /**
+             * Date
+             * Format: date
+             */
+            date: string;
+            drilldown: components["schemas"]["MetricDrilldown"];
+            /** Population Count */
+            population_count: number;
+            /** Sample Count */
+            sample_count: number;
+            /** Unknown Count */
+            unknown_count: number;
+            /** Value */
+            value: number | null;
+        };
+        /** MetricDefinition */
+        MetricDefinition: {
+            /**
+             * Availability
+             * @default available
+             * @enum {string}
+             */
+            availability: "available" | "unavailable";
+            metric_key: components["schemas"]["MetricKey"];
+            /** Population */
+            population: string;
+            /** Reason */
+            reason?: string | null;
+            /** Timestamp */
+            timestamp: string | null;
+            /**
+             * Unit
+             * @enum {string}
+             */
+            unit: "count" | "seconds";
+            /**
+             * Version
+             * @default 1
+             * @constant
+             */
+            version: 1;
+        };
+        /** MetricDrilldown */
+        MetricDrilldown: {
+            /** Query */
+            query: components["schemas"]["BusinessRequestQuery"] | components["schemas"]["CartableQueryDTO"];
+            /**
+             * Route Key
+             * @enum {string}
+             */
+            route_key: "requests" | "work_items";
+        };
+        /** @enum {string} */
+        MetricKey: "submitted_requests" | "active_requests" | "available_work" | "claimed_work" | "overdue_work" | "terminal_duration" | "correction_frequency" | "integration_outcomes" | "business_outcomes";
+        /** MetricQuery */
+        MetricQuery: {
+            /**
+             * Dimension
+             * @default none
+             * @enum {string}
+             */
+            dimension: "none" | "status";
+            /**
+             * End Date
+             * Format: date
+             * @description Exclusive civil date; at most 366 days after start_date.
+             */
+            end_date: string;
+            /**
+             * Granularity
+             * @default day
+             * @constant
+             */
+            granularity: "day";
+            metric_key: components["schemas"]["MetricKey"];
+            /**
+             * Start Date
+             * Format: date
+             * @description Inclusive civil date in the requested IANA timezone.
+             */
+            start_date: string;
+            /**
+             * Timezone
+             * @default UTC
+             */
+            timezone: string;
+        };
+        /** MetricResult */
+        MetricResult: {
+            /**
+             * As Of
+             * Format: date-time
+             */
+            as_of: string;
+            /**
+             * Availability
+             * @enum {string}
+             */
+            availability: "available" | "unavailable";
+            drilldown?: components["schemas"]["MetricDrilldown"] | null;
+            /**
+             * Generated At
+             * Format: date-time
+             */
+            generated_at: string;
+            metric_key: components["schemas"]["MetricKey"];
+            /** Population Count */
+            population_count?: number | null;
+            /** Reason */
+            reason?: string | null;
+            /** Sample Count */
+            sample_count?: number | null;
+            /** Series */
+            series?: components["schemas"]["MetricSeries"][];
+            /** Timezone */
+            timezone: string;
+            /** Total Value */
+            total_value?: number | null;
+            /**
+             * Unit
+             * @enum {string}
+             */
+            unit: "count" | "seconds";
+            /** Unknown Count */
+            unknown_count?: number | null;
+            /**
+             * Version
+             * @default 1
+             * @constant
+             */
+            version: 1;
+        };
+        /** MetricSeries */
+        MetricSeries: {
+            /** Buckets */
+            buckets: components["schemas"]["MetricBucket"][];
+            /** Key */
+            key: string;
         };
         /** NavigationPlan */
         NavigationPlan: {
@@ -7733,6 +10053,15 @@ export interface components {
             template_key: string;
             /** Template Version */
             template_version: string;
+        };
+        /** NotificationPreferences */
+        NotificationPreferences: {
+            /**
+             * Email Enabled
+             * @description Opt in to optional application email; mandatory security and approval notices remain enabled.
+             * @default false
+             */
+            email_enabled: boolean;
         };
         /** NotificationQuery */
         NotificationQuery: {
@@ -7883,6 +10212,30 @@ export interface components {
              */
             readonly total_pages: number;
         };
+        /** @enum {string} */
+        OrderDispatchState: "PREPARED" | "DISPATCHING" | "UNKNOWN" | "CONFIRMED";
+        /**
+         * OrderReconciliationDTO
+         * @example {
+         *       "command_key": "incident-lookup-1",
+         *       "reason": "INC-001",
+         *       "step_execution_ref_id": "opaque-current-step-reference"
+         *     }
+         */
+        OrderReconciliationDTO: {
+            /** Command Key */
+            command_key: string;
+            /**
+             * Reason
+             * @description Safe incident/ticket code, not private free text.
+             */
+            reason: string;
+            /**
+             * Step Execution Ref Id
+             * @description Current opaque step execution reference belonging to the path process.
+             */
+            step_execution_ref_id: string;
+        };
         /** Page[AIAgentDTO] */
         Page_AIAgentDTO_: {
             /** Items */
@@ -7927,6 +10280,28 @@ export interface components {
              */
             readonly total_pages: number;
         };
+        /** Page[AIProcessEvidenceDTO] */
+        Page_AIProcessEvidenceDTO_: {
+            /** Items */
+            items?: components["schemas"]["AIProcessEvidenceDTO"][];
+            /**
+             * Page
+             * @default 1
+             */
+            page: number;
+            /**
+             * Size
+             * @default 20
+             */
+            size: number;
+            /** Total */
+            total: number;
+            /**
+             * Total Pages
+             * @description Return the number of nonempty pages in the full result set.
+             */
+            readonly total_pages: number;
+        };
         /** Page[AuthAuditEventDTO] */
         Page_AuthAuditEventDTO_: {
             /** Items */
@@ -7953,6 +10328,50 @@ export interface components {
         Page_BusinessRequestDTO_: {
             /** Items */
             items?: components["schemas"]["BusinessRequestDTO"][];
+            /**
+             * Page
+             * @default 1
+             */
+            page: number;
+            /**
+             * Size
+             * @default 20
+             */
+            size: number;
+            /** Total */
+            total: number;
+            /**
+             * Total Pages
+             * @description Return the number of nonempty pages in the full result set.
+             */
+            readonly total_pages: number;
+        };
+        /** Page[CalendarHistoryDTO] */
+        Page_CalendarHistoryDTO_: {
+            /** Items */
+            items?: components["schemas"]["CalendarHistoryDTO"][];
+            /**
+             * Page
+             * @default 1
+             */
+            page: number;
+            /**
+             * Size
+             * @default 20
+             */
+            size: number;
+            /** Total */
+            total: number;
+            /**
+             * Total Pages
+             * @description Return the number of nonempty pages in the full result set.
+             */
+            readonly total_pages: number;
+        };
+        /** Page[CalendarItemDTO] */
+        Page_CalendarItemDTO_: {
+            /** Items */
+            items?: components["schemas"]["CalendarItemDTO"][];
             /**
              * Page
              * @default 1
@@ -8125,6 +10544,28 @@ export interface components {
              */
             readonly total_pages: number;
         };
+        /** Page[FavoriteDTO] */
+        Page_FavoriteDTO_: {
+            /** Items */
+            items?: components["schemas"]["FavoriteDTO"][];
+            /**
+             * Page
+             * @default 1
+             */
+            page: number;
+            /**
+             * Size
+             * @default 20
+             */
+            size: number;
+            /** Total */
+            total: number;
+            /**
+             * Total Pages
+             * @description Return the number of nonempty pages in the full result set.
+             */
+            readonly total_pages: number;
+        };
         /** Page[FormDTO] */
         Page_FormDTO_: {
             /** Items */
@@ -8169,10 +10610,98 @@ export interface components {
              */
             readonly total_pages: number;
         };
+        /** Page[HelpStateDTO] */
+        Page_HelpStateDTO_: {
+            /** Items */
+            items?: components["schemas"]["HelpStateDTO"][];
+            /**
+             * Page
+             * @default 1
+             */
+            page: number;
+            /**
+             * Size
+             * @default 20
+             */
+            size: number;
+            /** Total */
+            total: number;
+            /**
+             * Total Pages
+             * @description Return the number of nonempty pages in the full result set.
+             */
+            readonly total_pages: number;
+        };
         /** Page[HistoryRecordDTO] */
         Page_HistoryRecordDTO_: {
             /** Items */
             items?: components["schemas"]["HistoryRecordDTO"][];
+            /**
+             * Page
+             * @default 1
+             */
+            page: number;
+            /**
+             * Size
+             * @default 20
+             */
+            size: number;
+            /** Total */
+            total: number;
+            /**
+             * Total Pages
+             * @description Return the number of nonempty pages in the full result set.
+             */
+            readonly total_pages: number;
+        };
+        /** Page[InboxDTO] */
+        Page_InboxDTO_: {
+            /** Items */
+            items?: components["schemas"]["InboxDTO"][];
+            /**
+             * Page
+             * @default 1
+             */
+            page: number;
+            /**
+             * Size
+             * @default 20
+             */
+            size: number;
+            /** Total */
+            total: number;
+            /**
+             * Total Pages
+             * @description Return the number of nonempty pages in the full result set.
+             */
+            readonly total_pages: number;
+        };
+        /** Page[IncidentDTO] */
+        Page_IncidentDTO_: {
+            /** Items */
+            items?: components["schemas"]["IncidentDTO"][];
+            /**
+             * Page
+             * @default 1
+             */
+            page: number;
+            /**
+             * Size
+             * @default 20
+             */
+            size: number;
+            /** Total */
+            total: number;
+            /**
+             * Total Pages
+             * @description Return the number of nonempty pages in the full result set.
+             */
+            readonly total_pages: number;
+        };
+        /** Page[IncidentHistoryDTO] */
+        Page_IncidentHistoryDTO_: {
+            /** Items */
+            items?: components["schemas"]["IncidentHistoryDTO"][];
             /**
              * Page
              * @default 1
@@ -8345,6 +10874,28 @@ export interface components {
              */
             readonly total_pages: number;
         };
+        /** Page[PersonalHistoryDTO] */
+        Page_PersonalHistoryDTO_: {
+            /** Items */
+            items?: components["schemas"]["PersonalHistoryDTO"][];
+            /**
+             * Page
+             * @default 1
+             */
+            page: number;
+            /**
+             * Size
+             * @default 20
+             */
+            size: number;
+            /** Total */
+            total: number;
+            /**
+             * Total Pages
+             * @description Return the number of nonempty pages in the full result set.
+             */
+            readonly total_pages: number;
+        };
         /** Page[ReportDTO] */
         Page_ReportDTO_: {
             /** Items */
@@ -8415,6 +10966,50 @@ export interface components {
         Page_RoleDTO_: {
             /** Items */
             items?: components["schemas"]["RoleDTO"][];
+            /**
+             * Page
+             * @default 1
+             */
+            page: number;
+            /**
+             * Size
+             * @default 20
+             */
+            size: number;
+            /** Total */
+            total: number;
+            /**
+             * Total Pages
+             * @description Return the number of nonempty pages in the full result set.
+             */
+            readonly total_pages: number;
+        };
+        /** Page[SandboxOperationDTO] */
+        Page_SandboxOperationDTO_: {
+            /** Items */
+            items?: components["schemas"]["SandboxOperationDTO"][];
+            /**
+             * Page
+             * @default 1
+             */
+            page: number;
+            /**
+             * Size
+             * @default 20
+             */
+            size: number;
+            /** Total */
+            total: number;
+            /**
+             * Total Pages
+             * @description Return the number of nonempty pages in the full result set.
+             */
+            readonly total_pages: number;
+        };
+        /** Page[SavedViewDTO] */
+        Page_SavedViewDTO_: {
+            /** Items */
+            items?: components["schemas"]["SavedViewDTO"][];
             /**
              * Page
              * @default 1
@@ -8836,6 +11431,25 @@ export interface components {
              */
             success: true;
         };
+        /** PageResponse[Page[AIProcessEvidenceDTO]] */
+        PageResponse_Page_AIProcessEvidenceDTO__: {
+            /**
+             * Code
+             * @default 200
+             */
+            code: number;
+            /** Error */
+            error?: null;
+            /** Request Id */
+            request_id: string;
+            result: components["schemas"]["Page_AIProcessEvidenceDTO_"];
+            /**
+             * Success
+             * @default true
+             * @constant
+             */
+            success: true;
+        };
         /** PageResponse[Page[AuthAuditEventDTO]] */
         PageResponse_Page_AuthAuditEventDTO__: {
             /**
@@ -8867,6 +11481,44 @@ export interface components {
             /** Request Id */
             request_id: string;
             result: components["schemas"]["Page_BusinessRequestDTO_"];
+            /**
+             * Success
+             * @default true
+             * @constant
+             */
+            success: true;
+        };
+        /** PageResponse[Page[CalendarHistoryDTO]] */
+        PageResponse_Page_CalendarHistoryDTO__: {
+            /**
+             * Code
+             * @default 200
+             */
+            code: number;
+            /** Error */
+            error?: null;
+            /** Request Id */
+            request_id: string;
+            result: components["schemas"]["Page_CalendarHistoryDTO_"];
+            /**
+             * Success
+             * @default true
+             * @constant
+             */
+            success: true;
+        };
+        /** PageResponse[Page[CalendarItemDTO]] */
+        PageResponse_Page_CalendarItemDTO__: {
+            /**
+             * Code
+             * @default 200
+             */
+            code: number;
+            /** Error */
+            error?: null;
+            /** Request Id */
+            request_id: string;
+            result: components["schemas"]["Page_CalendarItemDTO_"];
             /**
              * Success
              * @default true
@@ -9007,6 +11659,25 @@ export interface components {
              */
             success: true;
         };
+        /** PageResponse[Page[FavoriteDTO]] */
+        PageResponse_Page_FavoriteDTO__: {
+            /**
+             * Code
+             * @default 200
+             */
+            code: number;
+            /** Error */
+            error?: null;
+            /** Request Id */
+            request_id: string;
+            result: components["schemas"]["Page_FavoriteDTO_"];
+            /**
+             * Success
+             * @default true
+             * @constant
+             */
+            success: true;
+        };
         /** PageResponse[Page[FormDTO]] */
         PageResponse_Page_FormDTO__: {
             /**
@@ -9057,6 +11728,63 @@ export interface components {
             /** Request Id */
             request_id: string;
             result: components["schemas"]["Page_HistoryRecordDTO_"];
+            /**
+             * Success
+             * @default true
+             * @constant
+             */
+            success: true;
+        };
+        /** PageResponse[Page[InboxDTO]] */
+        PageResponse_Page_InboxDTO__: {
+            /**
+             * Code
+             * @default 200
+             */
+            code: number;
+            /** Error */
+            error?: null;
+            /** Request Id */
+            request_id: string;
+            result: components["schemas"]["Page_InboxDTO_"];
+            /**
+             * Success
+             * @default true
+             * @constant
+             */
+            success: true;
+        };
+        /** PageResponse[Page[IncidentDTO]] */
+        PageResponse_Page_IncidentDTO__: {
+            /**
+             * Code
+             * @default 200
+             */
+            code: number;
+            /** Error */
+            error?: null;
+            /** Request Id */
+            request_id: string;
+            result: components["schemas"]["Page_IncidentDTO_"];
+            /**
+             * Success
+             * @default true
+             * @constant
+             */
+            success: true;
+        };
+        /** PageResponse[Page[IncidentHistoryDTO]] */
+        PageResponse_Page_IncidentHistoryDTO__: {
+            /**
+             * Code
+             * @default 200
+             */
+            code: number;
+            /** Error */
+            error?: null;
+            /** Request Id */
+            request_id: string;
+            result: components["schemas"]["Page_IncidentHistoryDTO_"];
             /**
              * Success
              * @default true
@@ -9197,6 +11925,25 @@ export interface components {
              */
             success: true;
         };
+        /** PageResponse[Page[PersonalHistoryDTO]] */
+        PageResponse_Page_PersonalHistoryDTO__: {
+            /**
+             * Code
+             * @default 200
+             */
+            code: number;
+            /** Error */
+            error?: null;
+            /** Request Id */
+            request_id: string;
+            result: components["schemas"]["Page_PersonalHistoryDTO_"];
+            /**
+             * Success
+             * @default true
+             * @constant
+             */
+            success: true;
+        };
         /** PageResponse[Page[ReportDTO]] */
         PageResponse_Page_ReportDTO__: {
             /**
@@ -9266,6 +12013,44 @@ export interface components {
             /** Request Id */
             request_id: string;
             result: components["schemas"]["Page_RoleDTO_"];
+            /**
+             * Success
+             * @default true
+             * @constant
+             */
+            success: true;
+        };
+        /** PageResponse[Page[SandboxOperationDTO]] */
+        PageResponse_Page_SandboxOperationDTO__: {
+            /**
+             * Code
+             * @default 200
+             */
+            code: number;
+            /** Error */
+            error?: null;
+            /** Request Id */
+            request_id: string;
+            result: components["schemas"]["Page_SandboxOperationDTO_"];
+            /**
+             * Success
+             * @default true
+             * @constant
+             */
+            success: true;
+        };
+        /** PageResponse[Page[SavedViewDTO]] */
+        PageResponse_Page_SavedViewDTO__: {
+            /**
+             * Code
+             * @default 200
+             */
+            code: number;
+            /** Error */
+            error?: null;
+            /** Request Id */
+            request_id: string;
+            result: components["schemas"]["Page_SavedViewDTO_"];
             /**
              * Success
              * @default true
@@ -9520,32 +12305,85 @@ export interface components {
              */
             success: true;
         };
-        /** PeriodicTaskCreateDTO */
+        /**
+         * PeriodicTaskCreateDTO
+         * @description Write validation is intentionally separate from retained schedule reads.
+         * @example {
+         *       "interval_seconds": 60,
+         *       "name": "health-interval",
+         *       "schedule_type": "interval",
+         *       "task_name": "system.ping"
+         *     }
+         * @example {
+         *       "cron_minute": "*\/5",
+         *       "name": "health-cron",
+         *       "schedule_type": "crontab",
+         *       "task_name": "system.ping"
+         *     }
+         * @example {
+         *       "clocked_at": "2026-12-01T12:00:00Z",
+         *       "name": "health-once",
+         *       "one_off": true,
+         *       "schedule_type": "clocked",
+         *       "task_name": "system.ping"
+         *     }
+         */
         PeriodicTaskCreateDTO: {
-            /** Args */
+            /**
+             * Args
+             * @description JSON positional arguments bound to the registered task signature before saving.
+             */
             args?: unknown[];
-            /** Clocked At */
+            /**
+             * Clocked At
+             * @description Timezone-aware execution instant; required only for clocked one-off schedules.
+             */
             clocked_at?: string | null;
-            /** Cron Day Of Month */
+            /**
+             * Cron Day Of Month
+             * @description Celery cron day of month expression; null defaults to * for crontab schedules and must be absent for other variants.
+             */
             cron_day_of_month?: string | null;
-            /** Cron Day Of Week */
+            /**
+             * Cron Day Of Week
+             * @description Celery cron day of week expression; null defaults to * for crontab schedules and must be absent for other variants.
+             */
             cron_day_of_week?: string | null;
-            /** Cron Hour */
+            /**
+             * Cron Hour
+             * @description Celery cron hour expression; null defaults to * for crontab schedules and must be absent for other variants.
+             */
             cron_hour?: string | null;
-            /** Cron Minute */
+            /**
+             * Cron Minute
+             * @description Celery cron minute expression; null defaults to * for crontab schedules and must be absent for other variants.
+             */
             cron_minute?: string | null;
-            /** Cron Month Of Year */
+            /**
+             * Cron Month Of Year
+             * @description Celery cron month of year expression; null defaults to * for crontab schedules and must be absent for other variants.
+             */
             cron_month_of_year?: string | null;
             /**
              * Enabled
+             * @description Whether the scheduler may dispatch this row; false pauses it without deleting history.
              * @default true
              */
             enabled: boolean;
-            /** Expires At */
+            /**
+             * Expires At
+             * @description Optional timezone-aware expiry after start and clocked instant; omitted preserves it on update, null clears it.
+             */
             expires_at?: string | null;
-            /** Interval Seconds */
+            /**
+             * Interval Seconds
+             * @description Positive interval in seconds; required only for interval schedules. Retained legacy reads may be null.
+             */
             interval_seconds?: number | null;
-            /** Kwargs */
+            /**
+             * Kwargs
+             * @description JSON keyword arguments bound to the registered task signature before saving.
+             */
             kwargs?: {
                 [key: string]: unknown;
             };
@@ -9556,6 +12394,7 @@ export interface components {
             name: string;
             /**
              * One Off
+             * @description Whether the schedule disables itself after dispatch; clocked schedules require true.
              * @default false
              */
             one_off: boolean;
@@ -9566,10 +12405,14 @@ export interface components {
             queue?: string | null;
             /**
              * Schedule Type
+             * @description Schedule variant. Only fields belonging to this variant may be supplied on writes.
              * @enum {string}
              */
             schedule_type: "interval" | "crontab" | "clocked";
-            /** Start At */
+            /**
+             * Start At
+             * @description Optional timezone-aware lower execution bound; omitted preserves it on update, null clears it.
+             */
             start_at?: string | null;
             /**
              * Task Name
@@ -9579,41 +12422,79 @@ export interface components {
         };
         /** PeriodicTaskDTO */
         PeriodicTaskDTO: {
-            /** Args */
+            /**
+             * Args
+             * @description JSON positional arguments bound to the registered task signature before saving.
+             */
             args?: unknown[];
-            /** Clocked At */
+            /**
+             * Clocked At
+             * @description Timezone-aware execution instant; required only for clocked one-off schedules.
+             */
             clocked_at?: string | null;
             /**
              * Created At
              * Format: date-time
+             * @description UTC creation instant of the persisted schedule.
              */
             created_at: string;
-            /** Cron Day Of Month */
+            /**
+             * Cron Day Of Month
+             * @description Celery cron day of month expression; null defaults to * for crontab schedules and must be absent for other variants.
+             */
             cron_day_of_month?: string | null;
-            /** Cron Day Of Week */
+            /**
+             * Cron Day Of Week
+             * @description Celery cron day of week expression; null defaults to * for crontab schedules and must be absent for other variants.
+             */
             cron_day_of_week?: string | null;
-            /** Cron Hour */
+            /**
+             * Cron Hour
+             * @description Celery cron hour expression; null defaults to * for crontab schedules and must be absent for other variants.
+             */
             cron_hour?: string | null;
-            /** Cron Minute */
+            /**
+             * Cron Minute
+             * @description Celery cron minute expression; null defaults to * for crontab schedules and must be absent for other variants.
+             */
             cron_minute?: string | null;
-            /** Cron Month Of Year */
+            /**
+             * Cron Month Of Year
+             * @description Celery cron month of year expression; null defaults to * for crontab schedules and must be absent for other variants.
+             */
             cron_month_of_year?: string | null;
-            /** Deleted At */
+            /**
+             * Deleted At
+             * @description UTC soft-deletion instant, or null for a retained active configuration.
+             */
             deleted_at: string | null;
             /**
              * Enabled
+             * @description Whether the scheduler may dispatch this row; false pauses it without deleting history.
              * @default true
              */
             enabled: boolean;
-            /** Expires At */
+            /**
+             * Expires At
+             * @description Optional timezone-aware expiry after start and clocked instant; omitted preserves it on update, null clears it.
+             */
             expires_at?: string | null;
-            /** Interval Seconds */
+            /**
+             * Interval Seconds
+             * @description Positive interval in seconds; required only for interval schedules. Retained legacy reads may be null.
+             */
             interval_seconds?: number | null;
-            /** Kwargs */
+            /**
+             * Kwargs
+             * @description JSON keyword arguments bound to the registered task signature before saving.
+             */
             kwargs?: {
                 [key: string]: unknown;
             };
-            /** Last Run At */
+            /**
+             * Last Run At
+             * @description UTC instant of the most recent scheduler dispatch, or null before any dispatch.
+             */
             last_run_at: string | null;
             /**
              * Name
@@ -9622,6 +12503,7 @@ export interface components {
             name: string;
             /**
              * One Off
+             * @description Whether the schedule disables itself after dispatch; clocked schedules require true.
              * @default false
              */
             one_off: boolean;
@@ -9637,19 +12519,29 @@ export interface components {
             ref_id: string;
             /**
              * Schedule Type
+             * @description Schedule variant. Only fields belonging to this variant may be supplied on writes.
              * @enum {string}
              */
             schedule_type: "interval" | "crontab" | "clocked";
-            /** Start At */
+            /**
+             * Start At
+             * @description Optional timezone-aware lower execution bound; omitted preserves it on update, null clears it.
+             */
             start_at?: string | null;
             /**
              * Task Name
              * @description Registered Celery task name.
              */
             task_name: string;
-            /** Total Run Count */
+            /**
+             * Total Run Count
+             * @description Number of scheduler dispatches recorded for this schedule.
+             */
             total_run_count: number;
-            /** Updated At */
+            /**
+             * Updated At
+             * @description UTC instant of the most recent change, or null before the first change.
+             */
             updated_at: string | null;
         };
         /** PeriodicTaskQuery */
@@ -9669,17 +12561,35 @@ export interface components {
             /** Sort Orders */
             sort_orders?: components["schemas"]["SortOrder"][];
         };
-        /** PeriodicTaskUpdateDTO */
+        /**
+         * PeriodicTaskUpdateDTO
+         * @description Partial command: omission preserves; enabled and interval reject explicit null.
+         */
         PeriodicTaskUpdateDTO: {
-            /** Enabled */
+            /**
+             * Enabled
+             * @description Whether the scheduler may dispatch this row; false pauses it without deleting history.
+             */
             enabled?: boolean | null;
-            /** Expires At */
+            /**
+             * Expires At
+             * @description Optional timezone-aware expiry after start and clocked instant; omitted preserves it on update, null clears it.
+             */
             expires_at?: string | null;
-            /** Interval Seconds */
+            /**
+             * Interval Seconds
+             * @description Positive interval in seconds; required only for interval schedules. Retained legacy reads may be null.
+             */
             interval_seconds?: number | null;
-            /** Queue */
+            /**
+             * Queue
+             * @description Configured queue choice; omitted preserves it on update, null uses the scheduler default.
+             */
             queue?: string | null;
-            /** Start At */
+            /**
+             * Start At
+             * @description Optional timezone-aware lower execution bound; omitted preserves it on update, null clears it.
+             */
             start_at?: string | null;
         };
         /** PermissionCreateDTO */
@@ -9734,6 +12644,53 @@ export interface components {
             /** Name */
             name?: string | null;
         };
+        /** PersonalHistoryDTO */
+        PersonalHistoryDTO: {
+            /**
+             * Changed At
+             * Format: date-time
+             */
+            changed_at: string;
+            /** Operation */
+            operation: string;
+        };
+        /**
+         * PersonalHistoryQuery
+         * @description Bounded metadata only; historical private queries and identities are not exposed.
+         */
+        PersonalHistoryQuery: {
+            /** Filters */
+            filters?: components["schemas"]["FilterCriteria"][];
+            /**
+             * Page
+             * @default 1
+             */
+            page: number;
+            /**
+             * Size
+             * @default 20
+             */
+            size: number;
+            /** Sort Orders */
+            sort_orders?: components["schemas"]["SortOrder"][];
+        };
+        /** PersonalItemQuery */
+        PersonalItemQuery: {
+            /** Filters */
+            filters?: components["schemas"]["FilterCriteria"][];
+            /**
+             * Page
+             * @default 1
+             */
+            page: number;
+            /**
+             * Size
+             * @default 20
+             */
+            size: number;
+            /** Sort Orders */
+            sort_orders?: components["schemas"]["SortOrder"][];
+        };
         /** PluralMessage */
         PluralMessage: {
             /** One */
@@ -9757,6 +12714,56 @@ export interface components {
             value_schema: {
                 [key: string]: unknown;
             };
+        };
+        /** PreferencesDTO */
+        PreferencesDTO: {
+            /** @description Appearance settings. */
+            appearance?: components["schemas"]["AppearancePreferences"];
+            /** @description Language, timezone, calendar and display digits. */
+            locale?: components["schemas"]["LocalePreferences"];
+            notifications?: components["schemas"]["NotificationPreferences"];
+            /**
+             * Ref Id
+             * @description Current self-owned optimistic reference; version zero represents unsaved defaults.
+             */
+            ref_id: string;
+            /**
+             * Schema Version
+             * @description Version of the typed personal settings contract.
+             * @default 1
+             * @constant
+             */
+            schema_version: 1;
+            /** @description Personal workspace defaults. */
+            workspace?: components["schemas"]["WorkspacePreferences"];
+        };
+        /**
+         * PreferencesPatch
+         * @example {
+         *       "appearance": {
+         *         "theme_mode": "dark"
+         *       },
+         *       "locale": {
+         *         "language": "fa",
+         *         "timezone": "Asia/Tehran"
+         *       },
+         *       "ref_id": "current-reference-from-read"
+         *     }
+         */
+        PreferencesPatch: {
+            /** @description Omitted preserves appearance; null resets this group; an object merges only supplied fields. */
+            appearance?: components["schemas"]["AppearancePreferences"] | null;
+            /** @description Omitted preserves locale; null resets this group; an object merges only supplied fields. */
+            locale?: components["schemas"]["LocalePreferences"] | null;
+            /** @description Omitted preserves notification preferences; null resets optional email to disabled. */
+            notifications?: components["schemas"]["NotificationPreferences"] | null;
+            /**
+             * Ref Id
+             * @description Expected reference from the latest preferences read; stale writes return a conflict.
+             */
+            ref_id: string;
+            /** @description Omitted preserves workspace; null resets this group; an object merges only supplied fields. */
+            workspace?: components["schemas"]["WorkspacePreferences"] | null;
         };
         /** PreviewDTO */
         PreviewDTO: {
@@ -9884,6 +12891,11 @@ export interface components {
             /** Wait Kind */
             wait_kind: ("HUMAN" | "EVENT" | "TIMER" | "BACKGROUND" | "SUBPROCESS") | null;
         };
+        /** ProcessStatusMetadata */
+        ProcessStatusMetadata: {
+            /** Compatible Next Values */
+            compatible_next_values: ("RUNNING" | "WAITING" | "PAUSED" | "COMPLETED" | "FAILED" | "CANCELLED")[];
+        };
         /** ProcessTimelineDTO */
         ProcessTimelineDTO: {
             /** Business Request Ref Id */
@@ -9923,6 +12935,54 @@ export interface components {
              */
             size: number;
         };
+        /** ProfileDTO */
+        ProfileDTO: {
+            /**
+             * Avatar Ref Id
+             * @description Current private owned image reference, or null; download uses the existing authorized media route.
+             */
+            avatar_ref_id: string | null;
+            /**
+             * First Name
+             * @description User-editable given name, or null.
+             */
+            first_name: string | null;
+            /**
+             * Last Name
+             * @description User-editable family name, or null.
+             */
+            last_name: string | null;
+            /**
+             * Ref Id
+             * @description Current self-profile reference from the identity owner.
+             */
+            ref_id: string;
+        };
+        /** ProfilePatch */
+        ProfilePatch: {
+            /**
+             * Avatar Ref Id
+             * @description Omitted preserves the avatar; null detaches it; a reference must name a current private image owned by this user.
+             */
+            avatar_ref_id?: string | null;
+            /**
+             * First Name
+             * @description Omitted preserves the given name; null clears it.
+             */
+            first_name?: string | null;
+            /**
+             * Last Name
+             * @description Omitted preserves the family name; null clears it.
+             */
+            last_name?: string | null;
+            /**
+             * Ref Id
+             * @description Expected self-profile reference; no actor or privilege fields are accepted.
+             */
+            ref_id: string;
+        };
+        /** ReadCommand */
+        ReadCommand: Record<string, never>;
         /**
          * RecoveryCommandDTO
          * @description Operator intent; use a ticket/reason code rather than sensitive free text.
@@ -9944,6 +13004,37 @@ export interface components {
         RefreshDTO: {
             /** Refresh Token */
             refresh_token: string;
+        };
+        /** ReminderDTO */
+        ReminderDTO: {
+            /**
+             * Due At
+             * Format: date-time
+             */
+            due_at: string;
+            /** Ref Id */
+            ref_id: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "PENDING" | "SENT" | "CANCELLED" | "EXPIRED";
+        };
+        /**
+         * ReminderInput
+         * @example {
+         *       "command_key": "deadline-reminders-1",
+         *       "offsets": [
+         *         0,
+         *         3600
+         *       ]
+         *     }
+         */
+        ReminderInput: {
+            /** Command Key */
+            command_key: string;
+            /** Offsets */
+            offsets: number[];
         };
         /** RemoteSource */
         RemoteSource: {
@@ -10047,6 +13138,20 @@ export interface components {
              * @default /value
              */
             value_pointer: string;
+        };
+        /** RepairIssue */
+        RepairIssue: {
+            /** Code */
+            code: string;
+            /** Node Key */
+            node_key: string | null;
+            /** Pointer */
+            pointer: string;
+            /**
+             * Repair Key
+             * @enum {string}
+             */
+            repair_key: "workflow_versions" | "form_versions" | "step_types" | "connections" | "agent_versions" | "work_groups" | "clients";
         };
         /** ReplacementGuidance */
         ReplacementGuidance: {
@@ -10164,6 +13269,24 @@ export interface components {
             size: number;
             /** Sort Orders */
             sort_orders?: components["schemas"]["SortOrder"][];
+        };
+        /** ReportTarget */
+        ReportTarget: {
+            /** Available */
+            available: boolean;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "report";
+            /** Ref Id */
+            ref_id?: string | null;
+            /**
+             * Route Key
+             * @default reports
+             * @constant
+             */
+            route_key: "reports";
         };
         /** RequestTypeClientTargetDTO */
         RequestTypeClientTargetDTO: {
@@ -10343,6 +13466,156 @@ export interface components {
             size: number;
             /** Sort Orders */
             sort_orders?: components["schemas"]["SortOrder"][];
+        };
+        /** @enum {string} */
+        ResourceKind: "users" | "work_groups" | "clients" | "client_releases" | "forms" | "form_versions" | "workflows" | "workflow_versions" | "step_versions" | "request_types" | "connections" | "agent_versions" | "components" | "component_versions" | "data_types" | "data_type_versions";
+        /** ResourceLink */
+        ResourceLink: {
+            /**
+             * Available
+             * @description Current selection eligibility; does not grant execution authority.
+             */
+            available: boolean;
+            kind: components["schemas"]["ResourceKind"];
+            /**
+             * Label
+             * @description Safe current display name from the owning resource service.
+             */
+            label: string;
+            /**
+             * Locator
+             * @description Stable encrypted identity; invalid after signing-key replacement.
+             */
+            locator: string;
+            /**
+             * Number
+             * @description Exact version number, when applicable.
+             */
+            number?: number | null;
+            /**
+             * Ref Id
+             * @description Fresh version-bearing reference; replace cached mutation refs.
+             */
+            ref_id: string;
+            /** @description Allowlisted frontend route key; no arbitrary navigation URL. */
+            route_key: components["schemas"]["ResourceKind"];
+        };
+        /** ResourceReference */
+        ResourceReference: {
+            /** @description Code-owned resource kind; never a table or URL. */
+            kind: components["schemas"]["ResourceKind"];
+            /**
+             * Ref Id
+             * @description Opaque resource reference.
+             */
+            ref_id: string;
+        };
+        /** ResourceSummary */
+        ResourceSummary: {
+            /**
+             * Available
+             * @description Current selection eligibility; does not grant execution authority.
+             */
+            available: boolean;
+            kind: components["schemas"]["ResourceKind"];
+            /**
+             * Label
+             * @description Safe current display name from the owning resource service.
+             */
+            label: string;
+            /**
+             * Number
+             * @description Exact version number, when applicable.
+             */
+            number?: number | null;
+            /**
+             * Ref Id
+             * @description Fresh version-bearing reference; replace cached mutation refs.
+             */
+            ref_id: string;
+        };
+        /** RestoreApplyInput */
+        RestoreApplyInput: {
+            /**
+             * Command Key
+             * @description Client-generated restore intent identity. Reuse with the identical reviewed token to replay; a different token conflicts.
+             */
+            command_key: string;
+            /**
+             * Plan Token
+             * @description Opaque signed preview token. New application expires after 600 seconds; a committed command can replay after expiry subject to current authorization.
+             */
+            plan_token: string;
+        };
+        /** RestorePlan */
+        RestorePlan: {
+            /** Blockers */
+            blockers: components["schemas"]["GraphIssue"][];
+            /**
+             * Changed Paths
+             * @description Safe changed top-level definition paths; no embedded config or private values.
+             */
+            changed_paths?: string[];
+            /** Changed Step Keys */
+            changed_step_keys: string[];
+            /** Dependencies */
+            dependencies: {
+                [key: string]: string;
+            };
+            /**
+             * Expires In Seconds
+             * @default 600
+             */
+            expires_in_seconds: number;
+            /**
+             * Mode
+             * @enum {string}
+             */
+            mode: "replace_draft" | "successor";
+            /** Plan Token */
+            plan_token: string | null;
+            /** Template Checksum */
+            template_checksum: string;
+            /** Template Ref Id */
+            template_ref_id: string;
+        };
+        /** RestorePreviewInput */
+        RestorePreviewInput: {
+            /**
+             * Bindings
+             * @description At most 128 exact dependency replacements. Keys are kind:step_key, or user/work_group:step_key:target_index. Supported kinds: form, step_type, user, work_group, connection, agent, subprocess. Omitted bindings retain the associated installation mapping when source_ref_id is omitted.
+             */
+            bindings?: {
+                [key: string]: string;
+            };
+            /**
+             * Mode
+             * @description replace_draft replaces only the target DRAFT; successor creates a new editable version without publishing.
+             * @enum {string}
+             */
+            mode: "replace_draft" | "successor";
+            /**
+             * Source Ref Id
+             * @description Exact immutable published/retired template version; omit only when the target has recorded provenance.
+             */
+            source_ref_id?: string | null;
+            /**
+             * Workspace Ref Id
+             * @description Current independent workspace reference; null is valid only when no saved workspace exists.
+             */
+            workspace_ref_id?: string | null;
+        };
+        /** RestoreResult */
+        RestoreResult: {
+            /**
+             * Replayed
+             * @default false
+             */
+            replayed: boolean;
+            /** Workflow Version Ref Id */
+            workflow_version_ref_id: string;
+            /** Workspace Ref Id */
+            workspace_ref_id: string;
         };
         /** ResumeProcessDTO */
         ResumeProcessDTO: {
@@ -10646,6 +13919,141 @@ export interface components {
             /** Writable Scopes */
             writable_scopes: string[];
         };
+        /** SandboxCancellationRecoveryDTO */
+        SandboxCancellationRecoveryDTO: {
+            /**
+             * Status
+             * @description Existing compensation record state; RUNNING is queued, not confirmed cancellation.
+             */
+            status: string;
+            /**
+             * Step Execution Ref Id
+             * @description Current opaque reference of the original order execution.
+             */
+            step_execution_ref_id: string;
+        };
+        /** SandboxOperationDTO */
+        SandboxOperationDTO: {
+            /**
+             * Operation Id
+             * Format: uuid
+             * @description Stable external operation identity; never a permission or backend ref.
+             */
+            operation_id: string;
+            /** @description Validated provider receipt only when confirmed; never inferred from a timeout. */
+            receipt?: components["schemas"]["SandboxOrderReceipt"] | null;
+            /** @description Persisted attempt evidence: PREPARED, DISPATCHING, UNKNOWN or CONFIRMED; queued is not completed. */
+            state: components["schemas"]["OrderDispatchState"];
+            /**
+             * Step Execution Ref Id
+             * @description Current opaque execution reference for a subsequent operator command.
+             */
+            step_execution_ref_id: string;
+        };
+        /** SandboxOrderReceipt */
+        SandboxOrderReceipt: {
+            /**
+             * Operation Id
+             * Format: uuid
+             * @description Stable external create identity, unchanged across duplicate delivery and lookup.
+             */
+            operation_id: string;
+            /**
+             * Payload Hash
+             * @description SHA-256 of canonical typed sandbox payload including default note; no payload values.
+             */
+            payload_hash: string;
+            /**
+             * Receipt Id
+             * Format: uuid
+             * @description Durable sandbox receipt identity, not a private backend row reference.
+             */
+            receipt_id: string;
+            /**
+             * State
+             * @description Actual provider order state; cancellation is separate from database rollback.
+             * @enum {string}
+             */
+            state: "CREATED" | "CANCELLED";
+        };
+        /** SavedViewDTO */
+        SavedViewDTO: {
+            /** Column Keys */
+            column_keys: string[];
+            /** Compatible */
+            compatible: boolean;
+            /** Is Default */
+            is_default: boolean;
+            /** Name */
+            name: string;
+            /** Page Size */
+            page_size: number;
+            /** Query */
+            query: {
+                [key: string]: components["schemas"]["JsonValue"];
+            };
+            /**
+             * Reason
+             * @enum {string}
+             */
+            reason: "compatible" | "schema_changed";
+            /** Ref Id */
+            ref_id: string;
+            resource_kind: components["schemas"]["ViewScope"];
+            /** Schema Version */
+            schema_version: number;
+        };
+        /**
+         * SavedViewInput
+         * @example {
+         *       "column_keys": [
+         *         "title",
+         *         "status"
+         *       ],
+         *       "command_key": "preset-create-1",
+         *       "name": "My active requests",
+         *       "page_size": 20,
+         *       "query": {
+         *         "filters": [
+         *           {
+         *             "field_name": "status",
+         *             "operation": "equal",
+         *             "value": "RUNNING"
+         *           }
+         *         ],
+         *         "scope": "mine"
+         *       },
+         *       "resource_kind": "business_requests",
+         *       "schema_version": 1
+         *     }
+         */
+        SavedViewInput: {
+            /** Column Keys */
+            column_keys?: string[];
+            /** Command Key */
+            command_key: string;
+            /** Name */
+            name: string;
+            /**
+             * Page Size
+             * @default 20
+             */
+            page_size: number;
+            /**
+             * Query
+             * @description Version-one query document validated against the named list DTO. No page/size, result bodies, credentials, actor identifiers or reference-valued filters. At most 8 KiB, 20 filters and 10 sort orders. Cartable scopes retain only their supported typed query fields.
+             */
+            query?: {
+                [key: string]: components["schemas"]["JsonValue"];
+            };
+            resource_kind: components["schemas"]["ViewScope"];
+            /**
+             * Schema Version
+             * @default 1
+             * @constant
+             */
+            schema_version: 1;
+        };
         /** ScheduledActionDTO */
         ScheduledActionDTO: {
             /** Attempts */
@@ -10671,6 +14079,14 @@ export interface components {
         SecretRotationDTO: {
             secret_ref: components["schemas"]["SecretIdentifier"];
             secret_version: components["schemas"]["SecretIdentifier"];
+        };
+        /** SelectedQuery */
+        SelectedQuery: {
+            /**
+             * Resources
+             * @description Selected values outside any search page; all must remain eligible.
+             */
+            resources: components["schemas"]["ResourceReference"][];
         };
         /** SelectOption[str] */
         SelectOption_str_: {
@@ -10745,6 +14161,61 @@ export interface components {
             /** Sort Orders */
             sort_orders?: components["schemas"]["SortOrder"][];
         };
+        /** SetupCheck */
+        SetupCheck: {
+            /** Key */
+            key: string;
+            /**
+             * Reason
+             * @description Stable localized message key, never an exception or provider response.
+             */
+            reason: string;
+            /**
+             * Repair Key
+             * @enum {string}
+             */
+            repair_key: "operations" | "permissions" | "clients" | "request_types" | "step_types" | "connections";
+            /** Required */
+            required: boolean;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "ready" | "blocked" | "unknown" | "not_applicable";
+        };
+        /** SetupReport */
+        SetupReport: {
+            /**
+             * Checked At
+             * Format: date-time
+             */
+            checked_at: string;
+            /** Checks */
+            checks: components["schemas"]["SetupCheck"][];
+            /**
+             * Refresh After Seconds
+             * @default 30
+             * @constant
+             */
+            refresh_after_seconds: 30;
+            /**
+             * Schema Version
+             * @default 1
+             * @constant
+             */
+            schema_version: 1;
+            /**
+             * Scope
+             * @default development_demo
+             * @constant
+             */
+            scope: "development_demo";
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "ready" | "blocked" | "unknown" | "not_applicable";
+        };
         /** SimulatedRuntimePreviewRequest */
         SimulatedRuntimePreviewRequest: {
             /**
@@ -10813,6 +14284,24 @@ export interface components {
             multi_field?: string[];
             /** @default asc */
             operation: components["schemas"]["SortOperation"];
+        };
+        /** StepCatalogMetadata */
+        StepCatalogMetadata: {
+            /** Code */
+            code: string;
+            execution_mode: components["schemas"]["ExecutionMode"];
+            /** Handler Key */
+            handler_key: string;
+            /** Handler Version */
+            handler_version: string;
+            /** Number */
+            number: number;
+            /** Ports */
+            ports: components["schemas"]["PortDTO"][];
+            /** Ref Id */
+            ref_id: string;
+            /** Runtime Available */
+            runtime_available: boolean;
         };
         /** StepTypeQuery */
         StepTypeQuery: {
@@ -10927,6 +14416,19 @@ export interface components {
              * Workflow Version Ref
              * @description Exact published child workflow version ref_id. Existing pins survive retirement.
              */
+            workflow_version_ref: string;
+        };
+        /** SubprocessCatalogMetadata */
+        SubprocessCatalogMetadata: {
+            /**
+             * Call Step Type
+             * @constant
+             */
+            call_step_type: "SUBPROCESS";
+            interface: components["schemas"]["SubprocessInterface"];
+            /** Runtime Available */
+            runtime_available: boolean;
+            /** Workflow Version Ref */
             workflow_version_ref: string;
         };
         /** SubprocessInputMapping */
@@ -11129,6 +14631,25 @@ export interface components {
              */
             success: true;
         };
+        /** SuccessResponse[AppliedView] */
+        SuccessResponse_AppliedView_: {
+            /**
+             * Code
+             * @default 200
+             */
+            code: number;
+            data: components["schemas"]["AppliedView"];
+            /** Error */
+            error?: null;
+            /** Request Id */
+            request_id: string;
+            /**
+             * Success
+             * @default true
+             * @constant
+             */
+            success: true;
+        };
         /** SuccessResponse[AttachmentMutationDTO] */
         SuccessResponse_AttachmentMutationDTO_: {
             /**
@@ -11213,6 +14734,25 @@ export interface components {
              */
             code: number;
             data: components["schemas"]["BusinessRequestDTO"];
+            /** Error */
+            error?: null;
+            /** Request Id */
+            request_id: string;
+            /**
+             * Success
+             * @default true
+             * @constant
+             */
+            success: true;
+        };
+        /** SuccessResponse[CalendarItemDTO] */
+        SuccessResponse_CalendarItemDTO_: {
+            /**
+             * Code
+             * @default 200
+             */
+            code: number;
+            data: components["schemas"]["CalendarItemDTO"];
             /** Error */
             error?: null;
             /** Request Id */
@@ -11338,6 +14878,25 @@ export interface components {
              */
             success: true;
         };
+        /** SuccessResponse[DependencyReadiness] */
+        SuccessResponse_DependencyReadiness_: {
+            /**
+             * Code
+             * @default 200
+             */
+            code: number;
+            data: components["schemas"]["DependencyReadiness"];
+            /** Error */
+            error?: null;
+            /** Request Id */
+            request_id: string;
+            /**
+             * Success
+             * @default true
+             * @constant
+             */
+            success: true;
+        };
         /** SuccessResponse[dict[str, Any]] */
         SuccessResponse_dict_str__Any__: {
             /**
@@ -11390,6 +14949,25 @@ export interface components {
              */
             code: number;
             data: components["schemas"]["EventDeliveryResultDTO"];
+            /** Error */
+            error?: null;
+            /** Request Id */
+            request_id: string;
+            /**
+             * Success
+             * @default true
+             * @constant
+             */
+            success: true;
+        };
+        /** SuccessResponse[FavoriteDTO] */
+        SuccessResponse_FavoriteDTO_: {
+            /**
+             * Code
+             * @default 200
+             */
+            code: number;
+            data: components["schemas"]["FavoriteDTO"];
             /** Error */
             error?: null;
             /** Request Id */
@@ -11572,6 +15150,139 @@ export interface components {
              */
             success: true;
         };
+        /** SuccessResponse[HelpActionResult] */
+        SuccessResponse_HelpActionResult_: {
+            /**
+             * Code
+             * @default 200
+             */
+            code: number;
+            data: components["schemas"]["HelpActionResult"];
+            /** Error */
+            error?: null;
+            /** Request Id */
+            request_id: string;
+            /**
+             * Success
+             * @default true
+             * @constant
+             */
+            success: true;
+        };
+        /** SuccessResponse[HelpResetResult] */
+        SuccessResponse_HelpResetResult_: {
+            /**
+             * Code
+             * @default 200
+             */
+            code: number;
+            data: components["schemas"]["HelpResetResult"];
+            /** Error */
+            error?: null;
+            /** Request Id */
+            request_id: string;
+            /**
+             * Success
+             * @default true
+             * @constant
+             */
+            success: true;
+        };
+        /** SuccessResponse[HelpStatePage] */
+        SuccessResponse_HelpStatePage_: {
+            /**
+             * Code
+             * @default 200
+             */
+            code: number;
+            data: components["schemas"]["HelpStatePage"];
+            /** Error */
+            error?: null;
+            /** Request Id */
+            request_id: string;
+            /**
+             * Success
+             * @default true
+             * @constant
+             */
+            success: true;
+        };
+        /** SuccessResponse[InboxDTO] */
+        SuccessResponse_InboxDTO_: {
+            /**
+             * Code
+             * @default 200
+             */
+            code: number;
+            data: components["schemas"]["InboxDTO"];
+            /** Error */
+            error?: null;
+            /** Request Id */
+            request_id: string;
+            /**
+             * Success
+             * @default true
+             * @constant
+             */
+            success: true;
+        };
+        /** SuccessResponse[IncidentDTO] */
+        SuccessResponse_IncidentDTO_: {
+            /**
+             * Code
+             * @default 200
+             */
+            code: number;
+            data: components["schemas"]["IncidentDTO"];
+            /** Error */
+            error?: null;
+            /** Request Id */
+            request_id: string;
+            /**
+             * Success
+             * @default true
+             * @constant
+             */
+            success: true;
+        };
+        /** SuccessResponse[InspectorContract] */
+        SuccessResponse_InspectorContract_: {
+            /**
+             * Code
+             * @default 200
+             */
+            code: number;
+            data: components["schemas"]["InspectorContract"];
+            /** Error */
+            error?: null;
+            /** Request Id */
+            request_id: string;
+            /**
+             * Success
+             * @default true
+             * @constant
+             */
+            success: true;
+        };
+        /** SuccessResponse[InspectorValidationResult] */
+        SuccessResponse_InspectorValidationResult_: {
+            /**
+             * Code
+             * @default 200
+             */
+            code: number;
+            data: components["schemas"]["InspectorValidationResult"];
+            /** Error */
+            error?: null;
+            /** Request Id */
+            request_id: string;
+            /**
+             * Success
+             * @default true
+             * @constant
+             */
+            success: true;
+        };
         /** SuccessResponse[LibraryDTO] */
         SuccessResponse_LibraryDTO_: {
             /**
@@ -11629,6 +15340,26 @@ export interface components {
              */
             success: true;
         };
+        /** SuccessResponse[list[BusinessOperationDTO]] */
+        SuccessResponse_list_BusinessOperationDTO__: {
+            /**
+             * Code
+             * @default 200
+             */
+            code: number;
+            /** Data */
+            data: components["schemas"]["BusinessOperationDTO"][];
+            /** Error */
+            error?: null;
+            /** Request Id */
+            request_id: string;
+            /**
+             * Success
+             * @default true
+             * @constant
+             */
+            success: true;
+        };
         /** SuccessResponse[list[FieldContract]] */
         SuccessResponse_list_FieldContract__: {
             /**
@@ -11669,6 +15400,66 @@ export interface components {
              */
             success: true;
         };
+        /** SuccessResponse[list[MetricDefinition]] */
+        SuccessResponse_list_MetricDefinition__: {
+            /**
+             * Code
+             * @default 200
+             */
+            code: number;
+            /** Data */
+            data: components["schemas"]["MetricDefinition"][];
+            /** Error */
+            error?: null;
+            /** Request Id */
+            request_id: string;
+            /**
+             * Success
+             * @default true
+             * @constant
+             */
+            success: true;
+        };
+        /** SuccessResponse[list[ReminderDTO]] */
+        SuccessResponse_list_ReminderDTO__: {
+            /**
+             * Code
+             * @default 200
+             */
+            code: number;
+            /** Data */
+            data: components["schemas"]["ReminderDTO"][];
+            /** Error */
+            error?: null;
+            /** Request Id */
+            request_id: string;
+            /**
+             * Success
+             * @default true
+             * @constant
+             */
+            success: true;
+        };
+        /** SuccessResponse[list[ResourceSummary]] */
+        SuccessResponse_list_ResourceSummary__: {
+            /**
+             * Code
+             * @default 200
+             */
+            code: number;
+            /** Data */
+            data: components["schemas"]["ResourceSummary"][];
+            /** Error */
+            error?: null;
+            /** Request Id */
+            request_id: string;
+            /**
+             * Success
+             * @default true
+             * @constant
+             */
+            success: true;
+        };
         /** SuccessResponse[list[SubmissionAttachmentDTO]] */
         SuccessResponse_list_SubmissionAttachmentDTO__: {
             /**
@@ -11697,6 +15488,25 @@ export interface components {
              */
             code: number;
             data: components["schemas"]["ManualOverrideState"];
+            /** Error */
+            error?: null;
+            /** Request Id */
+            request_id: string;
+            /**
+             * Success
+             * @default true
+             * @constant
+             */
+            success: true;
+        };
+        /** SuccessResponse[MetricResult] */
+        SuccessResponse_MetricResult_: {
+            /**
+             * Code
+             * @default 200
+             */
+            code: number;
+            data: components["schemas"]["MetricResult"];
             /** Error */
             error?: null;
             /** Request Id */
@@ -11823,6 +15633,25 @@ export interface components {
              */
             success: true;
         };
+        /** SuccessResponse[PreferencesDTO] */
+        SuccessResponse_PreferencesDTO_: {
+            /**
+             * Code
+             * @default 200
+             */
+            code: number;
+            data: components["schemas"]["PreferencesDTO"];
+            /** Error */
+            error?: null;
+            /** Request Id */
+            request_id: string;
+            /**
+             * Success
+             * @default true
+             * @constant
+             */
+            success: true;
+        };
         /** SuccessResponse[PreviewDTO] */
         SuccessResponse_PreviewDTO_: {
             /**
@@ -11869,6 +15698,25 @@ export interface components {
              */
             code: number;
             data: components["schemas"]["ProcessTimelineDTO"];
+            /** Error */
+            error?: null;
+            /** Request Id */
+            request_id: string;
+            /**
+             * Success
+             * @default true
+             * @constant
+             */
+            success: true;
+        };
+        /** SuccessResponse[ProfileDTO] */
+        SuccessResponse_ProfileDTO_: {
+            /**
+             * Code
+             * @default 200
+             */
+            code: number;
+            data: components["schemas"]["ProfileDTO"];
             /** Error */
             error?: null;
             /** Request Id */
@@ -11937,6 +15785,63 @@ export interface components {
              */
             success: true;
         };
+        /** SuccessResponse[ResourceLink] */
+        SuccessResponse_ResourceLink_: {
+            /**
+             * Code
+             * @default 200
+             */
+            code: number;
+            data: components["schemas"]["ResourceLink"];
+            /** Error */
+            error?: null;
+            /** Request Id */
+            request_id: string;
+            /**
+             * Success
+             * @default true
+             * @constant
+             */
+            success: true;
+        };
+        /** SuccessResponse[RestorePlan] */
+        SuccessResponse_RestorePlan_: {
+            /**
+             * Code
+             * @default 200
+             */
+            code: number;
+            data: components["schemas"]["RestorePlan"];
+            /** Error */
+            error?: null;
+            /** Request Id */
+            request_id: string;
+            /**
+             * Success
+             * @default true
+             * @constant
+             */
+            success: true;
+        };
+        /** SuccessResponse[RestoreResult] */
+        SuccessResponse_RestoreResult_: {
+            /**
+             * Code
+             * @default 200
+             */
+            code: number;
+            data: components["schemas"]["RestoreResult"];
+            /** Error */
+            error?: null;
+            /** Request Id */
+            request_id: string;
+            /**
+             * Success
+             * @default true
+             * @constant
+             */
+            success: true;
+        };
         /** SuccessResponse[RoleDTO] */
         SuccessResponse_RoleDTO_: {
             /**
@@ -11975,6 +15880,63 @@ export interface components {
              */
             success: true;
         };
+        /** SuccessResponse[SandboxCancellationRecoveryDTO] */
+        SuccessResponse_SandboxCancellationRecoveryDTO_: {
+            /**
+             * Code
+             * @default 200
+             */
+            code: number;
+            data: components["schemas"]["SandboxCancellationRecoveryDTO"];
+            /** Error */
+            error?: null;
+            /** Request Id */
+            request_id: string;
+            /**
+             * Success
+             * @default true
+             * @constant
+             */
+            success: true;
+        };
+        /** SuccessResponse[SandboxOperationDTO] */
+        SuccessResponse_SandboxOperationDTO_: {
+            /**
+             * Code
+             * @default 200
+             */
+            code: number;
+            data: components["schemas"]["SandboxOperationDTO"];
+            /** Error */
+            error?: null;
+            /** Request Id */
+            request_id: string;
+            /**
+             * Success
+             * @default true
+             * @constant
+             */
+            success: true;
+        };
+        /** SuccessResponse[SavedViewDTO] */
+        SuccessResponse_SavedViewDTO_: {
+            /**
+             * Code
+             * @default 200
+             */
+            code: number;
+            data: components["schemas"]["SavedViewDTO"];
+            /** Error */
+            error?: null;
+            /** Request Id */
+            request_id: string;
+            /**
+             * Success
+             * @default true
+             * @constant
+             */
+            success: true;
+        };
         /** SuccessResponse[SessionDTO] */
         SuccessResponse_SessionDTO_: {
             /**
@@ -11994,6 +15956,25 @@ export interface components {
              */
             success: true;
         };
+        /** SuccessResponse[SetupReport] */
+        SuccessResponse_SetupReport_: {
+            /**
+             * Code
+             * @default 200
+             */
+            code: number;
+            data: components["schemas"]["SetupReport"];
+            /** Error */
+            error?: null;
+            /** Request Id */
+            request_id: string;
+            /**
+             * Success
+             * @default true
+             * @constant
+             */
+            success: true;
+        };
         /** SuccessResponse[StepTypeVersionDTO] */
         SuccessResponse_StepTypeVersionDTO_: {
             /**
@@ -12002,6 +15983,25 @@ export interface components {
              */
             code: number;
             data: components["schemas"]["StepTypeVersionDTO"];
+            /** Error */
+            error?: null;
+            /** Request Id */
+            request_id: string;
+            /**
+             * Success
+             * @default true
+             * @constant
+             */
+            success: true;
+        };
+        /** SuccessResponse[SupportReceipt] */
+        SuccessResponse_SupportReceipt_: {
+            /**
+             * Code
+             * @default 200
+             */
+            code: number;
+            data: components["schemas"]["SupportReceipt"];
             /** Error */
             error?: null;
             /** Request Id */
@@ -12097,6 +16097,25 @@ export interface components {
              */
             code: number;
             data: components["schemas"]["TokenPairDTO"];
+            /** Error */
+            error?: null;
+            /** Request Id */
+            request_id: string;
+            /**
+             * Success
+             * @default true
+             * @constant
+             */
+            success: true;
+        };
+        /** SuccessResponse[UnreadDTO] */
+        SuccessResponse_UnreadDTO_: {
+            /**
+             * Code
+             * @default 200
+             */
+            code: number;
+            data: components["schemas"]["UnreadDTO"];
             /** Error */
             error?: null;
             /** Request Id */
@@ -12336,6 +16355,37 @@ export interface components {
              */
             success: true;
         };
+        /** SupportReceipt */
+        SupportReceipt: {
+            /**
+             * Persisted
+             * @description True only after independent incident commit; false means durability is unavailable.
+             */
+            persisted: boolean;
+            /**
+             * Support Ref
+             * @description Correlation identity only; support.incidents.manage is still required for inspection.
+             */
+            support_ref: string | null;
+        };
+        /** SupportTarget */
+        SupportTarget: {
+            /** Available */
+            available: boolean;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "support";
+            /** Ref Id */
+            ref_id?: string | null;
+            /**
+             * Route Key
+             * @default support_incidents
+             * @constant
+             */
+            route_key: "support_incidents";
+        };
         /** TaskAction */
         TaskAction: {
             confirmation?: components["schemas"]["LocalizedTaskText"] | null;
@@ -12551,6 +16601,31 @@ export interface components {
             /** Version Ref Id */
             version_ref_id: string;
         };
+        /** TimedSchedule */
+        TimedSchedule: {
+            /**
+             * End At
+             * Format: date-time
+             * @description Exclusive aware instant after start_at, normalized to UTC.
+             */
+            end_at: string;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "timed";
+            /**
+             * Start At
+             * Format: date-time
+             * @description Inclusive aware instant, normalized to UTC.
+             */
+            start_at: string;
+            /**
+             * Timezone
+             * @description IANA timezone for local presentation; canonical dates remain Gregorian.
+             */
+            timezone: string;
+        };
         /** TimelineAttemptDTO */
         TimelineAttemptDTO: {
             /** Ended At */
@@ -12734,6 +16809,11 @@ export interface components {
              * @default bearer
              */
             token_type: string;
+        };
+        /** UnreadDTO */
+        UnreadDTO: {
+            /** Total */
+            total: number;
         };
         /** UpgradeImpact */
         UpgradeImpact: {
@@ -13008,6 +17088,8 @@ export interface components {
             /** Target Ref Id */
             target_ref_id: string;
         };
+        /** @enum {string} */
+        ViewScope: "forms" | "workflows" | "business_requests" | "work_items";
         /** WorkflowCreateDTO */
         WorkflowCreateDTO: {
             /**
@@ -13548,7 +17630,7 @@ export interface components {
             dialect: string;
             /**
              * Graph
-             * @description Incomplete authoring JSON, at most 256 KiB and depth 32. It is never executed; promotion validates GraphSnapshot and all dependencies.
+             * @description Incomplete authoring JSON, at most 64 KiB, depth 24, 2048 nodes and lists of at most 256 items. It is never executed; promotion validates GraphSnapshot and all dependencies.
              */
             graph?: {
                 [key: string]: unknown;
@@ -13582,6 +17664,22 @@ export interface components {
              */
             y: number;
         };
+        /** WorkspacePreferences */
+        WorkspacePreferences: {
+            /**
+             * Landing Key
+             * @description Allowlisted landing route key; a preference grants no screen permission.
+             * @default requests
+             * @enum {string}
+             */
+            landing_key: "requests" | "work_items" | "studio" | "dashboard";
+            /**
+             * Page Size
+             * @description Default list page size, from 1 through 100 items.
+             * @default 20
+             */
+            page_size: number;
+        };
         /** WorkspacePromoteDTO */
         WorkspacePromoteDTO: {
             /** Workspace Ref Id */
@@ -13613,6 +17711,24 @@ export interface components {
              * @default 1
              */
             zoom: number;
+        };
+        /** WorkTarget */
+        WorkTarget: {
+            /** Available */
+            available: boolean;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "ai_approval" | "work_item";
+            /** Ref Id */
+            ref_id?: string | null;
+            /**
+             * Route Key
+             * @default work_items
+             * @constant
+             */
+            route_key: "work_items";
         };
     };
     responses: never;
@@ -22555,6 +26671,308 @@ export interface operations {
             };
         };
     };
+    catalog_api_v1_analytics_catalog_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @example fa-IR
+                 */
+                "Accept-Language"?: string;
+                /**
+                 * @description Optional RFC 9110 HTTP-date generated by native clients for advisory diagnostics. Browser JavaScript cannot set Date. Missing or invalid values do not reject the request.
+                 * @example Mon, 28 Sep 2026 12:00:00 GMT
+                 */
+                Date?: string;
+                /** @description Optional caller-controlled client software identifier for audit and diagnostics; captured up to 1024 characters. Browsers supply their own value and may ignore manual Swagger overrides. Not trusted client identity or authorization. */
+                "User-Agent"?: string | null;
+                /**
+                 * @description Optional caller-supplied reason recorded in audit history. It is not an authorization credential.
+                 * @example Correcting a submitted request
+                 */
+                "X-Audit-Reason"?: string;
+                /** @description Optional UUIDv7 correlation identifier. Missing or invalid values are replaced with a generated UUIDv7; the effective value is returned in X-Request-ID. */
+                "X-Request-ID"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Protected actor-specific response; persistent caching is prohibited. */
+                    "Cache-Control"?: "private, no-store";
+                    /** @description Present as check-device-time only when the configured apparent difference threshold is reached. */
+                    "X-Client-Date-Advisory"?: "check-device-time";
+                    /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
+                    "X-Client-Date-Delta-Seconds"?: number;
+                    /** @description Optional client Date reading: available, unavailable, or invalid. No request is rejected for this diagnostic. */
+                    "X-Client-Date-Status"?: "available" | "unavailable" | "invalid";
+                    /** @description Server UTC receipt timestamp. Response Date, when present, is generated by the HTTP server or proxy. */
+                    "X-Server-Received-At"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuccessResponse_list_MetricDefinition__"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Content Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Locked */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    query_metrics_api_v1_analytics_query_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @example fa-IR
+                 */
+                "Accept-Language"?: string;
+                /**
+                 * @description Optional RFC 9110 HTTP-date generated by native clients for advisory diagnostics. Browser JavaScript cannot set Date. Missing or invalid values do not reject the request.
+                 * @example Mon, 28 Sep 2026 12:00:00 GMT
+                 */
+                Date?: string;
+                /** @description Optional caller-controlled client software identifier for audit and diagnostics; captured up to 1024 characters. Browsers supply their own value and may ignore manual Swagger overrides. Not trusted client identity or authorization. */
+                "User-Agent"?: string | null;
+                /**
+                 * @description Optional caller-supplied reason recorded in audit history. It is not an authorization credential.
+                 * @example Correcting a submitted request
+                 */
+                "X-Audit-Reason"?: string;
+                /** @description Optional UUIDv7 correlation identifier. Missing or invalid values are replaced with a generated UUIDv7; the effective value is returned in X-Request-ID. */
+                "X-Request-ID"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MetricQuery"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Protected actor-specific response; persistent caching is prohibited. */
+                    "Cache-Control"?: "private, no-store";
+                    /** @description Present as check-device-time only when the configured apparent difference threshold is reached. */
+                    "X-Client-Date-Advisory"?: "check-device-time";
+                    /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
+                    "X-Client-Date-Delta-Seconds"?: number;
+                    /** @description Optional client Date reading: available, unavailable, or invalid. No request is rejected for this diagnostic. */
+                    "X-Client-Date-Status"?: "available" | "unavailable" | "invalid";
+                    /** @description Server UTC receipt timestamp. Response Date, when present, is generated by the HTTP server or proxy. */
+                    "X-Server-Received-At"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuccessResponse_MetricResult_"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Content Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Locked */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     change_password_api_v1_auth_change_password_post: {
         parameters: {
             query?: never;
@@ -27691,6 +32109,1685 @@ export interface operations {
             };
         };
     };
+    create_api_v1_calendar_events_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @example fa-IR
+                 */
+                "Accept-Language"?: string;
+                /**
+                 * @description Optional RFC 9110 HTTP-date generated by native clients for advisory diagnostics. Browser JavaScript cannot set Date. Missing or invalid values do not reject the request.
+                 * @example Mon, 28 Sep 2026 12:00:00 GMT
+                 */
+                Date?: string;
+                /** @description Optional caller-controlled client software identifier for audit and diagnostics; captured up to 1024 characters. Browsers supply their own value and may ignore manual Swagger overrides. Not trusted client identity or authorization. */
+                "User-Agent"?: string | null;
+                /**
+                 * @description Optional caller-supplied reason recorded in audit history. It is not an authorization credential.
+                 * @example Correcting a submitted request
+                 */
+                "X-Audit-Reason"?: string;
+                /** @description Optional UUIDv7 correlation identifier. Missing or invalid values are replaced with a generated UUIDv7; the effective value is returned in X-Request-ID. */
+                "X-Request-ID"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CalendarInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Protected actor-specific response; persistent caching is prohibited. */
+                    "Cache-Control"?: "private, no-store";
+                    /** @description Present as check-device-time only when the configured apparent difference threshold is reached. */
+                    "X-Client-Date-Advisory"?: "check-device-time";
+                    /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
+                    "X-Client-Date-Delta-Seconds"?: number;
+                    /** @description Optional client Date reading: available, unavailable, or invalid. No request is rejected for this diagnostic. */
+                    "X-Client-Date-Status"?: "available" | "unavailable" | "invalid";
+                    /** @description Server UTC receipt timestamp. Response Date, when present, is generated by the HTTP server or proxy. */
+                    "X-Server-Received-At"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuccessResponse_CalendarItemDTO_"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Content Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Locked */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    detail_api_v1_calendar_events__ref_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @example fa-IR
+                 */
+                "Accept-Language"?: string;
+                /**
+                 * @description Optional RFC 9110 HTTP-date generated by native clients for advisory diagnostics. Browser JavaScript cannot set Date. Missing or invalid values do not reject the request.
+                 * @example Mon, 28 Sep 2026 12:00:00 GMT
+                 */
+                Date?: string;
+                /** @description Optional caller-controlled client software identifier for audit and diagnostics; captured up to 1024 characters. Browsers supply their own value and may ignore manual Swagger overrides. Not trusted client identity or authorization. */
+                "User-Agent"?: string | null;
+                /**
+                 * @description Optional caller-supplied reason recorded in audit history. It is not an authorization credential.
+                 * @example Correcting a submitted request
+                 */
+                "X-Audit-Reason"?: string;
+                /** @description Optional UUIDv7 correlation identifier. Missing or invalid values are replaced with a generated UUIDv7; the effective value is returned in X-Request-ID. */
+                "X-Request-ID"?: string;
+            };
+            path: {
+                ref_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Protected actor-specific response; persistent caching is prohibited. */
+                    "Cache-Control"?: "private, no-store";
+                    /** @description Present as check-device-time only when the configured apparent difference threshold is reached. */
+                    "X-Client-Date-Advisory"?: "check-device-time";
+                    /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
+                    "X-Client-Date-Delta-Seconds"?: number;
+                    /** @description Optional client Date reading: available, unavailable, or invalid. No request is rejected for this diagnostic. */
+                    "X-Client-Date-Status"?: "available" | "unavailable" | "invalid";
+                    /** @description Server UTC receipt timestamp. Response Date, when present, is generated by the HTTP server or proxy. */
+                    "X-Server-Received-At"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuccessResponse_CalendarItemDTO_"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Content Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Locked */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    update_api_v1_calendar_events__ref_id__put: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @example fa-IR
+                 */
+                "Accept-Language"?: string;
+                /**
+                 * @description Optional RFC 9110 HTTP-date generated by native clients for advisory diagnostics. Browser JavaScript cannot set Date. Missing or invalid values do not reject the request.
+                 * @example Mon, 28 Sep 2026 12:00:00 GMT
+                 */
+                Date?: string;
+                /** @description Optional caller-controlled client software identifier for audit and diagnostics; captured up to 1024 characters. Browsers supply their own value and may ignore manual Swagger overrides. Not trusted client identity or authorization. */
+                "User-Agent"?: string | null;
+                /**
+                 * @description Optional caller-supplied reason recorded in audit history. It is not an authorization credential.
+                 * @example Correcting a submitted request
+                 */
+                "X-Audit-Reason"?: string;
+                /** @description Optional UUIDv7 correlation identifier. Missing or invalid values are replaced with a generated UUIDv7; the effective value is returned in X-Request-ID. */
+                "X-Request-ID"?: string;
+            };
+            path: {
+                ref_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CalendarInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Protected actor-specific response; persistent caching is prohibited. */
+                    "Cache-Control"?: "private, no-store";
+                    /** @description Present as check-device-time only when the configured apparent difference threshold is reached. */
+                    "X-Client-Date-Advisory"?: "check-device-time";
+                    /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
+                    "X-Client-Date-Delta-Seconds"?: number;
+                    /** @description Optional client Date reading: available, unavailable, or invalid. No request is rejected for this diagnostic. */
+                    "X-Client-Date-Status"?: "available" | "unavailable" | "invalid";
+                    /** @description Server UTC receipt timestamp. Response Date, when present, is generated by the HTTP server or proxy. */
+                    "X-Server-Received-At"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuccessResponse_CalendarItemDTO_"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Content Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Locked */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    delete_api_v1_calendar_events__ref_id__delete: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @example fa-IR
+                 */
+                "Accept-Language"?: string;
+                /**
+                 * @description Optional RFC 9110 HTTP-date generated by native clients for advisory diagnostics. Browser JavaScript cannot set Date. Missing or invalid values do not reject the request.
+                 * @example Mon, 28 Sep 2026 12:00:00 GMT
+                 */
+                Date?: string;
+                /** @description Optional caller-controlled client software identifier for audit and diagnostics; captured up to 1024 characters. Browsers supply their own value and may ignore manual Swagger overrides. Not trusted client identity or authorization. */
+                "User-Agent"?: string | null;
+                /**
+                 * @description Optional caller-supplied reason recorded in audit history. It is not an authorization credential.
+                 * @example Correcting a submitted request
+                 */
+                "X-Audit-Reason"?: string;
+                /** @description Optional UUIDv7 correlation identifier. Missing or invalid values are replaced with a generated UUIDv7; the effective value is returned in X-Request-ID. */
+                "X-Request-ID"?: string;
+            };
+            path: {
+                ref_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Protected actor-specific response; persistent caching is prohibited. */
+                    "Cache-Control"?: "private, no-store";
+                    /** @description Present as check-device-time only when the configured apparent difference threshold is reached. */
+                    "X-Client-Date-Advisory"?: "check-device-time";
+                    /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
+                    "X-Client-Date-Delta-Seconds"?: number;
+                    /** @description Optional client Date reading: available, unavailable, or invalid. No request is rejected for this diagnostic. */
+                    "X-Client-Date-Status"?: "available" | "unavailable" | "invalid";
+                    /** @description Server UTC receipt timestamp. Response Date, when present, is generated by the HTTP server or proxy. */
+                    "X-Server-Received-At"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuccessResponse_NoneType_"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Content Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Locked */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    history_api_v1_calendar_events__ref_id__history_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @example fa-IR
+                 */
+                "Accept-Language"?: string;
+                /**
+                 * @description Optional RFC 9110 HTTP-date generated by native clients for advisory diagnostics. Browser JavaScript cannot set Date. Missing or invalid values do not reject the request.
+                 * @example Mon, 28 Sep 2026 12:00:00 GMT
+                 */
+                Date?: string;
+                /** @description Optional caller-controlled client software identifier for audit and diagnostics; captured up to 1024 characters. Browsers supply their own value and may ignore manual Swagger overrides. Not trusted client identity or authorization. */
+                "User-Agent"?: string | null;
+                /**
+                 * @description Optional caller-supplied reason recorded in audit history. It is not an authorization credential.
+                 * @example Correcting a submitted request
+                 */
+                "X-Audit-Reason"?: string;
+                /** @description Optional UUIDv7 correlation identifier. Missing or invalid values are replaced with a generated UUIDv7; the effective value is returned in X-Request-ID. */
+                "X-Request-ID"?: string;
+            };
+            path: {
+                ref_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PageRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Protected actor-specific response; persistent caching is prohibited. */
+                    "Cache-Control"?: "private, no-store";
+                    /** @description Present as check-device-time only when the configured apparent difference threshold is reached. */
+                    "X-Client-Date-Advisory"?: "check-device-time";
+                    /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
+                    "X-Client-Date-Delta-Seconds"?: number;
+                    /** @description Optional client Date reading: available, unavailable, or invalid. No request is rejected for this diagnostic. */
+                    "X-Client-Date-Status"?: "available" | "unavailable" | "invalid";
+                    /** @description Server UTC receipt timestamp. Response Date, when present, is generated by the HTTP server or proxy. */
+                    "X-Server-Received-At"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PageResponse_Page_CalendarHistoryDTO__"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Content Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Locked */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    event_reminders_api_v1_calendar_events__ref_id__reminders_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @example fa-IR
+                 */
+                "Accept-Language"?: string;
+                /**
+                 * @description Optional RFC 9110 HTTP-date generated by native clients for advisory diagnostics. Browser JavaScript cannot set Date. Missing or invalid values do not reject the request.
+                 * @example Mon, 28 Sep 2026 12:00:00 GMT
+                 */
+                Date?: string;
+                /** @description Optional caller-controlled client software identifier for audit and diagnostics; captured up to 1024 characters. Browsers supply their own value and may ignore manual Swagger overrides. Not trusted client identity or authorization. */
+                "User-Agent"?: string | null;
+                /**
+                 * @description Optional caller-supplied reason recorded in audit history. It is not an authorization credential.
+                 * @example Correcting a submitted request
+                 */
+                "X-Audit-Reason"?: string;
+                /** @description Optional UUIDv7 correlation identifier. Missing or invalid values are replaced with a generated UUIDv7; the effective value is returned in X-Request-ID. */
+                "X-Request-ID"?: string;
+            };
+            path: {
+                ref_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Protected actor-specific response; persistent caching is prohibited. */
+                    "Cache-Control"?: "private, no-store";
+                    /** @description Present as check-device-time only when the configured apparent difference threshold is reached. */
+                    "X-Client-Date-Advisory"?: "check-device-time";
+                    /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
+                    "X-Client-Date-Delta-Seconds"?: number;
+                    /** @description Optional client Date reading: available, unavailable, or invalid. No request is rejected for this diagnostic. */
+                    "X-Client-Date-Status"?: "available" | "unavailable" | "invalid";
+                    /** @description Server UTC receipt timestamp. Response Date, when present, is generated by the HTTP server or proxy. */
+                    "X-Server-Received-At"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuccessResponse_list_ReminderDTO__"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Content Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Locked */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    search_api_v1_calendar_events_report_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @example fa-IR
+                 */
+                "Accept-Language"?: string;
+                /**
+                 * @description Optional RFC 9110 HTTP-date generated by native clients for advisory diagnostics. Browser JavaScript cannot set Date. Missing or invalid values do not reject the request.
+                 * @example Mon, 28 Sep 2026 12:00:00 GMT
+                 */
+                Date?: string;
+                /** @description Optional caller-controlled client software identifier for audit and diagnostics; captured up to 1024 characters. Browsers supply their own value and may ignore manual Swagger overrides. Not trusted client identity or authorization. */
+                "User-Agent"?: string | null;
+                /**
+                 * @description Optional caller-supplied reason recorded in audit history. It is not an authorization credential.
+                 * @example Correcting a submitted request
+                 */
+                "X-Audit-Reason"?: string;
+                /** @description Optional UUIDv7 correlation identifier. Missing or invalid values are replaced with a generated UUIDv7; the effective value is returned in X-Request-ID. */
+                "X-Request-ID"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CalendarQuery"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Protected actor-specific response; persistent caching is prohibited. */
+                    "Cache-Control"?: "private, no-store";
+                    /** @description Present as check-device-time only when the configured apparent difference threshold is reached. */
+                    "X-Client-Date-Advisory"?: "check-device-time";
+                    /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
+                    "X-Client-Date-Delta-Seconds"?: number;
+                    /** @description Optional client Date reading: available, unavailable, or invalid. No request is rejected for this diagnostic. */
+                    "X-Client-Date-Status"?: "available" | "unavailable" | "invalid";
+                    /** @description Server UTC receipt timestamp. Response Date, when present, is generated by the HTTP server or proxy. */
+                    "X-Server-Received-At"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PageResponse_Page_CalendarItemDTO__"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Content Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Locked */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    search_api_v1_calendar_events_search_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @example fa-IR
+                 */
+                "Accept-Language"?: string;
+                /**
+                 * @description Optional RFC 9110 HTTP-date generated by native clients for advisory diagnostics. Browser JavaScript cannot set Date. Missing or invalid values do not reject the request.
+                 * @example Mon, 28 Sep 2026 12:00:00 GMT
+                 */
+                Date?: string;
+                /** @description Optional caller-controlled client software identifier for audit and diagnostics; captured up to 1024 characters. Browsers supply their own value and may ignore manual Swagger overrides. Not trusted client identity or authorization. */
+                "User-Agent"?: string | null;
+                /**
+                 * @description Optional caller-supplied reason recorded in audit history. It is not an authorization credential.
+                 * @example Correcting a submitted request
+                 */
+                "X-Audit-Reason"?: string;
+                /** @description Optional UUIDv7 correlation identifier. Missing or invalid values are replaced with a generated UUIDv7; the effective value is returned in X-Request-ID. */
+                "X-Request-ID"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CalendarQuery"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Protected actor-specific response; persistent caching is prohibited. */
+                    "Cache-Control"?: "private, no-store";
+                    /** @description Present as check-device-time only when the configured apparent difference threshold is reached. */
+                    "X-Client-Date-Advisory"?: "check-device-time";
+                    /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
+                    "X-Client-Date-Delta-Seconds"?: number;
+                    /** @description Optional client Date reading: available, unavailable, or invalid. No request is rejected for this diagnostic. */
+                    "X-Client-Date-Status"?: "available" | "unavailable" | "invalid";
+                    /** @description Server UTC receipt timestamp. Response Date, when present, is generated by the HTTP server or proxy. */
+                    "X-Server-Received-At"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PageResponse_Page_CalendarItemDTO__"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Content Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Locked */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    work_reminders_api_v1_calendar_work_reminders__ref_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @example fa-IR
+                 */
+                "Accept-Language"?: string;
+                /**
+                 * @description Optional RFC 9110 HTTP-date generated by native clients for advisory diagnostics. Browser JavaScript cannot set Date. Missing or invalid values do not reject the request.
+                 * @example Mon, 28 Sep 2026 12:00:00 GMT
+                 */
+                Date?: string;
+                /** @description Optional caller-controlled client software identifier for audit and diagnostics; captured up to 1024 characters. Browsers supply their own value and may ignore manual Swagger overrides. Not trusted client identity or authorization. */
+                "User-Agent"?: string | null;
+                /**
+                 * @description Optional caller-supplied reason recorded in audit history. It is not an authorization credential.
+                 * @example Correcting a submitted request
+                 */
+                "X-Audit-Reason"?: string;
+                /** @description Optional UUIDv7 correlation identifier. Missing or invalid values are replaced with a generated UUIDv7; the effective value is returned in X-Request-ID. */
+                "X-Request-ID"?: string;
+            };
+            path: {
+                ref_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Protected actor-specific response; persistent caching is prohibited. */
+                    "Cache-Control"?: "private, no-store";
+                    /** @description Present as check-device-time only when the configured apparent difference threshold is reached. */
+                    "X-Client-Date-Advisory"?: "check-device-time";
+                    /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
+                    "X-Client-Date-Delta-Seconds"?: number;
+                    /** @description Optional client Date reading: available, unavailable, or invalid. No request is rejected for this diagnostic. */
+                    "X-Client-Date-Status"?: "available" | "unavailable" | "invalid";
+                    /** @description Server UTC receipt timestamp. Response Date, when present, is generated by the HTTP server or proxy. */
+                    "X-Server-Received-At"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuccessResponse_list_ReminderDTO__"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Content Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Locked */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    configure_reminders_api_v1_calendar_work_reminders__ref_id__put: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @example fa-IR
+                 */
+                "Accept-Language"?: string;
+                /**
+                 * @description Optional RFC 9110 HTTP-date generated by native clients for advisory diagnostics. Browser JavaScript cannot set Date. Missing or invalid values do not reject the request.
+                 * @example Mon, 28 Sep 2026 12:00:00 GMT
+                 */
+                Date?: string;
+                /** @description Optional caller-controlled client software identifier for audit and diagnostics; captured up to 1024 characters. Browsers supply their own value and may ignore manual Swagger overrides. Not trusted client identity or authorization. */
+                "User-Agent"?: string | null;
+                /**
+                 * @description Optional caller-supplied reason recorded in audit history. It is not an authorization credential.
+                 * @example Correcting a submitted request
+                 */
+                "X-Audit-Reason"?: string;
+                /** @description Optional UUIDv7 correlation identifier. Missing or invalid values are replaced with a generated UUIDv7; the effective value is returned in X-Request-ID. */
+                "X-Request-ID"?: string;
+            };
+            path: {
+                ref_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReminderInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Protected actor-specific response; persistent caching is prohibited. */
+                    "Cache-Control"?: "private, no-store";
+                    /** @description Present as check-device-time only when the configured apparent difference threshold is reached. */
+                    "X-Client-Date-Advisory"?: "check-device-time";
+                    /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
+                    "X-Client-Date-Delta-Seconds"?: number;
+                    /** @description Optional client Date reading: available, unavailable, or invalid. No request is rejected for this diagnostic. */
+                    "X-Client-Date-Status"?: "available" | "unavailable" | "invalid";
+                    /** @description Server UTC receipt timestamp. Response Date, when present, is generated by the HTTP server or proxy. */
+                    "X-Server-Received-At"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuccessResponse_list_ReminderDTO__"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Content Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Locked */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    cancel_reminders_api_v1_calendar_work_reminders__ref_id__delete: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @example fa-IR
+                 */
+                "Accept-Language"?: string;
+                /**
+                 * @description Optional RFC 9110 HTTP-date generated by native clients for advisory diagnostics. Browser JavaScript cannot set Date. Missing or invalid values do not reject the request.
+                 * @example Mon, 28 Sep 2026 12:00:00 GMT
+                 */
+                Date?: string;
+                /** @description Optional caller-controlled client software identifier for audit and diagnostics; captured up to 1024 characters. Browsers supply their own value and may ignore manual Swagger overrides. Not trusted client identity or authorization. */
+                "User-Agent"?: string | null;
+                /**
+                 * @description Optional caller-supplied reason recorded in audit history. It is not an authorization credential.
+                 * @example Correcting a submitted request
+                 */
+                "X-Audit-Reason"?: string;
+                /** @description Optional UUIDv7 correlation identifier. Missing or invalid values are replaced with a generated UUIDv7; the effective value is returned in X-Request-ID. */
+                "X-Request-ID"?: string;
+            };
+            path: {
+                ref_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Protected actor-specific response; persistent caching is prohibited. */
+                    "Cache-Control"?: "private, no-store";
+                    /** @description Present as check-device-time only when the configured apparent difference threshold is reached. */
+                    "X-Client-Date-Advisory"?: "check-device-time";
+                    /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
+                    "X-Client-Date-Delta-Seconds"?: number;
+                    /** @description Optional client Date reading: available, unavailable, or invalid. No request is rejected for this diagnostic. */
+                    "X-Client-Date-Status"?: "available" | "unavailable" | "invalid";
+                    /** @description Server UTC receipt timestamp. Response Date, when present, is generated by the HTTP server or proxy. */
+                    "X-Server-Received-At"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuccessResponse_NoneType_"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Content Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Locked */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     create_release_api_v1_client_releases_post: {
         parameters: {
             query?: never;
@@ -30410,6 +36507,312 @@ export interface operations {
             };
         };
     };
+    config_validation_api_v1_designer_config_validation_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @example fa-IR
+                 */
+                "Accept-Language"?: string;
+                /**
+                 * @description Optional RFC 9110 HTTP-date generated by native clients for advisory diagnostics. Browser JavaScript cannot set Date. Missing or invalid values do not reject the request.
+                 * @example Mon, 28 Sep 2026 12:00:00 GMT
+                 */
+                Date?: string;
+                /** @description Optional caller-controlled client software identifier for audit and diagnostics; captured up to 1024 characters. Browsers supply their own value and may ignore manual Swagger overrides. Not trusted client identity or authorization. */
+                "User-Agent"?: string | null;
+                /**
+                 * @description Optional caller-supplied reason recorded in audit history. It is not an authorization credential.
+                 * @example Correcting a submitted request
+                 */
+                "X-Audit-Reason"?: string;
+                /** @description Optional UUIDv7 correlation identifier. Missing or invalid values are replaced with a generated UUIDv7; the effective value is returned in X-Request-ID. */
+                "X-Request-ID"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InspectorValidationQuery"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Protected actor-specific response; persistent caching is prohibited. */
+                    "Cache-Control"?: "private, no-store";
+                    /** @description Present as check-device-time only when the configured apparent difference threshold is reached. */
+                    "X-Client-Date-Advisory"?: "check-device-time";
+                    /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
+                    "X-Client-Date-Delta-Seconds"?: number;
+                    /** @description Optional client Date reading: available, unavailable, or invalid. No request is rejected for this diagnostic. */
+                    "X-Client-Date-Status"?: "available" | "unavailable" | "invalid";
+                    /** @description Server UTC receipt timestamp. Response Date, when present, is generated by the HTTP server or proxy. */
+                    "X-Server-Received-At"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuccessResponse_InspectorValidationResult_"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Content Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Locked */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    dependency_readiness_api_v1_designer_dependency_readiness_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @example fa-IR
+                 */
+                "Accept-Language"?: string;
+                /**
+                 * @description Optional RFC 9110 HTTP-date generated by native clients for advisory diagnostics. Browser JavaScript cannot set Date. Missing or invalid values do not reject the request.
+                 * @example Mon, 28 Sep 2026 12:00:00 GMT
+                 */
+                Date?: string;
+                /** @description Optional caller-controlled client software identifier for audit and diagnostics; captured up to 1024 characters. Browsers supply their own value and may ignore manual Swagger overrides. Not trusted client identity or authorization. */
+                "User-Agent"?: string | null;
+                /**
+                 * @description Optional caller-supplied reason recorded in audit history. It is not an authorization credential.
+                 * @example Correcting a submitted request
+                 */
+                "X-Audit-Reason"?: string;
+                /** @description Optional UUIDv7 correlation identifier. Missing or invalid values are replaced with a generated UUIDv7; the effective value is returned in X-Request-ID. */
+                "X-Request-ID"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DependencyReadinessQuery"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Protected actor-specific response; persistent caching is prohibited. */
+                    "Cache-Control"?: "private, no-store";
+                    /** @description Present as check-device-time only when the configured apparent difference threshold is reached. */
+                    "X-Client-Date-Advisory"?: "check-device-time";
+                    /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
+                    "X-Client-Date-Delta-Seconds"?: number;
+                    /** @description Optional client Date reading: available, unavailable, or invalid. No request is rejected for this diagnostic. */
+                    "X-Client-Date-Status"?: "available" | "unavailable" | "invalid";
+                    /** @description Server UTC receipt timestamp. Response Date, when present, is generated by the HTTP server or proxy. */
+                    "X-Server-Received-At"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuccessResponse_DependencyReadiness_"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Content Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Locked */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     field_inventory_api_v1_designer_field_inventory_post: {
         parameters: {
             query?: never;
@@ -30461,41 +36864,190 @@ export interface operations {
                 content: {
                     /**
                      * @example {
-                     *       "success": true,
-                     *       "request_id": "example-request-id",
                      *       "code": 200,
                      *       "data": {
-                     *         "workflow_version_ref_id": "<exact-ref>",
+                     *         "complete": false,
+                     *         "declared_ports": [],
+                     *         "diagnostics": [
+                     *           "workflow:empty_graph"
+                     *         ],
+                     *         "fields": [],
                      *         "form_snapshots": {
                      *           "start": {
                      *             "ref_id": "<exact-form-ref>"
                      *           }
                      *         },
-                     *         "complete": false,
-                     *         "diagnostics": [
-                     *           "workflow:empty_graph"
-                     *         ],
+                     *         "page": 1,
+                     *         "resolved_pins": [],
+                     *         "size": 25,
                      *         "summary": {
-                     *           "field_definitions": 0,
-                     *           "unique_field_definitions": 0,
-                     *           "user_entry_occurrences": 0,
-                     *           "user_entered": 0,
-                     *           "repeated_collection": 0,
                      *           "automatic_sources": 0,
                      *           "conditional_only": 0,
+                     *           "field_definitions": 0,
+                     *           "possible_user_inputs": 0,
+                     *           "repeated_collection": 0,
                      *           "review_candidates": 0,
-                     *           "possible_user_inputs": 0
+                     *           "unique_field_definitions": 0,
+                     *           "user_entered": 0,
+                     *           "user_entry_occurrences": 0
                      *         },
-                     *         "fields": [],
-                     *         "declared_ports": [],
-                     *         "resolved_pins": [],
-                     *         "page": 1,
-                     *         "size": 25,
-                     *         "total": 0
-                     *       }
+                     *         "total": 0,
+                     *         "workflow_version_ref_id": "<exact-ref>"
+                     *       },
+                     *       "request_id": "example-request-id",
+                     *       "success": true
                      *     }
                      */
                     "application/json": components["schemas"]["SuccessResponse_FieldInventoryResult_"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Content Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Locked */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    inspectors_api_v1_designer_inspector_contract_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @example fa-IR
+                 */
+                "Accept-Language"?: string;
+                /**
+                 * @description Optional RFC 9110 HTTP-date generated by native clients for advisory diagnostics. Browser JavaScript cannot set Date. Missing or invalid values do not reject the request.
+                 * @example Mon, 28 Sep 2026 12:00:00 GMT
+                 */
+                Date?: string;
+                /** @description Optional caller-controlled client software identifier for audit and diagnostics; captured up to 1024 characters. Browsers supply their own value and may ignore manual Swagger overrides. Not trusted client identity or authorization. */
+                "User-Agent"?: string | null;
+                /**
+                 * @description Optional caller-supplied reason recorded in audit history. It is not an authorization credential.
+                 * @example Correcting a submitted request
+                 */
+                "X-Audit-Reason"?: string;
+                /** @description Optional UUIDv7 correlation identifier. Missing or invalid values are replaced with a generated UUIDv7; the effective value is returned in X-Request-ID. */
+                "X-Request-ID"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Protected actor-specific response; persistent caching is prohibited. */
+                    "Cache-Control"?: "private, no-store";
+                    /** @description Present as check-device-time only when the configured apparent difference threshold is reached. */
+                    "X-Client-Date-Advisory"?: "check-device-time";
+                    /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
+                    "X-Client-Date-Delta-Seconds"?: number;
+                    /** @description Optional client Date reading: available, unavailable, or invalid. No request is rejected for this diagnostic. */
+                    "X-Client-Date-Status"?: "available" | "unavailable" | "invalid";
+                    /** @description Server UTC receipt timestamp. Response Date, when present, is generated by the HTTP server or proxy. */
+                    "X-Server-Received-At"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuccessResponse_InspectorContract_"];
                 };
             };
             /** @description Bad Request */
@@ -41616,6 +48168,1113 @@ export interface operations {
             };
         };
     };
+    detail_api_v1_inbox__ref_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @example fa-IR
+                 */
+                "Accept-Language"?: string;
+                /**
+                 * @description Optional RFC 9110 HTTP-date generated by native clients for advisory diagnostics. Browser JavaScript cannot set Date. Missing or invalid values do not reject the request.
+                 * @example Mon, 28 Sep 2026 12:00:00 GMT
+                 */
+                Date?: string;
+                /** @description Optional caller-controlled client software identifier for audit and diagnostics; captured up to 1024 characters. Browsers supply their own value and may ignore manual Swagger overrides. Not trusted client identity or authorization. */
+                "User-Agent"?: string | null;
+                /**
+                 * @description Optional caller-supplied reason recorded in audit history. It is not an authorization credential.
+                 * @example Correcting a submitted request
+                 */
+                "X-Audit-Reason"?: string;
+                /** @description Optional UUIDv7 correlation identifier. Missing or invalid values are replaced with a generated UUIDv7; the effective value is returned in X-Request-ID. */
+                "X-Request-ID"?: string;
+            };
+            path: {
+                ref_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Protected actor-specific response; persistent caching is prohibited. */
+                    "Cache-Control"?: "private, no-store";
+                    /** @description Present as check-device-time only when the configured apparent difference threshold is reached. */
+                    "X-Client-Date-Advisory"?: "check-device-time";
+                    /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
+                    "X-Client-Date-Delta-Seconds"?: number;
+                    /** @description Optional client Date reading: available, unavailable, or invalid. No request is rejected for this diagnostic. */
+                    "X-Client-Date-Status"?: "available" | "unavailable" | "invalid";
+                    /** @description Server UTC receipt timestamp. Response Date, when present, is generated by the HTTP server or proxy. */
+                    "X-Server-Received-At"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuccessResponse_InboxDTO_"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Content Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Locked */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    mark_read_api_v1_inbox__ref_id__read_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @example fa-IR
+                 */
+                "Accept-Language"?: string;
+                /**
+                 * @description Optional RFC 9110 HTTP-date generated by native clients for advisory diagnostics. Browser JavaScript cannot set Date. Missing or invalid values do not reject the request.
+                 * @example Mon, 28 Sep 2026 12:00:00 GMT
+                 */
+                Date?: string;
+                /** @description Optional caller-controlled client software identifier for audit and diagnostics; captured up to 1024 characters. Browsers supply their own value and may ignore manual Swagger overrides. Not trusted client identity or authorization. */
+                "User-Agent"?: string | null;
+                /**
+                 * @description Optional caller-supplied reason recorded in audit history. It is not an authorization credential.
+                 * @example Correcting a submitted request
+                 */
+                "X-Audit-Reason"?: string;
+                /** @description Optional UUIDv7 correlation identifier. Missing or invalid values are replaced with a generated UUIDv7; the effective value is returned in X-Request-ID. */
+                "X-Request-ID"?: string;
+            };
+            path: {
+                ref_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReadCommand"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Protected actor-specific response; persistent caching is prohibited. */
+                    "Cache-Control"?: "private, no-store";
+                    /** @description Present as check-device-time only when the configured apparent difference threshold is reached. */
+                    "X-Client-Date-Advisory"?: "check-device-time";
+                    /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
+                    "X-Client-Date-Delta-Seconds"?: number;
+                    /** @description Optional client Date reading: available, unavailable, or invalid. No request is rejected for this diagnostic. */
+                    "X-Client-Date-Status"?: "available" | "unavailable" | "invalid";
+                    /** @description Server UTC receipt timestamp. Response Date, when present, is generated by the HTTP server or proxy. */
+                    "X-Server-Received-At"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuccessResponse_InboxDTO_"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Content Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Locked */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    events_api_v1_inbox_events_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @example fa-IR
+                 */
+                "Accept-Language"?: string;
+                /**
+                 * @description Optional RFC 9110 HTTP-date generated by native clients for advisory diagnostics. Browser JavaScript cannot set Date. Missing or invalid values do not reject the request.
+                 * @example Mon, 28 Sep 2026 12:00:00 GMT
+                 */
+                Date?: string;
+                /** @description Reconnect hint only; always resynchronize from the persisted inbox. */
+                "Last-Event-ID"?: string | null;
+                /** @description Optional caller-controlled client software identifier for audit and diagnostics; captured up to 1024 characters. Browsers supply their own value and may ignore manual Swagger overrides. Not trusted client identity or authorization. */
+                "User-Agent"?: string | null;
+                /**
+                 * @description Optional caller-supplied reason recorded in audit history. It is not an authorization credential.
+                 * @example Correcting a submitted request
+                 */
+                "X-Audit-Reason"?: string;
+                /** @description Optional UUIDv7 correlation identifier. Missing or invalid values are replaced with a generated UUIDv7; the effective value is returned in X-Request-ID. */
+                "X-Request-ID"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Private SSE invalidations and heartbeat comments; no JSON envelope. */
+            200: {
+                headers: {
+                    "Cache-Control"?: "private, no-store, no-transform";
+                    "X-Accel-Buffering"?: "no";
+                    /** @description Present as check-device-time only when the configured apparent difference threshold is reached. */
+                    "X-Client-Date-Advisory"?: "check-device-time";
+                    /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
+                    "X-Client-Date-Delta-Seconds"?: number;
+                    /** @description Optional client Date reading: available, unavailable, or invalid. No request is rejected for this diagnostic. */
+                    "X-Client-Date-Status"?: "available" | "unavailable" | "invalid";
+                    "X-Content-Type-Options"?: "nosniff";
+                    /** @description Server UTC receipt timestamp. Response Date, when present, is generated by the HTTP server or proxy. */
+                    "X-Server-Received-At"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example event: inbox.resync
+                     *     retry: 3000
+                     *     data: {"schema_version":1,"reason":"connected"}
+                     *
+                     *     : heartbeat
+                     */
+                    "text/event-stream": string;
+                };
+            };
+            /** @description Pre-stream JSON error using the existing application envelope. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Code */
+                        code: number;
+                        /** Data */
+                        data?: {
+                            [key: string]: unknown;
+                        } | null;
+                        /** Error */
+                        error: string;
+                        /** Request Id */
+                        request_id: string;
+                        /**
+                         * Success
+                         * @default false
+                         * @constant
+                         */
+                        success: false;
+                    };
+                };
+            };
+            /** @description Pre-stream JSON error using the existing application envelope. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Code */
+                        code: number;
+                        /** Data */
+                        data?: {
+                            [key: string]: unknown;
+                        } | null;
+                        /** Error */
+                        error: string;
+                        /** Request Id */
+                        request_id: string;
+                        /**
+                         * Success
+                         * @default false
+                         * @constant
+                         */
+                        success: false;
+                    };
+                };
+            };
+            /** @description Pre-stream JSON error using the existing application envelope. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Code */
+                        code: number;
+                        /** Data */
+                        data?: {
+                            [key: string]: unknown;
+                        } | null;
+                        /** Error */
+                        error: string;
+                        /** Request Id */
+                        request_id: string;
+                        /**
+                         * Success
+                         * @default false
+                         * @constant
+                         */
+                        success: false;
+                    };
+                };
+            };
+            /** @description Pre-stream JSON error using the existing application envelope. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Code */
+                        code: number;
+                        /** Data */
+                        data?: {
+                            [key: string]: unknown;
+                        } | null;
+                        /** Error */
+                        error: string;
+                        /** Request Id */
+                        request_id: string;
+                        /**
+                         * Success
+                         * @default false
+                         * @constant
+                         */
+                        success: false;
+                    };
+                };
+            };
+            /** @description Pre-stream JSON error using the existing application envelope. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Code */
+                        code: number;
+                        /** Data */
+                        data?: {
+                            [key: string]: unknown;
+                        } | null;
+                        /** Error */
+                        error: string;
+                        /** Request Id */
+                        request_id: string;
+                        /**
+                         * Success
+                         * @default false
+                         * @constant
+                         */
+                        success: false;
+                    };
+                };
+            };
+            /** @description Pre-stream JSON error using the existing application envelope. */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Code */
+                        code: number;
+                        /** Data */
+                        data?: {
+                            [key: string]: unknown;
+                        } | null;
+                        /** Error */
+                        error: string;
+                        /** Request Id */
+                        request_id: string;
+                        /**
+                         * Success
+                         * @default false
+                         * @constant
+                         */
+                        success: false;
+                    };
+                };
+            };
+            /** @description Pre-stream JSON error using the existing application envelope. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Code */
+                        code: number;
+                        /** Data */
+                        data?: {
+                            [key: string]: unknown;
+                        } | null;
+                        /** Error */
+                        error: string;
+                        /** Request Id */
+                        request_id: string;
+                        /**
+                         * Success
+                         * @default false
+                         * @constant
+                         */
+                        success: false;
+                    };
+                };
+            };
+            /** @description Pre-stream JSON error using the existing application envelope. */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Code */
+                        code: number;
+                        /** Data */
+                        data?: {
+                            [key: string]: unknown;
+                        } | null;
+                        /** Error */
+                        error: string;
+                        /** Request Id */
+                        request_id: string;
+                        /**
+                         * Success
+                         * @default false
+                         * @constant
+                         */
+                        success: false;
+                    };
+                };
+            };
+            /** @description Concurrent inbox stream limit reached. Retry after disconnecting another stream. */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Code */
+                        code: number;
+                        /** Data */
+                        data?: {
+                            [key: string]: unknown;
+                        } | null;
+                        /** Error */
+                        error: string;
+                        /** Request Id */
+                        request_id: string;
+                        /**
+                         * Success
+                         * @default false
+                         * @constant
+                         */
+                        success: false;
+                    };
+                };
+            };
+            /** @description Pre-stream JSON error using the existing application envelope. */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Code */
+                        code: number;
+                        /** Data */
+                        data?: {
+                            [key: string]: unknown;
+                        } | null;
+                        /** Error */
+                        error: string;
+                        /** Request Id */
+                        request_id: string;
+                        /**
+                         * Success
+                         * @default false
+                         * @constant
+                         */
+                        success: false;
+                    };
+                };
+            };
+            /** @description Live signaling unavailable. Persisted inbox search remains authoritative. */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** Code */
+                        code: number;
+                        /** Data */
+                        data?: {
+                            [key: string]: unknown;
+                        } | null;
+                        /** Error */
+                        error: string;
+                        /** Request Id */
+                        request_id: string;
+                        /**
+                         * Success
+                         * @default false
+                         * @constant
+                         */
+                        success: false;
+                    };
+                };
+            };
+        };
+    };
+    search_api_v1_inbox_report_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @example fa-IR
+                 */
+                "Accept-Language"?: string;
+                /**
+                 * @description Optional RFC 9110 HTTP-date generated by native clients for advisory diagnostics. Browser JavaScript cannot set Date. Missing or invalid values do not reject the request.
+                 * @example Mon, 28 Sep 2026 12:00:00 GMT
+                 */
+                Date?: string;
+                /** @description Optional caller-controlled client software identifier for audit and diagnostics; captured up to 1024 characters. Browsers supply their own value and may ignore manual Swagger overrides. Not trusted client identity or authorization. */
+                "User-Agent"?: string | null;
+                /**
+                 * @description Optional caller-supplied reason recorded in audit history. It is not an authorization credential.
+                 * @example Correcting a submitted request
+                 */
+                "X-Audit-Reason"?: string;
+                /** @description Optional UUIDv7 correlation identifier. Missing or invalid values are replaced with a generated UUIDv7; the effective value is returned in X-Request-ID. */
+                "X-Request-ID"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InboxQuery"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Protected actor-specific response; persistent caching is prohibited. */
+                    "Cache-Control"?: "private, no-store";
+                    /** @description Present as check-device-time only when the configured apparent difference threshold is reached. */
+                    "X-Client-Date-Advisory"?: "check-device-time";
+                    /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
+                    "X-Client-Date-Delta-Seconds"?: number;
+                    /** @description Optional client Date reading: available, unavailable, or invalid. No request is rejected for this diagnostic. */
+                    "X-Client-Date-Status"?: "available" | "unavailable" | "invalid";
+                    /** @description Server UTC receipt timestamp. Response Date, when present, is generated by the HTTP server or proxy. */
+                    "X-Server-Received-At"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PageResponse_Page_InboxDTO__"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Content Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Locked */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    search_api_v1_inbox_search_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @example fa-IR
+                 */
+                "Accept-Language"?: string;
+                /**
+                 * @description Optional RFC 9110 HTTP-date generated by native clients for advisory diagnostics. Browser JavaScript cannot set Date. Missing or invalid values do not reject the request.
+                 * @example Mon, 28 Sep 2026 12:00:00 GMT
+                 */
+                Date?: string;
+                /** @description Optional caller-controlled client software identifier for audit and diagnostics; captured up to 1024 characters. Browsers supply their own value and may ignore manual Swagger overrides. Not trusted client identity or authorization. */
+                "User-Agent"?: string | null;
+                /**
+                 * @description Optional caller-supplied reason recorded in audit history. It is not an authorization credential.
+                 * @example Correcting a submitted request
+                 */
+                "X-Audit-Reason"?: string;
+                /** @description Optional UUIDv7 correlation identifier. Missing or invalid values are replaced with a generated UUIDv7; the effective value is returned in X-Request-ID. */
+                "X-Request-ID"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InboxQuery"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Protected actor-specific response; persistent caching is prohibited. */
+                    "Cache-Control"?: "private, no-store";
+                    /** @description Present as check-device-time only when the configured apparent difference threshold is reached. */
+                    "X-Client-Date-Advisory"?: "check-device-time";
+                    /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
+                    "X-Client-Date-Delta-Seconds"?: number;
+                    /** @description Optional client Date reading: available, unavailable, or invalid. No request is rejected for this diagnostic. */
+                    "X-Client-Date-Status"?: "available" | "unavailable" | "invalid";
+                    /** @description Server UTC receipt timestamp. Response Date, when present, is generated by the HTTP server or proxy. */
+                    "X-Server-Received-At"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PageResponse_Page_InboxDTO__"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Content Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Locked */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    unread_api_v1_inbox_unread_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @example fa-IR
+                 */
+                "Accept-Language"?: string;
+                /**
+                 * @description Optional RFC 9110 HTTP-date generated by native clients for advisory diagnostics. Browser JavaScript cannot set Date. Missing or invalid values do not reject the request.
+                 * @example Mon, 28 Sep 2026 12:00:00 GMT
+                 */
+                Date?: string;
+                /** @description Optional caller-controlled client software identifier for audit and diagnostics; captured up to 1024 characters. Browsers supply their own value and may ignore manual Swagger overrides. Not trusted client identity or authorization. */
+                "User-Agent"?: string | null;
+                /**
+                 * @description Optional caller-supplied reason recorded in audit history. It is not an authorization credential.
+                 * @example Correcting a submitted request
+                 */
+                "X-Audit-Reason"?: string;
+                /** @description Optional UUIDv7 correlation identifier. Missing or invalid values are replaced with a generated UUIDv7; the effective value is returned in X-Request-ID. */
+                "X-Request-ID"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Protected actor-specific response; persistent caching is prohibited. */
+                    "Cache-Control"?: "private, no-store";
+                    /** @description Present as check-device-time only when the configured apparent difference threshold is reached. */
+                    "X-Client-Date-Advisory"?: "check-device-time";
+                    /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
+                    "X-Client-Date-Delta-Seconds"?: number;
+                    /** @description Optional client Date reading: available, unavailable, or invalid. No request is rejected for this diagnostic. */
+                    "X-Client-Date-Status"?: "available" | "unavailable" | "invalid";
+                    /** @description Server UTC receipt timestamp. Response Date, when present, is generated by the HTTP server or proxy. */
+                    "X-Server-Received-At"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuccessResponse_UnreadDTO_"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Content Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Locked */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     create_api_v1_integration_connections_post: {
         parameters: {
             query?: never;
@@ -43736,6 +51395,3520 @@ export interface operations {
             };
         };
     };
+    create_favorite_api_v1_me_favorites_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @example fa-IR
+                 */
+                "Accept-Language"?: string;
+                /**
+                 * @description Optional RFC 9110 HTTP-date generated by native clients for advisory diagnostics. Browser JavaScript cannot set Date. Missing or invalid values do not reject the request.
+                 * @example Mon, 28 Sep 2026 12:00:00 GMT
+                 */
+                Date?: string;
+                /** @description Optional caller-controlled client software identifier for audit and diagnostics; captured up to 1024 characters. Browsers supply their own value and may ignore manual Swagger overrides. Not trusted client identity or authorization. */
+                "User-Agent"?: string | null;
+                /**
+                 * @description Optional caller-supplied reason recorded in audit history. It is not an authorization credential.
+                 * @example Correcting a submitted request
+                 */
+                "X-Audit-Reason"?: string;
+                /** @description Optional UUIDv7 correlation identifier. Missing or invalid values are replaced with a generated UUIDv7; the effective value is returned in X-Request-ID. */
+                "X-Request-ID"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FavoriteInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Protected actor-specific response; persistent caching is prohibited. */
+                    "Cache-Control"?: "private, no-store";
+                    /** @description Present as check-device-time only when the configured apparent difference threshold is reached. */
+                    "X-Client-Date-Advisory"?: "check-device-time";
+                    /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
+                    "X-Client-Date-Delta-Seconds"?: number;
+                    /** @description Optional client Date reading: available, unavailable, or invalid. No request is rejected for this diagnostic. */
+                    "X-Client-Date-Status"?: "available" | "unavailable" | "invalid";
+                    /** @description Server UTC receipt timestamp. Response Date, when present, is generated by the HTTP server or proxy. */
+                    "X-Server-Received-At"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuccessResponse_FavoriteDTO_"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Content Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Locked */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    read_favorite_api_v1_me_favorites__ref_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @example fa-IR
+                 */
+                "Accept-Language"?: string;
+                /**
+                 * @description Optional RFC 9110 HTTP-date generated by native clients for advisory diagnostics. Browser JavaScript cannot set Date. Missing or invalid values do not reject the request.
+                 * @example Mon, 28 Sep 2026 12:00:00 GMT
+                 */
+                Date?: string;
+                /** @description Optional caller-controlled client software identifier for audit and diagnostics; captured up to 1024 characters. Browsers supply their own value and may ignore manual Swagger overrides. Not trusted client identity or authorization. */
+                "User-Agent"?: string | null;
+                /**
+                 * @description Optional caller-supplied reason recorded in audit history. It is not an authorization credential.
+                 * @example Correcting a submitted request
+                 */
+                "X-Audit-Reason"?: string;
+                /** @description Optional UUIDv7 correlation identifier. Missing or invalid values are replaced with a generated UUIDv7; the effective value is returned in X-Request-ID. */
+                "X-Request-ID"?: string;
+            };
+            path: {
+                ref_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Protected actor-specific response; persistent caching is prohibited. */
+                    "Cache-Control"?: "private, no-store";
+                    /** @description Present as check-device-time only when the configured apparent difference threshold is reached. */
+                    "X-Client-Date-Advisory"?: "check-device-time";
+                    /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
+                    "X-Client-Date-Delta-Seconds"?: number;
+                    /** @description Optional client Date reading: available, unavailable, or invalid. No request is rejected for this diagnostic. */
+                    "X-Client-Date-Status"?: "available" | "unavailable" | "invalid";
+                    /** @description Server UTC receipt timestamp. Response Date, when present, is generated by the HTTP server or proxy. */
+                    "X-Server-Received-At"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuccessResponse_FavoriteDTO_"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Content Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Locked */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    delete_favorite_api_v1_me_favorites__ref_id__delete: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @example fa-IR
+                 */
+                "Accept-Language"?: string;
+                /**
+                 * @description Optional RFC 9110 HTTP-date generated by native clients for advisory diagnostics. Browser JavaScript cannot set Date. Missing or invalid values do not reject the request.
+                 * @example Mon, 28 Sep 2026 12:00:00 GMT
+                 */
+                Date?: string;
+                /** @description Optional caller-controlled client software identifier for audit and diagnostics; captured up to 1024 characters. Browsers supply their own value and may ignore manual Swagger overrides. Not trusted client identity or authorization. */
+                "User-Agent"?: string | null;
+                /**
+                 * @description Optional caller-supplied reason recorded in audit history. It is not an authorization credential.
+                 * @example Correcting a submitted request
+                 */
+                "X-Audit-Reason"?: string;
+                /** @description Optional UUIDv7 correlation identifier. Missing or invalid values are replaced with a generated UUIDv7; the effective value is returned in X-Request-ID. */
+                "X-Request-ID"?: string;
+            };
+            path: {
+                ref_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Protected actor-specific response; persistent caching is prohibited. */
+                    "Cache-Control"?: "private, no-store";
+                    /** @description Present as check-device-time only when the configured apparent difference threshold is reached. */
+                    "X-Client-Date-Advisory"?: "check-device-time";
+                    /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
+                    "X-Client-Date-Delta-Seconds"?: number;
+                    /** @description Optional client Date reading: available, unavailable, or invalid. No request is rejected for this diagnostic. */
+                    "X-Client-Date-Status"?: "available" | "unavailable" | "invalid";
+                    /** @description Server UTC receipt timestamp. Response Date, when present, is generated by the HTTP server or proxy. */
+                    "X-Server-Received-At"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuccessResponse_NoneType_"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Content Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Locked */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    favorite_history_api_v1_me_favorites__ref_id__history_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @example fa-IR
+                 */
+                "Accept-Language"?: string;
+                /**
+                 * @description Optional RFC 9110 HTTP-date generated by native clients for advisory diagnostics. Browser JavaScript cannot set Date. Missing or invalid values do not reject the request.
+                 * @example Mon, 28 Sep 2026 12:00:00 GMT
+                 */
+                Date?: string;
+                /** @description Optional caller-controlled client software identifier for audit and diagnostics; captured up to 1024 characters. Browsers supply their own value and may ignore manual Swagger overrides. Not trusted client identity or authorization. */
+                "User-Agent"?: string | null;
+                /**
+                 * @description Optional caller-supplied reason recorded in audit history. It is not an authorization credential.
+                 * @example Correcting a submitted request
+                 */
+                "X-Audit-Reason"?: string;
+                /** @description Optional UUIDv7 correlation identifier. Missing or invalid values are replaced with a generated UUIDv7; the effective value is returned in X-Request-ID. */
+                "X-Request-ID"?: string;
+            };
+            path: {
+                ref_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PersonalHistoryQuery"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Protected actor-specific response; persistent caching is prohibited. */
+                    "Cache-Control"?: "private, no-store";
+                    /** @description Present as check-device-time only when the configured apparent difference threshold is reached. */
+                    "X-Client-Date-Advisory"?: "check-device-time";
+                    /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
+                    "X-Client-Date-Delta-Seconds"?: number;
+                    /** @description Optional client Date reading: available, unavailable, or invalid. No request is rejected for this diagnostic. */
+                    "X-Client-Date-Status"?: "available" | "unavailable" | "invalid";
+                    /** @description Server UTC receipt timestamp. Response Date, when present, is generated by the HTTP server or proxy. */
+                    "X-Server-Received-At"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PageResponse_Page_PersonalHistoryDTO__"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Content Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Locked */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    search_favorites_api_v1_me_favorites_report_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @example fa-IR
+                 */
+                "Accept-Language"?: string;
+                /**
+                 * @description Optional RFC 9110 HTTP-date generated by native clients for advisory diagnostics. Browser JavaScript cannot set Date. Missing or invalid values do not reject the request.
+                 * @example Mon, 28 Sep 2026 12:00:00 GMT
+                 */
+                Date?: string;
+                /** @description Optional caller-controlled client software identifier for audit and diagnostics; captured up to 1024 characters. Browsers supply their own value and may ignore manual Swagger overrides. Not trusted client identity or authorization. */
+                "User-Agent"?: string | null;
+                /**
+                 * @description Optional caller-supplied reason recorded in audit history. It is not an authorization credential.
+                 * @example Correcting a submitted request
+                 */
+                "X-Audit-Reason"?: string;
+                /** @description Optional UUIDv7 correlation identifier. Missing or invalid values are replaced with a generated UUIDv7; the effective value is returned in X-Request-ID. */
+                "X-Request-ID"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PersonalItemQuery"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Protected actor-specific response; persistent caching is prohibited. */
+                    "Cache-Control"?: "private, no-store";
+                    /** @description Present as check-device-time only when the configured apparent difference threshold is reached. */
+                    "X-Client-Date-Advisory"?: "check-device-time";
+                    /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
+                    "X-Client-Date-Delta-Seconds"?: number;
+                    /** @description Optional client Date reading: available, unavailable, or invalid. No request is rejected for this diagnostic. */
+                    "X-Client-Date-Status"?: "available" | "unavailable" | "invalid";
+                    /** @description Server UTC receipt timestamp. Response Date, when present, is generated by the HTTP server or proxy. */
+                    "X-Server-Received-At"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PageResponse_Page_FavoriteDTO__"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Content Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Locked */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    search_favorites_api_v1_me_favorites_search_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @example fa-IR
+                 */
+                "Accept-Language"?: string;
+                /**
+                 * @description Optional RFC 9110 HTTP-date generated by native clients for advisory diagnostics. Browser JavaScript cannot set Date. Missing or invalid values do not reject the request.
+                 * @example Mon, 28 Sep 2026 12:00:00 GMT
+                 */
+                Date?: string;
+                /** @description Optional caller-controlled client software identifier for audit and diagnostics; captured up to 1024 characters. Browsers supply their own value and may ignore manual Swagger overrides. Not trusted client identity or authorization. */
+                "User-Agent"?: string | null;
+                /**
+                 * @description Optional caller-supplied reason recorded in audit history. It is not an authorization credential.
+                 * @example Correcting a submitted request
+                 */
+                "X-Audit-Reason"?: string;
+                /** @description Optional UUIDv7 correlation identifier. Missing or invalid values are replaced with a generated UUIDv7; the effective value is returned in X-Request-ID. */
+                "X-Request-ID"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PersonalItemQuery"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Protected actor-specific response; persistent caching is prohibited. */
+                    "Cache-Control"?: "private, no-store";
+                    /** @description Present as check-device-time only when the configured apparent difference threshold is reached. */
+                    "X-Client-Date-Advisory"?: "check-device-time";
+                    /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
+                    "X-Client-Date-Delta-Seconds"?: number;
+                    /** @description Optional client Date reading: available, unavailable, or invalid. No request is rejected for this diagnostic. */
+                    "X-Client-Date-Status"?: "available" | "unavailable" | "invalid";
+                    /** @description Server UTC receipt timestamp. Response Date, when present, is generated by the HTTP server or proxy. */
+                    "X-Server-Received-At"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PageResponse_Page_FavoriteDTO__"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Content Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Locked */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    read_help_state_api_v1_me_help_state_get: {
+        parameters: {
+            query?: {
+                /** @description Optional locale filter; omitted returns both locales. */
+                locale?: ("en" | "fa") | null;
+                page?: number;
+                size?: number;
+            };
+            header?: {
+                /**
+                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @example fa-IR
+                 */
+                "Accept-Language"?: string;
+                /**
+                 * @description Optional RFC 9110 HTTP-date generated by native clients for advisory diagnostics. Browser JavaScript cannot set Date. Missing or invalid values do not reject the request.
+                 * @example Mon, 28 Sep 2026 12:00:00 GMT
+                 */
+                Date?: string;
+                /** @description Optional caller-controlled client software identifier for audit and diagnostics; captured up to 1024 characters. Browsers supply their own value and may ignore manual Swagger overrides. Not trusted client identity or authorization. */
+                "User-Agent"?: string | null;
+                /**
+                 * @description Optional caller-supplied reason recorded in audit history. It is not an authorization credential.
+                 * @example Correcting a submitted request
+                 */
+                "X-Audit-Reason"?: string;
+                /** @description Optional UUIDv7 correlation identifier. Missing or invalid values are replaced with a generated UUIDv7; the effective value is returned in X-Request-ID. */
+                "X-Request-ID"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Protected actor-specific response; persistent caching is prohibited. */
+                    "Cache-Control"?: "private, no-store";
+                    /** @description Present as check-device-time only when the configured apparent difference threshold is reached. */
+                    "X-Client-Date-Advisory"?: "check-device-time";
+                    /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
+                    "X-Client-Date-Delta-Seconds"?: number;
+                    /** @description Optional client Date reading: available, unavailable, or invalid. No request is rejected for this diagnostic. */
+                    "X-Client-Date-Status"?: "available" | "unavailable" | "invalid";
+                    /** @description Server UTC receipt timestamp. Response Date, when present, is generated by the HTTP server or proxy. */
+                    "X-Server-Received-At"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuccessResponse_HelpStatePage_"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Content Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Locked */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    dismiss_help_api_v1_me_help_state_dismiss_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @example fa-IR
+                 */
+                "Accept-Language"?: string;
+                /**
+                 * @description Optional RFC 9110 HTTP-date generated by native clients for advisory diagnostics. Browser JavaScript cannot set Date. Missing or invalid values do not reject the request.
+                 * @example Mon, 28 Sep 2026 12:00:00 GMT
+                 */
+                Date?: string;
+                /** @description Optional caller-controlled client software identifier for audit and diagnostics; captured up to 1024 characters. Browsers supply their own value and may ignore manual Swagger overrides. Not trusted client identity or authorization. */
+                "User-Agent"?: string | null;
+                /**
+                 * @description Optional caller-supplied reason recorded in audit history. It is not an authorization credential.
+                 * @example Correcting a submitted request
+                 */
+                "X-Audit-Reason"?: string;
+                /** @description Optional UUIDv7 correlation identifier. Missing or invalid values are replaced with a generated UUIDv7; the effective value is returned in X-Request-ID. */
+                "X-Request-ID"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["HelpAction"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Protected actor-specific response; persistent caching is prohibited. */
+                    "Cache-Control"?: "private, no-store";
+                    /** @description Present as check-device-time only when the configured apparent difference threshold is reached. */
+                    "X-Client-Date-Advisory"?: "check-device-time";
+                    /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
+                    "X-Client-Date-Delta-Seconds"?: number;
+                    /** @description Optional client Date reading: available, unavailable, or invalid. No request is rejected for this diagnostic. */
+                    "X-Client-Date-Status"?: "available" | "unavailable" | "invalid";
+                    /** @description Server UTC receipt timestamp. Response Date, when present, is generated by the HTTP server or proxy. */
+                    "X-Server-Received-At"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuccessResponse_HelpActionResult_"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Content Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Locked */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    reset_help_api_v1_me_help_state_reset_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @example fa-IR
+                 */
+                "Accept-Language"?: string;
+                /**
+                 * @description Optional RFC 9110 HTTP-date generated by native clients for advisory diagnostics. Browser JavaScript cannot set Date. Missing or invalid values do not reject the request.
+                 * @example Mon, 28 Sep 2026 12:00:00 GMT
+                 */
+                Date?: string;
+                /** @description Optional caller-controlled client software identifier for audit and diagnostics; captured up to 1024 characters. Browsers supply their own value and may ignore manual Swagger overrides. Not trusted client identity or authorization. */
+                "User-Agent"?: string | null;
+                /**
+                 * @description Optional caller-supplied reason recorded in audit history. It is not an authorization credential.
+                 * @example Correcting a submitted request
+                 */
+                "X-Audit-Reason"?: string;
+                /** @description Optional UUIDv7 correlation identifier. Missing or invalid values are replaced with a generated UUIDv7; the effective value is returned in X-Request-ID. */
+                "X-Request-ID"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["HelpReset"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Protected actor-specific response; persistent caching is prohibited. */
+                    "Cache-Control"?: "private, no-store";
+                    /** @description Present as check-device-time only when the configured apparent difference threshold is reached. */
+                    "X-Client-Date-Advisory"?: "check-device-time";
+                    /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
+                    "X-Client-Date-Delta-Seconds"?: number;
+                    /** @description Optional client Date reading: available, unavailable, or invalid. No request is rejected for this diagnostic. */
+                    "X-Client-Date-Status"?: "available" | "unavailable" | "invalid";
+                    /** @description Server UTC receipt timestamp. Response Date, when present, is generated by the HTTP server or proxy. */
+                    "X-Server-Received-At"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuccessResponse_HelpResetResult_"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Content Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Locked */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    see_help_api_v1_me_help_state_seen_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @example fa-IR
+                 */
+                "Accept-Language"?: string;
+                /**
+                 * @description Optional RFC 9110 HTTP-date generated by native clients for advisory diagnostics. Browser JavaScript cannot set Date. Missing or invalid values do not reject the request.
+                 * @example Mon, 28 Sep 2026 12:00:00 GMT
+                 */
+                Date?: string;
+                /** @description Optional caller-controlled client software identifier for audit and diagnostics; captured up to 1024 characters. Browsers supply their own value and may ignore manual Swagger overrides. Not trusted client identity or authorization. */
+                "User-Agent"?: string | null;
+                /**
+                 * @description Optional caller-supplied reason recorded in audit history. It is not an authorization credential.
+                 * @example Correcting a submitted request
+                 */
+                "X-Audit-Reason"?: string;
+                /** @description Optional UUIDv7 correlation identifier. Missing or invalid values are replaced with a generated UUIDv7; the effective value is returned in X-Request-ID. */
+                "X-Request-ID"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["HelpAction"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Protected actor-specific response; persistent caching is prohibited. */
+                    "Cache-Control"?: "private, no-store";
+                    /** @description Present as check-device-time only when the configured apparent difference threshold is reached. */
+                    "X-Client-Date-Advisory"?: "check-device-time";
+                    /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
+                    "X-Client-Date-Delta-Seconds"?: number;
+                    /** @description Optional client Date reading: available, unavailable, or invalid. No request is rejected for this diagnostic. */
+                    "X-Client-Date-Status"?: "available" | "unavailable" | "invalid";
+                    /** @description Server UTC receipt timestamp. Response Date, when present, is generated by the HTTP server or proxy. */
+                    "X-Server-Received-At"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuccessResponse_HelpActionResult_"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Content Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Locked */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    read_preferences_api_v1_me_preferences_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @example fa-IR
+                 */
+                "Accept-Language"?: string;
+                /**
+                 * @description Optional RFC 9110 HTTP-date generated by native clients for advisory diagnostics. Browser JavaScript cannot set Date. Missing or invalid values do not reject the request.
+                 * @example Mon, 28 Sep 2026 12:00:00 GMT
+                 */
+                Date?: string;
+                /** @description Optional caller-controlled client software identifier for audit and diagnostics; captured up to 1024 characters. Browsers supply their own value and may ignore manual Swagger overrides. Not trusted client identity or authorization. */
+                "User-Agent"?: string | null;
+                /**
+                 * @description Optional caller-supplied reason recorded in audit history. It is not an authorization credential.
+                 * @example Correcting a submitted request
+                 */
+                "X-Audit-Reason"?: string;
+                /** @description Optional UUIDv7 correlation identifier. Missing or invalid values are replaced with a generated UUIDv7; the effective value is returned in X-Request-ID. */
+                "X-Request-ID"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Protected actor-specific response; persistent caching is prohibited. */
+                    "Cache-Control"?: "private, no-store";
+                    /** @description Present as check-device-time only when the configured apparent difference threshold is reached. */
+                    "X-Client-Date-Advisory"?: "check-device-time";
+                    /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
+                    "X-Client-Date-Delta-Seconds"?: number;
+                    /** @description Optional client Date reading: available, unavailable, or invalid. No request is rejected for this diagnostic. */
+                    "X-Client-Date-Status"?: "available" | "unavailable" | "invalid";
+                    /** @description Server UTC receipt timestamp. Response Date, when present, is generated by the HTTP server or proxy. */
+                    "X-Server-Received-At"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuccessResponse_PreferencesDTO_"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Content Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Locked */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    apply_preferences_api_v1_me_preferences_patch: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @example fa-IR
+                 */
+                "Accept-Language"?: string;
+                /**
+                 * @description Optional RFC 9110 HTTP-date generated by native clients for advisory diagnostics. Browser JavaScript cannot set Date. Missing or invalid values do not reject the request.
+                 * @example Mon, 28 Sep 2026 12:00:00 GMT
+                 */
+                Date?: string;
+                /** @description Optional caller-controlled client software identifier for audit and diagnostics; captured up to 1024 characters. Browsers supply their own value and may ignore manual Swagger overrides. Not trusted client identity or authorization. */
+                "User-Agent"?: string | null;
+                /**
+                 * @description Optional caller-supplied reason recorded in audit history. It is not an authorization credential.
+                 * @example Correcting a submitted request
+                 */
+                "X-Audit-Reason"?: string;
+                /** @description Optional UUIDv7 correlation identifier. Missing or invalid values are replaced with a generated UUIDv7; the effective value is returned in X-Request-ID. */
+                "X-Request-ID"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PreferencesPatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Protected actor-specific response; persistent caching is prohibited. */
+                    "Cache-Control"?: "private, no-store";
+                    /** @description Present as check-device-time only when the configured apparent difference threshold is reached. */
+                    "X-Client-Date-Advisory"?: "check-device-time";
+                    /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
+                    "X-Client-Date-Delta-Seconds"?: number;
+                    /** @description Optional client Date reading: available, unavailable, or invalid. No request is rejected for this diagnostic. */
+                    "X-Client-Date-Status"?: "available" | "unavailable" | "invalid";
+                    /** @description Server UTC receipt timestamp. Response Date, when present, is generated by the HTTP server or proxy. */
+                    "X-Server-Received-At"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuccessResponse_PreferencesDTO_"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Content Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Locked */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    read_profile_api_v1_me_profile_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @example fa-IR
+                 */
+                "Accept-Language"?: string;
+                /**
+                 * @description Optional RFC 9110 HTTP-date generated by native clients for advisory diagnostics. Browser JavaScript cannot set Date. Missing or invalid values do not reject the request.
+                 * @example Mon, 28 Sep 2026 12:00:00 GMT
+                 */
+                Date?: string;
+                /** @description Optional caller-controlled client software identifier for audit and diagnostics; captured up to 1024 characters. Browsers supply their own value and may ignore manual Swagger overrides. Not trusted client identity or authorization. */
+                "User-Agent"?: string | null;
+                /**
+                 * @description Optional caller-supplied reason recorded in audit history. It is not an authorization credential.
+                 * @example Correcting a submitted request
+                 */
+                "X-Audit-Reason"?: string;
+                /** @description Optional UUIDv7 correlation identifier. Missing or invalid values are replaced with a generated UUIDv7; the effective value is returned in X-Request-ID. */
+                "X-Request-ID"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Protected actor-specific response; persistent caching is prohibited. */
+                    "Cache-Control"?: "private, no-store";
+                    /** @description Present as check-device-time only when the configured apparent difference threshold is reached. */
+                    "X-Client-Date-Advisory"?: "check-device-time";
+                    /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
+                    "X-Client-Date-Delta-Seconds"?: number;
+                    /** @description Optional client Date reading: available, unavailable, or invalid. No request is rejected for this diagnostic. */
+                    "X-Client-Date-Status"?: "available" | "unavailable" | "invalid";
+                    /** @description Server UTC receipt timestamp. Response Date, when present, is generated by the HTTP server or proxy. */
+                    "X-Server-Received-At"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuccessResponse_ProfileDTO_"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Content Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Locked */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    apply_profile_api_v1_me_profile_patch: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @example fa-IR
+                 */
+                "Accept-Language"?: string;
+                /**
+                 * @description Optional RFC 9110 HTTP-date generated by native clients for advisory diagnostics. Browser JavaScript cannot set Date. Missing or invalid values do not reject the request.
+                 * @example Mon, 28 Sep 2026 12:00:00 GMT
+                 */
+                Date?: string;
+                /** @description Optional caller-controlled client software identifier for audit and diagnostics; captured up to 1024 characters. Browsers supply their own value and may ignore manual Swagger overrides. Not trusted client identity or authorization. */
+                "User-Agent"?: string | null;
+                /**
+                 * @description Optional caller-supplied reason recorded in audit history. It is not an authorization credential.
+                 * @example Correcting a submitted request
+                 */
+                "X-Audit-Reason"?: string;
+                /** @description Optional UUIDv7 correlation identifier. Missing or invalid values are replaced with a generated UUIDv7; the effective value is returned in X-Request-ID. */
+                "X-Request-ID"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProfilePatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Protected actor-specific response; persistent caching is prohibited. */
+                    "Cache-Control"?: "private, no-store";
+                    /** @description Present as check-device-time only when the configured apparent difference threshold is reached. */
+                    "X-Client-Date-Advisory"?: "check-device-time";
+                    /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
+                    "X-Client-Date-Delta-Seconds"?: number;
+                    /** @description Optional client Date reading: available, unavailable, or invalid. No request is rejected for this diagnostic. */
+                    "X-Client-Date-Status"?: "available" | "unavailable" | "invalid";
+                    /** @description Server UTC receipt timestamp. Response Date, when present, is generated by the HTTP server or proxy. */
+                    "X-Server-Received-At"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuccessResponse_ProfileDTO_"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Content Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Locked */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    create_view_api_v1_me_saved_views_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @example fa-IR
+                 */
+                "Accept-Language"?: string;
+                /**
+                 * @description Optional RFC 9110 HTTP-date generated by native clients for advisory diagnostics. Browser JavaScript cannot set Date. Missing or invalid values do not reject the request.
+                 * @example Mon, 28 Sep 2026 12:00:00 GMT
+                 */
+                Date?: string;
+                /** @description Optional caller-controlled client software identifier for audit and diagnostics; captured up to 1024 characters. Browsers supply their own value and may ignore manual Swagger overrides. Not trusted client identity or authorization. */
+                "User-Agent"?: string | null;
+                /**
+                 * @description Optional caller-supplied reason recorded in audit history. It is not an authorization credential.
+                 * @example Correcting a submitted request
+                 */
+                "X-Audit-Reason"?: string;
+                /** @description Optional UUIDv7 correlation identifier. Missing or invalid values are replaced with a generated UUIDv7; the effective value is returned in X-Request-ID. */
+                "X-Request-ID"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SavedViewInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Protected actor-specific response; persistent caching is prohibited. */
+                    "Cache-Control"?: "private, no-store";
+                    /** @description Present as check-device-time only when the configured apparent difference threshold is reached. */
+                    "X-Client-Date-Advisory"?: "check-device-time";
+                    /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
+                    "X-Client-Date-Delta-Seconds"?: number;
+                    /** @description Optional client Date reading: available, unavailable, or invalid. No request is rejected for this diagnostic. */
+                    "X-Client-Date-Status"?: "available" | "unavailable" | "invalid";
+                    /** @description Server UTC receipt timestamp. Response Date, when present, is generated by the HTTP server or proxy. */
+                    "X-Server-Received-At"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuccessResponse_SavedViewDTO_"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Content Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Locked */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    read_view_api_v1_me_saved_views__ref_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @example fa-IR
+                 */
+                "Accept-Language"?: string;
+                /**
+                 * @description Optional RFC 9110 HTTP-date generated by native clients for advisory diagnostics. Browser JavaScript cannot set Date. Missing or invalid values do not reject the request.
+                 * @example Mon, 28 Sep 2026 12:00:00 GMT
+                 */
+                Date?: string;
+                /** @description Optional caller-controlled client software identifier for audit and diagnostics; captured up to 1024 characters. Browsers supply their own value and may ignore manual Swagger overrides. Not trusted client identity or authorization. */
+                "User-Agent"?: string | null;
+                /**
+                 * @description Optional caller-supplied reason recorded in audit history. It is not an authorization credential.
+                 * @example Correcting a submitted request
+                 */
+                "X-Audit-Reason"?: string;
+                /** @description Optional UUIDv7 correlation identifier. Missing or invalid values are replaced with a generated UUIDv7; the effective value is returned in X-Request-ID. */
+                "X-Request-ID"?: string;
+            };
+            path: {
+                ref_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Protected actor-specific response; persistent caching is prohibited. */
+                    "Cache-Control"?: "private, no-store";
+                    /** @description Present as check-device-time only when the configured apparent difference threshold is reached. */
+                    "X-Client-Date-Advisory"?: "check-device-time";
+                    /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
+                    "X-Client-Date-Delta-Seconds"?: number;
+                    /** @description Optional client Date reading: available, unavailable, or invalid. No request is rejected for this diagnostic. */
+                    "X-Client-Date-Status"?: "available" | "unavailable" | "invalid";
+                    /** @description Server UTC receipt timestamp. Response Date, when present, is generated by the HTTP server or proxy. */
+                    "X-Server-Received-At"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuccessResponse_SavedViewDTO_"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Content Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Locked */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    update_view_api_v1_me_saved_views__ref_id__put: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @example fa-IR
+                 */
+                "Accept-Language"?: string;
+                /**
+                 * @description Optional RFC 9110 HTTP-date generated by native clients for advisory diagnostics. Browser JavaScript cannot set Date. Missing or invalid values do not reject the request.
+                 * @example Mon, 28 Sep 2026 12:00:00 GMT
+                 */
+                Date?: string;
+                /** @description Optional caller-controlled client software identifier for audit and diagnostics; captured up to 1024 characters. Browsers supply their own value and may ignore manual Swagger overrides. Not trusted client identity or authorization. */
+                "User-Agent"?: string | null;
+                /**
+                 * @description Optional caller-supplied reason recorded in audit history. It is not an authorization credential.
+                 * @example Correcting a submitted request
+                 */
+                "X-Audit-Reason"?: string;
+                /** @description Optional UUIDv7 correlation identifier. Missing or invalid values are replaced with a generated UUIDv7; the effective value is returned in X-Request-ID. */
+                "X-Request-ID"?: string;
+            };
+            path: {
+                ref_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SavedViewInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Protected actor-specific response; persistent caching is prohibited. */
+                    "Cache-Control"?: "private, no-store";
+                    /** @description Present as check-device-time only when the configured apparent difference threshold is reached. */
+                    "X-Client-Date-Advisory"?: "check-device-time";
+                    /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
+                    "X-Client-Date-Delta-Seconds"?: number;
+                    /** @description Optional client Date reading: available, unavailable, or invalid. No request is rejected for this diagnostic. */
+                    "X-Client-Date-Status"?: "available" | "unavailable" | "invalid";
+                    /** @description Server UTC receipt timestamp. Response Date, when present, is generated by the HTTP server or proxy. */
+                    "X-Server-Received-At"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuccessResponse_SavedViewDTO_"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Content Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Locked */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    delete_view_api_v1_me_saved_views__ref_id__delete: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @example fa-IR
+                 */
+                "Accept-Language"?: string;
+                /**
+                 * @description Optional RFC 9110 HTTP-date generated by native clients for advisory diagnostics. Browser JavaScript cannot set Date. Missing or invalid values do not reject the request.
+                 * @example Mon, 28 Sep 2026 12:00:00 GMT
+                 */
+                Date?: string;
+                /** @description Optional caller-controlled client software identifier for audit and diagnostics; captured up to 1024 characters. Browsers supply their own value and may ignore manual Swagger overrides. Not trusted client identity or authorization. */
+                "User-Agent"?: string | null;
+                /**
+                 * @description Optional caller-supplied reason recorded in audit history. It is not an authorization credential.
+                 * @example Correcting a submitted request
+                 */
+                "X-Audit-Reason"?: string;
+                /** @description Optional UUIDv7 correlation identifier. Missing or invalid values are replaced with a generated UUIDv7; the effective value is returned in X-Request-ID. */
+                "X-Request-ID"?: string;
+            };
+            path: {
+                ref_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Protected actor-specific response; persistent caching is prohibited. */
+                    "Cache-Control"?: "private, no-store";
+                    /** @description Present as check-device-time only when the configured apparent difference threshold is reached. */
+                    "X-Client-Date-Advisory"?: "check-device-time";
+                    /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
+                    "X-Client-Date-Delta-Seconds"?: number;
+                    /** @description Optional client Date reading: available, unavailable, or invalid. No request is rejected for this diagnostic. */
+                    "X-Client-Date-Status"?: "available" | "unavailable" | "invalid";
+                    /** @description Server UTC receipt timestamp. Response Date, when present, is generated by the HTTP server or proxy. */
+                    "X-Server-Received-At"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuccessResponse_NoneType_"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Content Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Locked */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    apply_view_api_v1_me_saved_views__ref_id__apply_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @example fa-IR
+                 */
+                "Accept-Language"?: string;
+                /**
+                 * @description Optional RFC 9110 HTTP-date generated by native clients for advisory diagnostics. Browser JavaScript cannot set Date. Missing or invalid values do not reject the request.
+                 * @example Mon, 28 Sep 2026 12:00:00 GMT
+                 */
+                Date?: string;
+                /** @description Optional caller-controlled client software identifier for audit and diagnostics; captured up to 1024 characters. Browsers supply their own value and may ignore manual Swagger overrides. Not trusted client identity or authorization. */
+                "User-Agent"?: string | null;
+                /**
+                 * @description Optional caller-supplied reason recorded in audit history. It is not an authorization credential.
+                 * @example Correcting a submitted request
+                 */
+                "X-Audit-Reason"?: string;
+                /** @description Optional UUIDv7 correlation identifier. Missing or invalid values are replaced with a generated UUIDv7; the effective value is returned in X-Request-ID. */
+                "X-Request-ID"?: string;
+            };
+            path: {
+                ref_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DefaultCommand"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Protected actor-specific response; persistent caching is prohibited. */
+                    "Cache-Control"?: "private, no-store";
+                    /** @description Present as check-device-time only when the configured apparent difference threshold is reached. */
+                    "X-Client-Date-Advisory"?: "check-device-time";
+                    /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
+                    "X-Client-Date-Delta-Seconds"?: number;
+                    /** @description Optional client Date reading: available, unavailable, or invalid. No request is rejected for this diagnostic. */
+                    "X-Client-Date-Status"?: "available" | "unavailable" | "invalid";
+                    /** @description Server UTC receipt timestamp. Response Date, when present, is generated by the HTTP server or proxy. */
+                    "X-Server-Received-At"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuccessResponse_AppliedView_"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Content Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Locked */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    default_view_api_v1_me_saved_views__ref_id__default_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @example fa-IR
+                 */
+                "Accept-Language"?: string;
+                /**
+                 * @description Optional RFC 9110 HTTP-date generated by native clients for advisory diagnostics. Browser JavaScript cannot set Date. Missing or invalid values do not reject the request.
+                 * @example Mon, 28 Sep 2026 12:00:00 GMT
+                 */
+                Date?: string;
+                /** @description Optional caller-controlled client software identifier for audit and diagnostics; captured up to 1024 characters. Browsers supply their own value and may ignore manual Swagger overrides. Not trusted client identity or authorization. */
+                "User-Agent"?: string | null;
+                /**
+                 * @description Optional caller-supplied reason recorded in audit history. It is not an authorization credential.
+                 * @example Correcting a submitted request
+                 */
+                "X-Audit-Reason"?: string;
+                /** @description Optional UUIDv7 correlation identifier. Missing or invalid values are replaced with a generated UUIDv7; the effective value is returned in X-Request-ID. */
+                "X-Request-ID"?: string;
+            };
+            path: {
+                ref_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DefaultCommand"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Protected actor-specific response; persistent caching is prohibited. */
+                    "Cache-Control"?: "private, no-store";
+                    /** @description Present as check-device-time only when the configured apparent difference threshold is reached. */
+                    "X-Client-Date-Advisory"?: "check-device-time";
+                    /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
+                    "X-Client-Date-Delta-Seconds"?: number;
+                    /** @description Optional client Date reading: available, unavailable, or invalid. No request is rejected for this diagnostic. */
+                    "X-Client-Date-Status"?: "available" | "unavailable" | "invalid";
+                    /** @description Server UTC receipt timestamp. Response Date, when present, is generated by the HTTP server or proxy. */
+                    "X-Server-Received-At"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuccessResponse_SavedViewDTO_"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Content Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Locked */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    view_history_api_v1_me_saved_views__ref_id__history_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @example fa-IR
+                 */
+                "Accept-Language"?: string;
+                /**
+                 * @description Optional RFC 9110 HTTP-date generated by native clients for advisory diagnostics. Browser JavaScript cannot set Date. Missing or invalid values do not reject the request.
+                 * @example Mon, 28 Sep 2026 12:00:00 GMT
+                 */
+                Date?: string;
+                /** @description Optional caller-controlled client software identifier for audit and diagnostics; captured up to 1024 characters. Browsers supply their own value and may ignore manual Swagger overrides. Not trusted client identity or authorization. */
+                "User-Agent"?: string | null;
+                /**
+                 * @description Optional caller-supplied reason recorded in audit history. It is not an authorization credential.
+                 * @example Correcting a submitted request
+                 */
+                "X-Audit-Reason"?: string;
+                /** @description Optional UUIDv7 correlation identifier. Missing or invalid values are replaced with a generated UUIDv7; the effective value is returned in X-Request-ID. */
+                "X-Request-ID"?: string;
+            };
+            path: {
+                ref_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PersonalHistoryQuery"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Protected actor-specific response; persistent caching is prohibited. */
+                    "Cache-Control"?: "private, no-store";
+                    /** @description Present as check-device-time only when the configured apparent difference threshold is reached. */
+                    "X-Client-Date-Advisory"?: "check-device-time";
+                    /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
+                    "X-Client-Date-Delta-Seconds"?: number;
+                    /** @description Optional client Date reading: available, unavailable, or invalid. No request is rejected for this diagnostic. */
+                    "X-Client-Date-Status"?: "available" | "unavailable" | "invalid";
+                    /** @description Server UTC receipt timestamp. Response Date, when present, is generated by the HTTP server or proxy. */
+                    "X-Server-Received-At"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PageResponse_Page_PersonalHistoryDTO__"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Content Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Locked */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    search_views_api_v1_me_saved_views_report_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @example fa-IR
+                 */
+                "Accept-Language"?: string;
+                /**
+                 * @description Optional RFC 9110 HTTP-date generated by native clients for advisory diagnostics. Browser JavaScript cannot set Date. Missing or invalid values do not reject the request.
+                 * @example Mon, 28 Sep 2026 12:00:00 GMT
+                 */
+                Date?: string;
+                /** @description Optional caller-controlled client software identifier for audit and diagnostics; captured up to 1024 characters. Browsers supply their own value and may ignore manual Swagger overrides. Not trusted client identity or authorization. */
+                "User-Agent"?: string | null;
+                /**
+                 * @description Optional caller-supplied reason recorded in audit history. It is not an authorization credential.
+                 * @example Correcting a submitted request
+                 */
+                "X-Audit-Reason"?: string;
+                /** @description Optional UUIDv7 correlation identifier. Missing or invalid values are replaced with a generated UUIDv7; the effective value is returned in X-Request-ID. */
+                "X-Request-ID"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PersonalItemQuery"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Protected actor-specific response; persistent caching is prohibited. */
+                    "Cache-Control"?: "private, no-store";
+                    /** @description Present as check-device-time only when the configured apparent difference threshold is reached. */
+                    "X-Client-Date-Advisory"?: "check-device-time";
+                    /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
+                    "X-Client-Date-Delta-Seconds"?: number;
+                    /** @description Optional client Date reading: available, unavailable, or invalid. No request is rejected for this diagnostic. */
+                    "X-Client-Date-Status"?: "available" | "unavailable" | "invalid";
+                    /** @description Server UTC receipt timestamp. Response Date, when present, is generated by the HTTP server or proxy. */
+                    "X-Server-Received-At"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PageResponse_Page_SavedViewDTO__"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Content Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Locked */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    search_views_api_v1_me_saved_views_search_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @example fa-IR
+                 */
+                "Accept-Language"?: string;
+                /**
+                 * @description Optional RFC 9110 HTTP-date generated by native clients for advisory diagnostics. Browser JavaScript cannot set Date. Missing or invalid values do not reject the request.
+                 * @example Mon, 28 Sep 2026 12:00:00 GMT
+                 */
+                Date?: string;
+                /** @description Optional caller-controlled client software identifier for audit and diagnostics; captured up to 1024 characters. Browsers supply their own value and may ignore manual Swagger overrides. Not trusted client identity or authorization. */
+                "User-Agent"?: string | null;
+                /**
+                 * @description Optional caller-supplied reason recorded in audit history. It is not an authorization credential.
+                 * @example Correcting a submitted request
+                 */
+                "X-Audit-Reason"?: string;
+                /** @description Optional UUIDv7 correlation identifier. Missing or invalid values are replaced with a generated UUIDv7; the effective value is returned in X-Request-ID. */
+                "X-Request-ID"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PersonalItemQuery"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Protected actor-specific response; persistent caching is prohibited. */
+                    "Cache-Control"?: "private, no-store";
+                    /** @description Present as check-device-time only when the configured apparent difference threshold is reached. */
+                    "X-Client-Date-Advisory"?: "check-device-time";
+                    /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
+                    "X-Client-Date-Delta-Seconds"?: number;
+                    /** @description Optional client Date reading: available, unavailable, or invalid. No request is rejected for this diagnostic. */
+                    "X-Client-Date-Status"?: "available" | "unavailable" | "invalid";
+                    /** @description Server UTC receipt timestamp. Response Date, when present, is generated by the HTTP server or proxy. */
+                    "X-Server-Received-At"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PageResponse_Page_SavedViewDTO__"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Content Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Locked */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     upload_file_api_v1_media_files_post: {
         parameters: {
             query?: never;
@@ -43769,6 +54942,23 @@ export interface operations {
             };
         };
         responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    /** @description Protected actor-specific response; persistent caching is prohibited. */
+                    "Cache-Control"?: "private, no-store";
+                    /** @description Present as check-device-time only when the configured apparent difference threshold is reached. */
+                    "X-Client-Date-Advisory"?: "check-device-time";
+                    /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
+                    "X-Client-Date-Delta-Seconds"?: number;
+                    /** @description Optional client Date reading: available, unavailable, or invalid. No request is rejected for this diagnostic. */
+                    "X-Client-Date-Status"?: "available" | "unavailable" | "invalid";
+                    /** @description Server UTC receipt timestamp. Response Date, when present, is generated by the HTTP server or proxy. */
+                    "X-Server-Received-At"?: string;
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
             /** @description Successful Response */
             201: {
                 headers: {
@@ -44084,6 +55274,23 @@ export interface operations {
             };
         };
         responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    /** @description Protected actor-specific response; persistent caching is prohibited. */
+                    "Cache-Control"?: "private, no-store";
+                    /** @description Present as check-device-time only when the configured apparent difference threshold is reached. */
+                    "X-Client-Date-Advisory"?: "check-device-time";
+                    /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
+                    "X-Client-Date-Delta-Seconds"?: number;
+                    /** @description Optional client Date reading: available, unavailable, or invalid. No request is rejected for this diagnostic. */
+                    "X-Client-Date-Status"?: "available" | "unavailable" | "invalid";
+                    /** @description Server UTC receipt timestamp. Response Date, when present, is generated by the HTTP server or proxy. */
+                    "X-Server-Received-At"?: string;
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
             /** @description Successful Response */
             201: {
                 headers: {
@@ -45264,6 +56471,159 @@ export interface operations {
             };
         };
     };
+    search_process_ai_evidence_api_v1_processes__ref_id__ai_evidence_search_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @example fa-IR
+                 */
+                "Accept-Language"?: string;
+                /**
+                 * @description Optional RFC 9110 HTTP-date generated by native clients for advisory diagnostics. Browser JavaScript cannot set Date. Missing or invalid values do not reject the request.
+                 * @example Mon, 28 Sep 2026 12:00:00 GMT
+                 */
+                Date?: string;
+                /** @description Optional caller-controlled client software identifier for audit and diagnostics; captured up to 1024 characters. Browsers supply their own value and may ignore manual Swagger overrides. Not trusted client identity or authorization. */
+                "User-Agent"?: string | null;
+                /**
+                 * @description Optional caller-supplied reason recorded in audit history. It is not an authorization credential.
+                 * @example Correcting a submitted request
+                 */
+                "X-Audit-Reason"?: string;
+                /** @description Optional UUIDv7 correlation identifier. Missing or invalid values are replaced with a generated UUIDv7; the effective value is returned in X-Request-ID. */
+                "X-Request-ID"?: string;
+            };
+            path: {
+                ref_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PageRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Present as check-device-time only when the configured apparent difference threshold is reached. */
+                    "X-Client-Date-Advisory"?: "check-device-time";
+                    /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
+                    "X-Client-Date-Delta-Seconds"?: number;
+                    /** @description Optional client Date reading: available, unavailable, or invalid. No request is rejected for this diagnostic. */
+                    "X-Client-Date-Status"?: "available" | "unavailable" | "invalid";
+                    /** @description Server UTC receipt timestamp. Response Date, when present, is generated by the HTTP server or proxy. */
+                    "X-Server-Received-At"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PageResponse_Page_AIProcessEvidenceDTO__"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Content Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Locked */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     cancel_process_api_v1_processes__ref_id__cancel_post: {
         parameters: {
             query?: never;
@@ -45467,6 +56827,465 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SuccessResponse_ProcessDTO_"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Content Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Locked */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    reconcile_sandbox_order_api_v1_processes__ref_id__orders_reconcile_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @example fa-IR
+                 */
+                "Accept-Language"?: string;
+                /**
+                 * @description Optional RFC 9110 HTTP-date generated by native clients for advisory diagnostics. Browser JavaScript cannot set Date. Missing or invalid values do not reject the request.
+                 * @example Mon, 28 Sep 2026 12:00:00 GMT
+                 */
+                Date?: string;
+                /** @description Optional caller-controlled client software identifier for audit and diagnostics; captured up to 1024 characters. Browsers supply their own value and may ignore manual Swagger overrides. Not trusted client identity or authorization. */
+                "User-Agent"?: string | null;
+                /**
+                 * @description Optional caller-supplied reason recorded in audit history. It is not an authorization credential.
+                 * @example Correcting a submitted request
+                 */
+                "X-Audit-Reason"?: string;
+                /** @description Optional UUIDv7 correlation identifier. Missing or invalid values are replaced with a generated UUIDv7; the effective value is returned in X-Request-ID. */
+                "X-Request-ID"?: string;
+            };
+            path: {
+                ref_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OrderReconciliationDTO"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Present as check-device-time only when the configured apparent difference threshold is reached. */
+                    "X-Client-Date-Advisory"?: "check-device-time";
+                    /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
+                    "X-Client-Date-Delta-Seconds"?: number;
+                    /** @description Optional client Date reading: available, unavailable, or invalid. No request is rejected for this diagnostic. */
+                    "X-Client-Date-Status"?: "available" | "unavailable" | "invalid";
+                    /** @description Server UTC receipt timestamp. Response Date, when present, is generated by the HTTP server or proxy. */
+                    "X-Server-Received-At"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuccessResponse_SandboxOperationDTO_"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Content Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Locked */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    reconcile_sandbox_cancellation_api_v1_processes__ref_id__orders_reconcile_cancellation_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @example fa-IR
+                 */
+                "Accept-Language"?: string;
+                /**
+                 * @description Optional RFC 9110 HTTP-date generated by native clients for advisory diagnostics. Browser JavaScript cannot set Date. Missing or invalid values do not reject the request.
+                 * @example Mon, 28 Sep 2026 12:00:00 GMT
+                 */
+                Date?: string;
+                /** @description Optional caller-controlled client software identifier for audit and diagnostics; captured up to 1024 characters. Browsers supply their own value and may ignore manual Swagger overrides. Not trusted client identity or authorization. */
+                "User-Agent"?: string | null;
+                /**
+                 * @description Optional caller-supplied reason recorded in audit history. It is not an authorization credential.
+                 * @example Correcting a submitted request
+                 */
+                "X-Audit-Reason"?: string;
+                /** @description Optional UUIDv7 correlation identifier. Missing or invalid values are replaced with a generated UUIDv7; the effective value is returned in X-Request-ID. */
+                "X-Request-ID"?: string;
+            };
+            path: {
+                ref_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OrderReconciliationDTO"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Present as check-device-time only when the configured apparent difference threshold is reached. */
+                    "X-Client-Date-Advisory"?: "check-device-time";
+                    /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
+                    "X-Client-Date-Delta-Seconds"?: number;
+                    /** @description Optional client Date reading: available, unavailable, or invalid. No request is rejected for this diagnostic. */
+                    "X-Client-Date-Status"?: "available" | "unavailable" | "invalid";
+                    /** @description Server UTC receipt timestamp. Response Date, when present, is generated by the HTTP server or proxy. */
+                    "X-Server-Received-At"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuccessResponse_SandboxCancellationRecoveryDTO_"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Content Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Locked */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    search_sandbox_orders_api_v1_processes__ref_id__orders_search_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @example fa-IR
+                 */
+                "Accept-Language"?: string;
+                /**
+                 * @description Optional RFC 9110 HTTP-date generated by native clients for advisory diagnostics. Browser JavaScript cannot set Date. Missing or invalid values do not reject the request.
+                 * @example Mon, 28 Sep 2026 12:00:00 GMT
+                 */
+                Date?: string;
+                /** @description Optional caller-controlled client software identifier for audit and diagnostics; captured up to 1024 characters. Browsers supply their own value and may ignore manual Swagger overrides. Not trusted client identity or authorization. */
+                "User-Agent"?: string | null;
+                /**
+                 * @description Optional caller-supplied reason recorded in audit history. It is not an authorization credential.
+                 * @example Correcting a submitted request
+                 */
+                "X-Audit-Reason"?: string;
+                /** @description Optional UUIDv7 correlation identifier. Missing or invalid values are replaced with a generated UUIDv7; the effective value is returned in X-Request-ID. */
+                "X-Request-ID"?: string;
+            };
+            path: {
+                ref_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PageRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Present as check-device-time only when the configured apparent difference threshold is reached. */
+                    "X-Client-Date-Advisory"?: "check-device-time";
+                    /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
+                    "X-Client-Date-Delta-Seconds"?: number;
+                    /** @description Optional client Date reading: available, unavailable, or invalid. No request is rejected for this diagnostic. */
+                    "X-Client-Date-Status"?: "available" | "unavailable" | "invalid";
+                    /** @description Server UTC receipt timestamp. Response Date, when present, is generated by the HTTP server or proxy. */
+                    "X-Server-Received-At"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PageResponse_Page_SandboxOperationDTO__"];
                 };
             };
             /** @description Bad Request */
@@ -46828,6 +58647,8 @@ export interface operations {
             /** @description Successful Response */
             200: {
                 headers: {
+                    /** @description Protected actor-specific response; persistent caching is prohibited. */
+                    "Cache-Control"?: "private, no-store";
                     /** @description Present as check-device-time only when the configured apparent difference threshold is reached. */
                     "X-Client-Date-Advisory"?: "check-device-time";
                     /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
@@ -46977,6 +58798,8 @@ export interface operations {
             /** @description Successful Response */
             200: {
                 headers: {
+                    /** @description Protected actor-specific response; persistent caching is prohibited. */
+                    "Cache-Control"?: "private, no-store";
                     /** @description Present as check-device-time only when the configured apparent difference threshold is reached. */
                     "X-Client-Date-Advisory"?: "check-device-time";
                     /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
@@ -47282,6 +59105,8 @@ export interface operations {
             /** @description Successful Response */
             200: {
                 headers: {
+                    /** @description Protected actor-specific response; persistent caching is prohibited. */
+                    "Cache-Control"?: "private, no-store";
                     /** @description Present as check-device-time only when the configured apparent difference threshold is reached. */
                     "X-Client-Date-Advisory"?: "check-device-time";
                     /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
@@ -47433,6 +59258,8 @@ export interface operations {
             /** @description Successful Response */
             200: {
                 headers: {
+                    /** @description Protected actor-specific response; persistent caching is prohibited. */
+                    "Cache-Control"?: "private, no-store";
                     /** @description Present as check-device-time only when the configured apparent difference threshold is reached. */
                     "X-Client-Date-Advisory"?: "check-device-time";
                     /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
@@ -48758,6 +60585,614 @@ export interface operations {
             };
         };
     };
+    mint_link_api_v1_resource_links_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @example fa-IR
+                 */
+                "Accept-Language"?: string;
+                /**
+                 * @description Optional RFC 9110 HTTP-date generated by native clients for advisory diagnostics. Browser JavaScript cannot set Date. Missing or invalid values do not reject the request.
+                 * @example Mon, 28 Sep 2026 12:00:00 GMT
+                 */
+                Date?: string;
+                /** @description Optional caller-controlled client software identifier for audit and diagnostics; captured up to 1024 characters. Browsers supply their own value and may ignore manual Swagger overrides. Not trusted client identity or authorization. */
+                "User-Agent"?: string | null;
+                /**
+                 * @description Optional caller-supplied reason recorded in audit history. It is not an authorization credential.
+                 * @example Correcting a submitted request
+                 */
+                "X-Audit-Reason"?: string;
+                /** @description Optional UUIDv7 correlation identifier. Missing or invalid values are replaced with a generated UUIDv7; the effective value is returned in X-Request-ID. */
+                "X-Request-ID"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ResourceReference"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Protected actor-specific response; persistent caching is prohibited. */
+                    "Cache-Control"?: "private, no-store";
+                    /** @description Present as check-device-time only when the configured apparent difference threshold is reached. */
+                    "X-Client-Date-Advisory"?: "check-device-time";
+                    /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
+                    "X-Client-Date-Delta-Seconds"?: number;
+                    /** @description Optional client Date reading: available, unavailable, or invalid. No request is rejected for this diagnostic. */
+                    "X-Client-Date-Status"?: "available" | "unavailable" | "invalid";
+                    /** @description Server UTC receipt timestamp. Response Date, when present, is generated by the HTTP server or proxy. */
+                    "X-Server-Received-At"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuccessResponse_ResourceLink_"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Content Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Locked */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    resolve_link_api_v1_resource_links_resolve_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @example fa-IR
+                 */
+                "Accept-Language"?: string;
+                /**
+                 * @description Optional RFC 9110 HTTP-date generated by native clients for advisory diagnostics. Browser JavaScript cannot set Date. Missing or invalid values do not reject the request.
+                 * @example Mon, 28 Sep 2026 12:00:00 GMT
+                 */
+                Date?: string;
+                /** @description Optional caller-controlled client software identifier for audit and diagnostics; captured up to 1024 characters. Browsers supply their own value and may ignore manual Swagger overrides. Not trusted client identity or authorization. */
+                "User-Agent"?: string | null;
+                /**
+                 * @description Optional caller-supplied reason recorded in audit history. It is not an authorization credential.
+                 * @example Correcting a submitted request
+                 */
+                "X-Audit-Reason"?: string;
+                /** @description Optional UUIDv7 correlation identifier. Missing or invalid values are replaced with a generated UUIDv7; the effective value is returned in X-Request-ID. */
+                "X-Request-ID"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LocatorQuery"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Protected actor-specific response; persistent caching is prohibited. */
+                    "Cache-Control"?: "private, no-store";
+                    /** @description Present as check-device-time only when the configured apparent difference threshold is reached. */
+                    "X-Client-Date-Advisory"?: "check-device-time";
+                    /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
+                    "X-Client-Date-Delta-Seconds"?: number;
+                    /** @description Optional client Date reading: available, unavailable, or invalid. No request is rejected for this diagnostic. */
+                    "X-Client-Date-Status"?: "available" | "unavailable" | "invalid";
+                    /** @description Server UTC receipt timestamp. Response Date, when present, is generated by the HTTP server or proxy. */
+                    "X-Server-Received-At"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuccessResponse_ResourceLink_"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Content Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Locked */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    selected_api_v1_resource_links_selected_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @example fa-IR
+                 */
+                "Accept-Language"?: string;
+                /**
+                 * @description Optional RFC 9110 HTTP-date generated by native clients for advisory diagnostics. Browser JavaScript cannot set Date. Missing or invalid values do not reject the request.
+                 * @example Mon, 28 Sep 2026 12:00:00 GMT
+                 */
+                Date?: string;
+                /** @description Optional caller-controlled client software identifier for audit and diagnostics; captured up to 1024 characters. Browsers supply their own value and may ignore manual Swagger overrides. Not trusted client identity or authorization. */
+                "User-Agent"?: string | null;
+                /**
+                 * @description Optional caller-supplied reason recorded in audit history. It is not an authorization credential.
+                 * @example Correcting a submitted request
+                 */
+                "X-Audit-Reason"?: string;
+                /** @description Optional UUIDv7 correlation identifier. Missing or invalid values are replaced with a generated UUIDv7; the effective value is returned in X-Request-ID. */
+                "X-Request-ID"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SelectedQuery"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Protected actor-specific response; persistent caching is prohibited. */
+                    "Cache-Control"?: "private, no-store";
+                    /** @description Present as check-device-time only when the configured apparent difference threshold is reached. */
+                    "X-Client-Date-Advisory"?: "check-device-time";
+                    /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
+                    "X-Client-Date-Delta-Seconds"?: number;
+                    /** @description Optional client Date reading: available, unavailable, or invalid. No request is rejected for this diagnostic. */
+                    "X-Client-Date-Status"?: "available" | "unavailable" | "invalid";
+                    /** @description Server UTC receipt timestamp. Response Date, when present, is generated by the HTTP server or proxy. */
+                    "X-Server-Received-At"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuccessResponse_list_ResourceSummary__"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Content Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Locked */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    setup_readiness_api_v1_setup_readiness_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @example fa-IR
+                 */
+                "Accept-Language"?: string;
+                /**
+                 * @description Optional RFC 9110 HTTP-date generated by native clients for advisory diagnostics. Browser JavaScript cannot set Date. Missing or invalid values do not reject the request.
+                 * @example Mon, 28 Sep 2026 12:00:00 GMT
+                 */
+                Date?: string;
+                /** @description Optional caller-controlled client software identifier for audit and diagnostics; captured up to 1024 characters. Browsers supply their own value and may ignore manual Swagger overrides. Not trusted client identity or authorization. */
+                "User-Agent"?: string | null;
+                /**
+                 * @description Optional caller-supplied reason recorded in audit history. It is not an authorization credential.
+                 * @example Correcting a submitted request
+                 */
+                "X-Audit-Reason"?: string;
+                /** @description Optional UUIDv7 correlation identifier. Missing or invalid values are replaced with a generated UUIDv7; the effective value is returned in X-Request-ID. */
+                "X-Request-ID"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Protected actor-specific response; persistent caching is prohibited. */
+                    "Cache-Control"?: "private, no-store";
+                    /** @description Present as check-device-time only when the configured apparent difference threshold is reached. */
+                    "X-Client-Date-Advisory"?: "check-device-time";
+                    /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
+                    "X-Client-Date-Delta-Seconds"?: number;
+                    /** @description Optional client Date reading: available, unavailable, or invalid. No request is rejected for this diagnostic. */
+                    "X-Client-Date-Status"?: "available" | "unavailable" | "invalid";
+                    /** @description Server UTC receipt timestamp. Response Date, when present, is generated by the HTTP server or proxy. */
+                    "X-Server-Received-At"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuccessResponse_SetupReport_"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Content Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Locked */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     get_step_type_api_v1_step_types__ref_id__get: {
         parameters: {
             query?: never;
@@ -48953,6 +61388,153 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SuccessResponse_StepTypeVersionDTO_"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Content Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Locked */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_business_operations_api_v1_step_types_operations_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @example fa-IR
+                 */
+                "Accept-Language"?: string;
+                /**
+                 * @description Optional RFC 9110 HTTP-date generated by native clients for advisory diagnostics. Browser JavaScript cannot set Date. Missing or invalid values do not reject the request.
+                 * @example Mon, 28 Sep 2026 12:00:00 GMT
+                 */
+                Date?: string;
+                /** @description Optional caller-controlled client software identifier for audit and diagnostics; captured up to 1024 characters. Browsers supply their own value and may ignore manual Swagger overrides. Not trusted client identity or authorization. */
+                "User-Agent"?: string | null;
+                /**
+                 * @description Optional caller-supplied reason recorded in audit history. It is not an authorization credential.
+                 * @example Correcting a submitted request
+                 */
+                "X-Audit-Reason"?: string;
+                /** @description Optional UUIDv7 correlation identifier. Missing or invalid values are replaced with a generated UUIDv7; the effective value is returned in X-Request-ID. */
+                "X-Request-ID"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Present as check-device-time only when the configured apparent difference threshold is reached. */
+                    "X-Client-Date-Advisory"?: "check-device-time";
+                    /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
+                    "X-Client-Date-Delta-Seconds"?: number;
+                    /** @description Optional client Date reading: available, unavailable, or invalid. No request is rejected for this diagnostic. */
+                    "X-Client-Date-Status"?: "available" | "unavailable" | "invalid";
+                    /** @description Server UTC receipt timestamp. Response Date, when present, is generated by the HTTP server or proxy. */
+                    "X-Server-Received-At"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuccessResponse_list_BusinessOperationDTO__"];
                 };
             };
             /** @description Bad Request */
@@ -49257,6 +61839,1232 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PageResponse_Page_SelectOption_str___"] | components["schemas"]["SelectOption_str_"][];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Content Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Locked */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    client_failure_api_v1_support_client_failures_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @example fa-IR
+                 */
+                "Accept-Language"?: string;
+                /**
+                 * @description Optional RFC 9110 HTTP-date generated by native clients for advisory diagnostics. Browser JavaScript cannot set Date. Missing or invalid values do not reject the request.
+                 * @example Mon, 28 Sep 2026 12:00:00 GMT
+                 */
+                Date?: string;
+                /** @description Optional caller-controlled client software identifier for audit and diagnostics; captured up to 1024 characters. Browsers supply their own value and may ignore manual Swagger overrides. Not trusted client identity or authorization. */
+                "User-Agent"?: string | null;
+                /**
+                 * @description Optional caller-supplied reason recorded in audit history. It is not an authorization credential.
+                 * @example Correcting a submitted request
+                 */
+                "X-Audit-Reason"?: string;
+                /** @description Optional UUIDv7 correlation identifier. Missing or invalid values are replaced with a generated UUIDv7; the effective value is returned in X-Request-ID. */
+                "X-Request-ID"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ClientFailure"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Protected actor-specific response; persistent caching is prohibited. */
+                    "Cache-Control"?: "private, no-store";
+                    /** @description Present as check-device-time only when the configured apparent difference threshold is reached. */
+                    "X-Client-Date-Advisory"?: "check-device-time";
+                    /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
+                    "X-Client-Date-Delta-Seconds"?: number;
+                    /** @description Optional client Date reading: available, unavailable, or invalid. No request is rejected for this diagnostic. */
+                    "X-Client-Date-Status"?: "available" | "unavailable" | "invalid";
+                    /** @description Server UTC receipt timestamp. Response Date, when present, is generated by the HTTP server or proxy. */
+                    "X-Server-Received-At"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuccessResponse_SupportReceipt_"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Content Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Locked */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    detail_api_v1_support_incidents__ref_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @example fa-IR
+                 */
+                "Accept-Language"?: string;
+                /**
+                 * @description Optional RFC 9110 HTTP-date generated by native clients for advisory diagnostics. Browser JavaScript cannot set Date. Missing or invalid values do not reject the request.
+                 * @example Mon, 28 Sep 2026 12:00:00 GMT
+                 */
+                Date?: string;
+                /** @description Optional caller-controlled client software identifier for audit and diagnostics; captured up to 1024 characters. Browsers supply their own value and may ignore manual Swagger overrides. Not trusted client identity or authorization. */
+                "User-Agent"?: string | null;
+                /**
+                 * @description Optional caller-supplied reason recorded in audit history. It is not an authorization credential.
+                 * @example Correcting a submitted request
+                 */
+                "X-Audit-Reason"?: string;
+                /** @description Optional UUIDv7 correlation identifier. Missing or invalid values are replaced with a generated UUIDv7; the effective value is returned in X-Request-ID. */
+                "X-Request-ID"?: string;
+            };
+            path: {
+                ref_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Protected actor-specific response; persistent caching is prohibited. */
+                    "Cache-Control"?: "private, no-store";
+                    /** @description Present as check-device-time only when the configured apparent difference threshold is reached. */
+                    "X-Client-Date-Advisory"?: "check-device-time";
+                    /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
+                    "X-Client-Date-Delta-Seconds"?: number;
+                    /** @description Optional client Date reading: available, unavailable, or invalid. No request is rejected for this diagnostic. */
+                    "X-Client-Date-Status"?: "available" | "unavailable" | "invalid";
+                    /** @description Server UTC receipt timestamp. Response Date, when present, is generated by the HTTP server or proxy. */
+                    "X-Server-Received-At"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuccessResponse_IncidentDTO_"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Content Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Locked */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    acknowledge_api_v1_support_incidents__ref_id__acknowledge_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @example fa-IR
+                 */
+                "Accept-Language"?: string;
+                /**
+                 * @description Optional RFC 9110 HTTP-date generated by native clients for advisory diagnostics. Browser JavaScript cannot set Date. Missing or invalid values do not reject the request.
+                 * @example Mon, 28 Sep 2026 12:00:00 GMT
+                 */
+                Date?: string;
+                /** @description Optional caller-controlled client software identifier for audit and diagnostics; captured up to 1024 characters. Browsers supply their own value and may ignore manual Swagger overrides. Not trusted client identity or authorization. */
+                "User-Agent"?: string | null;
+                /**
+                 * @description Optional caller-supplied reason recorded in audit history. It is not an authorization credential.
+                 * @example Correcting a submitted request
+                 */
+                "X-Audit-Reason"?: string;
+                /** @description Optional UUIDv7 correlation identifier. Missing or invalid values are replaced with a generated UUIDv7; the effective value is returned in X-Request-ID. */
+                "X-Request-ID"?: string;
+            };
+            path: {
+                ref_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["IncidentCommand"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Protected actor-specific response; persistent caching is prohibited. */
+                    "Cache-Control"?: "private, no-store";
+                    /** @description Present as check-device-time only when the configured apparent difference threshold is reached. */
+                    "X-Client-Date-Advisory"?: "check-device-time";
+                    /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
+                    "X-Client-Date-Delta-Seconds"?: number;
+                    /** @description Optional client Date reading: available, unavailable, or invalid. No request is rejected for this diagnostic. */
+                    "X-Client-Date-Status"?: "available" | "unavailable" | "invalid";
+                    /** @description Server UTC receipt timestamp. Response Date, when present, is generated by the HTTP server or proxy. */
+                    "X-Server-Received-At"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuccessResponse_IncidentDTO_"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Content Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Locked */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    history_api_v1_support_incidents__ref_id__history_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @example fa-IR
+                 */
+                "Accept-Language"?: string;
+                /**
+                 * @description Optional RFC 9110 HTTP-date generated by native clients for advisory diagnostics. Browser JavaScript cannot set Date. Missing or invalid values do not reject the request.
+                 * @example Mon, 28 Sep 2026 12:00:00 GMT
+                 */
+                Date?: string;
+                /** @description Optional caller-controlled client software identifier for audit and diagnostics; captured up to 1024 characters. Browsers supply their own value and may ignore manual Swagger overrides. Not trusted client identity or authorization. */
+                "User-Agent"?: string | null;
+                /**
+                 * @description Optional caller-supplied reason recorded in audit history. It is not an authorization credential.
+                 * @example Correcting a submitted request
+                 */
+                "X-Audit-Reason"?: string;
+                /** @description Optional UUIDv7 correlation identifier. Missing or invalid values are replaced with a generated UUIDv7; the effective value is returned in X-Request-ID. */
+                "X-Request-ID"?: string;
+            };
+            path: {
+                ref_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PageRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Protected actor-specific response; persistent caching is prohibited. */
+                    "Cache-Control"?: "private, no-store";
+                    /** @description Present as check-device-time only when the configured apparent difference threshold is reached. */
+                    "X-Client-Date-Advisory"?: "check-device-time";
+                    /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
+                    "X-Client-Date-Delta-Seconds"?: number;
+                    /** @description Optional client Date reading: available, unavailable, or invalid. No request is rejected for this diagnostic. */
+                    "X-Client-Date-Status"?: "available" | "unavailable" | "invalid";
+                    /** @description Server UTC receipt timestamp. Response Date, when present, is generated by the HTTP server or proxy. */
+                    "X-Server-Received-At"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PageResponse_Page_IncidentHistoryDTO__"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Content Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Locked */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    resolve_api_v1_support_incidents__ref_id__resolve_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @example fa-IR
+                 */
+                "Accept-Language"?: string;
+                /**
+                 * @description Optional RFC 9110 HTTP-date generated by native clients for advisory diagnostics. Browser JavaScript cannot set Date. Missing or invalid values do not reject the request.
+                 * @example Mon, 28 Sep 2026 12:00:00 GMT
+                 */
+                Date?: string;
+                /** @description Optional caller-controlled client software identifier for audit and diagnostics; captured up to 1024 characters. Browsers supply their own value and may ignore manual Swagger overrides. Not trusted client identity or authorization. */
+                "User-Agent"?: string | null;
+                /**
+                 * @description Optional caller-supplied reason recorded in audit history. It is not an authorization credential.
+                 * @example Correcting a submitted request
+                 */
+                "X-Audit-Reason"?: string;
+                /** @description Optional UUIDv7 correlation identifier. Missing or invalid values are replaced with a generated UUIDv7; the effective value is returned in X-Request-ID. */
+                "X-Request-ID"?: string;
+            };
+            path: {
+                ref_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["IncidentCommand"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Protected actor-specific response; persistent caching is prohibited. */
+                    "Cache-Control"?: "private, no-store";
+                    /** @description Present as check-device-time only when the configured apparent difference threshold is reached. */
+                    "X-Client-Date-Advisory"?: "check-device-time";
+                    /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
+                    "X-Client-Date-Delta-Seconds"?: number;
+                    /** @description Optional client Date reading: available, unavailable, or invalid. No request is rejected for this diagnostic. */
+                    "X-Client-Date-Status"?: "available" | "unavailable" | "invalid";
+                    /** @description Server UTC receipt timestamp. Response Date, when present, is generated by the HTTP server or proxy. */
+                    "X-Server-Received-At"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuccessResponse_IncidentDTO_"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Content Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Locked */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    by_support_api_v1_support_incidents_by_support__support_ref__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @example fa-IR
+                 */
+                "Accept-Language"?: string;
+                /**
+                 * @description Optional RFC 9110 HTTP-date generated by native clients for advisory diagnostics. Browser JavaScript cannot set Date. Missing or invalid values do not reject the request.
+                 * @example Mon, 28 Sep 2026 12:00:00 GMT
+                 */
+                Date?: string;
+                /** @description Optional caller-controlled client software identifier for audit and diagnostics; captured up to 1024 characters. Browsers supply their own value and may ignore manual Swagger overrides. Not trusted client identity or authorization. */
+                "User-Agent"?: string | null;
+                /**
+                 * @description Optional caller-supplied reason recorded in audit history. It is not an authorization credential.
+                 * @example Correcting a submitted request
+                 */
+                "X-Audit-Reason"?: string;
+                /** @description Optional UUIDv7 correlation identifier. Missing or invalid values are replaced with a generated UUIDv7; the effective value is returned in X-Request-ID. */
+                "X-Request-ID"?: string;
+            };
+            path: {
+                support_ref: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Protected actor-specific response; persistent caching is prohibited. */
+                    "Cache-Control"?: "private, no-store";
+                    /** @description Present as check-device-time only when the configured apparent difference threshold is reached. */
+                    "X-Client-Date-Advisory"?: "check-device-time";
+                    /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
+                    "X-Client-Date-Delta-Seconds"?: number;
+                    /** @description Optional client Date reading: available, unavailable, or invalid. No request is rejected for this diagnostic. */
+                    "X-Client-Date-Status"?: "available" | "unavailable" | "invalid";
+                    /** @description Server UTC receipt timestamp. Response Date, when present, is generated by the HTTP server or proxy. */
+                    "X-Server-Received-At"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuccessResponse_IncidentDTO_"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Content Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Locked */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    search_api_v1_support_incidents_report_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @example fa-IR
+                 */
+                "Accept-Language"?: string;
+                /**
+                 * @description Optional RFC 9110 HTTP-date generated by native clients for advisory diagnostics. Browser JavaScript cannot set Date. Missing or invalid values do not reject the request.
+                 * @example Mon, 28 Sep 2026 12:00:00 GMT
+                 */
+                Date?: string;
+                /** @description Optional caller-controlled client software identifier for audit and diagnostics; captured up to 1024 characters. Browsers supply their own value and may ignore manual Swagger overrides. Not trusted client identity or authorization. */
+                "User-Agent"?: string | null;
+                /**
+                 * @description Optional caller-supplied reason recorded in audit history. It is not an authorization credential.
+                 * @example Correcting a submitted request
+                 */
+                "X-Audit-Reason"?: string;
+                /** @description Optional UUIDv7 correlation identifier. Missing or invalid values are replaced with a generated UUIDv7; the effective value is returned in X-Request-ID. */
+                "X-Request-ID"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["IncidentQuery"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Protected actor-specific response; persistent caching is prohibited. */
+                    "Cache-Control"?: "private, no-store";
+                    /** @description Present as check-device-time only when the configured apparent difference threshold is reached. */
+                    "X-Client-Date-Advisory"?: "check-device-time";
+                    /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
+                    "X-Client-Date-Delta-Seconds"?: number;
+                    /** @description Optional client Date reading: available, unavailable, or invalid. No request is rejected for this diagnostic. */
+                    "X-Client-Date-Status"?: "available" | "unavailable" | "invalid";
+                    /** @description Server UTC receipt timestamp. Response Date, when present, is generated by the HTTP server or proxy. */
+                    "X-Server-Received-At"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PageResponse_Page_IncidentDTO__"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Content Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Locked */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    search_api_v1_support_incidents_search_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @example fa-IR
+                 */
+                "Accept-Language"?: string;
+                /**
+                 * @description Optional RFC 9110 HTTP-date generated by native clients for advisory diagnostics. Browser JavaScript cannot set Date. Missing or invalid values do not reject the request.
+                 * @example Mon, 28 Sep 2026 12:00:00 GMT
+                 */
+                Date?: string;
+                /** @description Optional caller-controlled client software identifier for audit and diagnostics; captured up to 1024 characters. Browsers supply their own value and may ignore manual Swagger overrides. Not trusted client identity or authorization. */
+                "User-Agent"?: string | null;
+                /**
+                 * @description Optional caller-supplied reason recorded in audit history. It is not an authorization credential.
+                 * @example Correcting a submitted request
+                 */
+                "X-Audit-Reason"?: string;
+                /** @description Optional UUIDv7 correlation identifier. Missing or invalid values are replaced with a generated UUIDv7; the effective value is returned in X-Request-ID. */
+                "X-Request-ID"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["IncidentQuery"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Protected actor-specific response; persistent caching is prohibited. */
+                    "Cache-Control"?: "private, no-store";
+                    /** @description Present as check-device-time only when the configured apparent difference threshold is reached. */
+                    "X-Client-Date-Advisory"?: "check-device-time";
+                    /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
+                    "X-Client-Date-Delta-Seconds"?: number;
+                    /** @description Optional client Date reading: available, unavailable, or invalid. No request is rejected for this diagnostic. */
+                    "X-Client-Date-Status"?: "available" | "unavailable" | "invalid";
+                    /** @description Server UTC receipt timestamp. Response Date, when present, is generated by the HTTP server or proxy. */
+                    "X-Server-Received-At"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PageResponse_Page_IncidentDTO__"];
                 };
             };
             /** @description Bad Request */
@@ -57404,6 +71212,316 @@ export interface operations {
             };
         };
     };
+    default_apply_api_v1_workflow_versions__ref_id__default_apply_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @example fa-IR
+                 */
+                "Accept-Language"?: string;
+                /**
+                 * @description Optional RFC 9110 HTTP-date generated by native clients for advisory diagnostics. Browser JavaScript cannot set Date. Missing or invalid values do not reject the request.
+                 * @example Mon, 28 Sep 2026 12:00:00 GMT
+                 */
+                Date?: string;
+                /** @description Optional caller-controlled client software identifier for audit and diagnostics; captured up to 1024 characters. Browsers supply their own value and may ignore manual Swagger overrides. Not trusted client identity or authorization. */
+                "User-Agent"?: string | null;
+                /**
+                 * @description Optional caller-supplied reason recorded in audit history. It is not an authorization credential.
+                 * @example Correcting a submitted request
+                 */
+                "X-Audit-Reason"?: string;
+                /** @description Optional UUIDv7 correlation identifier. Missing or invalid values are replaced with a generated UUIDv7; the effective value is returned in X-Request-ID. */
+                "X-Request-ID"?: string;
+            };
+            path: {
+                ref_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RestoreApplyInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Protected actor-specific response; persistent caching is prohibited. */
+                    "Cache-Control"?: "private, no-store";
+                    /** @description Present as check-device-time only when the configured apparent difference threshold is reached. */
+                    "X-Client-Date-Advisory"?: "check-device-time";
+                    /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
+                    "X-Client-Date-Delta-Seconds"?: number;
+                    /** @description Optional client Date reading: available, unavailable, or invalid. No request is rejected for this diagnostic. */
+                    "X-Client-Date-Status"?: "available" | "unavailable" | "invalid";
+                    /** @description Server UTC receipt timestamp. Response Date, when present, is generated by the HTTP server or proxy. */
+                    "X-Server-Received-At"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuccessResponse_RestoreResult_"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Content Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Locked */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    default_preview_api_v1_workflow_versions__ref_id__default_preview_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @example fa-IR
+                 */
+                "Accept-Language"?: string;
+                /**
+                 * @description Optional RFC 9110 HTTP-date generated by native clients for advisory diagnostics. Browser JavaScript cannot set Date. Missing or invalid values do not reject the request.
+                 * @example Mon, 28 Sep 2026 12:00:00 GMT
+                 */
+                Date?: string;
+                /** @description Optional caller-controlled client software identifier for audit and diagnostics; captured up to 1024 characters. Browsers supply their own value and may ignore manual Swagger overrides. Not trusted client identity or authorization. */
+                "User-Agent"?: string | null;
+                /**
+                 * @description Optional caller-supplied reason recorded in audit history. It is not an authorization credential.
+                 * @example Correcting a submitted request
+                 */
+                "X-Audit-Reason"?: string;
+                /** @description Optional UUIDv7 correlation identifier. Missing or invalid values are replaced with a generated UUIDv7; the effective value is returned in X-Request-ID. */
+                "X-Request-ID"?: string;
+            };
+            path: {
+                ref_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RestorePreviewInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Protected actor-specific response; persistent caching is prohibited. */
+                    "Cache-Control"?: "private, no-store";
+                    /** @description Present as check-device-time only when the configured apparent difference threshold is reached. */
+                    "X-Client-Date-Advisory"?: "check-device-time";
+                    /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
+                    "X-Client-Date-Delta-Seconds"?: number;
+                    /** @description Optional client Date reading: available, unavailable, or invalid. No request is rejected for this diagnostic. */
+                    "X-Client-Date-Status"?: "available" | "unavailable" | "invalid";
+                    /** @description Server UTC receipt timestamp. Response Date, when present, is generated by the HTTP server or proxy. */
+                    "X-Server-Received-At"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuccessResponse_RestorePlan_"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Content Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Locked */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     get_graph_api_v1_workflow_versions__ref_id__graph_get: {
         parameters: {
             query?: never;
@@ -57756,6 +71874,161 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PageResponse_Page_HistoryRecordDTO__"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Content Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Locked */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    layout_reset_api_v1_workflow_versions__ref_id__layout_reset_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Optional preferred response language. English and Farsi are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @example fa-IR
+                 */
+                "Accept-Language"?: string;
+                /**
+                 * @description Optional RFC 9110 HTTP-date generated by native clients for advisory diagnostics. Browser JavaScript cannot set Date. Missing or invalid values do not reject the request.
+                 * @example Mon, 28 Sep 2026 12:00:00 GMT
+                 */
+                Date?: string;
+                /** @description Optional caller-controlled client software identifier for audit and diagnostics; captured up to 1024 characters. Browsers supply their own value and may ignore manual Swagger overrides. Not trusted client identity or authorization. */
+                "User-Agent"?: string | null;
+                /**
+                 * @description Optional caller-supplied reason recorded in audit history. It is not an authorization credential.
+                 * @example Correcting a submitted request
+                 */
+                "X-Audit-Reason"?: string;
+                /** @description Optional UUIDv7 correlation identifier. Missing or invalid values are replaced with a generated UUIDv7; the effective value is returned in X-Request-ID. */
+                "X-Request-ID"?: string;
+            };
+            path: {
+                ref_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LayoutResetInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Protected actor-specific response; persistent caching is prohibited. */
+                    "Cache-Control"?: "private, no-store";
+                    /** @description Present as check-device-time only when the configured apparent difference threshold is reached. */
+                    "X-Client-Date-Advisory"?: "check-device-time";
+                    /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
+                    "X-Client-Date-Delta-Seconds"?: number;
+                    /** @description Optional client Date reading: available, unavailable, or invalid. No request is rejected for this diagnostic. */
+                    "X-Client-Date-Status"?: "available" | "unavailable" | "invalid";
+                    /** @description Server UTC receipt timestamp. Response Date, when present, is generated by the HTTP server or proxy. */
+                    "X-Server-Received-At"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuccessResponse_WorkflowWorkspaceDTO_"];
                 };
             };
             /** @description Bad Request */

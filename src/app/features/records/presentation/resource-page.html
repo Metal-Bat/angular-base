@@ -1,3 +1,4 @@
+<app-repair-return />
 <app-record-page-header [view]="this" />
 @if (error()) {
   <p role="alert">{{ error() | localize }}</p>
@@ -92,6 +93,7 @@
       [busy]="busy() || actionBusy()"
       [extraFields]="definition.extras"
       [fields]="definition.queryFields"
+      [hidden]="definition.selectQuery"
       [query]="applied()"
       (applied)="load($event)"
     />
@@ -182,7 +184,7 @@
       ><button
         pButton
         type="submit"
-        [disabled]="actionBusy()"
+        [disabled]="actionBusy() || reconcileRequired()"
         [loading]="actionBusy()"
       >
         {{ "Save" | localize }}

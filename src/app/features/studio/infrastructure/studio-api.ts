@@ -1,3 +1,5 @@
+import { operationCatalog } from './operation-catalog';
+import { loadChoices } from './choice-request';
 import { readWorkspace } from '../domain/workspace-document';
 import { OptionInput, OptionPage } from '../../forms/domain/option-coordinator';
 import { readOptionPreview } from './option-preview';
@@ -34,6 +36,7 @@ import {
   specifications,
 } from './resource-specifications';
 const tools = {
+  operations: 'get_business_operations_api_v1_step_types_operations_get',
   workflowGraph: 'get_graph_api_v1_workflow_versions__ref_id__graph_get',
   workspaceHistory:
     'workspace_history_api_v1_workflow_versions__ref_id__workspace_history_post',
@@ -46,6 +49,8 @@ const tools = {
   graph: 'validate_graph_api_v1_workflows_validate_post',
   catalog: 'catalog_api_v1_designer_catalog_post',
   selectors: 'selector_api_v1_designer_selectors__kind__post',
+  selected: 'selected_api_v1_resource_links_selected_post',
+  readiness: 'dependency_readiness_api_v1_designer_dependency_readiness_post',
   completion: 'completion_api_v1_designer_completion_post',
   inventory: 'field_inventory_api_v1_designer_field_inventory_post',
   library: 'search_library_api_v1_designer_library_search_post',
@@ -112,10 +117,6 @@ export class StudioApi implements StudioPort {
       operation(specifications[key].operations[report ? 'report' : 'search']),
       { size: 20, filters: [], sort_orders: [], ...query, page },
     );
-    if (report) {
-      const item = readData(response, (value) => record(value) as JsonObject);
-      return { items: [item], page: 1, totalPages: 1 };
-    }
     return readResultPage(response, (value) => record(value) as JsonObject);
   }
   async get(key: ResourceKey, reference: string): Promise<JsonObject> {
@@ -197,6 +198,7 @@ export class StudioApi implements StudioPort {
     key: string,
     body: JsonObject | undefined,
     path?: Record<string, string>,
+    abort?: AbortSignal,
   ): Promise<unknown> {
     if (!(key in tools)) {
       throw Error('Unknown designer operation');
@@ -205,7 +207,11 @@ export class StudioApi implements StudioPort {
       tools[key as keyof typeof tools],
       body,
       path,
+      abort,
     );
+    if (key === 'operations') {
+      return readData(response, operationCatalog);
+    }
     if (Array.isArray(response.body)) {
       return response.body;
     }
@@ -213,6 +219,9 @@ export class StudioApi implements StudioPort {
     return 'result' in envelope
       ? readResultPage(response, (value) => record(value))
       : readData(response, (value) => value);
+  }
+  choices(...input: Parameters<StudioPort['choices']>): Promise<AuthorPage> {
+    return loadChoices(this.api, ...input);
   }
   private workspaceState(value: unknown): WorkspaceState {
     const raw = record(value);

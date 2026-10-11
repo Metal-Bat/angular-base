@@ -59,6 +59,27 @@
           </button>
         </div>
       }
+      @if (message.data.support; as receipt) {
+        <p role="status">
+          {{
+            (receipt.persisted
+              ? "Failure recorded for support."
+              : "Support recording is unavailable. The request reference is correlation only."
+            ) | localize
+          }}
+        </p>
+        @if (receipt.persisted && receipt.support_ref) {
+          <button
+            pButton
+            type="button"
+            [disabled]="copying()"
+            (click)="copy(message.data, 'support')"
+          >
+            {{ "Support reference" | localize }}:
+            <bdi>{{ receipt.support_ref }}</bdi>
+          </button>
+        }
+      }
       <a routerLink="/help" [queryParams]="{ topic: 'support.references' }">{{
         "Help" | localize
       }}</a>

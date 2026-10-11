@@ -1,3 +1,4 @@
+import { createInboxStreamPolicy } from "./inbox-stream.mjs";
 import { randomBytes, timingSafeEqual } from "node:crypto";
 import {
   byteLimit,
@@ -87,6 +88,14 @@ export function createSessionBoundary(
     throw Error("Invalid proxy capacity");
   let inFlightRequests = 0;
   const sessions = new Map();
+  const closeSession = (id, session) => {
+    if (session) {
+      session.closed = true;
+      for (const stream of session.streams) stream.abort();
+    }
+    sessions.delete(id);
+  };
+  const stream = createInboxStreamPolicy({ fetcher, upstream, now });
   const maxSessions = config.maxSessions ?? 1024;
   if (
     !Number.isSafeInteger(maxSessions) ||
@@ -151,8 +160,7 @@ export function createSessionBoundary(
           throw new Error("Session closed");
         }
       } catch {
-        session.closed = true;
-        sessions.delete(id);
+        closeSession(id, session);
         throw new Error("Session renewal failed");
       } finally {
         session.refreshing = null;
@@ -165,8 +173,7 @@ export function createSessionBoundary(
     const url = new URL(request.url);
     for (const [id, session] of sessions) {
       if (session.expiresAt <= now()) {
-        session.closed = true;
-        sessions.delete(id);
+        closeSession(id, session);
       }
     }
     let path;
@@ -276,10 +283,7 @@ export function createSessionBoundary(
       }
       // Never retain an old local session when signing in as another actor.
       if (id) {
-        if (session) {
-          session.closed = true;
-        }
-        sessions.delete(id);
+        closeSession(id, session);
       }
       if (sessions.size >= maxSessions) {
         return json(503, { error: "session_capacity_reached" });
@@ -294,6 +298,7 @@ export function createSessionBoundary(
         expiresAt: now() + lifetime * 1000,
         accessExpiresAt: now() + tokens.expires_in * 1000,
         closed: false,
+        streams: new Set(),
         refreshing: null,
       });
       return json(
@@ -339,8 +344,7 @@ export function createSessionBoundary(
             await publicError(response, "reset_failed"),
           );
         if (session) {
-          session.closed = true;
-          sessions.delete(id);
+          closeSession(id, session);
         }
         return json(200, { reset: true }, clearCookie);
       } catch {
@@ -357,8 +361,7 @@ export function createSessionBoundary(
       return json(403, { error: "csrf_rejected" });
     }
     if (path === "/session/logout" && request.method === "POST") {
-      session.closed = true;
-      sessions.delete(id);
+      closeSession(id, session);
       if (session.refreshing) {
         try {
           await session.refreshing;
@@ -416,6 +419,43 @@ export function createSessionBoundary(
       } catch {
         return json(401, { error: "session_expired" }, clearCookie);
       }
+    }
+    if (path === "/api/v1/inbox/events") {
+      let response = await stream(
+        request,
+        session,
+        () =>
+          !session.closed &&
+          sessions.get(id) === session &&
+          session.expiresAt > now(),
+      );
+      if (response.status === 401) {
+        await response.body?.cancel();
+        try {
+          await refresh(id, session);
+          response = await stream(
+            request,
+            session,
+            () =>
+              !session.closed &&
+              sessions.get(id) === session &&
+              session.expiresAt > now(),
+          );
+        } catch {
+          return json(401, { error: "session_expired" }, clearCookie);
+        }
+      }
+      if (response.status === 401) {
+        await response.body?.cancel();
+        closeSession(id, session);
+        return json(401, { error: "session_expired" }, clearCookie);
+      }
+      if (!response.ok)
+        return json(
+          response.status,
+          await publicError(response, "stream_unavailable"),
+        );
+      return response;
     }
     if (inFlightRequests >= maxInFlightRequests)
       return json(503, { error: "proxy_capacity_reached", uncertain: false });
@@ -490,8 +530,7 @@ export function createSessionBoundary(
           return json(401, { error: "session_expired" }, clearCookie);
         }
         if (response.status === 401) {
-          session.closed = true;
-          sessions.delete(id);
+          closeSession(id, session);
           return json(401, { error: "session_expired" }, clearCookie);
         }
       }

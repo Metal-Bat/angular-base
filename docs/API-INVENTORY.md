@@ -1,6 +1,6 @@
 # API operation inventory
 
-Generated from the supplied [OpenAPI snapshot](reference/openapi.json) with `npm run api:inventory`. Do not edit by hand.
+Generated from the supplied [OpenAPI snapshot](reference/openapi.json) with `pnpm run api:inventory`. Do not edit by hand.
 
 Snapshot: 302 operations, 401 schemas. Source hashes are in [manifest.json](reference/manifest.json).
 

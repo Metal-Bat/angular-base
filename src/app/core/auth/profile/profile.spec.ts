@@ -1,3 +1,5 @@
+import { signal } from '@angular/core';
+import { ProfileSettings } from '../profile-settings';
 import { provideHttpClient } from '@angular/common/http';
 import {
   HttpTestingController,
@@ -18,6 +20,18 @@ describe('My information', () => {
         provideHttpClient(),
         provideHttpClientTesting(),
         provideRouter([]),
+        {
+          provide: ProfileSettings,
+          useValue: {
+            value: signal(null),
+            read: vi.fn().mockResolvedValue({
+              ref_id: 'profile-current',
+              first_name: null,
+              last_name: null,
+              avatar_ref_id: null,
+            }),
+          },
+        },
       ],
     });
   });

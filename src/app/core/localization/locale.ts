@@ -1,3 +1,4 @@
+import { CalendarSystem } from '../../shared/domain/calendar-value';
 import { DOCUMENT } from '@angular/common';
 import {
   computed,
@@ -26,6 +27,19 @@ const catalogLoaders: Record<
 @Injectable({ providedIn: 'root' })
 export class Locale {
   readonly languages = supportedLanguages;
+  readonly numbering = signal<'latn' | 'arabext'>('latn');
+  readonly timezone = signal('UTC');
+  // Session-only presentation choice; no unsupported preference DTO field.
+  readonly calendarOverride = signal<CalendarSystem | null>(null);
+  readonly calendar = computed<CalendarSystem>(
+    () =>
+      this.calendarOverride() ??
+      (this.language() === 'fa'
+        ? 'persian'
+        : this.language() === 'ar'
+          ? 'islamic-civil'
+          : 'gregory'),
+  );
   private readonly defaultLanguage = inject(RUNTIME_CONFIG).locale;
   private readonly document = inject(DOCUMENT);
   readonly language = signal<SupportedLocale>(inject(RUNTIME_CONFIG).locale);
@@ -44,6 +58,9 @@ export class Locale {
     this.document.documentElement.lang = this.language();
     this.document.documentElement.dir = languageDirection(this.language());
     const release = inject(ActorState).register(() => {
+      this.numbering.set('latn');
+      this.timezone.set('UTC');
+      this.calendarOverride.set(null);
       this.generation++;
       this.catalog = this.catalogs.get(this.defaultLanguage) ?? {};
       this.language.set(this.defaultLanguage);
@@ -91,7 +108,7 @@ export class Locale {
   }
   date(instant: Date, timezone: string): string {
     return new Intl.DateTimeFormat(this.language(), {
-      calendar: 'gregory',
+      calendar: this.calendar(),
       timeZone: timezone,
       dateStyle: 'medium',
     }).format(instant);

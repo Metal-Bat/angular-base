@@ -1,0 +1,41 @@
+{
+  "producer_manifest_sha256": "f8d5aeed5ef7fe7ff5b535be21d0d372355127bbcd0828f574d4925c994b5366",
+  "producer_source_sha256": "dd3ec9595a1153c663970b07266c0e69a9abc5ffd50214928a56db45a6c9c0de",
+  "backend_head": "9999641f8e37077829ebbe7159a6cd794fb94b91",
+  "migration_chain": [
+    "0001_schema",
+    "0002_required_data"
+  ],
+  "scope": "Full effective localized paths, schemas, authorization and binary headers; only the two reviewed graph-field descriptions changed",
+  "changes": {
+    "en": {
+      "changed_paths": [],
+      "changed_schemas": [
+        "GraphBinding",
+        "GraphStep"
+      ]
+    },
+    "fa": {
+      "changed_paths": [],
+      "changed_schemas": [
+        "GraphBinding",
+        "GraphStep"
+      ]
+    }
+  },
+  "live_acceptance": "NOT_ATTESTED_BY_INTAKE",
+  "source_refresh_history": [
+    {
+      "producer_source_sha256": "ae3621dbab3f5356a13238de6fb002111473a0b9edafd9a3d92bcf6c6f062b2b",
+      "producer_manifest_sha256": "d0fb94951961e3550a851dc80ae97d945f7bd2d7bfe04fcde15de9389bf08123"
+    },
+    {
+      "producer_source_sha256": "1c26f9209ae8b7045e76caed349c175c50c31f393c941280b2abe3a2d063a114",
+      "producer_manifest_sha256": "aad94271efb0b0693adff25f5cc6cb78f4675b7c37d51a88d17636b978996c80"
+    },
+    {
+      "producer_source_sha256": "2cbb91c63907fa70af782430f177dcb4cc49fbadfeac3f7d052400af8d3fe99e",
+      "producer_manifest_sha256": "120bb092f8abb04668c514f5f0dfd8018a22a53611f8754d16e2b9f0ab9577b1"
+    }
+  ]
+}

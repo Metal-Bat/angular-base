@@ -5,10 +5,10 @@
     "ng": "ng",
     "fonts:prepare": "node scripts/prepare-fonts.mjs",
     "test:fonts": "node --test scripts/prepare-fonts.spec.mjs",
-    "prestart": "npm run fonts:prepare",
-    "prestart:angular": "npm run fonts:prepare",
-    "prebuild": "npm run fonts:prepare",
-    "prewatch": "npm run fonts:prepare",
+    "prestart": "pnpm run fonts:prepare",
+    "prestart:angular": "pnpm run fonts:prepare",
+    "prebuild": "pnpm run fonts:prepare",
+    "prewatch": "pnpm run fonts:prepare",
     "start": "node scripts/dev.mjs",
     "start:angular": "ng serve",
     "build": "NG_BUILD_MAX_WORKERS=2 ng build",
@@ -25,10 +25,10 @@
     "format:check": "prettier --check .",
     "typecheck": "tsc --noEmit -p tsconfig.app.json",
     "api:inventory": "node scripts/api-inventory.mjs",
-    "api:check": "node scripts/api-inventory.mjs --check && node scripts/check-platform-contract.mjs && node scripts/generate-api.mjs --check && node scripts/generate-authoring-contracts.mjs --check && node scripts/generate-studio-fixtures.mjs --check && node scripts/generate-admin-contracts.mjs --check && node scripts/generate-record-contracts.mjs --check && node scripts/generate-node-inspectors.mjs --check && node scripts/generate-preferences-contract.mjs --check",
+    "api:check": "node scripts/api-inventory.mjs --check && node scripts/check-platform-contract.mjs && node scripts/generate-api.mjs --check && node scripts/generate-authoring-contracts.mjs --check && node scripts/generate-studio-fixtures.mjs --check && node scripts/generate-admin-contracts.mjs --check && node scripts/generate-record-contracts.mjs --check && node scripts/generate-node-inspectors.mjs --check && node scripts/generate-preferences-contract.mjs --check && node scripts/generate-inbox-contract.mjs --check",
     "ci:gates": "node scripts/check-ci-gates.mjs",
     "dependencies:report": "node scripts/dependency-report.mjs",
-    "test:boundary": "node server/session-boundary.spec.mjs && node --test server/http-boundary.spec.mjs",
+    "test:boundary": "node server/session-boundary.spec.mjs && node --test server/http-boundary.spec.mjs && node server/inbox-stream.spec.mjs",
     "session:dev": "node server/main.mjs",
     "test:browser-boundary": "node server/browser-boundary.spec.mjs",
     "api:generate": "node scripts/generate-api.mjs && node scripts/generate-authoring-contracts.mjs && node scripts/generate-studio-fixtures.mjs && node scripts/generate-admin-contracts.mjs && node scripts/generate-record-contracts.mjs",
@@ -43,16 +43,17 @@
     "test:backend-admin": "node scripts/check-backend-operations.mjs",
     "release:evidence": "node scripts/release-evidence.mjs",
     "test:browser-performance": "PERFORMANCE_BROWSER_CHECKS=1 node server/browser-auth.spec.mjs",
-    "test:accessibility": "ACCESSIBILITY_CHECKS=1 npm run test:browser-ui && ACCESSIBILITY_CHECKS=1 npm run test:browser-admin",
+    "test:accessibility": "ACCESSIBILITY_CHECKS=1 pnpm run test:browser-ui && ACCESSIBILITY_CHECKS=1 pnpm run test:browser-admin",
     "test:deployment-https": "TLS_BROWSER_CHECKS=1 node server/browser-boundary.spec.mjs",
     "test:browser-quality": "node scripts/browser-quality-check.mjs",
     "test:browser-records": "RECORD_BROWSER_CHECKS=1 node server/browser-auth.spec.mjs",
     "test:browser-catalogs": "STUDIO_CATALOG_BROWSER_CHECKS=1 node server/browser-auth.spec.mjs",
     "delivery:inventory": "node scripts/delivery-inventory.mjs",
     "delivery:check": "node scripts/delivery-inventory.mjs --check && node scripts/check-delivery-ui.mjs && node scripts/check-peer-contract.mjs && node scripts/check-help-catalog.mjs",
-    "test:diagnostics": "node --test server/browser-diagnostics.spec.mjs",
+    "test:diagnostics": "node --test server/browser-diagnostics.spec.mjs scripts/delivery-evidence.spec.mjs",
     "test:paired-smoke": "python3 scripts/paired-smoke.py",
-    "delivery:status": "node scripts/delivery-status.mjs"
+    "delivery:status": "node scripts/delivery-status.mjs",
+    "test:browser-sandbox": "node scripts/browser-sandbox.mjs"
   },
   "prettier": {
     "overrides": [
@@ -102,6 +103,7 @@
     "tslib": "2.8.1"
   },
   "devDependencies": {
+    "@angular-eslint/builder": "21.4.0",
     "@angular/build": "21.2.24",
     "@angular/cli": "21.2.24",
     "@angular/compiler-cli": "21.2.25",
@@ -113,6 +115,7 @@
     "axe-core": "4.13.0",
     "commitizen": "4.3.2",
     "cz-conventional-changelog": "3.3.0",
+    "esbuild": "0.28.1",
     "eslint": "10.11.0",
     "eslint-config-prettier": "10.1.8",
     "husky": "9.1.7",
@@ -157,21 +160,7 @@
   },
   "engines": {
     "node": ">=24.21.0 <25",
-    "npm": ">=12.2.0 <13"
+    "pnpm": ">=12.11.2 <13"
   },
-  "packageManager": "npm@12.2.0",
-  "overrides": {
-    "release-it": {
-      "undici": "7.30.0"
-    },
-    "@angular/build": {
-      "piscina": "5.3.2"
-    }
-  },
-  "allowScripts": {
-    "@parcel/watcher@2.6.0": true,
-    "esbuild@0.28.1": true,
-    "lmdb@3.5.1": true,
-    "msgpackr-extract@3.0.4": true
-  }
+  "packageManager": "pnpm@12.11.2"
 }

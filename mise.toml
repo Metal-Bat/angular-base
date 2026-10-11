@@ -1,29 +1,28 @@
 [tools]
-"npm:npm" = "12.2.0"
+pnpm = "12.11.2"
 node = "24.21.0"
 rtk = "0.47.0"
 "pipx:graphifyy" = "0.9.53"
-"npm:husky" = "9.1.7"
 
 [settings]
 activate_aggressive = true
 
 [tasks.install]
 description = "Install the exact dependency tree"
-run = "npm ci"
+run = "pnpm install --frozen-lockfile"
 
 [tasks.dev]
 description = "Start Angular on localhost:4200 and its session boundary on localhost:3000 (backend:8000)"
-run = "npm start"
+run = "pnpm start"
 
 [tasks.build]
-run = "npm run build"
+run = "pnpm run build"
 
 [tasks.lint]
-run = "npm run lint"
+run = "pnpm run lint"
 
 [tasks.test]
-run = "npm run test:ci"
+run = "pnpm run test:ci"
 
 [tasks.check]
 description = "Verify source, types, lint, tests, build and deterministic browser quality with diagnostic evidence"
@@ -31,4 +30,8 @@ run = "node scripts/check-project.mjs"
 
 [tasks.session]
 description = "Start the same-origin session boundary on loopback:3000"
-run = "npm run session:dev"
+run = "pnpm run session:dev"
+
+[tasks.browser-sandbox]
+description = "Run disposable browser fixtures with failure diagnostics and screenshots"
+run = "pnpm run test:browser-sandbox"

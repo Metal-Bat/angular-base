@@ -1,0 +1,63 @@
+<section class="my-4 grid gap-3 rounded-lg border border-console-border p-4">
+  <h2>{{ "Dependency readiness" | localize }}</h2>
+  <p>
+    {{
+      "Author readiness does not establish requester eligibility." | localize
+    }}
+  </p>
+  <button pButton type="button" [disabled]="busy()" (click)="load()">
+    {{ "Recheck" | localize }}
+  </button>
+  @if (error()) {
+    <p role="alert">{{ error() | localize }}</p>
+  }
+  @if (result(); as report) {
+    <p role="status">
+      {{ (report.ready && !stale() ? "Ready" : "Blocked") | localize }}
+    </p>
+    <time [attr.datetime]="report.checked_at">{{ report.checked_at }}</time>
+    <p>
+      {{ "Client compatibility" | localize }}:
+      {{ report.client_readiness | localize }}
+    </p>
+    @if (stale()) {
+      <p>
+        {{
+          "Results may be out of date. Recheck before continuing." | localize
+        }}
+      </p>
+    }
+    <ul>
+      @for (issue of report.issues; track $index) {
+        <li>
+          <bdi>{{ issue.node_key }}</bdi> —
+          {{ reason(issue.repair_key, issue.code) | localize }}
+          <details>
+            <summary>{{ "Error code" | localize }}</summary>
+            <bdi>{{ issue.code }}</bdi>
+          </details>
+          @if (repair(issue.repair_key, issue.code); as route) {
+            <a
+              [queryParams]="{
+                repair_definition: reference(),
+                repair_node: issue.node_key || contextNode(),
+                repair_client: clientRelease(),
+              }"
+              [routerLink]="route"
+              >{{ "Open repair screen" | localize }}</a
+            >
+          } @else {
+            <span>{{
+              "Contact the operator for this repair." | localize
+            }}</span>
+          }
+        </li>
+      }
+    </ul>
+    <ul>
+      @for (pin of report.pins; track $index) {
+        <li>{{ pin.resource.label }} · {{ pin.resource.number }}</li>
+      }
+    </ul>
+  }
+</section>

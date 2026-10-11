@@ -1,5 +1,7 @@
 import { computed, DestroyRef, Directive, inject, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { distinctUntilChanged, map } from 'rxjs';
 import { ActorState } from '../../../../core/auth/actor-state';
 import { Feedback } from '../../../../core/feedback/feedback';
 import { ApiFailure } from '../../../../core/transport/api-failure';
@@ -29,9 +31,8 @@ export abstract class FormBuilderCommands {
   abstract select(path: readonly number[]): void;
   readonly api = inject(STUDIO_API);
   protected readonly feedback = inject(Feedback);
-  readonly reference = signal(
-    inject(ActivatedRoute).snapshot.paramMap.get('ref') ?? '',
-  );
+  private readonly route = inject(ActivatedRoute);
+  readonly reference = signal(this.route.snapshot.paramMap.get('ref') ?? '');
   readonly documents = signal<JsonObject>({
     data_schema: { type: 'object', properties: {} },
     render_schema: { root: { component: 'vertical', children: [] } },
@@ -82,7 +83,13 @@ export abstract class FormBuilderCommands {
       this.clear();
       release();
     });
-    void this.load();
+    this.route.paramMap
+      .pipe(
+        map((parameters) => parameters.get('ref') ?? ''),
+        distinctUntilChanged(),
+        takeUntilDestroyed(),
+      )
+      .subscribe((reference) => void this.load(reference));
   }
   protected abstract resetEditorHistory(): void;
   protected clear(): void {
@@ -115,12 +122,23 @@ export abstract class FormBuilderCommands {
       this.feedback.confirm('Discard unsaved form changes?')
     );
   }
-  async load(): Promise<void> {
+  async load(routeReference?: string): Promise<void> {
+    const originGeneration = this.generation;
     if (
       (this.dirty() || this.pending().length > 0) &&
       !(await this.feedback.confirm('Reload and discard local form changes?'))
     ) {
       return;
+    }
+    if (originGeneration !== this.generation) {
+      return;
+    }
+    if (routeReference !== undefined && routeReference !== this.reference()) {
+      this.clear();
+      this.reference.set(routeReference);
+      this.sampleJson = '{}';
+      this.previewContextJson =
+        '{"policy":null,"before_data":null,"item_identity":{},"before_item_identity":{}}';
     }
     const generation = ++this.generation;
     this.busy.set(true);
@@ -152,6 +170,9 @@ export abstract class FormBuilderCommands {
         this.pending.set([]);
         this.select([]);
         this.dirty.set(false);
+        this.preview.set(null);
+        this.diagnostics.set('');
+        this.error.set('');
       }
     } catch {
       if (generation === this.generation) {

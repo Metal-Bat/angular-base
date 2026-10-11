@@ -42,7 +42,9 @@ export class CalendarViews {
   readonly state = computed(() =>
     this.revoked() === this.projection() ? 'failed' : this.projection().status,
   );
-  readonly window = computed(() => calendarWindow(this.anchor(), this.view()));
+  readonly window = computed(() =>
+    calendarWindow(this.anchor(), this.view(), this.locale.calendar()),
+  );
   readonly days = computed(() => calendarDays(this.window()));
   readonly events = computed(() =>
     this.state() === 'ready'
@@ -64,7 +66,8 @@ export class CalendarViews {
   }
   dateLabel(day: string): string {
     return new Intl.DateTimeFormat(this.locale.language(), {
-      calendar: 'gregory',
+      calendar: this.locale.calendar(),
+      numberingSystem: this.locale.numbering(),
       timeZone: 'UTC',
       dateStyle: 'full',
     }).format(new Date(day + 'T12:00:00Z'));
@@ -73,7 +76,8 @@ export class CalendarViews {
     return event.kind === 'all_day'
       ? this.locale.text('All day')
       : new Intl.DateTimeFormat(this.locale.language(), {
-          calendar: 'gregory',
+          calendar: this.locale.calendar(),
+          numberingSystem: this.locale.numbering(),
           timeZone: this.timezone(),
           dateStyle: 'medium',
           timeStyle: 'short',

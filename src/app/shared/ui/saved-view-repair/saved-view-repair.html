@@ -1,0 +1,73 @@
+<p-dialog
+  appendTo="body"
+  [closeAriaLabel]="'Close' | localize"
+  [draggable]="false"
+  [header]="'Repair saved view' | localize"
+  [modal]="true"
+  [resizable]="false"
+  [style]="{ width: '48rem', maxWidth: 'calc(100vw - 2rem)' }"
+  [visible]="visible()"
+  (visibleChange)="cancelled.emit()"
+>
+  <p>
+    {{
+      "The original view is preserved until you explicitly replace it. Review both sets of restrictions."
+        | localize
+    }}
+  </p>
+  @for (section of sections(); track section.title) {
+    <section class="my-4 grid gap-2">
+      <h2>{{ section.title | localize }}</h2>
+      <p>{{ "Scope" | localize }}: {{ section.scope | localize }}</p>
+      <p>{{ "Page size" | localize }}: {{ section.pageSize }}</p>
+      <p>
+        {{ "Columns" | localize }}:
+        @for (column of section.columns; track column) {
+          <span>{{ column | localize }}</span>
+        } @empty {
+          {{ "Default columns" | localize }}
+        }
+      </p>
+      <p-table [value]="section.filters">
+        <ng-template #header
+          ><tr>
+            <th scope="col">{{ "Field" | localize }}</th>
+            <th scope="col">{{ "Operator" | localize }}</th>
+            <th scope="col">{{ "Value" | localize }}</th>
+          </tr></ng-template
+        >
+        <ng-template #body let-row
+          ><tr>
+            <td>
+              <bdi>{{ row.field }}</bdi>
+            </td>
+            <td>{{ row.operation | localize }}</td>
+            <td>
+              <bdi>{{ row.value | localize }}</bdi>
+            </td>
+          </tr></ng-template
+        >
+      </p-table>
+      <ul>
+        @for (sort of section.sorts; track $index) {
+          <li>
+            <bdi>{{ sort.field }}</bdi> — {{ sort.direction | localize }}
+          </li>
+        }
+      </ul>
+    </section>
+  }
+  <div class="flex gap-3">
+    <button
+      pButton
+      severity="secondary"
+      type="button"
+      (click)="cancelled.emit()"
+    >
+      {{ "Cancel" | localize }}
+    </button>
+    <button pButton type="button" (click)="confirmed.emit()">
+      {{ "Replace with applied query" | localize }}
+    </button>
+  </div>
+</p-dialog>

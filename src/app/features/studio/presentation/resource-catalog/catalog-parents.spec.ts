@@ -1,5 +1,10 @@
+import { of } from 'rxjs';
 import { TestBed } from '@angular/core/testing';
-import { ActivatedRoute, provideRouter } from '@angular/router';
+import {
+  ActivatedRoute,
+  convertToParamMap,
+  provideRouter,
+} from '@angular/router';
 import { ActorState } from '../../../../core/auth/actor-state';
 import { STUDIO_API } from '../../bindings';
 import { ResourceCatalog } from './resource-catalog';
@@ -19,9 +24,10 @@ describe('Parent catalog lookup lifetime', () => {
         {
           provide: ActivatedRoute,
           useValue: {
+            queryParamMap: of(convertToParamMap({ parent: 'parent-ref' })),
             snapshot: {
               data: { resourceKey: 'form-versions' },
-              queryParamMap: { get: (): string => 'parent-ref' },
+              queryParamMap: convertToParamMap({ parent: 'parent-ref' }),
             },
           },
         },

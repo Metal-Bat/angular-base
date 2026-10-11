@@ -20,6 +20,12 @@ import { Point, Workspace } from '../../domain/authoring';
 import { WorkflowBoardState } from './workflow-board-state';
 @Directive()
 export abstract class WorkflowInteractions extends WorkflowBoardState {
+  discardPending(panel: string): void {
+    if (!this.readonly()) {
+      this.pending.update((keys) => keys.filter((key) => key !== panel));
+      this.error.set('');
+    }
+  }
   applyTyped(replacement: JsonObject): void {
     if (
       this.readonly() ||
@@ -46,9 +52,18 @@ export abstract class WorkflowInteractions extends WorkflowBoardState {
     }
   }
   applyConnections(graph: JsonObject): void {
+    if (
+      this.readonly() ||
+      this.pending().some((key) => key !== 'connections')
+    ) {
+      return;
+    }
+    const pending = this.pending();
+    this.pending.set([]);
     try {
       this.change({ ...this.document(), graph });
     } catch {
+      this.pending.set(pending);
       this.error.set('Invalid connection');
     }
   }

@@ -1,3 +1,5 @@
+import { ActivatedRoute } from '@angular/router';
+import { WorkspaceDefaults } from '../../../core/resources/workspace-defaults';
 import { computed, DestroyRef, inject, signal } from '@angular/core';
 import { ActorState } from '../../../core/auth/actor-state';
 import { SessionContext } from '../../../core/auth/session-context';
@@ -35,6 +37,7 @@ export class ResourceState {
   readonly detail = signal<RecordRow | null>(null);
   readonly busy = signal(false);
   readonly actionBusy = signal(false);
+  readonly reconcileRequired = signal(false);
   readonly error = signal('');
   readonly notice = signal('');
   readonly queuedReport = signal<RecordRow | null>(null);
@@ -88,12 +91,19 @@ export class ResourceState {
       ) ?? false,
   );
   constructor() {
+    this.applied.update((query) => ({
+      ...query,
+      size: inject(WorkspaceDefaults).size(),
+    }));
     const release = this.actor.register(() => this.clear());
     inject(DestroyRef).onDestroy(() => {
       this.clear();
       release();
     });
-    void this.load();
+    const selected = inject(ActivatedRoute, {
+      optional: true,
+    })?.snapshot.queryParamMap.get('selected');
+    void this.initialize(selected);
     if (this.definition.key === 'reports') {
       this.polling.start(
         async (abort) => {
@@ -118,6 +128,18 @@ export class ResourceState {
               String(this.detail()?.['status']),
             )),
       );
+    }
+  }
+  private async initialize(selected?: string | null): Promise<void> {
+    const epoch = this.actor.epoch;
+    const generation = this.generation + 1;
+    await this.load();
+    if (
+      selected &&
+      epoch === this.actor.epoch &&
+      generation === this.generation
+    ) {
+      await this.open({ ref_id: selected });
     }
   }
   can(permission: string): boolean {
@@ -171,6 +193,7 @@ export class ResourceState {
     this.formDirty.set(false);
     this.busy.set(false);
     this.actionBusy.set(false);
+    this.reconcileRequired.set(false);
     this.notice.set('');
     this.queuedReport.set(null);
     this.historyDefinition.set(null);
@@ -209,6 +232,9 @@ export class ResourceState {
       if (generation !== this.generation || abort?.aborted) {
         return;
       }
+      if (!this.detail()) {
+        this.reconcileRequired.set(false);
+      }
       this.page.set(page);
       this.appliedEntityName = entityName;
       this.applied.set({ ...snapshot, page: page.page, size: page.size });
@@ -233,6 +259,18 @@ export class ResourceState {
   pageTo(page: number): void {
     void this.load({ ...this.applied(), page });
   }
+  protected canMutate(): boolean {
+    return this.allowed() && !this.actionBusy() && !this.reconcileRequired();
+  }
+  protected markMutationFailure(error: unknown): void {
+    this.reconcileRequired.set(
+      !(
+        error instanceof ApiFailure &&
+        !error.uncertain &&
+        [400, 422].includes(error.httpStatus)
+      ),
+    );
+  }
   protected message(error: unknown): string {
     if (error instanceof ApiFailure && error.httpStatus !== 409) {
       return error.message;
@@ -256,6 +294,7 @@ export class ResourceState {
     try {
       const detail = await this.api.detail(this.definition, reference, abort);
       if (generation === this.generation && !abort?.aborted) {
+        this.reconcileRequired.set(false);
         this.detail.set(detail);
       }
     } catch (error) {

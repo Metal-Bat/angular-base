@@ -1,3 +1,4 @@
+import { writeBrowserReport } from "./browser-report.mjs";
 import assert from "node:assert/strict";
 import { createServer } from "node:http";
 import { createServer as createHttpsServer } from "node:https";
@@ -209,6 +210,7 @@ handle = createSessionBoundary({
 });
 let browser;
 let timer;
+let reportFailure;
 try {
   await mkdir(join(profile, "browser"));
   browser = spawnBrowser(origin, join(profile, "browser"), {
@@ -261,15 +263,31 @@ try {
     browserName() +
       " network checks passed: HttpOnly cookie, server-only tokens/client secret, CSRF, bearer replacement, no-store, logout, empty storage.",
   );
+} catch (error) {
+  reportFailure = { name: error.name, code: error.code };
+  throw error;
 } finally {
   clearTimeout(timer);
-  if (browser && browser.exitCode === null) {
-    browser.kill("SIGTERM");
-    await once(browser, "exit");
+  try {
+    await writeBrowserReport(
+      process.env.BROWSER_REPORT_PATH,
+      {
+        engine: browserName(),
+        ok: !reportFailure,
+        failure: reportFailure,
+        diagnostics: [],
+      },
+      browser,
+    );
+  } finally {
+    if (browser && browser.exitCode === null) {
+      browser.kill("SIGTERM");
+      await once(browser, "exit");
+    }
+    await Promise.all([
+      new Promise((resolve) => browserServer.close(resolve)),
+      new Promise((resolve) => upstream.close(resolve)),
+    ]);
+    await rm(profile, { recursive: true, force: true });
   }
-  await Promise.all([
-    new Promise((resolve) => browserServer.close(resolve)),
-    new Promise((resolve) => upstream.close(resolve)),
-  ]);
-  await rm(profile, { recursive: true, force: true });
 }

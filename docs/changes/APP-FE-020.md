@@ -23,3 +23,17 @@ Axe violations and captured browser diagnostics remain strict failures. Any inco
 See docs/delivery/CANVAS-CAPABILITIES.md. Grouped pointer drag, native marquee synchronization, multi-step deletion, normal keyboard port/reconnect selectors and dedicated reassignment gesture acceptance remain uncovered. Metadata/category and real-service WIP/promotion/publication acceptance, D05 budgets and manual device/assistive-technology acceptance remain required. No library switch, graph execution or publication is performed.
 
 The parent remains BLOCKED until its full required acceptance and real-service evidence are supplied. IMPLEMENTED refers only to the available slice above, not the complete parent deliverable.
+
+## CURRENT five-scope continuation — 2026-10-10
+
+Existing APP-FE-020.2: keyboard connection selectors.
+
+The canvas exposes named current source/target ports and existing edges through shared PrimeNG selectors. Normal connection/reconnection no longer requires copied port identifiers. Source kind filters target choices; stale/disabled selections are fenced. Valid edge/port selections survive equivalent late catalog refreshes rather than being cleared; a regression and actual browser retry cover this case. Commands use existing connectWorkspace/reconnect/history and draft/pending guards, preserving control condition/priority/default and data ordinal/schema semantics. Expert graph inspection remains optional.
+
+Changed/reused: `domain/canvas-ports.ts; presentation/canvas-connections/*; existing workflow-board.ts/.html`.
+
+Current remaining criteria: Group pointer drag, native marquee synchronization, multi-step deletion, dedicated pointer reassignment, actual data-port keyboard pairing, full real WIP/promotion/publication and manual input-device/AT acceptance remain APP-FE-020.1/.2/.3. D05/performance acceptance remains with its existing owner; no new approval required for these selectors.
+
+The backend protected-operations handoff now records APP-BE-021/022/024/025 DONE / VERIFIED_WITH_EXCEPTION and APP-BE-023 implemented with actual-browser acceptance pending. The former APP-BE-022 unfrozen-metadata blocker is historical. The new frozen English producer was compared and reconciled (379 operations / 565 schemas), preserving all existing operation IDs and unchanged form/workspace contracts; see [intake](../reference/app-fe-016-020/contract-intake.json). No backend source/shared data/dependencies/mise/environment files were changed. Backend DB-002/D07 decisions remain scoped; SDK exceptions do not establish strict exception-free demo readiness.
+
+Actual source identities, tests, failures and final gate: [five-scope acceptance](../delivery/APP-FE-016-020-ACCEPTANCE.md). Parent remains **BLOCKED / IMPLEMENTED** for its full acceptance. This continuation supersedes the historical producer-unavailability blocker above; it does not rewrite prior evidence or mark the parent DONE. APP-FE-012/014 remain unrelated to this work.

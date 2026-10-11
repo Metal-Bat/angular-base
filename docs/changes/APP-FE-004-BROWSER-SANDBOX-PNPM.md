@@ -1,0 +1,21 @@
+# Browser diagnostic sandbox and pnpm migration — 2026-10-11
+
+The existing browser journeys now have a disposable diagnostic launcher. A fresh development build and browser profile produce local HTML/JSON reports, logs, native screenshots, safe diagnostic locations/codes, rejected request paths/statuses and partial accessibility results. Reports are written on failures before cleanup. Screenshot or report-sink failure remains visible and prevents a passing sandbox result. Normal browser assertions, deadlines and the complete warning gate remain enforced.
+
+Node 24.21.0 and pnpm 12.11.2 are pinned through mise/packageManager. The canonical frozen lock, CI, hooks, scripts, dependency reporting and active instructions use pnpm. Existing application dependency versions remain pinned; @angular-eslint/builder 21.4.0 and esbuild 0.28.1 are promoted from existing transitive dependencies to direct development dependencies because isolated pnpm resolution exposed npm's implicit hoisting dependencies. Approved native build packages are explicitly bounded in pnpm-workspace.yaml.
+
+## Acceptance and retained failures
+
+- Clean temporal sandbox under pnpm: `/tmp/browser-sandbox-pnpm-temporal.log`, exit 0; `artifacts/browser-sandbox/2026-10-11T19-04-03.341Z/` retains HTML, JSON and an actual Firefox PNG. The three calendars, canonical values, invalid drafts, picker accessibility and responsive RTL table journey passed.
+- Deliberate warning probe: `/tmp/browser-sandbox-warning-probe-2.log`, expected exit 1; `artifacts/browser-sandbox/2026-10-11T19-02-59.762Z/` retains NG0956, a tracking hint, rejected authentication requests and a screenshot. The first probe incorrectly passed because bootstrap diagnostics preceded transport hookup; the retained first log/report led to replaying that buffer and a regression covering delivery before test-result.
+- Diagnostic unit checks: `/tmp/browser-delivery-regression-tests.log`, exit 0. Tests cover privacy-safe locations, partial failure reports, screenshot-sink errors and bootstrap delivery.
+- Original lock comparison: `/tmp/pnpm-lock-comparison.log`, all 969 original application name/version pins preserved. Tool-platform pins in pnpm's first YAML document are separate from application dependencies.
+- Frozen installation: normal default-registry offline validation passed in `/tmp/pnpm-default-frozen-validation.log`. Slow registry downloads and offline preload failures remain recorded. An ephemeral local mirror recovered only original cached tarballs after checking their original SHA512 integrity; its address/configuration is not committed.
+- Dependency report: `/tmp/pnpm-dependency-report.log`, exit 0; no high/critical production findings under the pnpm audit. Current reports and historical npm findings are separate evidence.
+- CI failure-proof reruns: `/tmp/pnpm-ci-gates*.log`; the earlier isolated-layout missing-builder failure is retained. The final run validates the unchanged lint, translation, template, unit, build and warning failure gates.
+
+The first pnpm full gate failed at api:check when the fixture generator imported undeclared esbuild; `/tmp/browser-pnpm-failed-check-1.log` and its manifest retain that failure. Its existing version is now directly declared.
+
+The complete final verification authority is `artifacts/check/manifest.json` and its per-stage logs, with the full transcript at `/tmp/browser-pnpm-final-check.log`. This record does not promote fixture acceptance to live backend integration, deployment, complete product readiness or user acceptance. No backend contracts or public payload semantics were changed by this tooling work.
+
+The next complete run reached browser foundations but timed out on the add action. `/tmp/browser-pnpm-failed-check-2.log` and its manifest retain the failure; the focused sandbox reproduction passed in `/tmp/browser-sandbox-foundations-investigation.log`. The journey now waits for native save/add buttons to render enabled before clicking, in addition to the existing state/reference predicates. Angular state can change before the disabled DOM property updates; a click on a still-disabled native button is ignored. Existing assertions and time limits are unchanged.

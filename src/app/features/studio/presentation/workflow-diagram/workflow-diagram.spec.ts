@@ -79,6 +79,14 @@ describe('Read-only workflow detail diagram', () => {
     expect(viewer.canvasInputs().readOnly).toBe(true);
     expect(viewer.current()?.['status']).toBe('PUBLISHED');
   });
+  it('restores only an existing authorized graph node from repair context', async () => {
+    const fixture = TestBed.createComponent(WorkflowDiagram);
+    fixture.componentRef.setInput('version', 'pinned-version');
+    fixture.componentRef.setInput('focusNode', 'one');
+    await fixture.whenStable();
+    expect(fixture.componentInstance.selected()).toBe('one');
+    expect(fixture.componentInstance.canvasInputs().readOnly).toBe(true);
+  });
   it('renders the executable graph when saved workspace layout is unavailable', async () => {
     workspace.mockRejectedValue(Error('no workspace'));
     const fixture = TestBed.createComponent(WorkflowDiagram);

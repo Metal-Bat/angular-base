@@ -1,3 +1,4 @@
+import type { components } from '../../../core/transport/generated/schema';
 import { inject, Injectable } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { record } from '../../../core/transport/api-failure';
@@ -50,13 +51,23 @@ export class WorkspaceApi {
     page = 1,
     cartable: Cartable = 'available',
     abort?: AbortSignal,
+    query?: JsonObject,
   ): Promise<Page<CaseRecord>> {
     const response =
       kind === 'request'
         ? await firstValueFrom(
             this.api.call(
               'search_requests_api_v1_business_requests_search_post',
-              { body: { page, size: 20, filters: [], sort_orders: [] } },
+              {
+                body: {
+                  size: 20,
+                  scope: 'mine',
+                  filters: [],
+                  sort_orders: [],
+                  ...query,
+                  page,
+                } as components['schemas']['BusinessRequestQuery'],
+              },
               abort,
             ),
           )
@@ -64,7 +75,13 @@ export class WorkspaceApi {
             this.api.call(
               'search_work_items_api_v1_work_items_search_post',
               {
-                body: { page, size: 20, cartable },
+                body: {
+                  size: 20,
+                  cartable,
+                  time_field: 'created_at',
+                  ...query,
+                  page,
+                } as components['schemas']['CartableQueryDTO'],
               },
               abort,
             ),

@@ -6,15 +6,19 @@ Repository: `Metal-Bat/angular-base`
 Reviewed commit: `afe4bbe5f566c80e7eb45f6ef9f12c041d60139d`  
 Companion: `BACKEND-BACKLOG.md` in the other repository pack  
 Primary goal: **fully usable application and a repeatable, truthful connected-system demonstration**  
-Implementation status: **APP-FE-001–005 delivered locally; available slices through APP-FE-020 implemented; blocked acceptance remains explicit. See change records and verification manifests.**
+Implementation status: **APP-FE-001–005 delivered locally; available slices through APP-FE-038 implemented; blocked acceptance remains explicit. See change records and verification manifests.**
+
+## Linked consistency and repair work
+
+[Consistency backlog](consistency-2026-10-09/FRONTEND-CONSISTENCY-BACKLOG.md) ·
+[Repair register](consistency-2026-10-09/REPAIR-REGISTER.md) ·
+[Workflow and assistant follow-up](follow-up-2026-10-09/FRONTEND-FOLLOW-UP.md)
 
 ## How to use this file
 
-Place this file at `docs/delivery/FRONTEND-BACKLOG.md`. Keep the current `docs/BACKLOG.md` intact and add a link to this delivery supplement. Apply `AGENTS.addendum.md` by merging its section into existing AGENTS.md, never replacing the original instructions. The optional product-delivery skill references the same rules and does not replace existing skills.
+Use the current statuses to select unfinished work. Completed tasks retain their IDs, verification levels and change-record links; their implementation plans have been removed. Read AGENTS.md and the applicable current contracts before making changes. Full local checks and real acceptance remain separate evidence levels.
 
-This main file is self-contained: task specs, shared contracts, acceptance, execution rules and timing are embedded below. Companion copies of the shared rules/ledger/timing are supplied for convenient reuse. Keep their version/hash synchronized; editing one contract in one repo requires a paired handoff, not silent divergence.
-
-Recommended agent instruction: “Read AGENTS.md, the existing backlog and this file. Execute APP-FE-001 first; then select the next dependency-ready task. Reuse existing code and preserve IDs. Do not mark implementation complete without the full warning-free mise run check and the task’s actual acceptance evidence.”
+Canonical companion rules and contracts live in this delivery directory. The former installation instructions and duplicate root copies have been removed after installation.
 
 ## Contents
 
@@ -41,7 +45,7 @@ These files do not authorize repository pushes, production changes, provider spe
 
 | Area               | Evidence and exact delta direction                                                                                                                                                            |
 | ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Stack              | package.json pins Angular 21.2.25, PrimeNG 21.1.10 and Foblex 19.3.0. Verify package-lock/toolchain at intake; current web guidance may describe newer versions [F04].                        |
+| Stack              | package.json pins Angular 21.2.25, PrimeNG 21.1.10 and Foblex 19.3.0. Verify pnpm-lock/toolchain at intake; current web guidance may describe newer versions [F04].                           |
 | Structure          | Lazy Operations/Studio/Administration, domain/application/infrastructure/presentation boundaries and shared UI already exist. Keep them; do not start a new app shell [F02/F06].              |
 | Security/transport | Same-origin Node session boundary, server-held tokens, refresh coordination and command replay protection are implemented. Extend, do not switch to browser token storage [F14–F16].          |
 | Runtime            | Shared runtime document/renderer, requester/reviewer, rows/attachments/corrections and prior backend patch/projection fixes exist. Finish coverage and UX, not another form engine [F02/F06]. |
@@ -179,558 +183,91 @@ Effort includes implementation, focused review, tests and task documentation. It
 
 ## APP-FE-001 — Reconcile existing screens, API coverage and the no-redo plan
 
-Priority: P1  
 Status: DONE  
 Verification: VERIFIED_LOCAL  
-Area: frontend / M0  
-Depends-On: None  
-Related: Steps 1–38; ARC-02/04; API-01; all current UI/FORM/STUDIO/ADMIN scopes  
-Decisions: None  
-Owner: Codex  
-Estimate: 2–3 person-days; confidence low-to-medium before intake  
 Change-Record: docs/changes/APP-FE-001.md
 
-### Goal
-
-Give the agent a screen-by-screen, operation-by-operation delta inventory so it extends the current application instead of starting a new Angular shell.
-
-### Context: preserve and extend
-
-F01–F17. Current reviewed main already has auth, runtime forms, requester/reviewer, studio canvas, catalogs and administration. Historical README/step labels are not a current feature inventory.
-
-### Implementation sequence
-
-1. Read AGENTS, all existing docs/BACKLOG.md entries and relevant code/tests. Record current SHA, local changes, locked tool versions and old/new task crosswalk; use graphify when available locally.
-2. Inventory lazy routes, business screens, template files, services/adapters, generic JSON inputs/output dumps, current reusable pickers and feature permissions. Classify REUSE/EXTEND/VERIFY/NEW/CONFLICT per requirement.
-3. Build docs/delivery/api-ui-coverage.md from actual peer OpenAPI plus current generated client. Each operation has persona, screen/action, input/output editor, states, permission, test and disposition (normal, advanced, server-boundary, internal, obsolete). Do not let agents exclude normal business APIs merely because they are inconvenient.
-4. Audit package.json/package-lock.json/mise and UI-LIBRARIES before recommending libraries. Run current mise run check and record warnings/failures/skips; no clean-run claim without logs.
-5. Create docs/delivery/json-ui-register.md with exact template locations and owner tickets. Cross-reference backend APP-BE-001 contract evidence and collect D01–D06 decisions without blocking independent code review.
-
-### Acceptance criteria
-
-- Every relevant existing API and screen has a traceable owner; current implementations are not labeled missing based on old docs.
-- Normal raw-JSON interactions have a removal plan and structured replacement; expert-only exceptions are explicit and cannot hide incomplete normal tasks.
-- Version/source/readiness records agree across the pair; unknown evidence is not invented.
-
-### Verification and required evidence
-
-Check route/operation manifest coverage, file existence, links, hashes and current check output. This analysis task can finish while gate repair remains APP-FE-002; no feature verification is implied.
-
-### Data, compatibility, rollout and peer handoff
-
-No runtime behavior changes. New APP entries supplement existing IDs and Steps; root docs/BACKLOG.md links to the supplement rather than duplicating status.
-
-### Completion instruction
-
-Follow the full execution rules below. Record exact files reused/changed, contract IDs, migration/seed impact, focused and full commands, warnings/skips, and peer limits. Update the task and docs/changes/APP-FE-001.md only from observed evidence. Do not label a missing service, unresolved warning or required untested action complete.
-
-<a id="app-fe-002"></a>
+Completed implementation plan removed. Scope and acceptance evidence remain in the linked change record.
 
 ## APP-FE-002 — Make mise run check warning-free and include repeatable UI gates
 
-Priority: P0  
 Status: DONE  
 Verification: VERIFIED_LOCAL  
-Area: frontend / M0  
-Depends-On: APP-FE-001  
-Related: ARC-04; QA-01/04/06; existing check/browser scripts  
-Decisions: None  
-Owner: Codex  
-Estimate: 2–4 person-days; confidence low-to-medium before intake  
 Change-Record: docs/changes/APP-FE-002.md
 
-### Goal
-
-Prevent an agent from declaring the frontend complete on type/build success while ignoring warnings, browser failures, generated drift or missing peer behavior.
-
-### Context: preserve and extend
-
-F03/F04 show the actual scripts; current check includes format/API/types/lint/unit/boundary/deployment/build/evidence, but full browser quality is separate. Preserve every existing step.
-
-### Implementation sequence
-
-1. Reproduce baseline diagnostics and repair their actual causes. Set native lint max-warnings=0 using the pinned Angular builder-supported forwarding; type/build diagnostics and unhandled test errors fail the gate.
-2. Capture browser console warnings/errors and unhandled rejections for owned positive smoke journeys. Expected denial/fault-test diagnostics are asserted, not blanket-filtered. No --silent, warning suppression or threshold widening.
-3. Extend check with deterministic shared UI/no-JSON contract/translation/notification-map checks as delivered. Add the current non-paid paired smoke when its harness is ready; missing required backend/services must fail or block, not fall back to mocks.
-4. Produce a gate manifest with tool versions, exact tree/pair, exit codes, diagnostics and coverage. Record existing third-party warnings for remediation; an approved exception is not strict zero-warning readiness.
-5. Run negative probes for lint warning, template/type failure, test failure, missing translation and failing production build. Keep native failure codes and remove temporary probe changes.
-
-### Acceptance criteria
-
-- mise run check ends with exit 0 and zero emitted warnings on the final tree; each intentional warning/failure is rejected.
-- Existing security/provenance/bundle budgets are preserved; tests cannot silently skip required browser or peer evidence.
-- An artifact clearly distinguishes fixture-only from integrated checks and contains no credential/private payload.
-
-### Verification and required evidence
-
-Extend existing check-ci-gates.mjs and relevant script tests instead of duplicating the runner. A24. Run actual mise run check; browser binary/version and services must be recorded.
-
-### Data, compatibility, rollout and peer handoff
-
-C14 and execution rules govern all tasks. Full live provider/AI calls remain explicit opt-ins, never automatic CI spend.
-
-### Completion instruction
-
-Follow the full execution rules below. Record exact files reused/changed, contract IDs, migration/seed impact, focused and full commands, warnings/skips, and peer limits. Update the task and docs/changes/APP-FE-002.md only from observed evidence. Do not label a missing service, unresolved warning or required untested action complete.
-
-<a id="app-fe-003"></a>
+Completed implementation plan removed. Scope and acceptance evidence remain in the linked change record.
 
 ## APP-FE-003 — Perform and close the feature-focused Angular code review
 
-Priority: P1  
 Status: DONE  
 Verification: VERIFIED_LOCAL  
-Area: frontend / M1  
-Depends-On: APP-FE-001, APP-FE-002  
-Related: ARC-02; current layer boundaries, command coordination and runtime model  
-Decisions: None  
-Owner: Codex  
-Estimate: 3–5 person-days; confidence low-to-medium before intake  
 Change-Record: docs/changes/APP-FE-003.md
 
-### Goal
-
-Repair maintainability and correctness problems that obstruct the product without migrating the framework or rewriting working architecture.
-
-### Context: preserve and extend
-
-F04 pinned Angular 21/TypeScript; O01–O03 are guidance and may describe newer releases. Keep domain/application/adapters/presentation separation rather than mechanically applying a different directory layout.
-
-### Implementation sequence
-
-1. Create a reviewed-file register and findings with location, evidence, impact, smallest repair and regression. Cover current shell, API/session, runtime renderer, studio, admin and shared records—not only new files.
-2. Review standalone imports, injection context, OnPush/zoneless updates, state ownership, computed values, stable tracking and template complexity. Preserve consistency within existing files; avoid blanket naming migrations.
-3. Review RxJS/signals bridges, cleanup, cancellation, polling, late results, route teardown and actor-generation fences. Do not share mutable command state across resources.
-4. Inspect typed forms/custom controls for disabled/null behavior, exact numeric strings, patch semantics and validation. Use reactive forms where useful; do not replace the existing dynamic renderer or adopt newer Signal Forms simply for fashion.
-5. Fix critical/high findings in focused changes, link others to owners and rerun affected browser tests. Measure rather than assume a signal/store/virtualization rewrite improves performance.
-
-### Acceptance criteria
-
-- All covered critical/high findings have tested repairs; unresolved ones block affected features rather than hiding behind an audit label.
-- No new broad any/$any escape, disabled rule, unmanaged subscription or browser-side authority workaround is introduced.
-- No major Angular/PrimeNG/NgRx migration is bundled into this review.
-
-### Verification and required evidence
-
-Use current unit and route suites plus focused regressions for each finding. A22/A23/A24 and mise run check. Include negative actor/route races, not only happy-path component snapshots.
-
-### Data, compatibility, rollout and peer handoff
-
-Review allowance covers identified scope; larger discoveries get suffix/linked tasks with revised estimates. Preserve existing layer boundary tests.
-
-### Completion instruction
-
-Follow the full execution rules below. Record exact files reused/changed, contract IDs, migration/seed impact, focused and full commands, warnings/skips, and peer limits. Update the task and docs/changes/APP-FE-003.md only from observed evidence. Do not label a missing service, unresolved warning or required untested action complete.
-
-<a id="app-fe-004"></a>
+Completed implementation plan removed. Scope and acceptance evidence remain in the linked change record.
 
 ## APP-FE-004 — Establish PrimeNG-first UI rules, tokens and reusable patterns
 
-Priority: P1  
 Status: DONE  
 Verification: VERIFIED_LOCAL  
-Area: frontend / M1  
-Depends-On: APP-FE-001, APP-FE-002  
-Related: UI-01–04; docs/UI-LIBRARIES.md; existing shared records design  
-Decisions: None  
-Owner: Codex  
-Estimate: 3–5 person-days; confidence low-to-medium before intake  
 Change-Record: docs/changes/APP-FE-004.md
 
-### Goal
-
-Make the application a coherent PrimeNG-first product, not an inconsistent mix of unrelated controls and generic developer forms.
-
-### Context: preserve and extend
-
-F05 currently allows Material, PrimeNG and native controls together. Retain installed libraries and the shared theme while recording PrimeNG-first as the new selection policy for touched business screens.
-
-### Implementation sequence
-
-1. Inventory controls and patterns per screen: inputs, selection, table/filter, toolbar, tabs, dialogs, confirmation, feedback, skeleton, status badge, detail and error presentation. Classify retain/migrate/approved exception.
-2. Define semantic tokens, typography, density, spacing, contrast, focus, RTL and overlay behavior using pinned public APIs. Check actual root font/rem behavior; do not import current-version theme APIs unsupported by locked PrimeNG.
-3. Build/reuse thin wrappers only where application behavior is shared: field label/error/help, searchable selector, table toolbar, confirmation and record summary. Avoid a new universal schema-form framework.
-4. Use PrimeNG for new ordinary business controls; Tailwind handles layout; native/CDK/Material and Foblex remain justified exceptions for accessibility, canonical-value or specialist behavior. A custom exact-decimal control is preferable to lossy numeric conversion.
-5. Create a small internal style/pattern showcase with light/dark/en/fa/loading/empty/invalid/disabled/focus contexts and visual regressions. Update UI-LIBRARIES.md with precise decisions and exceptions.
-
-### Acceptance criteria
-
-- Every inventoried business screen has a consistent pattern disposition; migration work is attached to its domain ticket.
-- Tokens and common controls work across English/Farsi and light/dark without broad internal-DOM style overrides.
-- Library installation alone is never the evidence that a screen is compliant.
-
-### Verification and required evidence
-
-Extend test:browser-ui and component tests; A23/A24. Verify keyboard focus restoration, validation links, 390px operational layout and cross-library overlays. mise run check.
-
-### Data, compatibility, rollout and peer handoff
-
-PrimeNG-first does not authorize paid packages, wholesale Material removal or vendor code copying. Chart/canvas libraries remain adapters with lock/license review.
-
-### Completion instruction
-
-Follow the full execution rules below. Record exact files reused/changed, contract IDs, migration/seed impact, focused and full commands, warnings/skips, and peer limits. Update the task and docs/changes/APP-FE-004.md only from observed evidence. Do not label a missing service, unresolved warning or required untested action complete.
-
-<a id="app-fe-005"></a>
+Completed implementation plan removed. Scope and acceptance evidence remain in the linked change record.
 
 ## APP-FE-005 — Complete typed API adapters and safe command/read coordination
 
-Priority: P1  
 Status: DONE  
 Verification: VERIFIED_LOCAL  
-Area: frontend / M1  
-Depends-On: APP-FE-001, APP-FE-002, APP-BE-001  
-Related: API-01–04; AUTH-01–03; existing command coordination  
-Decisions: None  
-Owner: Codex  
-Estimate: 3–5 person-days; confidence low-to-medium before intake  
 Change-Record: docs/changes/APP-FE-005.md
 
-### Goal
-
-Connect all included UI features to verified contracts with correct envelopes, current references, cancellation and uncertain-write recovery.
-
-### Context: preserve and extend
-
-F11 checks committed evidence but is not live compatibility. Preserve existing generated transport/session design and endpoint-specific envelope adapters rather than replacing them with a universal response assumption.
-
-### Implementation sequence
-
-1. Consume exact peer OpenAPI from APP-BE-001; regenerate reproducibly and retain provenance hashes. Audit JSON, page, plain-selector arrays, empty responses and binary/queued operation differences.
-2. Create/reuse typed domain adapters for new C02–C13 features as their backend handoffs arrive. During design, fixtures are explicitly labeled; do not mark integration complete or expose unsupported actions.
-3. Keep mutations serialized per resource, freeze operation keys and unchanged payloads, replace authoritative refs, and distinguish forbidden/stale/uncertain errors. Never automatically replay unsafe commands after refresh or timeout.
-4. Fence all reads against actor/resource/context generation; clear sensitive state on logout. Do not place tokens, private form data or raw responses into localStorage.
-5. Add contract compile/runtime fixtures for missing/null/false/zero values, 409, unexpected envelopes and drift. A generated-client change that breaks UI needs a mapped repair, not broad any casts.
-
-### Acceptance criteria
-
-- Every integrated adapter is bound to exact peer contract examples and its relevant route/action tests.
-- An uncertain mutation offers reconciliation, not blind retry; fresh refs drive subsequent actions.
-- Old actor responses cannot repopulate current UI or private caches.
-
-### Verification and required evidence
-
-Existing API/command/session suites plus contract-specific tests. A03/A12/A14/A15/A22/A24. mise run check, and actual HTTP smoke for completed adapters.
-
-### Data, compatibility, rollout and peer handoff
-
-C01–C14 producer handoffs are consumed incrementally; generated files are never hand-edited. Existing session camelCase fields remain compatible, while new backend JSON DTO names stay snake_case.
-
-### Completion instruction
-
-Follow the full execution rules below. Record exact files reused/changed, contract IDs, migration/seed impact, focused and full commands, warnings/skips, and peer limits. Update the task and docs/changes/APP-FE-005.md only from observed evidence. Do not label a missing service, unresolved warning or required untested action complete.
-
-<a id="app-fe-006"></a>
+Completed implementation plan removed. Scope and acceptance evidence remain in the linked change record.
 
 ## APP-FE-006 — Deliver reusable permission-aware resource pickers
 
-Priority: P1  
-Status: BLOCKED  
-Verification: IMPLEMENTED  
-Area: frontend / M1  
-Depends-On: APP-FE-004, APP-FE-005, APP-BE-008  
-Related: Existing selectors, shared forms/records primitives; STUDIO-09/10  
-Decisions: None  
-Owner: Codex  
-Estimate: 3–5 person-days; confidence low-to-medium before intake  
+Status: DONE  
+Verification: VERIFIED_INTEGRATED  
 Change-Record: [APP-FE-006](../changes/APP-FE-006.md)
 
-Implemented subset and remaining backend blockers are documented in the change record. Status remains BLOCKED; local verification does not satisfy the missing real-contract acceptance.
-
-### Goal
-
-Users select readable resources and exact versions everywhere instead of copying opaque refs or editing arrays of identifiers.
-
-### Context: preserve and extend
-
-Reuse existing paginated selector controls and C03. Do not create a separate picker implementation in each node inspector or administration form.
-
-### Implementation sequence
-
-1. Implement a typed picker adapter per resource kind with search, page navigation, selected summary, current key and context constraints. Keep labels distinct from keys and machine values.
-2. Support selected item outside current page, multi-select where the domain allows it, version metadata, root/child scoping and an accessible clear action. Preserve restrictions when an unrelated field is edited.
-3. Debounce/cancel reads, fence stale search/context responses and recheck eligibility before selection/save. Show empty, loading, forbidden, incompatible and unavailable states without exposing hidden titles.
-4. Create lookup dialogs/drawers using shared PrimeNG patterns with focus restoration, keyboard operation, translated messages and RTL.
-5. Replace manual ref inputs in the current JSON-removal inventory as owning feature tickets land; add fixtures for page-two and revoked selections.
-
-### Acceptance criteria
-
-- No normal flow requires typed ref_id entry; selected root/version identity is visible and correct.
-- Out-of-page selections remain stable; context/locale changes do not reuse stale keys or broaden access.
-- Deleting/revoking a selected object produces deliberate repair guidance, not silent substitution.
-
-### Verification and required evidence
-
-Picker unit/adapter tests and browser interaction fixtures; A02/A05/A06/A11/A23. Real selector HTTP test for representative identity/form/connection kinds; mise run check.
-
-### Data, compatibility, rollout and peer handoff
-
-C03 → all form/workflow/admin editors. Initial scope covers every kind in the API/UI matrix; unsupported kinds remain blocked, not arbitrary JSON fallback.
-
-### Completion instruction
-
-Follow the full execution rules below. Record exact files reused/changed, contract IDs, migration/seed impact, focused and full commands, warnings/skips, and peer limits. Update the task and docs/changes/APP-FE-006.md only from observed evidence. Do not label a missing service, unresolved warning or required untested action complete.
-
-<a id="app-fe-007"></a>
+Completed implementation plan removed. Scope and acceptance evidence remain in the linked change record.
 
 ## APP-FE-007 — Replace generic record dumps with domain summaries and typed editing patterns
 
-Priority: P1  
-Status: BLOCKED  
-Verification: IMPLEMENTED  
-Area: frontend / M1  
-Depends-On: APP-FE-004, APP-FE-005, APP-FE-006  
-Related: Existing records/users/studio catalogs; UI-02/04 and ADMIN/STUDIO detail polish  
-Decisions: None  
-Owner: Codex  
-Estimate: 4–7 person-days; confidence low-to-medium before intake  
+Status: DONE  
+Verification: VERIFIED_INTEGRATED  
 Change-Record: [APP-FE-007](../changes/APP-FE-007.md)
 
-Implemented subset and remaining backend blockers are documented in the change record. Status remains BLOCKED; local verification does not satisfy the missing real-contract acceptance.
-
-### Goal
-
-Ordinary list/detail/edit experiences show meaningful domain information rather than API payload dumps while preserving existing reusable CRUD behavior.
-
-### Context: preserve and extend
-
-F06/F12 describe existing list-first records and curated summaries. Extend them where incomplete; do not revert improved details to a schema-generated raw object view.
-
-### Implementation sequence
-
-1. Use APP-FE-001 inventory to classify every nested input/output by its domain owner. Establish semantic presenters for identity/status, dates, amounts, versions, references, assignments and before/after changes.
-2. Keep list-first screens, applied filter/sort/paging, top-end create, named details and separate confirmed lifecycle actions. Dialogs retain input on validation/conflict and clear private state on actor change.
-3. Replace normal JSON arrays/objects with explicit field groups, tables, chips, selected summaries or domain editor components. Retain expert diagnostics only behind an explicit advanced context and redaction policy.
-4. Hide opaque refs/checksums unless specifically useful for support; never remove the actual current ref from command state. Display queued versus complete outcomes accurately.
-5. Split .1 presenters/shared patterns, .2 studio catalog adoption, .3 operational/admin adoption; leave specialized node/identity/integration semantics to their owning later tasks rather than one giant generic form.
-
-### Acceptance criteria
-
-- Normal representative create/read/edit/report/history flows have readable fields and no raw JSON input/output requirement.
-- Typed edits preserve unrelated fields/client restrictions and cannot erase hidden data from a round-trip.
-- All states and confirmations follow common PrimeNG patterns without losing current CRUD/search conventions.
-
-### Verification and required evidence
-
-Extend test:browser-records/catalogs and source-focused specs. A02/A11/A23/A24; verify applied query, canceled edit, server errors and immutable publication. mise run check.
-
-### Data, compatibility, rollout and peer handoff
-
-APP-FE-016–032 own remaining domain-specific editors; APP-FE-033 closes the full no-JSON/API coverage matrix. Do not call this shared-pattern ticket total product completion.
-
-### Completion instruction
-
-Follow the full execution rules below. Record exact files reused/changed, contract IDs, migration/seed impact, focused and full commands, warnings/skips, and peer limits. Update the task and docs/changes/APP-FE-007.md only from observed evidence. Do not label a missing service, unresolved warning or required untested action complete.
-
-<a id="app-fe-008"></a>
+Completed implementation plan removed. Scope and acceptance evidence remain in the linked change record.
 
 ## APP-FE-008 — Build account profile, persisted themes and workspace settings
 
-Priority: P1  
-Status: BLOCKED  
-Verification: IMPLEMENTED  
-Area: frontend / M1  
-Depends-On: APP-FE-004, APP-FE-005, APP-BE-007  
-Related: AUTH-04; UI-03; current ColorScheme/session ownership  
-Decisions: None  
-Owner: Codex  
-Estimate: 2–4 person-days; confidence low-to-medium before intake  
+Status: DONE  
+Verification: VERIFIED_INTEGRATED  
 Change-Record: [APP-FE-008](../changes/APP-FE-008.md)
 
-Implemented subset and remaining backend blockers are documented in the change record. Status remains BLOCKED; local verification does not satisfy the missing real-contract acceptance.
-
-### Goal
-
-Users can change appearance, language, timezone and permitted profile details and see them persist safely.
-
-### Context: preserve and extend
-
-F05 documents the existing in-memory theme; F14 auth/security remains in the same-origin boundary. Reuse existing password/session/avatar surfaces where present.
-
-### Implementation sequence
-
-1. Implement profile/settings navigation with grouped typed controls from C02, not a JSON preference editor. Show effective defaults and saved state; keep privilege/security fields out of editable profile.
-2. Load server preferences after actor bootstrap and apply theme/density/locale/timezone deterministically. On missing preference use documented app default; failed load does not borrow the previous actor’s settings.
-3. Keep locale display distinct from canonical values. Calendar choices show only currently supported backend options; no false Jalali switch.
-4. Save with current refs and preserve independent unsaved groups on validation/conflict. Make self reset explicit and limited to preferences, not business data. Integrate private avatar controls and existing security operations.
-5. Verify account switch, refresh, reload, system color change, keyboard use and cross-session persistence. Avoid introducing persistent sensitive browser storage for a faster theme flash.
-
-### Acceptance criteria
-
-- A user’s settings survive reload/login and a second user does not inherit them.
-- Invalid values/errors are field-level; stale changes remain recoverable.
-- Security actions, avatar authorization and machine values are preserved.
-
-### Verification and required evidence
-
-Profile/settings unit tests plus actual-backend browser persistence case; A03/A22/A23. mise run check.
-
-### Data, compatibility, rollout and peer handoff
-
-C02 → account and application shell. Initial appearance scope is approved presets/mode/density, not arbitrary user CSS or a theme design product.
-
-### Completion instruction
-
-Follow the full execution rules below. Record exact files reused/changed, contract IDs, migration/seed impact, focused and full commands, warnings/skips, and peer limits. Update the task and docs/changes/APP-FE-008.md only from observed evidence. Do not label a missing service, unresolved warning or required untested action complete.
-
-<a id="app-fe-009"></a>
+Completed implementation plan removed. Scope and acceptance evidence remain in the linked change record.
 
 ## APP-FE-009 — Add saved list views and reusable favorites navigation
 
-Priority: P1  
-Status: BLOCKED  
-Verification: IMPLEMENTED  
-Area: frontend / M1  
-Depends-On: APP-FE-004, APP-FE-005, APP-FE-006, APP-BE-009  
-Related: Existing personal metadata; FUTURE-01 overlapping query work  
-Decisions: None  
-Owner: Codex  
-Estimate: 2–4 person-days; confidence low-to-medium before intake  
+Status: DONE  
+Verification: VERIFIED_INTEGRATED  
 Change-Record: [APP-FE-009](../changes/APP-FE-009.md)
 
-Implemented subset and remaining backend blockers are documented in the change record. Status remains BLOCKED; local verification does not satisfy the missing real-contract acceptance.
-
-### Goal
-
-Users can save their useful applied queries and return to favorite resources while authorization and resource revisions continue to change.
-
-### Context: preserve and extend
-
-C04 and current list-first search/sort patterns. Reuse existing work-item favorite semantics and C03 links, rather than two independent flags.
-
-### Implementation sequence
-
-1. Add save/update/rename/delete/set-default controls to agreed list scopes. Snapshot applied query rather than a partially edited filter form; exclude page number/raw results.
-2. Implement a favorites sidebar/list with readable authorized labels, kind/version context, reorder where supported, and no arbitrary href. Open through current link resolution.
-3. Handle a saved view with removed fields via a repair dialog that preserves original intent; never silently remove restrictive filters or expose broadened results.
-4. Clear private view/favorite state on logout; enforce bounded optimistic updates with authoritative reconciliation. Deleting/revoking a target removes it from normal favorites; offer safe generic cleanup where supported.
-5. Keep sharing/team-owned saved views out of this slice; test locale changes without altering stored machine filter values.
-
-### Acceptance criteria
-
-- Applying a view restores columns/page size/filter/sort and yields the same authorized query meaning.
-- A favorite survives revision changes but cannot access deleted/revoked data.
-- Duplicate saves/default changes behave consistently across two tabs and users.
-
-### Verification and required evidence
-
-View serialization tests and real API/browser cases; A03/A05/A23. Cover query schema change, page-two record and race conflict. mise run check.
-
-### Data, compatibility, rollout and peer handoff
-
-C04/C03. Private saved search text must not enter browser telemetry or publicly shared test artifacts.
-
-### Completion instruction
-
-Follow the full execution rules below. Record exact files reused/changed, contract IDs, migration/seed impact, focused and full commands, warnings/skips, and peer limits. Update the task and docs/changes/APP-FE-009.md only from observed evidence. Do not label a missing service, unresolved warning or required untested action complete.
-
-<a id="app-fe-010"></a>
+Completed implementation plan removed. Scope and acceptance evidence remain in the linked change record.
 
 ## APP-FE-010 — Implement a simple multilingual Help list and per-user acknowledgments
 
-Priority: P1  
-Status: BLOCKED  
-Verification: IMPLEMENTED  
-Area: frontend / M1  
-Depends-On: APP-FE-004, APP-FE-005, APP-BE-010  
-Related: UI-03; user-approved simple help approach  
-Decisions: None  
-Owner: Codex  
-Estimate: 1.5–3 person-days; confidence low-to-medium before intake  
+Status: DONE  
+Verification: VERIFIED_INTEGRATED  
 Change-Record: docs/changes/APP-FE-010.md
 
-Available frontend slice: Typed eleven-topic English/Farsi static catalog, permission-filtered Help page, contextual links, explicit open/dismiss/revisit/help-only reset, locale/revision identities and focus restoration. Status is explicitly session-only and clears on actor change; rendering the list alone never records a view.
-
-Remaining blocker: C05 / APP-BE-010 now has a frozen wave-four handoff and focused backend evidence, but remains BLOCKED / IMPLEMENTED pending its full gate. Persisted self-only state, compatibility responses and paired seen/dismiss/reset acceptance await a verified producer and client reconciliation.
-
-### Goal
-
-Give users concise contextual help they can revisit, with a small seen/dismissed state table and no complex onboarding framework.
-
-### Context: preserve and extend
-
-C05. Frontend owns static content and translation keys; backend stores only state. Reuse existing localization/route authority and shared dialog/list components.
-
-### Implementation sequence
-
-1. Create a typed help manifest with stable keys/revisions, en/fa title/body, route/capability hints and ordering. Initial entries cover create request, review/correction, save/promote/publish, defaults, mappings, notifications, calendar, saved views and support reference.
-2. Add an accessible Help page listing relevant topics and seen/unseen status. Add small contextual Help/empty-state hints at agreed screens; links use registered application routes.
-3. Persist seen only when the user opens/acknowledges the content; implement dismiss, review again and explicit help-only reset. Track locale/revision as specified.
-4. Validate complete translations and manifest metadata in the gate. New revision may appear new; do not hide a changed topic just because an old version was seen.
-5. If state persistence is unavailable, show static help and a nonblocking state-save message. No CMS, walkthrough overlays, analytics tracking or runtime arbitrary HTML.
-
-### Acceptance criteria
-
-- Users can see all applicable topics, revisit any topic and reset their acknowledgments.
-- English/Farsi content is present and readable; state belongs to the right user/locale/revision.
-- Fetching/rendering the Help list alone does not mark topics seen and no help state grants business access.
-
-### Verification and required evidence
-
-Help manifest/schema/i18n tests and browser seen/dismiss/reset case; A03/A04/A23. mise run check.
-
-### Data, compatibility, rollout and peer handoff
-
-Generate allowed help metadata for APP-BE-010 release validation. This intentionally implements the small design requested by the user.
-
-### Completion instruction
-
-Follow the full execution rules below. Record exact files reused/changed, contract IDs, migration/seed impact, focused and full commands, warnings/skips, and peer limits. Update the task and docs/changes/APP-FE-010.md only from observed evidence. Do not label a missing service, unresolved warning or required untested action complete.
-
-<a id="app-fe-011"></a>
+Completed implementation plan removed. Scope and acceptance evidence remain in the linked change record.
 
 ## APP-FE-011 — Build setup/readiness and dependency repair screens
 
-Priority: P1  
-Status: BLOCKED  
-Verification: IMPLEMENTED  
-Area: frontend / M2  
-Depends-On: APP-FE-004, APP-FE-005, APP-FE-006, APP-BE-011, APP-BE-012  
-Related: Existing studio diagnostics/definition library; ADMIN operational screens  
-Decisions: None  
-Owner: Codex  
-Estimate: 2–4 person-days; confidence low-to-medium before intake  
+Status: DONE  
+Verification: VERIFIED_INTEGRATED  
 Change-Record: docs/changes/APP-FE-011.md
 
-Available frontend slice: PrimeNG readiness table with required-check aggregation, explicit unknown/blocked/non-applicable states and stale hints. Existing workflow graph validation feeds a structure-only panel; the scope notice separates graph validation from installation/provider/worker readiness. Existing issue controls retain their node/edge context and recheck calls the existing read-only validation command.
-
-Remaining blocker: APP-BE-011/012 remain BLOCKED / NOT_RUN. C06 installation/definition readiness, authorized repair routes, server checked_at and full repair/revalidate acceptance are unavailable. No provider probe or invented installation result is performed.
-
-### Goal
-
-Administrators and designers can see why setup or publication is blocked and navigate to the correct repair screen without automatic privilege changes.
-
-### Context: preserve and extend
-
-C06; reuse current diagnostics pointers, selectors, catalogs and library tools. Checklist state is not an application lifecycle and green health is not provider execution proof.
-
-### Implementation sequence
-
-1. Create separate installation checklist and definition readiness panels with categories, last checked time, required/optional indicators and ready/blocked/unknown/not-applicable statuses.
-2. Display safe localized reasons and authorized repair actions for seeds, roles/client release, published dependencies, connections, worker evidence and renderer compatibility.
-3. Preserve selected definition/node/context when navigating to repair. Return and revalidate from the server; never assume the repair succeeded because a dialog closed.
-4. Make active connection/worker tests explicit confirmed commands and label cost/side effects; no paid probe on page load. Deny detailed setup data to ordinary unauthorized users.
-5. Integrate relevant help and empty states. No auto-grant, auto-publish, invented credentials or spoofed green check based on client-side presence.
-
-### Acceptance criteria
-
-- Each blocker has useful next steps or an explicit authorized-operator requirement, not raw JSON.
-- Unknown required checks keep the overall checklist unready; stale results show their timestamp.
-- Repair actions preserve context and cannot bypass backend authorization.
-
-### Verification and required evidence
-
-Checklist component tests and actual-backend missing-dependency/repair journey; A06/A12/A23. Test forbidden setup, stale plan, provider unknown and return navigation. mise run check.
-
-### Data, compatibility, rollout and peer handoff
-
-C06 consumers must use actual frozen route keys. Installation-ready, publishable and demo-ready are distinct labels.
-
-### Completion instruction
-
-Follow the full execution rules below. Record exact files reused/changed, contract IDs, migration/seed impact, focused and full commands, warnings/skips, and peer limits. Update the task and docs/changes/APP-FE-011.md only from observed evidence. Do not label a missing service, unresolved warning or required untested action complete.
-
-<a id="app-fe-012"></a>
+Completed implementation plan removed. Scope and acceptance evidence remain in the linked change record.
 
 ## APP-FE-012 — Implement the unified notification center and safe deep links
 
@@ -747,7 +284,15 @@ Change-Record: docs/changes/APP-FE-012.md
 
 Available frontend slice: Extended the existing notification inbox with applied read-status/subject filters and server-reported totals. The shell preview requests unread rows and uses the server total independently of page length. Opening a detail is read-only; explicit mark-read rereads the current mutation reference. Abort/generation fences and actor cleanup protect lists, details and polling.
 
-Remaining blocker: APP-BE-014 remains BLOCKED / NOT_RUN; APP-BE-013 is map/design evidence only. C07 unified event taxonomy, MAP-01–14 coverage, per-event deep links and durable resolver binding remain incomplete. C03 has a frozen wave-four proposal, but its producer APP-BE-008 remains BLOCKED / IMPLEMENTED. Current links continue using existing fixed Angular routes and current detail refs.
+Current C07 unified inbox, one application-owned SSE connection, authoritative count/list reconciliation, current authorized destinations and metadata-only read/open are implemented. The actual worker/Redis/SSE browser journey passes with no diagnostics. Remaining blocker: MAP-07/08 operation targets are reserved with `route_key: null`; full MAP recipient/destination coverage remains unverified. No operation URL or business command is invented. Historical producer-status statements remain in the change record.
+
+Current continuation (2026-10-09): actual C01–C10 producer/client intake is reconciled. Earlier producer-availability statements remain historical; see the current continuation in [APP-FE-012](../changes/APP-FE-012.md). Current implementation and scoped real-service evidence are recorded in [APP-FE-006–015 acceptance](APP-FE-006-015-ACCEPTANCE.md), with [owner-specific remaining acceptance](APP-FE-006-015-PEER-HANDOFF.md). No incomplete parent completion is claimed.
+
+### Live notification scope extension — 2026-10-09
+
+Reuse the existing notification owner and inbox for the implemented unified backend inbox. Freeze actual generated search/detail/read/unread and SSE contracts before consuming them. One application-level connection reconciles persisted inbox data on subscribe/reconnect/changes, updates bell/recent/full inbox and cartables, and shows dismissible alerts only for fresh signals after history reconciliation. Preserve filters, unsaved input, current target authorization, explicit metadata-only read, en/fa, RTL, accessibility and themes. Never execute destination business commands on notification open/read.
+
+The earlier APP-BE-014 availability statement above is historical: the current peer has implemented unified inbox/SSE. Broad MAP coverage and reserved destinations remain separate acceptance. See [the live notification acceptance record](NOTIFICATION-PUSH-ACCEPTANCE.md); APP-FE-037 owns the actual paired evidence. Parent status is unchanged.
 
 ### Goal
 
@@ -787,56 +332,11 @@ Follow the full execution rules below. Record exact files reused/changed, contra
 
 ## APP-FE-013 — Show support references and record safe client failures
 
-Priority: P1  
-Status: BLOCKED  
-Verification: IMPLEMENTED  
-Area: frontend / M1  
-Depends-On: APP-FE-004, APP-FE-005, APP-BE-015  
-Related: Existing safe errors/request IDs; ADMIN-08  
-Decisions: None  
-Owner: Codex  
-Estimate: 2–4 person-days; confidence low-to-medium before intake  
+Status: DONE  
+Verification: VERIFIED_INTEGRATED  
 Change-Record: docs/changes/APP-FE-013.md
 
-Available frontend slice: Request errors classify field validation, forbidden, stale, uncertain and technical failures. Notices show/copy only bounded returned machine codes and request references, with separate copy feedback and safe actionable text. Actor cleanup and asynchronous notice identity checks prevent an old result from updating a new notice. No arbitrary body, stack or form field value is included.
-
-Remaining blocker: APP-BE-015 remains BLOCKED / NOT_RUN and C08 intake/incident contracts are absent. Bounded global client-error reporting, durable incident storage, deduplication/rate limits and operator incident screens are unimplemented. A returned request correlation reference is never described as a stored support incident.
-
-### Goal
-
-Users can understand a technical failure and give support a useful reference without seeing or transmitting confidential data.
-
-### Context: preserve and extend
-
-C08 and existing error/envelope adapters. Preserve normal validation/conflict feedback; not every failed request is a support incident.
-
-### Implementation sequence
-
-1. Map existing errors into field validation, forbidden, stale, uncertain and technical-failure presentations. Include a copyable safe support/correlation reference only when returned/generated by the approved contract.
-2. Add a bounded client failure reporter for approved screen/build/error codes where server traces cannot capture the issue. Never send full response bodies, input values, URL query secrets, arbitrary exception messages or stacks.
-3. Build an authorized support failure list/detail with category, occurrences, timestamps, safe linked context, acknowledgment/resolution and execution evidence. Preserve current refs and audit confirmations.
-4. Handle diagnostics-store outage without recursive reporting or endless retries. Say local correlation only when a durable record was not confirmed.
-5. Link help and approved recovery destinations; a Retry button exists only when the domain contract says it is safe. Preserve unsaved input after failures where allowed.
-
-### Acceptance criteria
-
-- A technical failure yields an understandable message and traceable reference; recorded data passes redaction tests.
-- Support actions are permission-aware; ordinary users cannot enumerate global incidents.
-- Diagnostics failure does not produce another endless diagnostics failure or unsafe business replay.
-
-### Verification and required evidence
-
-Error/reporting specs, network payload assertions and support UI browser case; A20/A22/A23. mise run check.
-
-### Data, compatibility, rollout and peer handoff
-
-C08 → operational support. Private screenshots or payloads are never attached automatically.
-
-### Completion instruction
-
-Follow the full execution rules below. Record exact files reused/changed, contract IDs, migration/seed impact, focused and full commands, warnings/skips, and peer limits. Update the task and docs/changes/APP-FE-013.md only from observed evidence. Do not label a missing service, unresolved warning or required untested action complete.
-
-<a id="app-fe-014"></a>
+Completed implementation plan removed. Scope and acceptance evidence remain in the linked change record.
 
 ## APP-FE-014 — Deliver the operational calendar and event/reminder experience
 
@@ -853,7 +353,9 @@ Change-Record: docs/changes/APP-FE-014.md
 
 Available frontend slice: Reusable accessible agenda/week/month presentation from the same immutable projection, explicit loading/failure/empty/stale states, timezone captions, Gregorian labels in English/Farsi/Arabic and read-only workflow deadlines. Half-open date windows are bounded to 93 days; all-day dates remain civil dates with exclusive ends; timed instants retain microsecond ordering, valid IANA zones and explicit DST gap/fold handling. Actor reset invalidates old projections.
 
-Remaining blocker: APP-BE-016/017 remain BLOCKED / NOT_RUN; C09 events/reminder APIs are absent. The component is not exposed as a working business calendar. Server list/range binding, navigation to workflow resources, personal event editor/CRUD/conflicts, reminder worker outcomes and two-tab real-service acceptance remain unimplemented. C02 timezone persistence and C03 links await verified producer reconciliation. D03 remains Gregorian; no Jalali claim is made.
+Current C09 personal event CRUD, timezone/DST/all-day behavior, real clocked reminder delivery, competing edits/current-read recovery, atomic source cancellation and unchanged replay after a committed response loss are verified by actual scoped browser runs. Remaining blocker: membership-aware team selection has no suitable producer contract; the full workflow-derived deadline/source matrix is still unverified. Parent completion is blocked. D03 remains Gregorian; no Jalali claim is made.
+
+Current continuation (2026-10-09): actual C01–C10 producer/client intake is reconciled. Earlier producer-availability statements remain historical; see the current continuation in [APP-FE-014](../changes/APP-FE-014.md). Current implementation and scoped real-service evidence are recorded in [APP-FE-006–015 acceptance](APP-FE-006-015-ACCEPTANCE.md), with [owner-specific remaining acceptance](APP-FE-006-015-PEER-HANDOFF.md). No incomplete parent completion is claimed.
 
 ### Goal
 
@@ -893,54 +395,11 @@ Follow the full execution rules below. Record exact files reused/changed, contra
 
 ## APP-FE-015 — Implement real dashboards with metric drill-down and accessible tables
 
-Priority: P1  
-Status: BLOCKED  
-Verification: IMPLEMENTED  
-Area: frontend / M4  
-Depends-On: APP-FE-004, APP-FE-005, APP-FE-009, APP-BE-018  
-Related: Existing reporting/My Reports and operational shell  
-Decisions: None  
-Owner: Codex  
-Estimate: 3–5 person-days; confidence low-to-medium before intake  
+Status: DONE  
+Verification: VERIFIED_INTEGRATED  
 Change-Record: ../changes/APP-FE-015.md
 
-Implementation note: available frontend slice delivered; remaining acceptance and explicit blockers are recorded in docs/changes/APP-FE-015.md. Local fixture results do not establish integrated completion.
-
-### Goal
-
-Home and Insights display reliable authorized metrics backed by the application, not static demonstration numbers.
-
-### Context: preserve and extend
-
-C10 and existing reporting/UI patterns. Keep chart-library details behind a presentation adapter and verify licensing/pinned compatibility; no automatic paid dependency.
-
-### Implementation sequence
-
-1. Create a small chart adapter and standard cards with title, unit, date range, filter, as-of/freshness, empty/error state and tabular alternative. Use metric catalog rather than arbitrary backend query inputs.
-2. Build initial home/work/requests/integration metric views with consistent date/locale/timezone filters. Preserve exact values/units and show unknown or unavailable instead of zero.
-3. Implement server-authorized drill-down to existing lists using the returned descriptor; preserve applied filters and saved-view behavior without dropping restrictions.
-4. Coordinate refresh after relevant mutations and bounded polling. Do not compute total metrics from loaded pages or share cached series across users.
-5. Test zero data, denied dimensions, stale data, mixed currency, failed service and mobile/RTL chart labels. Keep full BI/dashboard layout designer out of scope.
-
-### Acceptance criteria
-
-- Chart totals match the controlled data and drill-down lists, including dates and deletion policy.
-- Users cannot view unauthorized aggregate series or infer them through cached filters.
-- Every chart has readable labels/units and an accessible table, and reflects real case changes.
-
-### Verification and required evidence
-
-Metric adapter/component tests and actual-backend browser changes; A09/A05/A23. Verify chart resize/teardown and zero/unavailable differences; mise run check.
-
-### Data, compatibility, rollout and peer handoff
-
-C10. Proposed chart library/performance acceptance is D05/lock review, not a commitment to vendor API removal or license status.
-
-### Completion instruction
-
-Follow the full execution rules below. Record exact files reused/changed, contract IDs, migration/seed impact, focused and full commands, warnings/skips, and peer limits. Update the task and docs/changes/APP-FE-015.md only from observed evidence. Do not label a missing service, unresolved warning or required untested action complete.
-
-<a id="app-fe-016"></a>
+Completed implementation plan removed. Scope and acceptance evidence remain in the linked change record.
 
 ## APP-FE-016 — Create a visual form-layout editor for the existing primitive set
 
@@ -956,6 +415,10 @@ Estimate: 5–8 person-days; confidence low-to-medium before intake
 Change-Record: ../changes/APP-FE-016.md
 
 Implementation note: available frontend slice delivered; remaining acceptance and explicit blockers are recorded in docs/changes/APP-FE-016.md. Local fixture results do not establish integrated completion.
+
+Current continuation (2026-10-10): APP-BE-019 is DONE / VERIFIED_WITH_EXCEPTION and APP-BE-020 records implemented conformance with its complete gate PASS / VERIFIED_WITH_EXCEPTION. Their former missing-capability status is historical. Existing APP-FE-016.1 now delivers cross-parent movement within collection context, explicit placement-only layout duplication with new subtree keys, and rendering of bounded C11 grid columns. Four independent actual backend/browser scenarios passed, including saved/reopened layouts and an unchanged existing request/published pin. The complete frontend gate passed 515 tests and ten Firefox scopes with zero diagnostics; the final manifest remains authoritative. Current contract reconciliation, remaining criteria classified by owner, actual acceptance and final gate evidence are in [APP-FE-016](../changes/APP-FE-016.md). The parent remains open for full twenty-kind/reference-form acceptance and unconsumed grid child-placement work. Concurrent APP-BE-022 operation-metadata drift prevents complete producer/paired verification; independent form contracts and evidence are recorded without accepting that drift. APP-FE-012/014 do not block this independent slice.
+
+Current five-scope continuation (2026-10-10): existing APP-FE-016 work was extended, with the delivered behavior and exact remaining owners in [APP-FE-016](../changes/APP-FE-016.md) and [shared acceptance](APP-FE-016-020-ACCEPTANCE.md). APP-BE-019/020 are implemented; APP-BE-022 now records completed scoped verification and its new frozen producer was compared and consumed. Older missing/unfrozen-backend summaries are historical. Parent status remains BLOCKED for its full required acceptance; independent slices continue.
 
 ### Goal
 
@@ -1008,6 +471,8 @@ Change-Record: ../changes/APP-FE-017.md
 
 Implementation note: available frontend slice delivered; remaining acceptance and explicit blockers are recorded in docs/changes/APP-FE-017.md. Local fixture results do not establish integrated completion.
 
+Current five-scope continuation (2026-10-10): existing APP-FE-017 work was extended, with the delivered behavior and exact remaining owners in [APP-FE-017](../changes/APP-FE-017.md) and [shared acceptance](APP-FE-016-020-ACCEPTANCE.md). APP-BE-019/020 are implemented; APP-BE-022 now records completed scoped verification and its new frozen producer was compared and consumed. Older missing/unfrozen-backend summaries are historical. Parent status remains BLOCKED for its full required acceptance; independent slices continue.
+
 ### Goal
 
 Designers configure field rules and complex values through explicit controls, and the runtime preserves canonical values and private data.
@@ -1058,6 +523,8 @@ Estimate: 5–8 person-days; confidence low-to-medium before intake
 Change-Record: ../changes/APP-FE-018.md
 
 Implementation note: available frontend slice delivered; remaining acceptance and explicit blockers are recorded in docs/changes/APP-FE-018.md. Local fixture results do not establish integrated completion.
+
+Current five-scope continuation (2026-10-10): existing APP-FE-018 work was extended, with the delivered behavior and exact remaining owners in [APP-FE-018](../changes/APP-FE-018.md) and [shared acceptance](APP-FE-016-020-ACCEPTANCE.md). APP-BE-019/020 are implemented; APP-BE-022 now records completed scoped verification and its new frozen producer was compared and consumed. Older missing/unfrozen-backend summaries are historical. Parent status remains BLOCKED for its full required acceptance; independent slices continue.
 
 ### Goal
 
@@ -1110,6 +577,8 @@ Change-Record: ../changes/APP-FE-019.md
 
 Implementation note: available frontend slice delivered; remaining acceptance and explicit blockers are recorded in docs/changes/APP-FE-019.md. Local fixture results do not establish integrated completion.
 
+Current five-scope continuation (2026-10-10): existing APP-FE-019 work was extended, with the delivered behavior and exact remaining owners in [APP-FE-019](../changes/APP-FE-019.md) and [shared acceptance](APP-FE-016-020-ACCEPTANCE.md). APP-BE-019/020 are implemented; APP-BE-022 now records completed scoped verification and its new frozen producer was compared and consumed. Older missing/unfrozen-backend summaries are historical. Parent status remains BLOCKED for its full required acceptance; independent slices continue.
+
 ### Goal
 
 Authors manage English/Farsi text, multipage layouts and declared views with a trustworthy preview of the same runtime renderer.
@@ -1161,6 +630,8 @@ Change-Record: ../changes/APP-FE-020.md
 
 Implementation note: available frontend slice delivered; remaining acceptance and explicit blockers are recorded in docs/changes/APP-FE-020.md. Local fixture results do not establish integrated completion.
 
+Current five-scope continuation (2026-10-10): existing APP-FE-020 work was extended, with the delivered behavior and exact remaining owners in [APP-FE-020](../changes/APP-FE-020.md) and [shared acceptance](APP-FE-016-020-ACCEPTANCE.md). APP-BE-019/020 are implemented; APP-BE-022 now records completed scoped verification and its new frozen producer was compared and consumed. Older missing/unfrozen-backend summaries are historical. Parent status remains BLOCKED for its full required acceptance; independent slices continue.
+
 ### Goal
 
 A designer can comfortably build, navigate and edit substantial workflows using the current owned graph models and a polished canvas.
@@ -1209,6 +680,8 @@ Decisions: None
 Owner: Codex  
 Estimate: 4–6 person-days; confidence low-to-medium before intake  
 Change-Record: docs/changes/APP-FE-021.md
+
+Current continuation (2026-10-10): 021.2 adds explicit typed-buffer discard and preserves previously applied workspace edits. Full parent acceptance remains BLOCKED. See [continuation acceptance](APP-FE-021-025-ACCEPTANCE.md) for source identities, actual browser results and remaining criteria.
 
 Available frontend slice implemented; full parent acceptance remains BLOCKED. Per-handler coverage, remaining frontend work, fixture evidence and peer limits: docs/delivery/NODE-INSPECTOR-COVERAGE.md and the change record.
 
@@ -1261,6 +734,8 @@ Owner: Codex
 Estimate: 4–7 person-days; confidence low-to-medium before intake  
 Change-Record: docs/changes/APP-FE-022.md
 
+Current continuation (2026-10-10): 022.1 restores authorized candidate labels and removes an exact candidate with existing undo/redo. Full parent acceptance remains BLOCKED. See [continuation acceptance](APP-FE-021-025-ACCEPTANCE.md) for source identities, actual browser results and remaining criteria.
+
 Available frontend slice implemented; full parent acceptance remains BLOCKED. Per-handler coverage, remaining frontend work, fixture evidence and peer limits: docs/delivery/NODE-INSPECTOR-COVERAGE.md and the change record.
 
 ### Goal
@@ -1311,6 +786,8 @@ Decisions: None
 Owner: Codex  
 Estimate: 4–7 person-days; confidence low-to-medium before intake  
 Change-Record: docs/changes/APP-FE-023.md
+
+Current continuation (2026-10-10): 023.1 adds authorized whole-object SCALAR sources, preserving exact pinned source schemas; object constants remain unsupported. Full parent acceptance remains BLOCKED. See [continuation acceptance](APP-FE-021-025-ACCEPTANCE.md) for source identities, actual browser results and remaining criteria.
 
 Available frontend slice implemented; full parent acceptance remains BLOCKED. Per-handler coverage, remaining frontend work, fixture evidence and peer limits: docs/delivery/NODE-INSPECTOR-COVERAGE.md and the change record.
 
@@ -1363,6 +840,8 @@ Owner: Codex
 Estimate: 4–7 person-days; confidence low-to-medium before intake  
 Change-Record: docs/changes/APP-FE-024.md
 
+Current continuation (2026-10-10): 024.1 buffers condition/default/priority edits until explicit apply or discard, using actual backend bounds. Full parent acceptance remains BLOCKED. See [continuation acceptance](APP-FE-021-025-ACCEPTANCE.md) for source identities, actual browser results and remaining criteria.
+
 Available frontend slice implemented; full parent acceptance remains BLOCKED. Per-handler coverage, remaining frontend work, fixture evidence and peer limits: docs/delivery/NODE-INSPECTOR-COVERAGE.md and the change record.
 
 ### Goal
@@ -1413,6 +892,8 @@ Decisions: None
 Owner: Codex  
 Estimate: 4–7 person-days; confidence low-to-medium before intake  
 Change-Record: docs/changes/APP-FE-025.md
+
+Current continuation (2026-10-10): 025.1 consumes the registered business-operation catalog and exposes its approval/retry/reconciliation metadata without dispatching operations. Full parent acceptance remains BLOCKED. See [continuation acceptance](APP-FE-021-025-ACCEPTANCE.md) for source identities, actual browser results and remaining criteria.
 
 Available frontend slice implemented; full parent acceptance remains BLOCKED. Per-handler coverage, remaining frontend work, fixture evidence and peer limits: docs/delivery/NODE-INSPECTOR-COVERAGE.md and the change record.
 
@@ -1465,6 +946,10 @@ Owner: Codex
 Estimate: 4–7 person-days; confidence low-to-medium before intake  
 Change-Record: [APP-FE-026](../changes/APP-FE-026.md)
 
+Current continuation (2026-10-11): APP-FE-026.2 adds authorized receipt/AI evidence and guarded operator reconciliation; [scope, current producer reconciliation and remaining owners](APP-FE-026-028-RECEIPTS.md). Parent acceptance remains open.
+
+Current continuation (2026-10-10): APP-FE-026.1 delivers the independent slice documented in [APP-FE-026–030 acceptance](APP-FE-026-030-ACCEPTANCE.md). Parent acceptance remains open; historical evidence is preserved.
+
 ### Goal
 
 Designers and authorized operators can inspect what a node received/produced and why a run stopped, without leaking data or blindly executing effects.
@@ -1513,6 +998,8 @@ Decisions: None
 Owner: Codex  
 Estimate: 3–5 person-days; confidence low-to-medium before intake  
 Change-Record: [APP-FE-027](../changes/APP-FE-027.md)
+
+Current continuation (2026-10-10): APP-FE-027.1 delivers the independent slice documented in [APP-FE-026–030 acceptance](APP-FE-026-030-ACCEPTANCE.md). Parent acceptance remains open; historical evidence is preserved.
 
 ### Goal
 
@@ -1563,6 +1050,10 @@ Owner: Codex
 Estimate: 3–5 person-days; confidence low-to-medium before intake  
 Change-Record: [APP-FE-028](../changes/APP-FE-028.md)
 
+Current continuation (2026-10-11): APP-FE-028.2 adds authorized receipt/AI evidence and guarded operator reconciliation; [scope, current producer reconciliation and remaining owners](APP-FE-026-028-RECEIPTS.md). Parent acceptance remains open.
+
+Current continuation (2026-10-10): APP-FE-028.1 delivers the independent slice documented in [APP-FE-026–030 acceptance](APP-FE-026-030-ACCEPTANCE.md). Parent acceptance remains open; historical evidence is preserved.
+
 ### Goal
 
 An ordinary requester can submit and understand a real case without management rights, JSON payloads or manual backend repair.
@@ -1611,6 +1102,8 @@ Decisions: None
 Owner: Codex  
 Estimate: 4–6 person-days; confidence low-to-medium before intake  
 Change-Record: [APP-FE-029](../changes/APP-FE-029.md)
+
+Current continuation (2026-10-10): APP-FE-029.1 delivers the independent slice documented in [APP-FE-026–030 acceptance](APP-FE-026-030-ACCEPTANCE.md). Parent acceptance remains open; historical evidence is preserved.
 
 ### Goal
 
@@ -1661,6 +1154,8 @@ Owner: Codex
 Estimate: 4–7 person-days; confidence low-to-medium before intake  
 Change-Record: [APP-FE-030](../changes/APP-FE-030.md)
 
+Current continuation (2026-10-10): APP-FE-030.1 delivers the independent slice documented in [APP-FE-026–030 acceptance](APP-FE-026-030-ACCEPTANCE.md). Parent acceptance remains open; historical evidence is preserved.
+
 ### Goal
 
 Administrators manage governed connections and agent versions through meaningful setup and inspection screens rather than an operation console.
@@ -1709,6 +1204,8 @@ Decisions: None
 Owner: Codex  
 Estimate: 3–6 person-days; confidence low-to-medium before intake  
 Change-Record: [APP-FE-031](../changes/APP-FE-031.md)
+
+Current continuation (2026-10-11): APP-FE-031.1 extends the existing implementation; [scope, evidence and remaining owners](APP-FE-031-035-ACCEPTANCE.md). Parent acceptance remains open.
 
 ### Goal
 
@@ -1759,6 +1256,12 @@ Owner: Codex
 Estimate: 3–6 person-days; confidence low-to-medium before intake  
 Change-Record: [APP-FE-032](../changes/APP-FE-032.md)
 
+Current continuation (2026-10-11): APP-FE-032.3 adds authorized receipt/AI evidence and guarded operator reconciliation; [scope, current producer reconciliation and remaining owners](APP-FE-026-028-RECEIPTS.md). Parent acceptance remains open.
+
+Current continuation (2026-10-11): APP-FE-032.2 extends the existing implementation; [five-slice scope, evidence and remaining owners](APP-FE-036-038-CONTINUATION.md). Parent acceptance remains open.
+
+Current continuation (2026-10-11): APP-FE-032.1 extends the existing implementation; [scope, evidence and remaining owners](APP-FE-031-035-ACCEPTANCE.md). Parent acceptance remains open.
+
 ### Goal
 
 Operators can inspect real running/failed work and apply only supported actions, with readable schedules, reports and audit evidence.
@@ -1807,6 +1310,10 @@ Decisions: None
 Owner: Codex  
 Estimate: 4–7 person-days; confidence low-to-medium before intake  
 Change-Record: [APP-FE-033](../changes/APP-FE-033.md)
+
+Current continuation (2026-10-11): APP-FE-033.2 extends the existing implementation; [five-slice scope, evidence and remaining owners](APP-FE-036-038-CONTINUATION.md). Parent acceptance remains open.
+
+Current continuation (2026-10-11): APP-FE-033.1 extends the existing implementation; [scope, evidence and remaining owners](APP-FE-031-035-ACCEPTANCE.md). Parent acceptance remains open.
 
 ### Goal
 
@@ -1857,6 +1364,8 @@ Owner: Codex
 Estimate: 3–5 person-days; confidence low-to-medium before intake  
 Change-Record: [APP-FE-034](../changes/APP-FE-034.md)
 
+Current continuation (2026-10-11): APP-FE-034.1 extends the existing implementation; [scope, evidence and remaining owners](APP-FE-031-035-ACCEPTANCE.md). Parent acceptance remains open.
+
 ### Goal
 
 The complete product is usable with keyboard, English/Farsi and supported screen sizes, including complex canvas and dialogs.
@@ -1905,6 +1414,10 @@ Decisions: D05
 Owner: Codex  
 Estimate: 3–5 person-days; confidence low-to-medium before intake  
 Change-Record: [APP-FE-035](../changes/APP-FE-035.md)
+
+Current continuation (2026-10-11): APP-FE-035.1 extends the existing implementation; [scope, evidence and remaining owners](APP-FE-031-035-ACCEPTANCE.md). Parent acceptance remains open.
+
+Current hardware update (2026-10-11): user selected this machine for measurements. [Actual hardware, three runtime/canvas runs, source identity and remaining owners](APP-FE-035-CURRENT-MACHINE.md). Hardware selection is resolved; D05 budgets and full acceptance remain open. Existing IDs/statuses are unchanged.
 
 ### Goal
 
@@ -1955,6 +1468,12 @@ Owner: Codex
 Estimate: 3–5 person-days; confidence low-to-medium before intake  
 Change-Record: [APP-FE-036](../changes/APP-FE-036.md)
 
+Current continuation (2026-10-11): APP-FE-036.1 extends the existing implementation; [five-slice scope, evidence and remaining owners](APP-FE-036-038-CONTINUATION.md). Parent acceptance remains open.
+
+### Live notification scope extension — 2026-10-09
+
+Add a dedicated SSE forwarding policy inside the existing server-held session boundary. Keep credentials out of browser storage and URLs. Use separate stream admission, header deadline, heartbeat/idle and lifetime limits, bounded event/chunk framing, downstream backpressure, disconnect cancellation and session/logout cleanup. Preserve ordinary finite-response limits, CSRF/origin protection, rotation and mutation no-replay. See [the live notification acceptance record](NOTIFICATION-PUSH-ACCEPTANCE.md). Existing transfer/deployment acceptance and parent status remain unchanged.
+
 ### Goal
 
 Preserve the accepted server-held token boundary while making its transfer/deadline/restart behavior match the application’s declared limits.
@@ -2004,6 +1523,14 @@ Owner: Codex
 Estimate: 4–6 person-days; confidence low-to-medium before intake  
 Change-Record: [APP-FE-037](../changes/APP-FE-037.md)
 
+Current paired snapshot continuation (2026-10-11): required compiled en/fa locale assets are captured and hashed; [actual rehearsal results and preserved failures](APP-FE-026-028-RECEIPTS.md). This does not establish complete application or hosted acceptance.
+
+Current continuation (2026-10-11): APP-FE-037.1 extends the existing implementation; [five-slice scope, evidence and remaining owners](APP-FE-036-038-CONTINUATION.md). Parent acceptance remains open.
+
+### Live notification paired scope extension — 2026-10-09
+
+Extend the existing real-service harness with owned disposable PostgreSQL/cache/storage, the real outbox dispatcher and Celery worker, actual backend SSE and Firefox. Verify unified inbox contract, bell/recent/inbox/cartable updates, fresh alerts and duplicate suppression, offline/reconnect reconciliation, explicit read and current-authorized navigation without business commands, actor/logout cleanup, en/fa/RTL/theme and storage isolation. Record exact commits plus start/end source hashes, diagnostics, failures and limits in [the live notification acceptance record](NOTIFICATION-PUSH-ACCEPTANCE.md). Fixtures alone cannot close this slice. Whole-application/demo/reset/deployment acceptance and parent status remain unchanged.
+
 ### Goal
 
 Run the requested application through actual frontend/backend/services with known template defaults and reproducible failures.
@@ -2052,6 +1579,8 @@ Decisions: None
 Owner: Codex  
 Estimate: 2–4 person-days; confidence low-to-medium before intake  
 Change-Record: [APP-FE-038](../changes/APP-FE-038.md)
+
+Current continuation (2026-10-11): APP-FE-038.1 extends the existing implementation; [five-slice scope, evidence and remaining owners](APP-FE-036-038-CONTINUATION.md). Parent acceptance remains open.
 
 ### Goal
 

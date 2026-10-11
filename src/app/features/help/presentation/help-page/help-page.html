@@ -12,13 +12,15 @@
     [outlined]="true"
     (click)="reset()"
   >
-    {{ "Reset help for this session" | localize }}
+    {{ "Reset saved help status" | localize }}
   </button>
 </header>
 <p role="status">
   {{
-    "Help is available. Viewed and dismissed status applies to this session."
-      | localize
+    (persisted.status() === "saved"
+      ? "Help status is saved to your account."
+      : "Help is available. Changes have not been saved to your account."
+    ) | localize
   }}
 </p>
 <ul class="grid gap-3 my-5 list-none p-0">

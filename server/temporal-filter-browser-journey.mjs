@@ -1,0 +1,61 @@
+// Exercises real Angular controls against the explicitly isolated records fixture.
+export const temporalFilterBrowserScript = String.raw`
+ await (async()=>{
+   const choose=async(control,label)=>{control.click();await wait(()=>[...document.querySelectorAll('[role="option"]')].some(option=>option.textContent.trim()===label),'Temporal choice '+label);[...document.querySelectorAll('[role="option"]')].find(option=>option.textContent.trim()===label).click();await wait(dropdownsIdle,'Temporal choice settled');};
+   await click(root(),'Add filter');
+   await choose(root().querySelector('.filter-row [role="combobox"][id$="-field-0"]'),'Created At');
+   await wait(()=>root().querySelector('app-query-filters app-temporal-control'),'Datetime picker rendered');
+   const picker=()=>root().querySelector('app-query-filters app-temporal-control');
+   const dateInput=()=>picker().querySelector('.date-entry input');
+   fill(dateInput(),'2024-03-20');
+   await click(picker(),'Choose date');
+   await wait(()=>document.querySelector('.calendar-days button[data-calendar-day="2024-03-20"]'),'Gregorian calendar day');
+   document.querySelector('.calendar-days button[data-calendar-day="2024-03-20"]').click();
+   await wait(()=>!document.querySelector('.calendar-days'),'Date chosen');
+   await choose(picker().querySelector('app-select-control [role="combobox"]'),'Jalali');
+   await wait(()=>dateInput().value==='1403-01-01','Jalali conversion');
+   await click(picker(),'Choose date');
+   await wait(()=>document.querySelector('.calendar-days'),'Jalali month');
+   check(document.querySelectorAll('.calendar-days button').length===31,'Jalali month length');
+   await auditAccessibility('jalali-date-dialog',document.querySelector('.p-dialog'));
+   const day=document.querySelector('.calendar-days button[data-calendar-day="2024-03-20"]');day.focus();day.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowRight',bubbles:true}));await wait(()=>document.activeElement?.dataset.calendarDay==='2024-03-21','Keyboard calendar movement');
+   document.querySelector('.calendar-days button[data-calendar-day="2024-03-20"]').click();
+   await wait(()=>!document.querySelector('.calendar-days'),'Jalali date chosen');
+   await choose(picker().querySelector('app-select-control [role="combobox"]'),'Islamic (civil Hijri)');
+   await wait(()=>dateInput().value==='1445-09-10','Hijri conversion');
+   await click(picker(),'Choose date');await wait(()=>document.querySelector('.calendar-days'),'Hijri month');
+   check(document.querySelectorAll('.calendar-days button').length===30,'Hijri month length');
+   document.querySelector('.calendar-days button[data-calendar-day="2024-03-20"]').click();await wait(()=>!document.querySelector('.calendar-days'),'Hijri date chosen');
+   await choose(picker().querySelector('app-select-control [role="combobox"]'),'Gregorian');
+   await click(root(),'Apply');await wait(()=>!root().textContent.includes('Loading…'),'Canonical datetime applied');
+   check(picker().querySelector('p-datepicker input').readOnly,'Time uses a purpose-built picker');
+   picker().querySelector('p-datepicker input').click();await wait(()=>document.querySelector('.p-datepicker-time-picker'),'Time picker opened');
+   await auditAccessibility('datetime-time-picker',document.querySelector('.p-datepicker-panel'));
+   check(new Set([...document.querySelectorAll('.p-datepicker-time-picker button')].map(button=>button.getAttribute('aria-label'))).size===6,'Time units need distinct accessible labels');
+   const hour=document.querySelector('.p-datepicker-hour-picker button');check(hour,'Hour spinner missing');hour.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',bubbles:true}));hour.dispatchEvent(new KeyboardEvent('keyup',{key:'Enter',bubbles:true}));
+   picker().querySelector('p-datepicker input').dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',code:'Escape',keyCode:27,which:27,bubbles:true}));await wait(()=>!document.querySelector('.p-datepicker-panel'),'Time popup closed');
+   await click(root(),'Apply');await wait(()=>!root().textContent.includes('Loading…'),'Edited datetime applied');
+   await auditAccessibility('datetime-filter',root());
+   fill(dateInput(),'2024-02-30');await click(root(),'Apply');await wait(()=>picker().querySelector('[role="alert"]'),'Invalid date retained');check(dateInput().value==='2024-02-30','Invalid draft lost');
+   fill(dateInput(),'2024-03-20');await wait(()=>!picker().querySelector('[role="alert"]'),'Invalid date corrected');
+   const content=root().getBoundingClientRect();const main=document.querySelector('main').getBoundingClientRect();check(content.width>=main.width-80,'List still has a narrow page cap');
+   const table=root().querySelector('app-record-table');const cell=table.querySelector('tbody td');check(cell.getBoundingClientRect().width>=150,'Data cell remains cramped');check(document.documentElement.scrollWidth<=innerWidth+1,'Wide table leaks outside page');
+   const original=cell.textContent;cell.textContent='Long record '.repeat(150);check(document.documentElement.scrollWidth<=innerWidth+1,'Long table text breaks responsiveness');cell.textContent=original;
+   const frame=document.createElement('iframe');frame.src='/users?peer=1';frame.style.cssText='position:fixed;top:0;left:0;z-index:9999;width:390px;height:900px;max-width:100%;border:0';document.body.append(frame);
+   try {
+     await wait(()=>frame.contentDocument?.querySelector('app-resource-page tbody td')&&!frame.contentDocument.querySelector('app-resource-page').textContent.includes('Loading…'),'Mobile table rendered');
+     frame.contentWindow.focus();await new Promise(resolve=>frame.contentWindow.requestAnimationFrame(()=>frame.contentWindow.requestAnimationFrame(resolve)));
+     const mobile=frame.contentDocument;const mobileRoot=()=>mobile.querySelector('app-resource-page');const mobileCell=mobileRoot().querySelector('tbody td');mobileCell.textContent='Long mobile record '.repeat(100);
+     check(mobile.documentElement.scrollWidth<=frame.clientWidth+1,'Mobile table overflow');
+     mobile.documentElement.classList.add('app-dark');mobile.documentElement.dataset.palette='emerald';mobile.documentElement.dir='rtl';
+     check(mobile.documentElement.scrollWidth<=frame.clientWidth+1,'RTL dark mobile table overflow');
+     button(mobileRoot(),'Advanced filters').click();await wait(()=>button(mobileRoot(),'Add filter'),'Mobile filters');button(mobileRoot(),'Add filter').click();await wait(()=>mobileRoot().querySelector('.filter-row'),'Mobile filter row');
+     const mobileField=[...mobileRoot().querySelectorAll('.filter-row [role="combobox"]')].filter(control=>/-field-\d+$/.test(control.id)).at(-1);check(mobileField,'Mobile field chooser');mobileField.click();await wait(()=>[...mobile.querySelectorAll('[role="option"]')].some(option=>option.textContent.trim()==='Created At'),'Mobile dated field');[...mobile.querySelectorAll('[role="option"]')].find(option=>option.textContent.trim()==='Created At').click();
+     await wait(()=>mobileRoot().querySelector('app-temporal-control'),'Mobile datetime control');
+     check(mobile.documentElement.scrollWidth<=frame.clientWidth+1,'Mobile datetime filter overflow');
+     button(mobileRoot().querySelector('app-temporal-control'),'Choose date').click();await wait(()=>mobile.querySelector('.calendar-days'),'Mobile calendar dialog');
+     const bounds=mobile.querySelector('.p-dialog').getBoundingClientRect();check(bounds.left>=-1&&bounds.right<=frame.clientWidth+1,'Mobile calendar outside viewport');
+   } catch(error) { throw new Error(error.message+'; mobile-frame='+frame.contentDocument?.body.textContent.slice(0,1600)); } finally { frame.remove(); }
+   await click(root(),'Clear');await wait(()=>!root().querySelector('app-query-filters app-temporal-control'),'Temporal query cleared');
+ })();
+`;

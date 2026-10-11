@@ -1,3 +1,5 @@
+import { WorkspaceDefaults } from '../resources/workspace-defaults';
+import { DOCUMENT } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import {
   computed,
@@ -23,18 +25,27 @@ import type { components } from '../transport/generated/preferences-contract';
 type Appearance = components['schemas']['AppearancePreferences'];
 type LocaleSettings = components['schemas']['LocalePreferences'];
 type Changes = {
-  appearance?: Partial<Appearance>;
-  locale?: Pick<LocaleSettings, 'language'>;
+  appearance?: Partial<Appearance> | null;
+  locale?: Partial<LocaleSettings>;
+  workspace?: Partial<components['schemas']['WorkspacePreferences']>;
+  notifications?: Partial<components['schemas']['NotificationPreferences']>;
 };
 const endpoint = '/api/v1/me/preferences';
 function decode(value: unknown): {
   ref: string;
   appearance: Appearance;
   language: 'en' | 'fa';
+  settings: components['schemas']['PreferencesDTO'];
 } {
   const row = record(value);
   const appearance = record(row['appearance']);
   const locale = record(row['locale']);
+  const workspace = record(row['workspace']);
+  const notifications = record(row['notifications']);
+  if (typeof locale['timezone'] !== 'string') {
+    throw Error('Invalid timezone');
+  }
+  new Intl.DateTimeFormat('en', { timeZone: locale['timezone'] });
   if (
     row['schema_version'] !== 1 ||
     typeof row['ref_id'] !== 'string' ||
@@ -43,7 +54,16 @@ function decode(value: unknown): {
     !themePalettes.some((p) => p.key === appearance['theme_key']) ||
     !['light', 'dark', 'system'].includes(String(appearance['theme_mode'])) ||
     !['comfortable', 'compact'].includes(String(appearance['density'])) ||
-    !['en', 'fa'].includes(String(locale['language']))
+    !['en', 'fa'].includes(String(locale['language'])) ||
+    locale['calendar'] !== 'gregory' ||
+    !['latn', 'arabext'].includes(String(locale['numbering'])) ||
+    !['requests', 'work_items', 'studio', 'dashboard'].includes(
+      String(workspace['landing_key']),
+    ) ||
+    !Number.isInteger(workspace['page_size']) ||
+    Number(workspace['page_size']) < 1 ||
+    Number(workspace['page_size']) > 100 ||
+    typeof notifications['email_enabled'] !== 'boolean'
   ) {
     throw Error('Invalid preferences response');
   }
@@ -51,12 +71,18 @@ function decode(value: unknown): {
     ref: row['ref_id'],
     appearance: appearance as Appearance,
     language: locale['language'] as 'en' | 'fa',
+    settings: value as components['schemas']['PreferencesDTO'],
   };
 }
 
 @Injectable({ providedIn: 'root' })
 export class Preferences {
   private readonly http = inject(HttpClient);
+  private readonly defaults = inject(WorkspaceDefaults);
+  private readonly document = inject(DOCUMENT);
+  readonly settings = signal<components['schemas']['PreferencesDTO'] | null>(
+    null,
+  );
   private readonly auth = inject(AuthSession);
   private readonly actor = inject(ActorState);
   private readonly session = inject(SessionContext);
@@ -66,16 +92,41 @@ export class Preferences {
   readonly status = signal<'idle' | 'loading' | 'saving' | 'saved' | 'error'>(
     'idle',
   );
-  readonly loading = computed(() => this.status() === 'loading');
+  private readonly profileMutation = signal(false);
+  readonly loading = computed(
+    () => this.status() === 'loading' || this.profileMutation(),
+  );
+  beginProfileMutation(): (() => void) | null {
+    if (
+      this.loading() ||
+      this.status() === 'saving' ||
+      this.locale.changing()
+    ) {
+      return null;
+    }
+    const epoch = this.actor.epoch;
+    this.profileMutation.set(true);
+    return () => {
+      if (epoch === this.actor.epoch) {
+        this.profileMutation.set(false);
+      }
+    };
+  }
   readonly sessionLanguage = signal(false);
   private readonly revision = signal(0);
   private ref = '';
   private pending: Changes = {};
   private generation = 0;
+  private readonly sessionStatus = computed(
+    () => this.session.snapshot().status,
+  );
   constructor() {
     const release = this.actor.register(() => {
       this.generation++;
       this.ref = '';
+      this.profileMutation.set(false);
+      this.settings.set(null);
+      delete this.document.documentElement.dataset['density'];
       this.pending = {};
       this.status.set('idle');
       this.sessionLanguage.set(false);
@@ -85,7 +136,7 @@ export class Preferences {
     effect(() => {
       this.revision();
       const profile = this.auth.profile();
-      if (profile && this.session.snapshot().status === 'authenticated') {
+      if (profile && this.sessionStatus() === 'authenticated') {
         untracked(() => {
           void this.load();
         });
@@ -121,6 +172,7 @@ export class Preferences {
       if (generation !== this.generation) {
         return;
       }
+      this.acceptSettings(value.settings);
       this.ref = value.ref;
       this.sessionLanguage.set(false);
       this.status.set('saved');
@@ -165,8 +217,7 @@ export class Preferences {
     if (this.loading()) {
       return;
     }
-    this.scheme.reset();
-    this.queue({ appearance: { theme_key: 'blue', theme_mode: 'light' } });
+    this.queue({ appearance: null });
   }
   async language(value: unknown): Promise<void> {
     if (
@@ -188,6 +239,23 @@ export class Preferences {
     }
     this.queue({ locale: { language: value } });
   }
+  update(change: Changes): void {
+    if (!this.loading()) {
+      this.queue(change);
+    }
+  }
+  private acceptSettings(
+    settings: components['schemas']['PreferencesDTO'],
+  ): void {
+    if (settings.workspace) {
+      this.defaults.accept(settings.workspace);
+    }
+    this.settings.set(settings);
+    this.locale.numbering.set(settings.locale?.numbering ?? 'latn');
+    this.locale.timezone.set(settings.locale?.timezone ?? 'UTC');
+    this.document.documentElement.dataset['density'] =
+      settings.appearance?.density ?? 'comfortable';
+  }
   private queue(change: Changes): void {
     if (!this.ref || this.status() === 'error') {
       if (this.auth.profile()) {
@@ -198,6 +266,20 @@ export class Preferences {
     this.pending = {
       ...this.pending,
       ...change,
+      ...(change.locale
+        ? { locale: { ...this.pending.locale, ...change.locale } }
+        : {}),
+      ...(change.workspace
+        ? { workspace: { ...this.pending.workspace, ...change.workspace } }
+        : {}),
+      ...(change.notifications
+        ? {
+            notifications: {
+              ...this.pending.notifications,
+              ...change.notifications,
+            },
+          }
+        : {}),
       ...(change.appearance
         ? { appearance: { ...this.pending.appearance, ...change.appearance } }
         : {}),
@@ -227,6 +309,11 @@ export class Preferences {
           return;
         }
         this.ref = value.ref;
+        this.acceptSettings(value.settings);
+        if (changes.appearance === null && !this.pending.appearance) {
+          this.scheme.select(`${value.appearance.theme_key}-light`);
+          this.scheme.setMode(value.appearance.theme_mode);
+        }
       }
       this.status.set('saved');
     } catch {

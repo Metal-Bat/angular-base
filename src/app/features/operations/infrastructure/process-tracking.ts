@@ -4,12 +4,37 @@ import { ApiClient } from '../../../core/transport/api-client';
 import { readData } from '../../../core/transport/response-adapters';
 import { ProcessSnapshot } from '../domain/process-tracking';
 import { tracking } from './process-decoder';
+import { record } from '../../../core/transport/api-failure';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ProcessTracking {
   private readonly api = inject(ApiClient);
+  async destination(
+    request: string,
+    abort: AbortSignal,
+  ): Promise<string | null> {
+    return readData(
+      await firstValueFrom(
+        this.api.call(
+          'get_request_api_v1_business_requests__ref_id__get',
+          { path: { ref_id: request } },
+          abort,
+        ),
+      ),
+      (value) => {
+        const reference = record(value)['process_ref_id'];
+        if (reference === null) {
+          return null;
+        }
+        if (typeof reference !== 'string' || !reference) {
+          throw Error('Invalid process destination');
+        }
+        return reference;
+      },
+    );
+  }
   async read(
     reference: string,
     page = 1,

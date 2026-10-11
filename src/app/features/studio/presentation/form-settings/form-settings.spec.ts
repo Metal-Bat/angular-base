@@ -62,4 +62,56 @@ describe('Form settings lifecycle', () => {
     await pending;
     expect(output).toHaveBeenCalledTimes(1);
   });
+  it('repairs an absent locale without changing keys or unrelated metadata', async () => {
+    const fixture = TestBed.createComponent(FormSettings);
+    const source: JsonObject = {
+      ...documents,
+      localization: {
+        default_locale: 'en',
+        catalogs: { en: { title: { text: 'Title', parameters: {} } }, fa: {} },
+        revision: 'retained',
+      },
+    };
+    fixture.componentRef.setInput('documents', source);
+    await fixture.whenStable();
+    const vm = fixture.componentInstance;
+    const output = vi.fn();
+    vm.applied.subscribe(output);
+    vm.editMessage('title');
+    expect(vm.en).toBe('Title');
+    expect(vm.fa).toBe('');
+    vm.fa = 'عنوان';
+    await vm.applyTranslation();
+    const localization = output.mock.calls[0][0]['localization'] as JsonObject;
+    expect(localization['revision']).toBe('retained');
+    const catalogs = localization['catalogs'] as JsonObject;
+    expect((catalogs['fa'] as JsonObject)['title']).toMatchObject({
+      text: 'عنوان',
+      source_revision: expect.any(String),
+    });
+    expect(output.mock.calls[0][0]['data_schema']).toEqual(
+      documents['data_schema'],
+    );
+  });
+  it('does not overwrite edits or apply after draft becomes read-only during hashing', async () => {
+    const fixture = TestBed.createComponent(FormSettings);
+    fixture.componentRef.setInput('documents', documents);
+    await fixture.whenStable();
+    const vm = fixture.componentInstance;
+    const output = vi.fn();
+    vm.applied.subscribe(output);
+    vm.key = 'title';
+    vm.en = 'Title';
+    vm.fa = 'عنوان';
+    const pending = vm.applyTranslation();
+    vm.en = 'New title';
+    await pending;
+    expect(output).not.toHaveBeenCalled();
+    expect(vm.en).toBe('New title');
+    expect(vm.busy()).toBe(false);
+    const published = vm.applyTranslation();
+    fixture.componentRef.setInput('disabled', true);
+    await published;
+    expect(output).not.toHaveBeenCalled();
+  });
 });

@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { ActivatedRoute } from '@angular/router';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  input,
+} from '@angular/core';
 import type { ResourceCatalog } from './resource-catalog';
 import { NgTemplateOutlet } from '@angular/common';
 import { TabsModule } from 'primeng/tabs';
@@ -32,6 +40,14 @@ import { WorkflowDiagram } from '../workflow-diagram/workflow-diagram';
   changeDetection: ChangeDetectionStrategy.Default,
 })
 export class CatalogContent {
+  private readonly route = inject(ActivatedRoute);
+  private readonly query = toSignal(this.route.queryParamMap, {
+    initialValue: this.route.snapshot.queryParamMap,
+  });
+  readonly repairNode = computed(
+    () => this.query().get('repair_node')?.slice(0, 256) ?? '',
+  );
+
   readonly view =
     input.required<
       Pick<

@@ -1,9 +1,9 @@
+import { personalMessages } from './personal-messages';
 import { crudMessages } from './crud-messages';
 // Keys are the English source strings. Canonical backend keys/references are never translated.
 export const persianMessages: Readonly<Record<string, string>> = {
   ...crudMessages,
-  'Add value': 'افزودن مقدار',
-  'Correct this field before saving': 'این فیلد را پیش از ذخیره اصلاح کنید',
+  ...personalMessages,
   'Request failed': 'درخواست ناموفق بود',
   'Error code': 'کد خطا',
   'Copy error code': 'کپی کد خطا',
@@ -109,7 +109,6 @@ export const persianMessages: Readonly<Record<string, string>> = {
     'کنترل فرایند نیازمند درخواست‌کننده یا اختیار بازیابی سرور و وضعیت معتبر است.',
   'Queued work is not completed work. Retry and revoke use the exact task ID.':
     'کار در صف تکمیل نشده است. تلاش مجدد و لغو از شناسه دقیق کار استفاده می‌کنند.',
-
   'Workflow workspace': 'فضای کاری گردش کار',
   'Foundation preview': 'پیش‌نمایش پایه',
   'Skip to content': 'رفتن به محتوا',

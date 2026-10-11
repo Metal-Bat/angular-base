@@ -1,3 +1,5 @@
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { AuthSession } from '../../../../core/auth/auth-session';
 import { PersonalServiceDetail } from './personal-service-detail';
 import { FormsModule } from '@angular/forms';
 import { NotificationPreview } from '../../../../core/notifications/notification-preview';
@@ -9,10 +11,12 @@ import {
   Component,
   computed,
   DestroyRef,
+  effect,
   inject,
   signal,
+  untracked,
 } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ActorState } from '../../../../core/auth/actor-state';
 import { Feedback } from '../../../../core/feedback/feedback';
 import { BinaryTransfer } from '../../../../core/transport/binary-transfer';
@@ -41,6 +45,9 @@ import { PERSONAL_SERVICES } from '../../bindings';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PersonalServices {
+  private readonly auth = inject(AuthSession);
+  private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   private readonly service = inject(PERSONAL_SERVICES);
   private readonly preview = inject(NotificationPreview);
   private abort = new AbortController();
@@ -68,6 +75,7 @@ export class PersonalServices {
   readonly busy = signal(false);
   readonly error = signal('');
   private generation = 0;
+  private readonly pendingRef = signal<string | null>(null);
   constructor() {
     const release = inject(ActorState).register(() => {
       this.generation++;
@@ -77,6 +85,7 @@ export class PersonalServices {
       this.total.set(null);
       this.readFilter = 'all';
       this.search = '';
+      this.pendingRef.set(null);
       this.applied = { read: 'all', search: '' };
       this.items.set([]);
       this.detail.set(null);
@@ -87,10 +96,35 @@ export class PersonalServices {
       this.detail.set(null);
       release();
     });
+    let applied = this.preview.revision();
+    effect(() => {
+      const revision = this.preview.revision();
+      const idle = !this.busy();
+      if (this.notifications && revision !== applied && idle) {
+        applied = revision;
+        untracked(() => void this.load(this.page()));
+      }
+    });
     void this.load();
+    this.route.queryParamMap.pipe(takeUntilDestroyed()).subscribe((params) => {
+      this.pendingRef.set(
+        params.get(this.notifications ? 'notification' : 'report'),
+      );
+    });
+    effect(() => {
+      const ref = this.pendingRef();
+      const idle = !this.busy();
+      if (ref && idle) {
+        untracked(() => {
+          this.pendingRef.set(null);
+          void this.open(ref);
+        });
+      }
+    });
     this.polling.start(
       (abort) => this.poll(abort),
       () =>
+        !this.notifications &&
         !this.busy() &&
         !this.transfer.busy() &&
         (!this.detail() ||
@@ -182,6 +216,60 @@ export class PersonalServices {
       }
       if (generation === this.generation) {
         this.detail.set(item);
+      }
+    } catch {
+      if (generation === this.generation) {
+        this.error.set('This resource is unavailable.');
+      }
+    } finally {
+      if (generation === this.generation) {
+        this.busy.set(false);
+      }
+    }
+  }
+  async destination(): Promise<void> {
+    const item = this.detail();
+    if (!item || !this.notifications || this.busy()) {
+      return;
+    }
+    const generation = this.generation;
+    this.busy.set(true);
+    try {
+      await this.auth.revalidate();
+      const current = await this.service.detail(
+        'notifications',
+        item.ref,
+        this.abort.signal,
+      );
+      if (generation !== this.generation || !this.auth.profile()) {
+        return;
+      }
+      this.detail.set(current);
+      const target = current.target;
+      if (!target?.available || !target.ref_id) {
+        throw Error('Unavailable');
+      }
+      const ref = target.ref_id;
+      if (target.kind === 'case') {
+        await this.router.navigate(['/operations/requests', ref]);
+      } else if (target.kind === 'work_item' || target.kind === 'ai_approval') {
+        await this.router.navigate(['/operations/tasks', ref]);
+      } else if (target.kind === 'report') {
+        await this.router.navigate(['/operations/reports'], {
+          queryParams: { report: ref },
+        });
+      } else if (target.kind === 'calendar') {
+        await this.router.navigate(['/operations/calendar'], {
+          queryParams: { event: ref },
+        });
+      } else if (target.kind === 'support') {
+        await this.router.navigate(['/operations/support'], {
+          queryParams: { incident: ref },
+        });
+      } else if (target.kind === 'account') {
+        await this.router.navigate(['/account']);
+      } else {
+        throw Error('Unavailable');
       }
     } catch {
       if (generation === this.generation) {

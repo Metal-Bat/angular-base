@@ -260,3 +260,10 @@ html.app-dark {
     var(--console-surface)
   );
 }
+
+html[data-density="compact"] {
+  --p-button-padding-y: 0.375rem;
+  --p-inputtext-padding-y: 0.375rem;
+  --p-select-padding-y: 0.375rem;
+  --p-datatable-body-cell-padding: 0.5rem 0.75rem;
+}

@@ -36,6 +36,8 @@ import type { WorkflowBoard } from '../workflow-board/workflow-board';
   changeDetection: ChangeDetectionStrategy.Default,
 })
 export class WorkflowEditorPane {
+  readonly isOtherConnectionPanel = (key: string): boolean =>
+    key !== 'connections';
   readonly view =
     input.required<
       Pick<
@@ -52,6 +54,7 @@ export class WorkflowEditorPane {
         | 'nodes'
         | 'reference'
         | 'markPending'
+        | 'discardPending'
         | 'applyTyped'
         | 'applyConnections'
         | 'applyNode'

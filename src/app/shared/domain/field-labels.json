@@ -893,5 +893,10 @@
     "label": "Agent Ref",
     "fa": "نسخهٔ عامل",
     "ar": "نسخة الوكيل"
+  },
+  "is_available": {
+    "label": "Available",
+    "fa": "در دسترس",
+    "ar": "متاح"
   }
 }

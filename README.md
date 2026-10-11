@@ -15,27 +15,29 @@ mise run install
 mise run dev
 ```
 
-The development command starts Angular at http://localhost:4200 and its session boundary on port 3000. The boundary forwards backend calls to http://127.0.0.1:8000; start the FastAPI backend first. Both frontend processes stop when you exit the command. Use `BOUNDARY_UPSTREAM_ORIGIN` to select another backend origin. `mise.toml` pins Node 24.21.0, npm 12.2.0, RTK 0.47.0, graphifyy 0.9.53, and Husky 9.1.7. Husky is also a local development dependency so installation configures the repository hooks.
+The development command starts Angular at http://localhost:4200 and its session boundary on port 3000. The boundary forwards backend calls to http://127.0.0.1:8000; start the FastAPI backend first. Both frontend processes stop when you exit the command. Use `BOUNDARY_UPSTREAM_ORIGIN` to select another backend origin. `mise.toml` pins Node 24.21.0, pnpm 12.11.2, RTK 0.47.0, graphifyy 0.9.53. Husky 9.1.7 remains a pinned local dependency so installation configures the repository hooks.
 
 ## Stack and checks
 
+Use `mise run browser-sandbox` for disposable browser diagnostics, screenshots and local failure reports. A focused run is `mise exec -- pnpm run test:browser-sandbox --scope temporal`. See [browser sandbox instructions](docs/BROWSER-SANDBOX.md).
+
 Angular uses 21.2.25, CLI/build 21.2.24, and Material/CDK 21.2.14. TypeScript stays on 5.9.3 to match Angular's compiler compatibility. Tailwind CSS 4 is connected through PostCSS, alongside the Material theme in `src/styles.scss`. PrimeNG 21.1.10 is also configured with Aura and PrimeIcons. The official `tailwindcss-primeui` plugin supplies PrimeNG semantic utilities. Keep PrimeNG, Material, and Tailwind available together; choose components through local imports. See [UI library choices](docs/UI-LIBRARIES.md) for examples and design boundaries.
 
-| Command                         | Purpose                                                                                    |
-| ------------------------------- | ------------------------------------------------------------------------------------------ |
-| `mise run check`                | Check formatting, API inventory, application types, lint, unit tests, and production build |
-| `mise run session`              | Start the loopback session boundary; see [session setup](docs/SESSION-BOUNDARY.md)         |
-| `mise run build`                | Build for production                                                                       |
-| `mise run lint`                 | Check lint without rewriting files                                                         |
-| `mise run test`                 | Run Vitest unit tests once                                                                 |
-| `mise exec -- npm test`         | Run unit tests in watch mode                                                               |
-| `mise exec -- npm run lint:fix` | Apply lint fixes                                                                           |
-| `mise exec -- npm run format`   | Format maintained project files                                                            |
-| `mise exec -- npm run commit`   | Open the Conventional Commits prompt                                                       |
+| Command                          | Purpose                                                                                    |
+| -------------------------------- | ------------------------------------------------------------------------------------------ |
+| `mise run check`                 | Check formatting, API inventory, application types, lint, unit tests, and production build |
+| `mise run session`               | Start the loopback session boundary; see [session setup](docs/SESSION-BOUNDARY.md)         |
+| `mise run build`                 | Build for production                                                                       |
+| `mise run lint`                  | Check lint without rewriting files                                                         |
+| `mise run test`                  | Run Vitest unit tests once                                                                 |
+| `mise exec -- pnpm test`         | Run unit tests in watch mode                                                               |
+| `mise exec -- pnpm run lint:fix` | Apply lint fixes                                                                           |
+| `mise exec -- pnpm run format`   | Format maintained project files                                                            |
+| `mise exec -- pnpm run commit`   | Open the Conventional Commits prompt                                                       |
 
 The Angular build worker pool uses a scoped Piscina 5.3.2 override for [the patched prototype-pollution advisory](https://github.com/advisories/GHSA-67c8-pqhq-4rmx).
 
-Tests use Angular's unit-test builder with Vitest and jsdom. Route tests cover direct entry, navigation, page titles, and unknown routes. Local Firefox runners cover authentication, UI and workspace journeys, including the real backend runner. Build/test workers are capped at two and Vitest files run sequentially to limit resource use. The GitHub Actions project-checks workflow installs the committed Node/npm versions, runs `npm ci` and the full check task, and uploads the production build. Dependabot proposes npm and workflow updates; Angular and PrimeNG packages are grouped for compatibility review. VS Code tasks and launch configurations use mise to select the same tool versions.
+Tests use Angular's unit-test builder with Vitest and jsdom. Route tests cover direct entry, navigation, page titles, and unknown routes. Local Firefox runners cover authentication, UI and workspace journeys, including the real backend runner. Build/test workers are capped at two and Vitest files run sequentially to limit resource use. The GitHub Actions project-checks workflow installs the committed Node/pnpm versions, runs `pnpm install --frozen-lockfile` and the full check task, and uploads the production build. Dependabot proposes npm and workflow updates; Angular and PrimeNG packages are grouped for compatibility review. VS Code tasks and launch configurations use mise to select the same tool versions.
 
 ## Domain-oriented organization
 
@@ -46,7 +48,7 @@ Keep business rules independent of UI and transport libraries. As features are a
 Husky runs lint-staged before commits, validates Conventional Commit messages, and runs the full check task before pushes. Commitizen, commitlint, and release-it support the existing release workflow.
 
 ```sh
-mise exec -- npm run release
+mise exec -- pnpm run release
 ```
 
 The release command updates the version and changelog and can create and push release commits, tags, and a GitHub release. Use it only when preparing a release.
@@ -73,7 +75,7 @@ PrimeNG 21.1.10 is MIT-licensed and needs no key or account. The Angular 21 tool
 - [OpenAPI snapshot](docs/reference/openapi.json), [readiness review](docs/reference/frontend-readiness-review.md), and [source manifest](docs/reference/manifest.json): supplied reference files and checksum provenance.
 - [Setup review](docs/SETUP-REVIEW.md) and [historical upgrade review](docs/HISTORICAL-UPGRADE.md): earlier validation and migration context, rather than a new verification of backend behavior.
 
-Run `mise exec -- npm run api:inventory` to regenerate the inventory and `mise exec -- npm run api:check` to check it for drift. The API check is included in `mise run check`. Treat supplied specifications as reference material; implementation must confirm backend contracts and address the blockers recorded in the backlog.
+Run `mise exec -- pnpm run api:inventory` to regenerate the inventory and `mise exec -- pnpm run api:check` to check it for drift. The API check is included in `mise run check`. Treat supplied specifications as reference material; implementation must confirm backend contracts and address the blockers recorded in the backlog.
 
 The upstream boilerplate update remains on `chore/angular-boilerplate`. Personal application work continues on `feat/personal-admin-workspace`.
 

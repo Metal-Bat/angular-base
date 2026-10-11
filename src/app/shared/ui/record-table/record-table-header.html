@@ -107,21 +107,19 @@
                     <option value="true">{{ "Yes" | localize }}</option>
                     <option value="false">{{ "No" | localize }}</option>
                   </app-select-control>
+                } @else if (["date", "datetime", "time"].includes(field.type)) {
+                  <app-temporal-control
+                    [controlId]="vm.filterValueId"
+                    [disabled]="vm.busy()"
+                    [kind]="field.type"
+                    [(value)]="vm.draft.value"
+                  />
                 } @else {
                   <input
                     name="value"
                     pInputText
                     [id]="vm.filterValueId"
-                    [placeholder]="
-                      field.type === 'datetime' ? '2026-10-04T00:00:00Z' : ''
-                    "
-                    [type]="
-                      field.type === 'number'
-                        ? 'number'
-                        : field.type === 'date'
-                          ? 'date'
-                          : 'text'
-                    "
+                    [type]="field.type === 'number' ? 'number' : 'text'"
                     [(ngModel)]="vm.draft.value"
                   />
                 }
@@ -130,19 +128,24 @@
                 <app-control-field
                   label="To"
                   [controlId]="vm.filterValueId + '-end'"
-                  ><input
-                    name="end"
-                    pInputText
-                    [id]="vm.filterValueId + '-end'"
-                    [type]="
-                      field.type === 'number'
-                        ? 'number'
-                        : field.type === 'date'
-                          ? 'date'
-                          : 'text'
-                    "
-                    [(ngModel)]="vm.draft.end"
-                /></app-control-field>
+                >
+                  @if (["date", "datetime", "time"].includes(field.type)) {
+                    <app-temporal-control
+                      [controlId]="vm.filterValueId + '-end'"
+                      [disabled]="vm.busy()"
+                      [kind]="field.type"
+                      [(value)]="vm.draft.end"
+                    />
+                  } @else {
+                    <input
+                      name="end"
+                      pInputText
+                      [id]="vm.filterValueId + '-end'"
+                      [type]="field.type === 'number' ? 'number' : 'text'"
+                      [(ngModel)]="vm.draft.end"
+                    />
+                  }
+                </app-control-field>
               }
             }
             @if (vm.error) {

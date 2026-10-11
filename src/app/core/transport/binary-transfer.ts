@@ -60,9 +60,15 @@ export class BinaryTransfer {
     this.busy.set(true);
     this.progress.set(null);
     return new Promise((resolve, reject) => {
-      const finish = (): void => {
+      let active = true;
+      const finish = (): boolean => {
+        if (!active) {
+          return false;
+        }
+        active = false;
         this.busy.set(false);
         this.cancelPending = null;
+        return true;
       };
       this.cancelPending = (): void => {
         finish();
@@ -70,6 +76,9 @@ export class BinaryTransfer {
       };
       this.subscription = this.api.transfer(id, input).subscribe({
         next: (event) => {
+          if (!active) {
+            return;
+          }
           if (
             event.type === HttpEventType.UploadProgress ||
             event.type === HttpEventType.DownloadProgress
@@ -86,10 +95,11 @@ export class BinaryTransfer {
           }
         },
         error: (error: unknown): void => {
-          finish();
           void (async (): Promise<void> => {
             if (!(error instanceof HttpErrorResponse)) {
-              reject(error);
+              if (finish()) {
+                reject(error);
+              }
               return;
             }
             let body: unknown = error.error;
@@ -100,13 +110,15 @@ export class BinaryTransfer {
                 body = null;
               }
             }
-            reject(
-              failure(error.status, body, error.headers.get('x-request-id')),
-            );
+            if (finish()) {
+              reject(
+                failure(error.status, body, error.headers.get('x-request-id')),
+              );
+            }
           })();
         },
         complete: (): void => {
-          if (this.busy()) {
+          if (active) {
             this.cancelPending?.();
           }
         },

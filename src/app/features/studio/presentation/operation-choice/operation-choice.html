@@ -1,0 +1,60 @@
+<label for="node-operation">{{ "Registered operation" | localize }}</label>
+<app-select-control
+  inputId="node-operation"
+  [disabled]="disabled() || busy()"
+  [ngModel]="value()"
+  (ngModelChange)="choose($event)"
+>
+  <option value="">{{ "Choose" | localize }}</option>
+  @if (value() && !selected()) {
+    <option [value]="value()">
+      {{
+        "Unavailable operation; existing configuration is preserved." | localize
+      }}
+    </option>
+  }
+  @for (row of rows(); track row.key) {
+    <option [value]="row.key">{{ row.key }}</option>
+  }
+</app-select-control>
+@if (busy()) {
+  <p role="status">{{ "Loading" | localize }}</p>
+}
+@if (selected(); as operation) {
+  <dl>
+    <dt>{{ "Business effect" | localize }}</dt>
+    <dd>{{ (operation.businessEffect ? "Yes" : "No") | localize }}</dd>
+    <dt>{{ "Required approval policy" | localize }}</dt>
+    <dd>{{ operation.approvalPolicy || ("None" | localize) }}</dd>
+    <dt>{{ "Retry policy" | localize }}</dt>
+    <dd>
+      {{
+        (operation.retryPolicy === "reconcile_before_retry"
+          ? "Look up the receipt before retrying."
+          : "Diagnostic retry"
+        ) | localize
+      }}
+    </dd>
+    <dt>{{ "Reconciliation" | localize }}</dt>
+    <dd>{{ operation.reconciliation || ("None" | localize) }}</dd>
+    <dt>{{ "Allowed providers" | localize }}</dt>
+    <dd>{{ operation.providers.join(", ") }}</dd>
+  </dl>
+}
+<p>
+  {{
+    "Operation metadata does not verify a connection or authorize execution."
+      | localize
+  }}
+</p>
+<button
+  pButton
+  type="button"
+  [disabled]="disabled() || busy()"
+  (click)="load()"
+>
+  {{ "Reload operations" | localize }}
+</button>
+@if (error()) {
+  <p role="alert">{{ error() | localize }}</p>
+}

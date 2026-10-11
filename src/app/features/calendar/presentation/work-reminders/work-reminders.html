@@ -1,0 +1,59 @@
+<section class="my-4 grid gap-3 rounded-lg border border-console-border p-4">
+  <h2>{{ "Work reminders" | localize }}</h2>
+  <p>{{ "Workflow deadlines are read-only." | localize }}</p>
+  @if (error()) {
+    <p role="alert">{{ error() | localize }}</p>
+  }
+  @if (work(); as source) {
+    <time [attr.datetime]="source.due_at">{{ source.due_at }}</time
+    ><a [routerLink]="['/operations/tasks', source.ref_id]">{{
+      "Open task" | localize
+    }}</a>
+  }
+  <app-select-control
+    [ariaLabel]="'Reminder offsets' | localize"
+    [disabled]="busy() || uncertain() || !work()?.due_at"
+    [multiple]="true"
+    [(ngModel)]="offsets"
+    ><option value="0">{{ "At deadline" | localize }}</option>
+    <option value="900">{{ "15 minutes before" | localize }}</option>
+    <option value="3600">
+      {{ "1 hour before" | localize }}
+    </option></app-select-control
+  >
+  <div class="flex flex-wrap gap-3">
+    <button
+      pButton
+      type="button"
+      [disabled]="busy() || reconcileRequired() || !work()?.due_at"
+      (click)="save()"
+    >
+      {{
+        (uncertain() ? "Retry unchanged command" : "Save reminders") | localize
+      }}</button
+    ><button
+      pButton
+      type="button"
+      [disabled]="busy() || uncertain() || reconcileRequired() || !work()"
+      (click)="cancel()"
+    >
+      {{ "Cancel reminders" | localize }}</button
+    ><button
+      pButton
+      severity="secondary"
+      type="button"
+      [disabled]="busy()"
+      (click)="load()"
+    >
+      {{ "Check current state" | localize }}
+    </button>
+  </div>
+  <ul>
+    @for (reminder of rows(); track reminder.ref_id) {
+      <li>
+        <time [attr.datetime]="reminder.due_at">{{ reminder.due_at }}</time> —
+        {{ reminder.status | localize }}
+      </li>
+    }
+  </ul>
+</section>

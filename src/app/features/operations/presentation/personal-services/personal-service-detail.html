@@ -24,15 +24,17 @@
       >
         {{ "Mark read" | localize }}
       </button>
-      @if (item.request) {
-        <a [routerLink]="['/operations/requests', item.request]">{{
-          "Request detail" | localize
-        }}</a>
-      }
-      @if (item.process) {
-        <a [routerLink]="['/operations/processes', item.process]">{{
-          "Process tracking" | localize
-        }}</a>
+      @if (item.target?.available) {
+        <button
+          pButton
+          severity="secondary"
+          type="button"
+          [disabled]="vm.busy()"
+          [outlined]="true"
+          (click)="vm.destination()"
+        >
+          {{ "Open" | localize }}
+        </button>
       }
     } @else {
       @if (vm.readyReport()) {

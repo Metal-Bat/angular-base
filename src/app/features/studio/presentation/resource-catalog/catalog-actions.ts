@@ -21,6 +21,7 @@ export class CatalogActions {
         ResourceCatalog,
         | 'act'
         | 'busy'
+        | 'reconcileRequired'
         | 'dirty'
         | 'grant'
         | 'grantBody'

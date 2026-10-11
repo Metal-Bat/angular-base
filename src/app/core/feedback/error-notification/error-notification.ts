@@ -53,8 +53,16 @@ export class ErrorNotification {
     });
   }
 
-  async copy(notice: ErrorNotice, reference = false): Promise<void> {
-    const value = reference ? notice.requestReference : notice.code;
+  async copy(
+    notice: ErrorNotice,
+    reference: boolean | 'support' = false,
+  ): Promise<void> {
+    const value =
+      reference === 'support'
+        ? notice.support?.support_ref
+        : reference
+          ? notice.requestReference
+          : notice.code;
     if (!value) {
       return;
     }

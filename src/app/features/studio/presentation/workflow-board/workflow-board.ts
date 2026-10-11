@@ -1,3 +1,4 @@
+import { CanvasConnections } from '../canvas-connections/canvas-connections';
 import { PublicationReview } from '../publication-review/publication-review';
 import { WorkflowEditorPane } from '../workflow-editor-pane/workflow-editor-pane';
 import { WorkflowDiagnostics } from './workflow-diagnostics';
@@ -28,6 +29,7 @@ import { WorkflowInteractions } from './workflow-interactions';
   host: { class: 'console-page' },
   selector: 'app-workflow-board',
   imports: [
+    CanvasConnections,
     PublicationReview,
     WorkflowDiagnostics,
     WorkflowEditorPane,
@@ -132,7 +134,6 @@ export class WorkflowBoard extends WorkflowInteractions {
   }));
   markPending(key: string): void {
     this.pending.update((keys) => [...new Set([...keys, key])]);
-    this.dirty.set(true);
   }
   override select(key: string): void {
     if (this.pending().some((panel) => panel === 'node' || panel === 'typed')) {
@@ -298,14 +299,18 @@ export class WorkflowBoard extends WorkflowInteractions {
     }
     this.change({ ...this.document(), viewport });
   }
-  connect(source = this.source, target = this.target): void {
+  connect(
+    source = this.source,
+    target = this.target,
+    outcome = this.outcome,
+  ): void {
     try {
       this.change(
         connectWorkspace(
           this.document(),
           source,
           target,
-          this.outcome,
+          outcome,
           this.nodes(),
         ),
       );

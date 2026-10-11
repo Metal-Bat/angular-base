@@ -38,7 +38,11 @@
   ><span class="sr-only">{{ "Check current state" | localize }}</span>
 </button>
 @if (editor.item(); as item) {
-  <app-case-summary [item]="item" [kind]="kind" />
+  <app-case-summary
+    [disabled]="editor.busy() || resources.transferBusy()"
+    [item]="item"
+    [kind]="kind"
+  />
   @if (runtimeIncompatible()) {
     <p role="alert">{{ "This runtime document is incompatible" | localize }}</p>
   }

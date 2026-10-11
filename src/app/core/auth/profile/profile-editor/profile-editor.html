@@ -1,0 +1,111 @@
+<section class="my-5 grid gap-3 rounded-xl border border-console-border p-5">
+  <h2>{{ "My information" | localize }}</h2>
+  @if (error()) {
+    <p role="alert">{{ error() | localize }}</p>
+  }
+  <form #profileForm class="grid gap-3" novalidate (ngSubmit)="save()">
+    <app-control-field
+      controlId="profile-first-name"
+      label="First name"
+      [error]="nameError(firstName)"
+      ><input
+        id="profile-first-name"
+        name="firstName"
+        pInputText
+        [attr.aria-describedby]="
+          nameError(firstName) ? 'profile-first-name-error' : null
+        "
+        [attr.aria-invalid]="nameError(firstName) ? 'true' : null"
+        [disabled]="busy() || preferences.loading()"
+        [(ngModel)]="firstName"
+        (ngModelChange)="saved.set(false)"
+    /></app-control-field>
+    <app-control-field
+      controlId="profile-last-name"
+      label="Last name"
+      [error]="nameError(lastName)"
+      ><input
+        id="profile-last-name"
+        name="lastName"
+        pInputText
+        [attr.aria-describedby]="
+          nameError(lastName) ? 'profile-last-name-error' : null
+        "
+        [attr.aria-invalid]="nameError(lastName) ? 'true' : null"
+        [disabled]="busy() || preferences.loading()"
+        [(ngModel)]="lastName"
+        (ngModelChange)="saved.set(false)"
+    /></app-control-field>
+    <button
+      pButton
+      type="submit"
+      [disabled]="
+        busy() ||
+        transfer.busy() ||
+        preferences.loading() ||
+        preferences.status() === 'saving' ||
+        !profile.value() ||
+        reconcileRequired()
+      "
+    >
+      {{ "Save" | localize }}
+    </button>
+  </form>
+  <label for="profile-avatar">{{ "Avatar" | localize }}</label
+  ><input
+    accept="image/*"
+    id="profile-avatar"
+    type="file"
+    [disabled]="
+      busy() ||
+      transfer.busy() ||
+      preferences.loading() ||
+      preferences.status() === 'saving' ||
+      !profile.value() ||
+      reconcileRequired()
+    "
+    (change)="avatar($event)"
+  />
+  @if (profile.value()?.avatar_ref_id) {
+    <button
+      pButton
+      type="button"
+      [disabled]="
+        busy() ||
+        transfer.busy() ||
+        preferences.loading() ||
+        preferences.status() === 'saving' ||
+        reconcileRequired()
+      "
+      (click)="download()"
+    >
+      {{ "Download" | localize }}
+    </button>
+    <button
+      pButton
+      type="button"
+      [disabled]="
+        busy() ||
+        transfer.busy() ||
+        preferences.loading() ||
+        preferences.status() === 'saving' ||
+        reconcileRequired()
+      "
+      (click)="save(null)"
+    >
+      {{ "Remove avatar" | localize }}
+    </button>
+  }
+  <button
+    pButton
+    severity="secondary"
+    type="button"
+    [disabled]="busy() || preferences.loading()"
+    (click)="load()"
+  >
+    {{ "Reload profile" | localize }}
+  </button>
+  @if (saved()) {
+    <p role="status">{{ "Saved" | localize }}</p>
+  }
+</section>

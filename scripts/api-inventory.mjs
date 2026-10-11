@@ -91,7 +91,7 @@ const manifest = {
 const lines = [
   "# API operation inventory",
   "",
-  "Generated from the supplied [OpenAPI snapshot](reference/openapi.json) with `npm run api:inventory`. Do not edit by hand.",
+  "Generated from the supplied [OpenAPI snapshot](reference/openapi.json) with `pnpm run api:inventory`. Do not edit by hand.",
   "",
   `Snapshot: ${operations.length} operations, ${manifest.schemaCount} schemas. Source hashes are in [manifest.json](reference/manifest.json).`,
   "",

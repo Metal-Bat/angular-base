@@ -276,9 +276,9 @@ export class RecordTable {
           day: 'numeric',
           hour: '2-digit',
           minute: '2-digit',
-          timeZone: 'UTC',
+          timeZone: this.locale.timezone(),
           timeZoneName: 'short',
-          calendar: 'gregory',
+          calendar: this.locale.calendar(),
         }).format(date);
       }
     }

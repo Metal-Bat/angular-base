@@ -4,19 +4,19 @@
     "list": {
       "queryFields": [
         { "key": "code", "label": "Code", "type": "text", "nullable": false },
-        { "key": "name", "label": "Name", "type": "text", "nullable": false },
+        {
+          "key": "created_at",
+          "label": "Created At",
+          "type": "datetime",
+          "nullable": false
+        },
         {
           "key": "is_active",
           "label": "Active",
           "type": "boolean",
           "nullable": false
         },
-        {
-          "key": "created_at",
-          "label": "Created At",
-          "type": "datetime",
-          "nullable": false
-        }
+        { "key": "name", "label": "Name", "type": "text", "nullable": false }
       ],
       "columns": [
         { "key": "code", "label": "Code" },
@@ -39,28 +39,28 @@
       "search": {
         "required": [],
         "properties": {
+          "filters": {
+            "items": { "$ref": "#/components/schemas/FilterCriteria" },
+            "title": "Filters",
+            "type": "array"
+          },
           "page": {
-            "type": "integer",
+            "default": 1,
             "minimum": 1,
             "title": "Page",
-            "default": 1
+            "type": "integer"
           },
           "size": {
-            "type": "integer",
+            "default": 20,
             "maximum": 100,
             "minimum": 1,
             "title": "Size",
-            "default": 20
-          },
-          "filters": {
-            "items": { "$ref": "#/components/schemas/FilterCriteria" },
-            "type": "array",
-            "title": "Filters"
+            "type": "integer"
           },
           "sort_orders": {
             "items": { "$ref": "#/components/schemas/SortOrder" },
-            "type": "array",
-            "title": "Sort Orders"
+            "title": "Sort Orders",
+            "type": "array"
           }
         }
       },
@@ -68,22 +68,22 @@
         "required": ["code", "name"],
         "properties": {
           "code": {
-            "type": "string",
             "maxLength": 64,
             "minLength": 1,
             "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]*$",
-            "title": "Code"
-          },
-          "name": {
-            "type": "string",
-            "maxLength": 255,
-            "minLength": 1,
-            "title": "Name"
+            "title": "Code",
+            "type": "string"
           },
           "is_active": {
-            "type": "boolean",
+            "default": true,
             "title": "Is Active",
-            "default": true
+            "type": "boolean"
+          },
+          "name": {
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
           }
         }
       },
@@ -91,22 +91,22 @@
         "required": ["code", "name"],
         "properties": {
           "code": {
-            "type": "string",
             "maxLength": 64,
             "minLength": 1,
             "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]*$",
-            "title": "Code"
-          },
-          "name": {
-            "type": "string",
-            "maxLength": 255,
-            "minLength": 1,
-            "title": "Name"
+            "title": "Code",
+            "type": "string"
           },
           "is_active": {
-            "type": "boolean",
+            "default": true,
             "title": "Is Active",
-            "default": true
+            "type": "boolean"
+          },
+          "name": {
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
           }
         }
       }
@@ -151,86 +151,53 @@
       "search": {
         "required": ["form_ref_id"],
         "properties": {
+          "filters": {
+            "items": { "$ref": "#/components/schemas/FilterCriteria" },
+            "title": "Filters",
+            "type": "array"
+          },
+          "form_ref_id": { "title": "Form Ref Id", "type": "string" },
           "page": {
-            "type": "integer",
+            "default": 1,
             "minimum": 1,
             "title": "Page",
-            "default": 1
+            "type": "integer"
           },
           "size": {
-            "type": "integer",
+            "default": 20,
             "maximum": 100,
             "minimum": 1,
             "title": "Size",
-            "default": 20
-          },
-          "filters": {
-            "items": { "$ref": "#/components/schemas/FilterCriteria" },
-            "type": "array",
-            "title": "Filters"
+            "type": "integer"
           },
           "sort_orders": {
             "items": { "$ref": "#/components/schemas/SortOrder" },
-            "type": "array",
-            "title": "Sort Orders"
-          },
-          "form_ref_id": { "type": "string", "title": "Form Ref Id" }
+            "title": "Sort Orders",
+            "type": "array"
+          }
         }
       },
       "create": {
         "required": ["data_schema", "render_schema", "form_ref_id", "number"],
         "properties": {
-          "data_dialect": {
-            "type": "string",
-            "title": "Data Dialect",
-            "default": "https://json-schema.org/draft/2020-12/schema"
-          },
-          "render_dialect": {
-            "type": "string",
-            "title": "Render Dialect",
-            "default": "bpms.render/1"
-          },
-          "data_schema": {
-            "additionalProperties": true,
-            "type": "object",
-            "title": "Data Schema"
-          },
           "behavior_dialect": {
             "anyOf": [
-              { "type": "string", "const": "bpms.behavior/1" },
+              { "const": "bpms.behavior/1", "type": "string" },
               { "type": "null" }
             ],
             "title": "Behavior Dialect"
           },
-          "render_schema": {
+          "data_dialect": {
+            "default": "https://json-schema.org/draft/2020-12/schema",
+            "title": "Data Dialect",
+            "type": "string"
+          },
+          "data_schema": {
             "additionalProperties": true,
-            "type": "object",
-            "title": "Render Schema",
-            "description": "Bounded bpms.render/1 document; POST /forms/render-schema returns its complete typed JSON Schema including messages, option_messages and bpms.format/1 field formatting. Message roles resolve to localized_text, localized_options and compatibility label/placeholder/accessibility fields in runtime views."
+            "title": "Data Schema",
+            "type": "object"
           },
-          "page_settings": {
-            "additionalProperties": true,
-            "type": "object",
-            "title": "Page Settings"
-          },
-          "variants": {
-            "items": { "$ref": "#/components/schemas/FormDesignVariantDTO" },
-            "type": "array",
-            "maxItems": 32,
-            "title": "Variants"
-          },
-          "reuse_instances": {
-            "anyOf": [
-              {
-                "items": { "$ref": "#/components/schemas/ComponentUse" },
-                "type": "array",
-                "maxItems": 100
-              },
-              { "type": "null" }
-            ],
-            "title": "Reuse Instances",
-            "description": "Exact authored component version references placed in empty render placeholders. Published versions pin fully resolved data/render snapshots and their transitive manifest."
-          },
+          "form_ref_id": { "title": "Form Ref Id", "type": "string" },
           "localization": {
             "anyOf": [
               { "$ref": "#/components/schemas/FormLocalization" },
@@ -238,63 +205,62 @@
             ],
             "description": "Optional bpms.messages/1 catalog pinned with this exact version. Null preserves legacy reads and checksums. Draft gaps are warnings; required translations and matching parameters are mandatory at publication."
           },
-          "form_ref_id": { "type": "string", "title": "Form Ref Id" },
-          "number": { "type": "integer", "minimum": 1, "title": "Number" }
+          "number": { "minimum": 1, "title": "Number", "type": "integer" },
+          "page_settings": {
+            "additionalProperties": true,
+            "title": "Page Settings",
+            "type": "object"
+          },
+          "render_dialect": {
+            "default": "bpms.render/1",
+            "title": "Render Dialect",
+            "type": "string"
+          },
+          "render_schema": {
+            "additionalProperties": true,
+            "description": "Bounded bpms.render/1 document; POST /forms/render-schema returns its complete typed JSON Schema including messages, option_messages and bpms.format/1 field formatting. Message roles resolve to localized_text, localized_options and compatibility label/placeholder/accessibility fields in runtime views.",
+            "title": "Render Schema",
+            "type": "object"
+          },
+          "reuse_instances": {
+            "anyOf": [
+              {
+                "items": { "$ref": "#/components/schemas/ComponentUse" },
+                "maxItems": 100,
+                "type": "array"
+              },
+              { "type": "null" }
+            ],
+            "description": "Exact authored component version references placed in empty render placeholders. Published versions pin fully resolved data/render snapshots and their transitive manifest.",
+            "title": "Reuse Instances"
+          },
+          "variants": {
+            "items": { "$ref": "#/components/schemas/FormDesignVariantDTO" },
+            "maxItems": 32,
+            "title": "Variants",
+            "type": "array"
+          }
         }
       },
       "update": {
         "required": ["data_schema", "render_schema"],
         "properties": {
-          "data_dialect": {
-            "type": "string",
-            "title": "Data Dialect",
-            "default": "https://json-schema.org/draft/2020-12/schema"
-          },
-          "render_dialect": {
-            "type": "string",
-            "title": "Render Dialect",
-            "default": "bpms.render/1"
-          },
-          "data_schema": {
-            "additionalProperties": true,
-            "type": "object",
-            "title": "Data Schema"
-          },
           "behavior_dialect": {
             "anyOf": [
-              { "type": "string", "const": "bpms.behavior/1" },
+              { "const": "bpms.behavior/1", "type": "string" },
               { "type": "null" }
             ],
             "title": "Behavior Dialect"
           },
-          "render_schema": {
+          "data_dialect": {
+            "default": "https://json-schema.org/draft/2020-12/schema",
+            "title": "Data Dialect",
+            "type": "string"
+          },
+          "data_schema": {
             "additionalProperties": true,
-            "type": "object",
-            "title": "Render Schema",
-            "description": "Bounded bpms.render/1 document; POST /forms/render-schema returns its complete typed JSON Schema including messages, option_messages and bpms.format/1 field formatting. Message roles resolve to localized_text, localized_options and compatibility label/placeholder/accessibility fields in runtime views."
-          },
-          "page_settings": {
-            "additionalProperties": true,
-            "type": "object",
-            "title": "Page Settings"
-          },
-          "variants": {
-            "items": { "$ref": "#/components/schemas/FormDesignVariantDTO" },
-            "type": "array",
-            "maxItems": 32,
-            "title": "Variants"
-          },
-          "reuse_instances": {
-            "anyOf": [
-              {
-                "items": { "$ref": "#/components/schemas/ComponentUse" },
-                "type": "array",
-                "maxItems": 100
-              },
-              { "type": "null" }
-            ],
-            "title": "Reuse Instances",
-            "description": "Exact authored component version references placed in empty render placeholders. Published versions pin fully resolved data/render snapshots and their transitive manifest."
+            "title": "Data Schema",
+            "type": "object"
           },
           "localization": {
             "anyOf": [
@@ -302,6 +268,40 @@
               { "type": "null" }
             ],
             "description": "Optional bpms.messages/1 catalog pinned with this exact version. Null preserves legacy reads and checksums. Draft gaps are warnings; required translations and matching parameters are mandatory at publication."
+          },
+          "page_settings": {
+            "additionalProperties": true,
+            "title": "Page Settings",
+            "type": "object"
+          },
+          "render_dialect": {
+            "default": "bpms.render/1",
+            "title": "Render Dialect",
+            "type": "string"
+          },
+          "render_schema": {
+            "additionalProperties": true,
+            "description": "Bounded bpms.render/1 document; POST /forms/render-schema returns its complete typed JSON Schema including messages, option_messages and bpms.format/1 field formatting. Message roles resolve to localized_text, localized_options and compatibility label/placeholder/accessibility fields in runtime views.",
+            "title": "Render Schema",
+            "type": "object"
+          },
+          "reuse_instances": {
+            "anyOf": [
+              {
+                "items": { "$ref": "#/components/schemas/ComponentUse" },
+                "maxItems": 100,
+                "type": "array"
+              },
+              { "type": "null" }
+            ],
+            "description": "Exact authored component version references placed in empty render placeholders. Published versions pin fully resolved data/render snapshots and their transitive manifest.",
+            "title": "Reuse Instances"
+          },
+          "variants": {
+            "items": { "$ref": "#/components/schemas/FormDesignVariantDTO" },
+            "maxItems": 32,
+            "title": "Variants",
+            "type": "array"
           }
         }
       }
@@ -312,12 +312,17 @@
     "title": "Workflows",
     "list": {
       "queryFields": [
-        { "key": "code", "label": "Code", "type": "text", "nullable": false },
-        { "key": "name", "label": "Name", "type": "text", "nullable": false },
         {
           "key": "access_mode",
           "label": "Access Mode",
           "type": "text",
+          "nullable": false
+        },
+        { "key": "code", "label": "Code", "type": "text", "nullable": false },
+        {
+          "key": "created_at",
+          "label": "Created At",
+          "type": "datetime",
           "nullable": false
         },
         {
@@ -326,12 +331,7 @@
           "type": "boolean",
           "nullable": false
         },
-        {
-          "key": "created_at",
-          "label": "Created At",
-          "type": "datetime",
-          "nullable": false
-        }
+        { "key": "name", "label": "Name", "type": "text", "nullable": false }
       ],
       "columns": [
         { "key": "code", "label": "Code" },
@@ -358,92 +358,102 @@
       "search": {
         "required": [],
         "properties": {
+          "filters": {
+            "items": { "$ref": "#/components/schemas/FilterCriteria" },
+            "title": "Filters",
+            "type": "array"
+          },
           "page": {
-            "type": "integer",
+            "default": 1,
             "minimum": 1,
             "title": "Page",
-            "default": 1
+            "type": "integer"
           },
           "size": {
-            "type": "integer",
+            "default": 20,
             "maximum": 100,
             "minimum": 1,
             "title": "Size",
-            "default": 20
-          },
-          "filters": {
-            "items": { "$ref": "#/components/schemas/FilterCriteria" },
-            "type": "array",
-            "title": "Filters"
+            "type": "integer"
           },
           "sort_orders": {
             "items": { "$ref": "#/components/schemas/SortOrder" },
-            "type": "array",
-            "title": "Sort Orders"
+            "title": "Sort Orders",
+            "type": "array"
           }
         }
       },
       "create": {
         "required": ["code", "name"],
         "properties": {
+          "access_mode": {
+            "default": "RESTRICTED",
+            "enum": ["OPEN", "RESTRICTED"],
+            "title": "Access Mode",
+            "type": "string"
+          },
           "code": {
-            "type": "string",
             "maxLength": 64,
             "minLength": 1,
             "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]*$",
-            "title": "Code"
-          },
-          "name": {
-            "type": "string",
-            "maxLength": 255,
-            "minLength": 1,
-            "title": "Name"
-          },
-          "access_mode": {
-            "type": "string",
-            "enum": ["OPEN", "RESTRICTED"],
-            "title": "Access Mode",
-            "default": "RESTRICTED"
+            "title": "Code",
+            "type": "string"
           },
           "is_active": {
-            "type": "boolean",
+            "default": true,
             "title": "Is Active",
-            "default": true
+            "type": "boolean"
+          },
+          "name": {
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
           }
         }
       },
       "update": {
         "required": ["code", "name"],
         "properties": {
+          "access_mode": {
+            "default": "RESTRICTED",
+            "enum": ["OPEN", "RESTRICTED"],
+            "title": "Access Mode",
+            "type": "string"
+          },
           "code": {
-            "type": "string",
             "maxLength": 64,
             "minLength": 1,
             "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]*$",
-            "title": "Code"
-          },
-          "name": {
-            "type": "string",
-            "maxLength": 255,
-            "minLength": 1,
-            "title": "Name"
-          },
-          "access_mode": {
-            "type": "string",
-            "enum": ["OPEN", "RESTRICTED"],
-            "title": "Access Mode",
-            "default": "RESTRICTED"
+            "title": "Code",
+            "type": "string"
           },
           "is_active": {
-            "type": "boolean",
+            "default": true,
             "title": "Is Active",
-            "default": true
+            "type": "boolean"
+          },
+          "name": {
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
           }
         }
       },
       "grant": {
         "required": [],
         "properties": {
+          "can_start": {
+            "default": false,
+            "title": "Can Start",
+            "type": "boolean"
+          },
+          "can_view": {
+            "default": true,
+            "title": "Can View",
+            "type": "boolean"
+          },
           "user_ref_id": {
             "anyOf": [{ "type": "string" }, { "type": "null" }],
             "title": "User Ref Id"
@@ -451,16 +461,6 @@
           "work_group_ref_id": {
             "anyOf": [{ "type": "string" }, { "type": "null" }],
             "title": "Work Group Ref Id"
-          },
-          "can_view": {
-            "type": "boolean",
-            "title": "Can View",
-            "default": true
-          },
-          "can_start": {
-            "type": "boolean",
-            "title": "Can Start",
-            "default": false
           }
         }
       }
@@ -512,54 +512,54 @@
       "search": {
         "required": ["workflow_ref_id"],
         "properties": {
+          "filters": {
+            "items": { "$ref": "#/components/schemas/FilterCriteria" },
+            "title": "Filters",
+            "type": "array"
+          },
           "page": {
-            "type": "integer",
+            "default": 1,
             "minimum": 1,
             "title": "Page",
-            "default": 1
+            "type": "integer"
           },
           "size": {
-            "type": "integer",
+            "default": 20,
             "maximum": 100,
             "minimum": 1,
             "title": "Size",
-            "default": 20
-          },
-          "filters": {
-            "items": { "$ref": "#/components/schemas/FilterCriteria" },
-            "type": "array",
-            "title": "Filters"
+            "type": "integer"
           },
           "sort_orders": {
             "items": { "$ref": "#/components/schemas/SortOrder" },
-            "type": "array",
-            "title": "Sort Orders"
+            "title": "Sort Orders",
+            "type": "array"
           },
-          "workflow_ref_id": { "type": "string", "title": "Workflow Ref Id" }
+          "workflow_ref_id": { "title": "Workflow Ref Id", "type": "string" }
         }
       },
       "create": {
         "required": ["workflow_ref_id", "number"],
         "properties": {
-          "workflow_ref_id": { "type": "string", "title": "Workflow Ref Id" },
-          "number": { "type": "integer", "minimum": 1, "title": "Number" },
           "default_priority": {
-            "type": "integer",
+            "default": 0,
             "maximum": 9,
             "minimum": 0,
             "title": "Default Priority",
-            "default": 0
-          }
+            "type": "integer"
+          },
+          "number": { "minimum": 1, "title": "Number", "type": "integer" },
+          "workflow_ref_id": { "title": "Workflow Ref Id", "type": "string" }
         }
       },
       "update": {
         "required": ["default_priority"],
         "properties": {
           "default_priority": {
-            "type": "integer",
             "maximum": 9,
             "minimum": 0,
-            "title": "Default Priority"
+            "title": "Default Priority",
+            "type": "integer"
           }
         }
       }
@@ -571,18 +571,18 @@
     "list": {
       "queryFields": [
         { "key": "code", "label": "Code", "type": "text", "nullable": false },
-        { "key": "name", "label": "Name", "type": "text", "nullable": false },
-        { "key": "kind", "label": "Type", "type": "text", "nullable": false },
-        {
-          "key": "platform",
-          "label": "Platform",
-          "type": "text",
-          "nullable": false
-        },
         {
           "key": "is_active",
           "label": "Active",
           "type": "boolean",
+          "nullable": false
+        },
+        { "key": "kind", "label": "Type", "type": "text", "nullable": false },
+        { "key": "name", "label": "Name", "type": "text", "nullable": false },
+        {
+          "key": "platform",
+          "label": "Platform",
+          "type": "text",
           "nullable": false
         }
       ],
@@ -610,28 +610,28 @@
       "search": {
         "required": [],
         "properties": {
+          "filters": {
+            "items": { "$ref": "#/components/schemas/FilterCriteria" },
+            "title": "Filters",
+            "type": "array"
+          },
           "page": {
-            "type": "integer",
+            "default": 1,
             "minimum": 1,
             "title": "Page",
-            "default": 1
+            "type": "integer"
           },
           "size": {
-            "type": "integer",
+            "default": 20,
             "maximum": 100,
             "minimum": 1,
             "title": "Size",
-            "default": 20
-          },
-          "filters": {
-            "items": { "$ref": "#/components/schemas/FilterCriteria" },
-            "type": "array",
-            "title": "Filters"
+            "type": "integer"
           },
           "sort_orders": {
             "items": { "$ref": "#/components/schemas/SortOrder" },
-            "type": "array",
-            "title": "Sort Orders"
+            "title": "Sort Orders",
+            "type": "array"
           }
         }
       },
@@ -639,55 +639,55 @@
         "required": ["code", "name", "kind", "platform"],
         "properties": {
           "code": {
-            "type": "string",
             "maxLength": 64,
             "minLength": 1,
             "pattern": "^[A-Za-z][A-Za-z0-9_.-]*$",
-            "title": "Code"
-          },
-          "name": {
-            "type": "string",
-            "maxLength": 255,
-            "minLength": 1,
-            "title": "Name"
-          },
-          "kind": {
-            "type": "string",
-            "enum": ["ANDROID", "IOS", "DESKTOP", "WEB", "B2B", "SDK"],
-            "title": "Kind"
-          },
-          "platform": {
-            "type": "string",
-            "maxLength": 64,
-            "minLength": 1,
-            "title": "Platform"
+            "title": "Code",
+            "type": "string"
           },
           "confidential": {
-            "type": "boolean",
+            "default": false,
             "title": "Confidential",
-            "default": false
+            "type": "boolean"
+          },
+          "kind": {
+            "enum": ["ANDROID", "IOS", "DESKTOP", "WEB", "B2B", "SDK"],
+            "title": "Kind",
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "platform": {
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Platform",
+            "type": "string"
           }
         }
       },
       "update": {
         "required": ["name", "platform"],
         "properties": {
+          "is_active": {
+            "default": true,
+            "title": "Is Active",
+            "type": "boolean"
+          },
           "name": {
-            "type": "string",
             "maxLength": 255,
             "minLength": 1,
-            "title": "Name"
+            "title": "Name",
+            "type": "string"
           },
           "platform": {
-            "type": "string",
             "maxLength": 64,
             "minLength": 1,
-            "title": "Platform"
-          },
-          "is_active": {
-            "type": "boolean",
-            "title": "Is Active",
-            "default": true
+            "title": "Platform",
+            "type": "string"
           }
         }
       },
@@ -695,24 +695,24 @@
         "required": [],
         "properties": {
           "page": {
-            "type": "integer",
+            "default": 1,
             "minimum": 1,
             "title": "Page",
-            "default": 1
-          },
-          "size": {
-            "type": "integer",
-            "maximum": 100,
-            "minimum": 1,
-            "title": "Size",
-            "default": 20
+            "type": "integer"
           },
           "search": {
             "anyOf": [
-              { "type": "string", "maxLength": 100, "minLength": 1 },
+              { "maxLength": 100, "minLength": 1, "type": "string" },
               { "type": "null" }
             ],
             "title": "Search"
+          },
+          "size": {
+            "default": 20,
+            "maximum": 100,
+            "minimum": 1,
+            "title": "Size",
+            "type": "integer"
           }
         }
       }
@@ -761,78 +761,78 @@
       "search": {
         "required": ["client_ref_id"],
         "properties": {
+          "client_ref_id": { "title": "Client Ref Id", "type": "string" },
+          "filters": {
+            "items": { "$ref": "#/components/schemas/FilterCriteria" },
+            "title": "Filters",
+            "type": "array"
+          },
           "page": {
-            "type": "integer",
+            "default": 1,
             "minimum": 1,
             "title": "Page",
-            "default": 1
+            "type": "integer"
           },
           "size": {
-            "type": "integer",
+            "default": 20,
             "maximum": 100,
             "minimum": 1,
             "title": "Size",
-            "default": 20
-          },
-          "filters": {
-            "items": { "$ref": "#/components/schemas/FilterCriteria" },
-            "type": "array",
-            "title": "Filters"
+            "type": "integer"
           },
           "sort_orders": {
             "items": { "$ref": "#/components/schemas/SortOrder" },
-            "type": "array",
-            "title": "Sort Orders"
-          },
-          "client_ref_id": { "type": "string", "title": "Client Ref Id" }
+            "title": "Sort Orders",
+            "type": "array"
+          }
         }
       },
       "create": {
         "required": ["version", "api_version", "client_ref_id"],
         "properties": {
-          "version": {
-            "type": "string",
-            "maxLength": 64,
-            "minLength": 3,
-            "title": "Version"
-          },
           "api_version": {
-            "type": "string",
             "maxLength": 32,
             "minLength": 1,
-            "title": "Api Version"
+            "title": "Api Version",
+            "type": "string"
           },
+          "client_ref_id": { "title": "Client Ref Id", "type": "string" },
           "renderer_capabilities": {
             "items": { "type": "string" },
-            "type": "array",
             "maxItems": 32,
-            "title": "Renderer Capabilities"
+            "title": "Renderer Capabilities",
+            "type": "array"
           },
-          "client_ref_id": { "type": "string", "title": "Client Ref Id" }
+          "version": {
+            "maxLength": 64,
+            "minLength": 3,
+            "title": "Version",
+            "type": "string"
+          }
         }
       },
       "select": {
         "required": [],
         "properties": {
           "page": {
-            "type": "integer",
+            "default": 1,
             "minimum": 1,
             "title": "Page",
-            "default": 1
-          },
-          "size": {
-            "type": "integer",
-            "maximum": 100,
-            "minimum": 1,
-            "title": "Size",
-            "default": 20
+            "type": "integer"
           },
           "search": {
             "anyOf": [
-              { "type": "string", "maxLength": 100, "minLength": 1 },
+              { "maxLength": 100, "minLength": 1, "type": "string" },
               { "type": "null" }
             ],
             "title": "Search"
+          },
+          "size": {
+            "default": 20,
+            "maximum": 100,
+            "minimum": 1,
+            "title": "Size",
+            "type": "integer"
           }
         }
       }
@@ -843,12 +843,17 @@
     "title": "Request types",
     "list": {
       "queryFields": [
-        { "key": "code", "label": "Code", "type": "text", "nullable": false },
-        { "key": "name", "label": "Name", "type": "text", "nullable": false },
         {
-          "key": "is_active",
-          "label": "Active",
+          "key": "allow_cross_client_resume",
+          "label": "Resume Across Clients",
           "type": "boolean",
+          "nullable": false
+        },
+        { "key": "code", "label": "Code", "type": "text", "nullable": false },
+        {
+          "key": "created_at",
+          "label": "Created At",
+          "type": "datetime",
           "nullable": false
         },
         {
@@ -858,23 +863,18 @@
           "nullable": true
         },
         {
-          "key": "allow_cross_client_resume",
-          "label": "Resume Across Clients",
-          "type": "boolean",
-          "nullable": false
-        },
-        {
           "key": "extension_contract",
           "label": "Extension Contract",
           "type": "text",
           "nullable": true
         },
         {
-          "key": "created_at",
-          "label": "Created At",
-          "type": "datetime",
+          "key": "is_active",
+          "label": "Active",
+          "type": "boolean",
           "nullable": false
-        }
+        },
+        { "key": "name", "label": "Name", "type": "text", "nullable": false }
       ],
       "columns": [
         { "key": "code", "label": "Code" },
@@ -898,143 +898,143 @@
       "search": {
         "required": [],
         "properties": {
+          "filters": {
+            "items": { "$ref": "#/components/schemas/FilterCriteria" },
+            "title": "Filters",
+            "type": "array"
+          },
           "page": {
-            "type": "integer",
+            "default": 1,
             "minimum": 1,
             "title": "Page",
-            "default": 1
+            "type": "integer"
           },
           "size": {
-            "type": "integer",
+            "default": 20,
             "maximum": 100,
             "minimum": 1,
             "title": "Size",
-            "default": 20
-          },
-          "filters": {
-            "items": { "$ref": "#/components/schemas/FilterCriteria" },
-            "type": "array",
-            "title": "Filters"
+            "type": "integer"
           },
           "sort_orders": {
             "items": { "$ref": "#/components/schemas/SortOrder" },
-            "type": "array",
-            "title": "Sort Orders"
+            "title": "Sort Orders",
+            "type": "array"
           }
         }
       },
       "create": {
         "required": ["code", "name", "workflow_ref_id", "form_ref_id"],
         "properties": {
+          "allow_cross_client_resume": {
+            "default": false,
+            "title": "Allow Cross Client Resume",
+            "type": "boolean"
+          },
+          "client_targets": {
+            "description": "Authoritative confidential-client/release restrictions. On PUT, omission preserves existing restrictions; an explicit empty list deliberately removes them.",
+            "items": {
+              "$ref": "#/components/schemas/RequestTypeClientTargetDTO"
+            },
+            "maxItems": 32,
+            "title": "Client Targets",
+            "type": "array"
+          },
           "code": {
-            "type": "string",
             "maxLength": 64,
             "minLength": 1,
             "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]*$",
-            "title": "Code"
-          },
-          "name": {
-            "type": "string",
-            "maxLength": 255,
-            "minLength": 1,
-            "title": "Name"
-          },
-          "workflow_ref_id": { "type": "string", "title": "Workflow Ref Id" },
-          "form_ref_id": { "type": "string", "title": "Form Ref Id" },
-          "is_active": {
-            "type": "boolean",
-            "title": "Is Active",
-            "default": true
+            "title": "Code",
+            "type": "string"
           },
           "default_priority": {
             "anyOf": [
-              { "type": "integer", "maximum": 9, "minimum": 0 },
+              { "maximum": 9, "minimum": 0, "type": "integer" },
               { "type": "null" }
             ],
             "title": "Default Priority"
           },
-          "client_targets": {
-            "items": {
-              "$ref": "#/components/schemas/RequestTypeClientTargetDTO"
-            },
-            "type": "array",
-            "maxItems": 32,
-            "title": "Client Targets",
-            "description": "Authoritative confidential-client/release restrictions. On PUT, omission preserves existing restrictions; an explicit empty list deliberately removes them."
-          },
-          "allow_cross_client_resume": {
-            "type": "boolean",
-            "title": "Allow Cross Client Resume",
-            "default": false
-          },
           "extension_contract": {
             "anyOf": [
               {
-                "type": "string",
                 "maxLength": 128,
-                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+                "type": "string"
               },
               { "type": "null" }
             ],
             "title": "Extension Contract"
-          }
+          },
+          "form_ref_id": { "title": "Form Ref Id", "type": "string" },
+          "is_active": {
+            "default": true,
+            "title": "Is Active",
+            "type": "boolean"
+          },
+          "name": {
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "workflow_ref_id": { "title": "Workflow Ref Id", "type": "string" }
         }
       },
       "update": {
         "required": ["code", "name", "workflow_ref_id", "form_ref_id"],
         "properties": {
+          "allow_cross_client_resume": {
+            "default": false,
+            "title": "Allow Cross Client Resume",
+            "type": "boolean"
+          },
+          "client_targets": {
+            "description": "Authoritative confidential-client/release restrictions. On PUT, omission preserves existing restrictions; an explicit empty list deliberately removes them.",
+            "items": {
+              "$ref": "#/components/schemas/RequestTypeClientTargetDTO"
+            },
+            "maxItems": 32,
+            "title": "Client Targets",
+            "type": "array"
+          },
           "code": {
-            "type": "string",
             "maxLength": 64,
             "minLength": 1,
             "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]*$",
-            "title": "Code"
-          },
-          "name": {
-            "type": "string",
-            "maxLength": 255,
-            "minLength": 1,
-            "title": "Name"
-          },
-          "workflow_ref_id": { "type": "string", "title": "Workflow Ref Id" },
-          "form_ref_id": { "type": "string", "title": "Form Ref Id" },
-          "is_active": {
-            "type": "boolean",
-            "title": "Is Active",
-            "default": true
+            "title": "Code",
+            "type": "string"
           },
           "default_priority": {
             "anyOf": [
-              { "type": "integer", "maximum": 9, "minimum": 0 },
+              { "maximum": 9, "minimum": 0, "type": "integer" },
               { "type": "null" }
             ],
             "title": "Default Priority"
           },
-          "client_targets": {
-            "items": {
-              "$ref": "#/components/schemas/RequestTypeClientTargetDTO"
-            },
-            "type": "array",
-            "maxItems": 32,
-            "title": "Client Targets",
-            "description": "Authoritative confidential-client/release restrictions. On PUT, omission preserves existing restrictions; an explicit empty list deliberately removes them."
-          },
-          "allow_cross_client_resume": {
-            "type": "boolean",
-            "title": "Allow Cross Client Resume",
-            "default": false
-          },
           "extension_contract": {
             "anyOf": [
               {
-                "type": "string",
                 "maxLength": 128,
-                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$",
+                "type": "string"
               },
               { "type": "null" }
             ],
             "title": "Extension Contract"
-          }
+          },
+          "form_ref_id": { "title": "Form Ref Id", "type": "string" },
+          "is_active": {
+            "default": true,
+            "title": "Is Active",
+            "type": "boolean"
+          },
+          "name": {
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "workflow_ref_id": { "title": "Workflow Ref Id", "type": "string" }
         }
       }
     },
@@ -1076,28 +1076,28 @@
       "search": {
         "required": [],
         "properties": {
+          "filters": {
+            "items": { "$ref": "#/components/schemas/FilterCriteria" },
+            "title": "Filters",
+            "type": "array"
+          },
           "page": {
-            "type": "integer",
+            "default": 1,
             "minimum": 1,
             "title": "Page",
-            "default": 1
+            "type": "integer"
           },
           "size": {
-            "type": "integer",
+            "default": 20,
             "maximum": 100,
             "minimum": 1,
             "title": "Size",
-            "default": 20
-          },
-          "filters": {
-            "items": { "$ref": "#/components/schemas/FilterCriteria" },
-            "type": "array",
-            "title": "Filters"
+            "type": "integer"
           },
           "sort_orders": {
             "items": { "$ref": "#/components/schemas/SortOrder" },
-            "type": "array",
-            "title": "Sort Orders"
+            "title": "Sort Orders",
+            "type": "array"
           }
         }
       },
@@ -1105,22 +1105,22 @@
         "required": ["code", "name"],
         "properties": {
           "code": {
-            "type": "string",
             "maxLength": 64,
             "minLength": 1,
             "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]*$",
-            "title": "Code"
-          },
-          "name": {
-            "type": "string",
-            "maxLength": 255,
-            "minLength": 1,
-            "title": "Name"
+            "title": "Code",
+            "type": "string"
           },
           "is_active": {
-            "type": "boolean",
+            "default": true,
             "title": "Is Active",
-            "default": true
+            "type": "boolean"
+          },
+          "name": {
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
           }
         }
       },
@@ -1128,22 +1128,22 @@
         "required": ["code", "name"],
         "properties": {
           "code": {
-            "type": "string",
             "maxLength": 64,
             "minLength": 1,
             "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]*$",
-            "title": "Code"
-          },
-          "name": {
-            "type": "string",
-            "maxLength": 255,
-            "minLength": 1,
-            "title": "Name"
+            "title": "Code",
+            "type": "string"
           },
           "is_active": {
-            "type": "boolean",
+            "default": true,
             "title": "Is Active",
-            "default": true
+            "type": "boolean"
+          },
+          "name": {
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
           }
         }
       },
@@ -1201,42 +1201,42 @@
       "search": {
         "required": ["root_ref_id"],
         "properties": {
+          "filters": {
+            "items": { "$ref": "#/components/schemas/FilterCriteria" },
+            "title": "Filters",
+            "type": "array"
+          },
           "page": {
-            "type": "integer",
+            "default": 1,
             "minimum": 1,
             "title": "Page",
-            "default": 1
+            "type": "integer"
           },
+          "root_ref_id": { "title": "Root Ref Id", "type": "string" },
           "size": {
-            "type": "integer",
+            "default": 20,
             "maximum": 100,
             "minimum": 1,
             "title": "Size",
-            "default": 20
-          },
-          "filters": {
-            "items": { "$ref": "#/components/schemas/FilterCriteria" },
-            "type": "array",
-            "title": "Filters"
+            "type": "integer"
           },
           "sort_orders": {
             "items": { "$ref": "#/components/schemas/SortOrder" },
-            "type": "array",
-            "title": "Sort Orders"
-          },
-          "root_ref_id": { "type": "string", "title": "Root Ref Id" }
+            "title": "Sort Orders",
+            "type": "array"
+          }
         }
       },
       "create": {
         "required": ["root_ref_id", "number", "document"],
         "properties": {
-          "root_ref_id": { "type": "string", "title": "Root Ref Id" },
-          "number": { "type": "integer", "minimum": 1, "title": "Number" },
           "document": {
             "additionalProperties": true,
-            "type": "object",
-            "title": "Document"
-          }
+            "title": "Document",
+            "type": "object"
+          },
+          "number": { "minimum": 1, "title": "Number", "type": "integer" },
+          "root_ref_id": { "title": "Root Ref Id", "type": "string" }
         }
       },
       "update": {
@@ -1244,8 +1244,8 @@
         "properties": {
           "document": {
             "additionalProperties": true,
-            "type": "object",
-            "title": "Document"
+            "title": "Document",
+            "type": "object"
           }
         }
       }
@@ -1288,28 +1288,28 @@
       "search": {
         "required": [],
         "properties": {
+          "filters": {
+            "items": { "$ref": "#/components/schemas/FilterCriteria" },
+            "title": "Filters",
+            "type": "array"
+          },
           "page": {
-            "type": "integer",
+            "default": 1,
             "minimum": 1,
             "title": "Page",
-            "default": 1
+            "type": "integer"
           },
           "size": {
-            "type": "integer",
+            "default": 20,
             "maximum": 100,
             "minimum": 1,
             "title": "Size",
-            "default": 20
-          },
-          "filters": {
-            "items": { "$ref": "#/components/schemas/FilterCriteria" },
-            "type": "array",
-            "title": "Filters"
+            "type": "integer"
           },
           "sort_orders": {
             "items": { "$ref": "#/components/schemas/SortOrder" },
-            "type": "array",
-            "title": "Sort Orders"
+            "title": "Sort Orders",
+            "type": "array"
           }
         }
       },
@@ -1317,22 +1317,22 @@
         "required": ["code", "name"],
         "properties": {
           "code": {
-            "type": "string",
             "maxLength": 64,
             "minLength": 1,
             "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]*$",
-            "title": "Code"
-          },
-          "name": {
-            "type": "string",
-            "maxLength": 255,
-            "minLength": 1,
-            "title": "Name"
+            "title": "Code",
+            "type": "string"
           },
           "is_active": {
-            "type": "boolean",
+            "default": true,
             "title": "Is Active",
-            "default": true
+            "type": "boolean"
+          },
+          "name": {
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
           }
         }
       },
@@ -1340,22 +1340,22 @@
         "required": ["code", "name"],
         "properties": {
           "code": {
-            "type": "string",
             "maxLength": 64,
             "minLength": 1,
             "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]*$",
-            "title": "Code"
-          },
-          "name": {
-            "type": "string",
-            "maxLength": 255,
-            "minLength": 1,
-            "title": "Name"
+            "title": "Code",
+            "type": "string"
           },
           "is_active": {
-            "type": "boolean",
+            "default": true,
             "title": "Is Active",
-            "default": true
+            "type": "boolean"
+          },
+          "name": {
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
           }
         }
       },
@@ -1413,42 +1413,42 @@
       "search": {
         "required": ["root_ref_id"],
         "properties": {
+          "filters": {
+            "items": { "$ref": "#/components/schemas/FilterCriteria" },
+            "title": "Filters",
+            "type": "array"
+          },
           "page": {
-            "type": "integer",
+            "default": 1,
             "minimum": 1,
             "title": "Page",
-            "default": 1
+            "type": "integer"
           },
+          "root_ref_id": { "title": "Root Ref Id", "type": "string" },
           "size": {
-            "type": "integer",
+            "default": 20,
             "maximum": 100,
             "minimum": 1,
             "title": "Size",
-            "default": 20
-          },
-          "filters": {
-            "items": { "$ref": "#/components/schemas/FilterCriteria" },
-            "type": "array",
-            "title": "Filters"
+            "type": "integer"
           },
           "sort_orders": {
             "items": { "$ref": "#/components/schemas/SortOrder" },
-            "type": "array",
-            "title": "Sort Orders"
-          },
-          "root_ref_id": { "type": "string", "title": "Root Ref Id" }
+            "title": "Sort Orders",
+            "type": "array"
+          }
         }
       },
       "create": {
         "required": ["root_ref_id", "number", "document"],
         "properties": {
-          "root_ref_id": { "type": "string", "title": "Root Ref Id" },
-          "number": { "type": "integer", "minimum": 1, "title": "Number" },
           "document": {
             "additionalProperties": true,
-            "type": "object",
-            "title": "Document"
-          }
+            "title": "Document",
+            "type": "object"
+          },
+          "number": { "minimum": 1, "title": "Number", "type": "integer" },
+          "root_ref_id": { "title": "Root Ref Id", "type": "string" }
         }
       },
       "update": {
@@ -1456,8 +1456,8 @@
         "properties": {
           "document": {
             "additionalProperties": true,
-            "type": "object",
-            "title": "Document"
+            "title": "Document",
+            "type": "object"
           }
         }
       }

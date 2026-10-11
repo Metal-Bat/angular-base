@@ -8,6 +8,10 @@ export class ApiFailure extends Error {
     readonly uncertain = false,
     readonly conflictKind:
       'revision' | 'lifecycle' | 'idempotency' | 'unknown' | null = null,
+    readonly support: {
+      persisted: boolean;
+      support_ref: string | null;
+    } | null = null,
   ) {
     super(
       httpStatus === 401
@@ -73,5 +77,27 @@ export function failure(
       ? (details['conflict_kind'] as
           'revision' | 'lifecycle' | 'idempotency' | 'unknown')
       : null,
+    typeof details['support_persisted'] === 'boolean'
+      ? {
+          persisted: details['support_persisted'],
+          support_ref:
+            typeof details['support_ref'] === 'string' &&
+            /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+              details['support_ref'],
+            )
+              ? details['support_ref']
+              : null,
+        }
+      : null,
+  );
+}
+
+/** A completed client-error response rejects a write; transport/server failures may leave its outcome unknown. */
+export function knownRejection(error: unknown): boolean {
+  return (
+    error instanceof ApiFailure &&
+    !error.uncertain &&
+    error.httpStatus >= 400 &&
+    error.httpStatus < 500
   );
 }

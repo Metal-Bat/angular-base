@@ -17,6 +17,7 @@
               [issues]="issues()"
               [node]="child"
               [path]="path() + '/children/' + $index"
+              [renderRoot]="renderRoot()"
               (edit)="edit.emit($event)"
             />
           }
@@ -85,13 +86,9 @@
     />
   } @else if (layout()) {
     <section
-      class="grid gap-4"
+      class="runtime-layout"
       [attr.aria-label]="node().label"
-      [class]="
-        node().component === 'vertical'
-          ? 'grid gap-4'
-          : 'grid gap-4 sm:grid-cols-2'
-      "
+      [style.--form-layout-columns]="columns()"
     >
       @for (child of node().children; track $index) {
         <app-runtime-node
@@ -102,6 +99,9 @@
           [issues]="issues()"
           [node]="child"
           [path]="path() + '/children/' + $index"
+          [renderRoot]="renderRoot()"
+          [style.--form-grid-column]="placement(child).column"
+          [style.--form-grid-row]="placement(child).row"
           (edit)="edit.emit($event)"
         />
       }

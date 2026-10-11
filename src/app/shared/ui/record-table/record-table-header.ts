@@ -1,3 +1,4 @@
+import { TemporalControl } from '../temporal-control/temporal-control';
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import type { RecordTable } from './record-table';
 import { ListValues } from '../list-values/list-values';
@@ -12,6 +13,7 @@ import { LocalizePipe } from '../localize-pipe';
 @Component({
   selector: 'tr[app-record-table-header]',
   imports: [
+    TemporalControl,
     ListValues,
     SelectControl,
     ControlField,

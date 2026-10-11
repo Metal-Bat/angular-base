@@ -1,31 +1,55 @@
 import { ExecutionPath } from '../execution-path/execution-path';
+import { ProcessEvidence } from '../process-evidence/process-evidence';
 import { ButtonDirective } from 'primeng/button';
 import { BoundedPolling } from '../../../../core/transport/bounded-polling';
 import { ProcessSnapshot } from '../../domain/process-tracking';
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   DestroyRef,
   inject,
   signal,
+  viewChild,
 } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { LocalizePipe } from '../../../../shared/ui/localize-pipe';
 import { ActorState } from '../../../../core/auth/actor-state';
 import { PROCESS_READER } from '../../bindings';
+import { SessionContext } from '../../../../core/auth/session-context';
+import { hasPermissions } from '../../../../core/permissions/area-access';
 @Component({
   host: { class: 'console-page' },
   selector: 'app-process-entry',
   providers: [BoundedPolling],
-  imports: [ExecutionPath, ButtonDirective, LocalizePipe, RouterLink],
+  imports: [
+    ExecutionPath,
+    ProcessEvidence,
+    ButtonDirective,
+    LocalizePipe,
+    RouterLink,
+  ],
   templateUrl: './process-entry.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProcessEntry {
+  private readonly evidence = viewChild(ProcessEvidence);
+  async canLeave(): Promise<boolean> {
+    return (await this.evidence()?.canLeave()) ?? true;
+  }
   private readonly read = inject(PROCESS_READER);
   private readonly reference =
     inject(ActivatedRoute).snapshot.paramMap.get('ref') ?? '';
   private readonly actor = inject(ActorState);
+  private readonly session = inject(SessionContext);
+  readonly canOpenControls = computed(() => {
+    const actor = this.session.snapshot();
+    return (
+      actor.status === 'authenticated' &&
+      (hasPermissions(actor.permissions, ['requests.start']) ||
+        hasPermissions(actor.permissions, ['processes.recover']))
+    );
+  });
   readonly polling = inject(BoundedPolling);
   readonly status = signal('');
   readonly snapshot = signal<ProcessSnapshot | null>(null);

@@ -23,3 +23,9 @@ No dependencies, migrations, seeds, shared/backend data, credentials, paid calls
 New route/outcome composition, full branch/join/loop/event/timer lifecycle acceptance, child request/prior-output/structured input and output mapping, dependency summaries/read-only child navigation and real publish/execute remain incomplete. The interface is summarized without exposing sample payloads or silently retargeting existing pins.
 
 The parent remains BLOCKED; the available implementation does not constitute complete normal authoring or integrated execution.
+
+## Independent continuation — 2026-10-10
+
+024.1 buffers condition/default/priority edits until explicit apply or discard, using actual backend bounds. Existing subtask IDs are reused; parent status remains BLOCKED / IMPLEMENTED. Current backend capabilities and producer/client were reconciled before use; historical results above are preserved.
+
+Delivered files, actual satisfied acceptance, all commands/results (including intermediate failures), exact source/contract identities, remaining criteria and owners are recorded in [APP-FE-021–025 continuation acceptance](../delivery/APP-FE-021-025-ACCEPTANCE.md). This slice does not establish full parent publication/execution or strict paired readiness.

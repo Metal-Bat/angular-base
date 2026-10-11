@@ -3,12 +3,14 @@ import {
   Component,
   computed,
   DestroyRef,
+  effect,
   inject,
   input,
   linkedSignal,
   output,
   signal,
 } from '@angular/core';
+import { FormGeometry } from '../form-geometry/form-geometry';
 import { ActorState } from '../../../../core/auth/actor-state';
 import { FormBehavior } from '../form-behavior/form-behavior';
 import { FormsModule } from '@angular/forms';
@@ -35,6 +37,7 @@ import {
 @Component({
   selector: 'app-form-inspector',
   imports: [
+    FormGeometry,
     FormBehavior,
     FormsModule,
     ButtonModule,
@@ -56,9 +59,13 @@ export class FormInspector {
     authoredNode(renderOf(this.documents()), this.path()),
   );
   readonly draft = linkedSignal<JsonObject>(() => structuredClone(this.node()));
-  readonly fields = computed(() =>
-    outline(renderOf(this.documents())).filter((item) => item.scope),
-  );
+  readonly fields = computed(() => [
+    ...new Map(
+      outline(renderOf(this.documents()))
+        .filter((item) => item.scope)
+        .map((item) => [item.scope, item]),
+    ).values(),
+  ]);
   readonly scope = computed(() =>
     typeof this.node()['scope'] === 'string'
       ? (this.node()['scope'] as string)
@@ -79,10 +86,18 @@ export class FormInspector {
   readonly choicesSchema = choicesSchema;
   readonly error = signal('');
   constructor() {
+    effect(() => {
+      const calculation = (this.node()['calculation'] ?? {}) as JsonObject;
+      this.calculationFunction = String(calculation['function'] ?? 'sum');
+      this.calculationScopes = [...((calculation['scopes'] ?? []) as string[])];
+      this.expression = String(calculation['expression'] ?? '');
+    });
     const release = inject(ActorState).register(() => {
       this.ruleScope = '';
       this.ruleValue = '';
       this.expression = '';
+      this.calculationFunction = 'sum';
+      this.calculationScopes = [];
       this.messageKey = '';
       this.messageRole = 'label';
       this.dependencyName = '';
@@ -138,6 +153,8 @@ export class FormInspector {
   ruleEffect = 'show';
   ruleValue: JsonValue = '';
   expression = '';
+  calculationFunction = 'sum';
+  calculationScopes: string[] = [];
   dependencyName = '';
   dependencyScope = '';
   readonly rules = computed(
@@ -166,7 +183,11 @@ export class FormInspector {
     }
     const next = { ...this.draft() };
     if (value === undefined) {
-      delete next[key];
+      if (['grid', 'accessibility'].includes(key)) {
+        next[key] = null;
+      } else {
+        delete next[key];
+      }
     } else {
       next[key] = value;
     }
@@ -282,6 +303,36 @@ export class FormInspector {
     };
     delete dependencies[name];
     this.sourcePatch('dependencies', dependencies);
+  }
+  calculationScope(scope: string, checked: boolean): void {
+    if (
+      this.disabled() ||
+      !this.fields().some((field) => field.scope === scope)
+    ) {
+      return;
+    }
+    this.calculationScopes = checked
+      ? [...new Set([...this.calculationScopes, scope])].slice(0, 16)
+      : this.calculationScopes.filter((item) => item !== scope);
+  }
+  setFunction(): void {
+    if (
+      this.disabled() ||
+      !['sum', 'concat', 'count'].includes(this.calculationFunction) ||
+      !this.calculationScopes.length ||
+      this.calculationScopes.some(
+        (scope) => !this.fields().some((field) => field.scope === scope),
+      )
+    ) {
+      return;
+    }
+    const calculation = {
+      ...((this.draft()['calculation'] ?? {}) as JsonObject),
+      function: this.calculationFunction,
+      scopes: [...this.calculationScopes],
+    } as Record<string, JsonValue>;
+    delete calculation['expression'];
+    this.patch('calculation', calculation);
   }
   setExpression(): void {
     if (!this.expression.trim() || this.expression.length > 1024) {

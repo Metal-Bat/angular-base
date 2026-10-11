@@ -1,8 +1,9 @@
+import { gregorianMillis } from './calendar-value';
 export type QueryValue = string | number | boolean | null | QueryValue[];
 export type QueryField = {
   key: string;
   label: string;
-  type: 'text' | 'number' | 'boolean' | 'date' | 'datetime' | 'uuid';
+  type: 'text' | 'number' | 'boolean' | 'date' | 'datetime' | 'time' | 'uuid';
   nullable?: boolean;
 };
 export type FilterOperation =
@@ -57,7 +58,7 @@ export function operationsFor(field: QueryField): FilterOperation[] {
   if (field.type === 'text') {
     operations.push('contains', 'notContains', 'startWith', 'endsWith');
   }
-  if (['number', 'date', 'datetime'].includes(field.type)) {
+  if (['number', 'date', 'datetime', 'time'].includes(field.type)) {
     operations.push('gt', 'gte', 'lt', 'lte', 'between');
   }
   if (field.nullable) {
@@ -83,8 +84,8 @@ function parseValue(field: QueryField, value: string): QueryValue {
     }
     return number;
   }
-  if (field.type === 'date' && !/^\d{4}-\d{2}-\d{2}$/.test(value)) {
-    throw Error('Enter a valid date.');
+  if (field.type === 'date') {
+    gregorianMillis(value);
   }
   if (
     field.type === 'datetime' &&
@@ -97,6 +98,15 @@ function parseValue(field: QueryField, value: string): QueryValue {
     !Number.isFinite(Date.parse(value))
   ) {
     throw Error('Enter a valid date.');
+  }
+  if (
+    field.type === 'time' &&
+    !/^(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d{1,6})?)?$/.test(value)
+  ) {
+    throw Error('Enter a valid time.');
+  }
+  if (field.type === 'datetime') {
+    gregorianMillis(value.slice(0, 10));
   }
   if (
     field.type === 'uuid' &&

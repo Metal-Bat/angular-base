@@ -26,6 +26,17 @@ export function createFoundationsFixture() {
   };
   let formRevision = 0;
   const item = (ref = "notice-old") => ({
+    schema_version: 1,
+    template_key: "fixture",
+    template_version: "1",
+    locale: "en",
+    priority: 1,
+    target: {
+      kind: "account",
+      route_key: "me",
+      available: true,
+      ref_id: "actor",
+    },
     ref_id: ref,
     subject: "Inbox fixture subject",
     status: "DELIVERED",
@@ -35,6 +46,24 @@ export function createFoundationsFixture() {
   });
   return {
     handle(method, path, body) {
+      if (path.split("?")[0] === "/api/v1/me/help-state" && method === "GET")
+        return {
+          success: true,
+          data: {
+            release_key: null,
+            states: { items: [], page: 1, size: 100, total: 0, total_pages: 0 },
+          },
+        };
+      if (
+        path === "/api/v1/me/help-state/seen" ||
+        path === "/api/v1/me/help-state/dismiss"
+      )
+        return {
+          success: true,
+          data: { saved: false, reason: "manifest_unavailable", state: null },
+        };
+      if (path === "/api/v1/me/help-state/reset")
+        return { success: true, data: { deleted_records: 0 } };
       if (path.startsWith("/api/v1/form-versions/form-fixture")) {
         if (method === "GET") return { success: true, data: form };
         if (
@@ -49,7 +78,9 @@ export function createFoundationsFixture() {
           return { success: true, data: form };
         }
       }
-      if (path === "/api/v1/notifications/search") {
+      if (path === "/api/v1/inbox/unread")
+        return { success: true, data: { total: read ? 0 : 31 } };
+      if (path === "/api/v1/inbox/search") {
         const query = JSON.parse(body);
         const unread = query.filters?.some(
           (filter) =>
@@ -77,20 +108,16 @@ export function createFoundationsFixture() {
       }
       if (
         method === "GET" &&
-        [
-          "/api/v1/notifications/notice-old",
-          "/api/v1/notifications/notice-current",
-        ].includes(path)
+        ["/api/v1/inbox/notice-old", "/api/v1/inbox/notice-current"].includes(
+          path,
+        )
       )
         return { success: true, data: item("notice-current") };
-      if (
-        method === "POST" &&
-        path === "/api/v1/notifications/notice-current/read"
-      ) {
+      if (method === "POST" && path === "/api/v1/inbox/notice-current/read") {
         read = true;
         return { success: true, data: item("notice-read") };
       }
-      if (method === "GET" && path === "/api/v1/notifications/notice-fail")
+      if (method === "GET" && path === "/api/v1/inbox/notice-fail")
         return {
           success: false,
           code: "TECH_FAILED",
@@ -111,13 +138,13 @@ export const foundationsBrowserScript = `
   [...help.querySelectorAll('article button')].find(button=>button.textContent.trim()==='Close').click();
   check(document.activeElement===opener,'help restores initiating focus');
   await chooseLanguage('fa');
-  check(topic.textContent.includes('در این نشست مشاهده نشده'),'help locale-specific status');
+  await wait(()=>topic.textContent.includes('در این نشست مشاهده نشده'),'help locale-specific status');
   opener.click();await wait(()=>help.querySelector('article[lang="fa"]'),'Persian help content');
   await auditAccessibility('help-persian');
   await chooseLanguage('en');
   topic.querySelectorAll('button')[1].click();
   await wait(()=>topic.textContent.includes('Dismissed this session'),'dismissed help');
-  [...help.querySelectorAll('button')].find(button=>button.textContent.trim()==='Reset help for this session').click();
+  [...help.querySelectorAll('button')].find(button=>button.textContent.trim()==='Reset saved help status').click();
   await wait(()=>document.querySelector('dialog')?.open,'help reset confirmation');
   [...document.querySelector('dialog').querySelectorAll('button')].find(button=>button.textContent.trim()==='Continue').click();
   await wait(()=>topic.textContent.includes('Not viewed this session'),'explicit help-only reset');
@@ -140,6 +167,14 @@ export const foundationsBrowserScript = `
   [...services.querySelectorAll('button')].find(button=>button.textContent.trim()==='Mark read').click();
   await wait(()=>vm.detail()?.read===true,'current-ref explicit mark-read');
   await auditAccessibility('notification-detail');
+  await wait(()=>!vm.busy()&&vm.total()===0,'read removed from applied unread list');
+  check(vm.readFilter==='unread'&&search.value==='Inbox','live reconciliation preserved inbox filters');
+  document.getElementById('notification-read').click();
+  await wait(()=>[...document.querySelectorAll('[role="option"]')].some(option=>option.textContent.trim()==='All notifications'),'all notifications option');
+  [...document.querySelectorAll('[role="option"]')].find(option=>option.textContent.trim()==='All notifications').click();
+  await wait(()=>vm.readFilter==='all','all notification filter selected');
+  services.querySelector('form').dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}));
+  await wait(()=>!vm.busy()&&vm.total()===31&&[...services.querySelectorAll('button')].some(button=>button.textContent.trim()==='Inbox fixture failure'&&!button.disabled),'all notifications restored for support failure');
   [...services.querySelectorAll('button')].find(button=>button.textContent.trim()==='Inbox fixture failure').click();
   await wait(()=>document.querySelector('app-error-notification button[aria-label="Copy request reference: fixture-request-001"]'),'returned support reference');
   check(!document.querySelector('app-root').textContent.includes('never-display-private-payload'),'support notice excludes private response body');
@@ -207,14 +242,17 @@ export const foundationsBrowserScript = `
   const labelInput=document.getElementById('field-label');labelInput.value='Friendly amount';labelInput.dispatchEvent(new Event('input',{bubbles:true}));
   [...builder.querySelectorAll('button')].find(button=>button.textContent.trim()==='Apply properties').click();
   await wait(()=>!editorVm.pending().length,'applied typed field edit');
+  await wait(()=>[...builder.querySelectorAll('button')].some(button=>button.textContent.trim()==='Save draft'&&!button.disabled),'save button rendered enabled');
   [...builder.querySelectorAll('button')].find(button=>button.textContent.trim()==='Save draft').click();
   await wait(()=>editorVm.reference()==='form-fixture-1'&&!editorVm.busy(),'save replaces current reference');
   builder.querySelector('.designer ul button').click();
   const nameInput=document.getElementById('property-name');nameInput.value='note';nameInput.dispatchEvent(new Event('input',{bubbles:true}));
   const displayInput=document.getElementById('component-label');displayInput.value='Note label';displayInput.dispatchEvent(new Event('input',{bubbles:true}));
+  await wait(()=>[...builder.querySelectorAll('button')].some(button=>button.textContent.trim()==='Add to selected layout'&&!button.disabled),'add button rendered enabled');
   [...builder.querySelectorAll('button')].find(button=>button.textContent.trim()==='Add to selected layout').click();
   await wait(()=>editorVm.outline().length===3,'keyboard-friendly add with independent label');
   const addedKey=editorVm.documents().render_schema.root.children[1].node_key;
+  await wait(()=>[...builder.querySelectorAll('button')].some(button=>button.textContent.trim()==='Save draft'&&!button.disabled),'save button rendered enabled');
   [...builder.querySelectorAll('button')].find(button=>button.textContent.trim()==='Save draft').click();
   await wait(()=>editorVm.reference()==='form-fixture-2'&&!editorVm.busy(),'second save uses replaced reference');
   builder.querySelector('button[aria-label="Reload"]').click();await wait(()=>!editorVm.busy()&&editorVm.outline().length===3,'saved form reopened');

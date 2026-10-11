@@ -1,0 +1,61 @@
+<h1 tabindex="-1">{{ "Calendar" | localize }}</h1>
+@if (error()) {
+  <p role="alert">{{ error() | localize }}</p>
+}
+<form class="my-4 flex flex-wrap items-end gap-3" (ngSubmit)="load()">
+  <label class="grid gap-2" for="calendar-date"
+    >{{ "Date" | localize
+    }}<app-temporal-control controlId="calendar-date" [(value)]="date" /></label
+  ><label class="grid gap-2" for="calendar-zone"
+    >{{ "Timezone" | localize
+    }}<input
+      id="calendar-zone"
+      maxlength="64"
+      name="timezone"
+      pInputText
+      required
+      [(ngModel)]="timezone" /></label
+  ><button pButton type="submit">{{ "Apply" | localize }}</button
+  ><button pButton type="button" (click)="create()">
+    {{ "Create event" | localize }}
+  </button>
+</form>
+<app-calendar-views
+  [anchor]="anchor()"
+  [projection]="projection()"
+  [timezone]="zone()"
+  (selected)="open($event)"
+/>
+@if (editing()) {
+  @if (selected()?.source_kind === "work_item") {
+    <app-work-reminders [item]="selected()!" />
+  } @else {
+    <app-calendar-editor
+      [item]="selected()"
+      [reminders]="reminders()"
+      (reloadRequested)="reloadSelected()"
+      (saved)="saved($event)"
+    />
+  }
+  <div class="flex gap-3 my-3">
+    <button pButton severity="secondary" type="button" (click)="close()">
+      {{ "Close" | localize }}</button
+    ><button
+      pButton
+      severity="danger"
+      type="button"
+      [disabled]="!selected()?.editable"
+      (click)="remove()"
+    >
+      {{ "Delete" | localize }}
+    </button>
+  </div>
+}
+<ul>
+  @for (reminder of reminders(); track reminder.ref_id) {
+    <li>
+      <time [attr.datetime]="reminder.due_at">{{ reminder.due_at }}</time> —
+      {{ reminder.status | localize }}
+    </li>
+  }
+</ul>

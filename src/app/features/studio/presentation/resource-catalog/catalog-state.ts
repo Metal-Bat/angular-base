@@ -1,3 +1,4 @@
+import { WorkspaceDefaults } from '../../../../core/resources/workspace-defaults';
 import { computed, DestroyRef, inject, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { ActorState } from '../../../../core/auth/actor-state';
@@ -20,14 +21,26 @@ export class CatalogState {
     { key: 'modifier_type', label: 'Actor type' },
     { key: 'reason', label: 'Reason' },
   ];
+  readonly reconcileRequired = signal(false);
   readonly formOpen = signal(false);
   readonly historyOpen = signal(false);
   readonly listQuery = signal<ListQuery>(emptyQuery());
   readonly appliedQuery = signal<JsonObject | null>(null);
-  readonly queuedReport = signal<JsonObject | null>(null);
-  readonly columns = computed(
-    () => this.spec.list?.columns ?? [{ key: 'name', label: 'Name' }],
+  readonly reportResult = signal<readonly JsonObject[] | null>(null);
+  readonly savedColumns = signal<readonly string[]>([]);
+  readonly columnOptions = computed(() =>
+    (this.spec.list?.columns ?? []).filter((column) =>
+      ['name', 'code', 'is_active', 'status', 'created_at'].includes(
+        column.key,
+      ),
+    ),
   );
+  readonly columns = computed(() => {
+    const columns = this.spec.list?.columns ?? [{ key: 'name', label: 'Name' }];
+    return this.savedColumns().length
+      ? columns.filter((column) => this.savedColumns().includes(column.key))
+      : columns;
+  });
   readonly controlsDisabled = computed(() => this.busy() || this.immutable());
   protected readonly api = inject(STUDIO_API);
   protected readonly route = inject(ActivatedRoute);
@@ -69,6 +82,7 @@ export class CatalogState {
   readonly canSave = computed(
     () =>
       !this.busy() &&
+      !this.reconcileRequired() &&
       !this.invalid().length &&
       !this.immutable() &&
       (!this.selected() || this.spec.actions.includes('update')),
@@ -91,6 +105,10 @@ export class CatalogState {
   grantTarget = '';
   protected generation = 0;
   constructor() {
+    this.listQuery.update((query) => ({
+      ...query,
+      size: inject(WorkspaceDefaults).size(),
+    }));
     const release = inject(ActorState).register(() => this.clear());
     inject(DestroyRef).onDestroy(() => {
       this.clear();
@@ -106,6 +124,8 @@ export class CatalogState {
     }
   }
   private clear(): void {
+    this.reconcileRequired.set(false);
+    this.savedColumns.set([]);
     this.historyDetail.set(null);
     this.historyOpen.set(false);
     this.busy.set(false);
@@ -114,7 +134,7 @@ export class CatalogState {
     this.generation++;
     this.formOpen.set(false);
     this.appliedQuery.set(null);
-    this.queuedReport.set(null);
+    this.reportResult.set(null);
     this.listQuery.set(emptyQuery());
     this.items.set([]);
     this.query.set({});
@@ -157,6 +177,9 @@ export class CatalogState {
     this.values.set(values);
   }
   async create(): Promise<void> {
+    if (this.reconcileRequired()) {
+      return;
+    }
     if (await this.canLeave()) {
       this.reset();
       this.formOpen.set(true);
@@ -231,7 +254,13 @@ export class CatalogState {
       }
       this.invalid.update((keys) => keys.filter((key) => key !== field.key));
       this.error.set(
-        this.invalid().length ? 'Correct all invalid fields before saving' : '',
+        this.reconcileRequired()
+          ? this.error() ||
+              this.notice() ||
+              'The command could not be confirmed. Refresh current state before retrying.'
+          : this.invalid().length
+            ? 'Correct all invalid fields before saving'
+            : '',
       );
     } catch {
       this.invalid.update((keys) => [...new Set([...keys, field.key])]);
@@ -240,7 +269,7 @@ export class CatalogState {
   }
   async load(page = 1, report = false, draft?: JsonObject): Promise<void> {
     const snapshot = structuredClone({
-      size: 20,
+      size: this.listQuery().size,
       filters: [],
       sort_orders: [],
       ...(draft ?? this.appliedQuery() ?? this.query()),
@@ -250,7 +279,7 @@ export class CatalogState {
     if (
       report &&
       (!this.appliedQuery() ||
-        !(await this.feedback.confirm('Request a report of the current list?')))
+        !(await this.feedback.confirm('Preview a report of the current list?')))
     ) {
       return;
     }
@@ -266,9 +295,12 @@ export class CatalogState {
         return;
       }
       if (report) {
-        this.queuedReport.set(result.items[0] ?? null);
-        this.notice.set('Report requested. Track it in My Reports.');
+        this.reportResult.set(result.items);
+        this.notice.set('Report preview');
       } else {
+        if (!this.selected()) {
+          this.reconcileRequired.set(false);
+        }
         this.items.set(result.items);
         this.page.set(result.page);
         this.totalPages.set(result.totalPages);
@@ -321,6 +353,7 @@ export class CatalogState {
     }
   }
   protected accept(row: JsonObject): void {
+    this.reconcileRequired.set(false);
     const nested = row['client'];
     this.secret.set(typeof row['secret'] === 'string' ? row['secret'] : '');
     const value: JsonObject =

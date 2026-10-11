@@ -1,6 +1,16 @@
 @let vm = view();
 @if (vm.result(); as response) {
   <section aria-label="Result">
+    <button
+      pButton
+      severity="secondary"
+      type="button"
+      [disabled]="vm.busy()"
+      [outlined]="true"
+      (click)="vm.dismissResult()"
+    >
+      {{ "Clear result" | localize }}
+    </button>
     <h2>{{ "Result" | localize }}</h2>
     @if (record(); as row) {
       <app-record-summary title="Result" [record]="row" />

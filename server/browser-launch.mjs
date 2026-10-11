@@ -1,4 +1,5 @@
 import { spawn } from "node:child_process";
+import { observeScreenshotEndpoint } from "./browser-screenshot.mjs";
 export function browserName() {
   return process.env.BROWSER_ENGINE === "chromium" ? "Chromium" : "Firefox";
 }
@@ -15,6 +16,7 @@ export function spawnBrowser(
     (engine === "firefox"
       ? (process.env.FIREFOX_BINARY ?? "firefox")
       : "chromium");
+  const screenshots = process.env.BROWSER_SANDBOX_DIAGNOSTICS === "1";
   const args =
     engine === "firefox"
       ? [
@@ -26,6 +28,7 @@ export function spawnBrowser(
           String(height),
           "--profile",
           profile,
+          ...(screenshots ? ["--remote-debugging-port=0"] : []),
           url,
         ]
       : [
@@ -39,7 +42,13 @@ export function spawnBrowser(
           `--user-data-dir=${profile}`,
           ...(process.env.BROWSER_NO_SANDBOX === "1" ? ["--no-sandbox"] : []),
           ...(insecureTestTls ? ["--ignore-certificate-errors"] : []),
+          ...(screenshots ? ["--remote-debugging-port=0"] : []),
           url,
         ];
-  return spawn(binary, args, { stdio: "ignore" });
+  const browser = spawn(binary, args, {
+    stdio: screenshots ? ["ignore", "ignore", "pipe"] : "ignore",
+  });
+  if (screenshots)
+    browser.captureScreenshot = observeScreenshotEndpoint(browser, engine);
+  return browser;
 }

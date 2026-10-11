@@ -27,13 +27,17 @@ export const routes: Routes = [
         title: 'Help | Workflow workspace',
         canActivate: [routeAccessGuard],
         data: { access: 'authenticated', requiredPermissions: [] },
-        loadComponent: () =>
-          import('./features/help/presentation/help-page/help-page').then(
-            (m) => m.HelpPage,
+        loadChildren: () =>
+          import('./features/help/presentation/help.routes').then(
+            (module) => module.helpRoutes,
           ),
       },
       {
         path: 'account/profile',
+        canDeactivate: [
+          (component: { canLeave(): Promise<boolean> }): Promise<boolean> =>
+            component.canLeave(),
+        ],
         title: 'My information | Workflow workspace',
         canActivate: [routeAccessGuard],
         data: { access: 'authenticated', requiredPermissions: [] },

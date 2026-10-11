@@ -110,3 +110,28 @@ it('round-trips declared human views and return actions without changing field p
   expect(applied).toHaveBeenCalledWith({ ...original, task_contract: task });
   expect(original.field_policy).toEqual({ hidden: ['/private'] });
 });
+
+it('discards invalid typed buffers without changing the selected node or retained metadata', async () => {
+  const fixture = TestBed.createComponent(NodeInspector);
+  fixture.componentRef.setInput('step', step);
+  fixture.componentRef.setInput('catalog', catalog);
+  await fixture.whenStable();
+  const vm = fixture.componentInstance;
+  const discarded = vi.fn();
+  const applied = vi.fn();
+  vm.discarded.subscribe(discarded);
+  vm.applied.subscribe(applied);
+  vm.update('delay_seconds', 0);
+  vm.apply();
+  expect(vm.hasErrors()).toBe(true);
+  vm.discard();
+  expect(vm.draft()).toEqual(step.config);
+  expect(vm.child()).toEqual(step.subprocess);
+  expect(vm.hasErrors()).toBe(false);
+  expect(discarded).toHaveBeenCalledOnce();
+  expect(applied).not.toHaveBeenCalled();
+  fixture.componentRef.setInput('disabled', true);
+  await fixture.whenStable();
+  vm.discard();
+  expect(discarded).toHaveBeenCalledOnce();
+});

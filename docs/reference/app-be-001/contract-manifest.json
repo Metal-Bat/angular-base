@@ -7,11 +7,11 @@
   "schemas": {
     "en": {
       "path": "openapi-en.json",
-      "sha256": "428a570d38a026b3146ab2fc6cc66d28fe18e7ee8cde2192deb1815599df86cc"
+      "sha256": "78c06495ea694face5563620c11f13e1c981d046fc276046a2601640fbcdd6c6"
     },
     "fa": {
       "path": "openapi-fa.json",
-      "sha256": "e33322ddec30ff91311ef11001e09d56afda0cb1cfd198dc5ca899c5febdfa07"
+      "sha256": "dc1cec356e0a1c47bcfa5ded878e6f53bceba28349aa1c56a9069283849f5cce"
     }
   },
   "permissions": {
@@ -87,5 +87,68 @@
     "current_operations": 314,
     "platform_shared_schema_changes": 0,
     "consumer_verified": false
-  }
+  },
+  "notification_intake": {
+    "backend_commit": "9999641f8e37077829ebbe7159a6cd794fb94b91",
+    "source": "../inbox.openapi.json",
+    "sha256": "8cc7e0daffa3d80b855ba6c651aff7b10068fee891a2780e39fd0045dc4f9e59",
+    "scope": "Current unified inbox and SSE operations/schema closure; unrelated historical producer contract retained, current whole-pair drift remains separately recorded."
+  },
+  "current_intake": {
+    "backend_commit": "9999641f8e37077829ebbe7159a6cd794fb94b91",
+    "owner": "APP-BE-031",
+    "scope": "Full effective localized paths, schemas, authorization and binary headers; only the two reviewed graph-field descriptions changed",
+    "producer_source_sha256": "dd3ec9595a1153c663970b07266c0e69a9abc5ffd50214928a56db45a6c9c0de",
+    "producer_manifest_sha256": "f8d5aeed5ef7fe7ff5b535be21d0d372355127bbcd0828f574d4925c994b5366",
+    "diff": "../app-be-031/contract-intake.json"
+  },
+  "ordered_011_description_intake": {
+    "date": "2026-10-09",
+    "producer": "docs/delivery/consistency-2026-10-09/contracts",
+    "changed_paths": [
+      "/api/v1/media/files/{ref_id}",
+      "/api/v1/reports/{ref_id}/download",
+      "/api/v1/media/images/{ref_id}"
+    ],
+    "change": "Three download operation descriptions only; operation IDs, parameters, responses, schemas and binary transport unchanged.",
+    "producer_manifest_sha256": "a44d5b37a2eda990c5fc6be251ed18cf090c8082ee5e2bcef40e5d919df214e1"
+  },
+  "intake_history": [
+    {
+      "backend_commit": "9999641f8e37077829ebbe7159a6cd794fb94b91",
+      "owner": "APP-FE-006\u2013015",
+      "scope": "full effective en/fa paths and models, preserving historical producer fields",
+      "diff": "../app-fe-015/contract-intake.json"
+    },
+    {
+      "backend_commit": "9999641f8e37077829ebbe7159a6cd794fb94b91",
+      "owner": "APP-FE-016\u2013020",
+      "scope": "Compared and reconciled full frozen producer; form contracts unchanged",
+      "diff": "../app-fe-016-020/contract-intake.json"
+    },
+    {
+      "backend_commit": "9999641f8e37077829ebbe7159a6cd794fb94b91",
+      "owner": "APP-BE-031",
+      "scope": "Full effective localized paths, schemas, authorization and binary headers; only the two reviewed graph-field descriptions changed",
+      "producer_source_sha256": "ae3621dbab3f5356a13238de6fb002111473a0b9edafd9a3d92bcf6c6f062b2b",
+      "producer_manifest_sha256": "d0fb94951961e3550a851dc80ae97d945f7bd2d7bfe04fcde15de9389bf08123",
+      "diff": "../app-be-031/contract-intake.json"
+    },
+    {
+      "backend_commit": "9999641f8e37077829ebbe7159a6cd794fb94b91",
+      "owner": "APP-BE-031",
+      "scope": "Full effective localized paths, schemas, authorization and binary headers; only the two reviewed graph-field descriptions changed",
+      "producer_source_sha256": "1c26f9209ae8b7045e76caed349c175c50c31f393c941280b2abe3a2d063a114",
+      "producer_manifest_sha256": "aad94271efb0b0693adff25f5cc6cb78f4675b7c37d51a88d17636b978996c80",
+      "diff": "../app-be-031/contract-intake.json"
+    },
+    {
+      "backend_commit": "9999641f8e37077829ebbe7159a6cd794fb94b91",
+      "owner": "APP-BE-031",
+      "scope": "Full effective localized paths, schemas, authorization and binary headers; only the two reviewed graph-field descriptions changed",
+      "producer_source_sha256": "2cbb91c63907fa70af782430f177dcb4cc49fbadfeac3f7d052400af8d3fe99e",
+      "producer_manifest_sha256": "120bb092f8abb04668c514f5f0dfd8018a22a53611f8754d16e2b9f0ab9577b1",
+      "diff": "../app-be-031/contract-intake.json"
+    }
+  ]
 }

@@ -21,3 +21,7 @@ Intermediate formatter/lint/template/test fixture failures and contract drift re
 Full matrix, current Chromium and actual manual screen-reader/zoom/contrast review remain incomplete; incomplete axe items remain visible.
 
 The exact common handoff and boundary operation instructions are in [END-OF-BACKLOG.md](../delivery/END-OF-BACKLOG.md). Status remains BLOCKED; IMPLEMENTED does not mean complete, integrated, demo-ready, deployed or user-accepted. Graph refresh uses AST-only `graphify update .`.
+
+## Current independent continuation — 2026-10-11
+
+APP-FE-034.1 is delivered with focused scope and verification in [APP-FE-031–035 acceptance](../delivery/APP-FE-031-035-ACCEPTANCE.md). Parent remains BLOCKED / IMPLEMENTED. Current producer evidence supersedes old blanket backend-absence blockers without rewriting historical results.

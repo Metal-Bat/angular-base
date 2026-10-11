@@ -67,7 +67,7 @@
         <ng-template #body let-row
           ><tr>
             <td>
-              <bdi>{{ row.series }}</bdi>
+              <bdi>{{ row.series | localize }}</bdi>
             </td>
             <td>{{ row.date }}</td>
             <td>

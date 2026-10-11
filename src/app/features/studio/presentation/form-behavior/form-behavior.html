@@ -102,6 +102,38 @@
   }
 }
 @if (vm.node()["component"] === "calculated") {
+  <h3>{{ "Registered calculation" | localize }}</h3>
+  <label for="calculation-function">{{ "Function" | localize }}</label>
+  <app-select-control
+    inputId="calculation-function"
+    [disabled]="vm.disabled()"
+    [(ngModel)]="vm.calculationFunction"
+  >
+    <option value="sum">{{ "Sum" | localize }}</option>
+    <option value="concat">{{ "Concatenate" | localize }}</option>
+    <option value="count">{{ "Count" | localize }}</option>
+  </app-select-control>
+  <fieldset>
+    <legend>{{ "Calculation fields" | localize }}</legend>
+    @for (field of vm.fields(); track field.scope) {
+      <label
+        ><input
+          type="checkbox"
+          [disabled]="vm.disabled()"
+          [ngModel]="vm.calculationScopes.includes(field.scope!)"
+          (ngModelChange)="vm.calculationScope(field.scope!, $event)"
+        />{{ field.label }}</label
+      >
+    }
+  </fieldset>
+  <button
+    pButton
+    type="button"
+    [disabled]="vm.disabled() || !vm.calculationScopes.length"
+    (click)="vm.setFunction()"
+  >
+    {{ "Set function" | localize }}
+  </button>
   <h3>{{ "Calculation expression" | localize }}</h3>
   <p>
     {{

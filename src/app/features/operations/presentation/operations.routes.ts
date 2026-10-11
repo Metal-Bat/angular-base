@@ -1,3 +1,10 @@
+import { installationOperatorGuard } from '../../../core/permissions/installation-operator-guard';
+import { SUPPORT } from '../../support/bindings';
+import { SupportApi } from '../../support/infrastructure/support-api';
+import { CALENDAR } from '../../calendar/bindings';
+import { CalendarApi } from '../../calendar/infrastructure/calendar-api';
+import { ANALYTICS } from '../../analytics/bindings';
+import { AnalyticsApi } from '../../analytics/infrastructure/analytics-api';
 import { recordRoute } from '../../records/presentation/record.routes';
 import { PersonalServices } from '../infrastructure/personal-services';
 import { CaseResources } from '../infrastructure/case-resources';
@@ -5,6 +12,8 @@ import { EditorPort } from '../application/workspace-ports';
 import { areaPermissions } from '../../../core/permissions/area-access';
 import { inject } from '@angular/core';
 import { ProcessTracking } from '../infrastructure/process-tracking';
+import { ProcessEvidenceApi } from '../infrastructure/process-evidence';
+import { OrderRecoveryApi } from '../infrastructure/order-recovery';
 import { ProcessReader } from '../domain/process-tracking';
 import { Routes } from '@angular/router';
 
@@ -13,7 +22,10 @@ import { routeAccessGuard } from '../../../core/permissions/route-access-guard';
 import {
   CASE_EDITOR_FACTORY,
   FORM_RESOURCE_FACTORY,
+  ORDER_RECOVERY,
   PERSONAL_SERVICES,
+  PROCESS_DESTINATION,
+  PROCESS_EVIDENCE,
   PROCESS_READER,
   REQUEST_CREATION,
   WORKSPACE_PAGES_FACTORY,
@@ -29,6 +41,14 @@ export const operationsRoutes: Routes = [
   {
     path: '',
     providers: [
+      {
+        provide: PROCESS_DESTINATION,
+        useFactory:
+          (): import('../domain/process-tracking').ProcessDestinationReader => {
+            const reader = inject(ProcessTracking);
+            return (request, abort) => reader.destination(request, abort);
+          },
+      },
       { provide: PERSONAL_SERVICES, useExisting: PersonalServices },
       { provide: REQUEST_CREATION, useExisting: RequestCreation },
       {
@@ -40,6 +60,60 @@ export const operationsRoutes: Routes = [
     canActivateChild: [routeAccessGuard],
     children: [
       ...runtimePreviewRoutes,
+      {
+        path: 'support',
+        providers: [{ provide: SUPPORT, useExisting: SupportApi }],
+        data: {
+          access: 'authenticated',
+          requiredPermissions: ['support.incidents.manage'],
+        },
+        loadComponent: () =>
+          import('../../support/presentation/support-page/support-page').then(
+            (m) => m.SupportPage,
+          ),
+      },
+      {
+        path: 'calendar',
+        providers: [{ provide: CALENDAR, useExisting: CalendarApi }],
+        data: { access: 'authenticated', requiredPermissions: [] },
+        canDeactivate: [
+          (component: { canLeave(): Promise<boolean> }): Promise<boolean> =>
+            component.canLeave(),
+        ],
+        loadComponent: () =>
+          import('../../calendar/presentation/calendar-page/calendar-page').then(
+            (m) => m.CalendarPage,
+          ),
+      },
+      {
+        path: 'dashboard',
+        providers: [{ provide: ANALYTICS, useExisting: AnalyticsApi }],
+        data: {
+          access: 'authenticated',
+          requiredPermissions: ['requests.start'],
+        },
+        loadComponent: () =>
+          import('../../analytics/presentation/dashboard/dashboard').then(
+            (m) => m.Dashboard,
+          ),
+      },
+      {
+        path: 'favorites',
+        data: { access: 'authenticated', requiredPermissions: [] },
+        loadComponent: () =>
+          import('../../records/presentation/favorites/favorites').then(
+            (m) => m.Favorites,
+          ),
+      },
+      {
+        path: 'readiness',
+        canActivate: [installationOperatorGuard],
+        data: { access: 'authenticated', requiredPermissions: [] },
+        loadComponent: () =>
+          import('../../readiness/presentation/readiness-page/readiness-page').then(
+            (m) => m.ReadinessPage,
+          ),
+      },
       {
         path: 'media',
         data: { access: 'authenticated', requiredPermissions: [] },
@@ -62,6 +136,8 @@ export const operationsRoutes: Routes = [
       {
         path: 'processes/:ref',
         providers: [
+          { provide: PROCESS_EVIDENCE, useExisting: ProcessEvidenceApi },
+          { provide: ORDER_RECOVERY, useExisting: OrderRecoveryApi },
           {
             provide: PROCESS_READER,
             useFactory: (): ProcessReader => {
@@ -77,6 +153,10 @@ export const operationsRoutes: Routes = [
         },
         loadComponent: () =>
           import('./process-entry/process-entry').then((m) => m.ProcessEntry),
+        canDeactivate: [
+          (component: { canLeave(): Promise<boolean> }): Promise<boolean> =>
+            component.canLeave(),
+        ],
       },
       {
         path: 'catalog',
@@ -99,6 +179,10 @@ export const operationsRoutes: Routes = [
       },
       {
         path: 'requests',
+        canDeactivate: [
+          (component: { canLeave(): Promise<boolean> }): Promise<boolean> =>
+            component.canLeave(),
+        ],
         providers: [
           {
             provide: WORKSPACE_PAGES_FACTORY,
@@ -116,6 +200,10 @@ export const operationsRoutes: Routes = [
       },
       {
         path: 'tasks',
+        canDeactivate: [
+          (component: { canLeave(): Promise<boolean> }): Promise<boolean> =>
+            component.canLeave(),
+        ],
         providers: [
           {
             provide: WORKSPACE_PAGES_FACTORY,

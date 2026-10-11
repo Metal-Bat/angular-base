@@ -1,0 +1,15 @@
+<button
+  pButton
+  severity="secondary"
+  type="button"
+  [disabled]="disabled() || busy()"
+  (click)="add()"
+>
+  {{ "Add to favorites" | localize }}
+</button>
+@if (saved()) {
+  <span role="status">{{ "Saved" | localize }}</span>
+}
+@if (error()) {
+  <p role="alert">{{ error() | localize }}</p>
+}

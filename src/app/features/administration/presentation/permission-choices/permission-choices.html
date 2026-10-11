@@ -66,7 +66,7 @@
       type="button"
       [disabled]="page() <= 1"
       [outlined]="true"
-      (click)="load(page() - 1)"
+      (click)="load(page() - 1, false)"
     >
       {{ "Previous" | localize }}
     </button>
@@ -77,7 +77,7 @@
       type="button"
       [disabled]="page() >= pages()"
       [outlined]="true"
-      (click)="load(page() + 1)"
+      (click)="load(page() + 1, false)"
     >
       {{ "Next" | localize }}
     </button>

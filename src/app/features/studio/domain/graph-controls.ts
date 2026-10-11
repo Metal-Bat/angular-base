@@ -132,7 +132,7 @@ export function addMapping(
     );
   if (
     !target ||
-    !['string', 'number', 'integer', 'boolean'].includes(
+    !['string', 'number', 'integer', 'boolean', 'object'].includes(
       String(target.schema['type']),
     )
   ) {
@@ -163,7 +163,8 @@ export function addMapping(
   }
   if (
     !source &&
-    Object.keys(schemaErrors(target.schema, constant, 'value', true)).length
+    (target.schema['type'] === 'object' ||
+      Object.keys(schemaErrors(target.schema, constant, 'value', true)).length)
   ) {
     throw Error('Invalid value');
   }
@@ -193,10 +194,11 @@ export function patchTransition(
   if (
     typeof priority !== 'number' ||
     !Number.isInteger(priority) ||
-    Math.abs(priority) > 2147483647 ||
+    priority < 0 ||
+    priority > 2147483647 ||
     typeof patch['is_default'] !== 'boolean' ||
     (condition !== null &&
-      (typeof condition !== 'string' || condition.length > 4096))
+      (typeof condition !== 'string' || condition.length > 1024))
   ) {
     throw Error('Invalid connection');
   }
@@ -277,5 +279,29 @@ export function removeMapping(graph: JsonObject, id: string): JsonObject {
   return {
     ...graph,
     bindings: bindings.filter((_, position) => position !== index),
+  };
+}
+export function candidateKey(target: JsonObject): string {
+  return JSON.stringify(
+    ['step', 'user_ref', 'work_group_ref', 'priority', 'condition'].map(
+      (key) => target[key] ?? null,
+    ),
+  );
+}
+export function removeCandidate(
+  graph: JsonObject,
+  step: string,
+  id: string,
+): JsonObject {
+  const targets = (graph['targets'] ?? []) as JsonObject[];
+  const index = targets.findIndex(
+    (item) => item['step'] === step && candidateKey(item) === id,
+  );
+  if (index < 0) {
+    throw Error('The selected resource is unavailable. Choose again.');
+  }
+  return {
+    ...graph,
+    targets: targets.filter((_, position) => position !== index),
   };
 }

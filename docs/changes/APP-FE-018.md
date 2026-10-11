@@ -23,3 +23,17 @@ Axe violations and captured browser diagnostics remain strict failures. Any inco
 Verified producer C11 reconciliation and APP-BE-020 are pending. Approved remote-source editing, registered-function/completion UI, generalized navigation contracts, dependency preview/cancellation acceptance and all server publication constraints remain uncovered. Existing expert tools are retained; this slice does not close every no-JSON authoring journey.
 
 The parent remains BLOCKED until its full required acceptance and real-service evidence are supplied. IMPLEMENTED refers only to the available slice above, not the complete parent deliverable.
+
+## CURRENT five-scope continuation — 2026-10-10
+
+Existing APP-FE-018.2: registered calculations.
+
+Authors select the actual sum/concat/count function and up to sixteen canonical fields using controls. Switching to a function removes expression; switching back removes function/scopes, preserving override_permission and unrelated node data. Reopen initializes controls from the stored calculation. Field selectors deduplicate canonical scopes shared by layout placements. The server still evaluates and validates calculations; no browser evaluator or arbitrary execution is introduced.
+
+Changed/reused: `existing form-inspector.ts/.spec.ts; form-behavior.ts/.html`.
+
+Current remaining criteria: Approved remote-source editing, full registered-function/operator conformance, override authorization, options dependency cancellation and real navigation-result mapping remain APP-FE-018.1/.2/.3 frontend consumption/verification work against implemented C11. Unsupported/generalized behavior is not invented.
+
+The backend protected-operations handoff now records APP-BE-021/022/024/025 DONE / VERIFIED_WITH_EXCEPTION and APP-BE-023 implemented with actual-browser acceptance pending. The former APP-BE-022 unfrozen-metadata blocker is historical. The new frozen English producer was compared and reconciled (379 operations / 565 schemas), preserving all existing operation IDs and unchanged form/workspace contracts; see [intake](../reference/app-fe-016-020/contract-intake.json). No backend source/shared data/dependencies/mise/environment files were changed. Backend DB-002/D07 decisions remain scoped; SDK exceptions do not establish strict exception-free demo readiness.
+
+Actual source identities, tests, failures and final gate: [five-scope acceptance](../delivery/APP-FE-016-020-ACCEPTANCE.md). Parent remains **BLOCKED / IMPLEMENTED** for its full acceptance. This continuation supersedes the historical producer-unavailability blocker above; it does not rewrite prior evidence or mark the parent DONE. APP-FE-012/014 remain unrelated to this work.

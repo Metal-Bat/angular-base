@@ -1,3 +1,4 @@
+import { TemporalControl } from '../temporal-control/temporal-control';
 import {
   booleanAttribute,
   ChangeDetectionStrategy,
@@ -14,6 +15,7 @@ import { SelectControl } from '../select-control/select-control';
 @Component({
   selector: 'app-list-values',
   imports: [
+    TemporalControl,
     FormsModule,
     ButtonModule,
     InputTextModule,
@@ -37,6 +39,15 @@ import { SelectControl } from '../select-control/select-control';
             <option value="true">{{ 'Yes' | localize }}</option>
             <option value="false">{{ 'No' | localize }}</option>
           </app-select-control>
+        } @else if (['date', 'datetime', 'time'].includes(type())) {
+          <app-temporal-control
+            [ariaLabel]="('Value' | localize) + ' ' + (index + 1)"
+            [controlId]="controlId() + (index ? '-' + index : '')"
+            [disabled]="disabled()"
+            [kind]="type()"
+            [value]="item"
+            (valueChange)="update(index, $event)"
+          />
         } @else {
           <input
             pInputText
@@ -45,13 +56,7 @@ import { SelectControl } from '../select-control/select-control';
             [id]="controlId() + (index ? '-' + index : '')"
             [ngModel]="item"
             [ngModelOptions]="{ standalone: true }"
-            [type]="
-              type() === 'number'
-                ? 'number'
-                : type() === 'date'
-                  ? 'date'
-                  : 'text'
-            "
+            [type]="type() === 'number' ? 'number' : 'text'"
             (ngModelChange)="update(index, $event)"
           />
         }
@@ -90,7 +95,8 @@ import { SelectControl } from '../select-control/select-control';
       gap: 0.5rem;
     }
     .value-row > input,
-    .value-row > app-select-control {
+    .value-row > app-select-control,
+    .value-row > app-temporal-control {
       flex: 1;
       min-width: 0;
       min-height: var(--workspace-control-height, 2.5rem);

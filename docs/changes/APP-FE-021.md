@@ -23,3 +23,9 @@ No dependencies, migrations, seeds, shared/backend data, credentials, paid calls
 Typed editing for every registered shape, complete conditional/readiness/help/diagnostic coverage, remaining reference roles and real per-handler save/reopen are not complete.
 
 The parent remains BLOCKED; the available implementation does not constitute complete normal authoring or integrated execution.
+
+## Independent continuation — 2026-10-10
+
+021.2 adds explicit typed-buffer discard and preserves previously applied workspace edits. Existing subtask IDs are reused; parent status remains BLOCKED / IMPLEMENTED. Current backend capabilities and producer/client were reconciled before use; historical results above are preserved.
+
+Delivered files, actual satisfied acceptance, all commands/results (including intermediate failures), exact source/contract identities, remaining criteria and owners are recorded in [APP-FE-021–025 continuation acceptance](../delivery/APP-FE-021-025-ACCEPTANCE.md). This slice does not establish full parent publication/execution or strict paired readiness.

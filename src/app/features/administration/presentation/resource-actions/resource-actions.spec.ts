@@ -55,6 +55,23 @@ describe('Resource action dialogs', () => {
     fixture.detectChanges();
     actions = fixture.componentInstance;
   });
+  it('dismisses a dialog result without clearing reviewed targets or pending values', () => {
+    const input = { body: { page: 2 }, path: { ref_id: 'current' }, query: {} };
+    actions.input.set(input);
+    actions.response.set({
+      value: { verification_status: 'UNVERIFIED' },
+      page: 1,
+      totalPages: 1,
+      requestId: null,
+    });
+    actions.busy.set(true);
+    actions.dismissResult();
+    expect(actions.response()).not.toBeNull();
+    actions.busy.set(false);
+    actions.dismissResult();
+    expect(actions.response()).toBeNull();
+    expect(actions.input()).toEqual(input);
+  });
   it('carries the actual task ID and freezes the command before confirmation', async () => {
     const retry = api
       .commands('tasks')

@@ -137,4 +137,24 @@ describe('Server-owned display preferences', () => {
     expect(preferences.scheme.selected()).toBe('blue-light');
     http.expectNone(endpoint);
   });
+  it('keeps language writes intact during same-account permission refresh', async () => {
+    await loaded();
+    await preferences.language('fa');
+    const write = http.expectOne(endpoint);
+    expect(write.request.body.locale).toEqual({ language: 'fa' });
+    TestBed.inject(SessionContext).updatePermissions([]);
+    TestBed.tick();
+    http.expectNone(endpoint);
+    write.flush(data('current-2', 'blue', 'light', 'fa'));
+    await vi.waitFor(() => expect(preferences.status()).toBe('saved'));
+    expect(document.documentElement.dir).toBe('rtl');
+    await preferences.language('en');
+    const english = http.expectOne(endpoint);
+    TestBed.inject(SessionContext).updatePermissions([]);
+    TestBed.tick();
+    http.expectNone(endpoint);
+    english.flush(data('current-3', 'blue', 'light', 'en'));
+    await vi.waitFor(() => expect(preferences.status()).toBe('saved'));
+    expect(document.documentElement.dir).toBe('ltr');
+  });
 });

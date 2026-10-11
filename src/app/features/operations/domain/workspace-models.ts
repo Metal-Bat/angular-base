@@ -18,6 +18,8 @@ export type CatalogItem = {
 };
 export type CaseRecord = {
   readonly ref: string;
+  readonly request?: string | null;
+  readonly summary?: Readonly<Record<string, string | number | null>>;
   readonly status: string;
   readonly kind: 'HUMAN_TASK' | 'AI_APPROVAL' | 'UNSUPPORTED';
   readonly claimant: string | null;

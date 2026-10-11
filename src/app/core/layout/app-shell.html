@@ -80,6 +80,9 @@
       (click)="toggleNotifications()"
     >
       <i aria-hidden="true" class="pi pi-bell"></i>
+      <bdi data-notification-count [hidden]="!notifications.unreadCount()">{{
+        notifications.unreadCount()
+      }}</bdi>
     </button>
   }
 </header>

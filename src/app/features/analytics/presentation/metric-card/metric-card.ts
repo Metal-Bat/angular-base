@@ -38,7 +38,10 @@ export class MetricCard {
   readonly rows = computed(() =>
     this.available()
       ? this.result()!.series.flatMap((series) =>
-          series.buckets.map((bucket) => ({ ...bucket, series: series.key })),
+          series.buckets.map((bucket) => ({
+            ...bucket,
+            series: series.key === 'total' ? 'Total' : series.key,
+          })),
         )
       : [],
   );

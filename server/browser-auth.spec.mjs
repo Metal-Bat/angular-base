@@ -1,6 +1,10 @@
+import { Readable } from "node:stream";
+import { pipeline } from "node:stream/promises";
+import { writeBrowserReport } from "./browser-report.mjs";
 import { createPreferencesFixture } from "./preferences-fixture.mjs";
 import {
   browserDiagnosticsScript,
+  browserDiagnosticDeliveryScript,
   assertBrowserDiagnostics,
 } from "./browser-diagnostics.mjs";
 import {
@@ -10,6 +14,7 @@ import {
 import {
   createRecordsFixture,
   recordsBrowserScript,
+  temporalRecordsBrowserScript,
 } from "./records-fixture.mjs";
 import {
   createCanvasFixture,
@@ -63,7 +68,24 @@ const upstream = createServer(async (req, res) => {
     parts.push(part);
   }
   const body = Buffer.concat(parts).toString();
-  calls.push({ path: req.url, body, authorization: req.headers.authorization });
+  calls.push({
+    method: req.method,
+    path: req.url,
+    body,
+    authorization: req.headers.authorization,
+  });
+  if (req.url === "/api/v1/inbox/events") {
+    res.writeHead(200, {
+      "content-type": "text/event-stream",
+      "cache-control": "private, no-store, no-transform",
+    });
+    res.write(
+      'event: inbox.resync\ndata: {"schema_version":1,"reason":"connected"}\n\n',
+    );
+    const heartbeat = setInterval(() => res.write(": heartbeat\n\n"), 15000);
+    res.once("close", () => clearInterval(heartbeat));
+    return;
+  }
   res.setHeader("content-type", "application/json");
   const canvasResponse =
     process.env.CANVAS_BROWSER_CHECKS === "1"
@@ -79,7 +101,7 @@ const upstream = createServer(async (req, res) => {
       : null;
   if (
     process.env.FOUNDATION_BROWSER_CHECKS === "1" &&
-    req.url === "/api/v1/notifications/notice-fail"
+    req.url === "/api/v1/inbox/notice-fail"
   ) {
     res.statusCode = 503;
     res.setHeader("X-Request-ID", "fixture-request-001");
@@ -94,6 +116,25 @@ const upstream = createServer(async (req, res) => {
     body,
   );
   let result;
+  if (req.url === "/api/v1/inbox/unread" && !foundationResponse) {
+    res.end(JSON.stringify({ success: true, data: { total: 0 } }));
+    return;
+  }
+  if (req.url === "/api/v1/inbox/search" && !foundationResponse) {
+    res.end(
+      JSON.stringify({
+        success: true,
+        result: {
+          items: [],
+          page: JSON.parse(body).page,
+          size: 20,
+          total: 0,
+          total_pages: 0,
+        },
+      }),
+    );
+    return;
+  }
   if (preferenceResponse) {
     res.statusCode = preferenceResponse.status;
     result = preferenceResponse.body;
@@ -211,6 +252,8 @@ let handle;
 let resolveResult;
 let lastBrowserStage = "not started";
 const browserDiagnostics = [];
+const partialAccessibility = [];
+const failedRequests = [];
 const result = new Promise((resolve) => {
   resolveResult = resolve;
 });
@@ -259,6 +302,7 @@ const script = `
 
  ${accessibilityScript}
  const login = async (password) => {
+  history.pushState(null,'','/login?returnTo=/operations');dispatchEvent(new PopStateEvent('popstate'));await new Promise(resolve=>setTimeout(resolve,75));
   await wait(()=>document.querySelector('#username'), 'login form');
   for (const [id,value] of [['username','fixture-user'],['password',password]]) {
    const input=document.getElementById(id); input.value=value; input.dispatchEvent(new Event('input',{bubbles:true}));
@@ -274,7 +318,7 @@ const script = `
  } else if (phase === 'studio-catalog') {
  ${studioCatalogBrowserScript}
  } else if (phase === 'records') {
- ${recordsBrowserScript}
+ ${process.env.TEMPORAL_BROWSER_CHECKS === "1" ? temporalRecordsBrowserScript : recordsBrowserScript}
  } else if (phase === 'performance') {
  ${runtimePerformanceScript}
  } else if (phase === 'admin') {
@@ -290,11 +334,13 @@ const script = `
   check(showcaseChoice()?.getAttribute('aria-label')==='Status','shared selector label');
   check(showcaseChoice().getAttribute('aria-required')==='true','shared selector required semantics');
   check(showcaseChoice().getAttribute('aria-describedby')==='showcase-selector-error' && document.getElementById('showcase-selector-error'),'shared selector validation link');
+  let showcaseShown=false;const showcaseShowSubscription=window.ng.getComponent(showcaseChoice().closest('p-select')).onShow.subscribe(()=>{showcaseShown=true;});
   showcaseChoice().focus();showcaseChoice().dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowDown',code:'ArrowDown',bubbles:true}));
   await wait(()=>showcaseChoice().getAttribute('aria-expanded')==='true','showcase choice open');
+  await wait(()=>showcaseShown,'showcase opening lifecycle');showcaseShowSubscription.unsubscribe();
   await wait(()=>{
     const list=document.getElementById(showcaseChoice().getAttribute('aria-controls'));
-    return list?.querySelectorAll('[role="option"]').length===2 && list.parentElement.getAnimations({subtree:true}).every(animation=>animation.playState!=='running');
+    return list?.querySelectorAll('[role="option"]').length===2 && list.closest('.p-select-overlay')?.getAnimations({subtree:true}).every(animation=>animation.playState!=='running');
   },'showcase options ready');
   showcaseChoice().dispatchEvent(new KeyboardEvent('keydown',{key:'End',code:'End',bubbles:true}));
   await wait(()=>document.getElementById(showcaseChoice().getAttribute('aria-activedescendant'))?.getAttribute('aria-label')==='Ready','showcase keyboard option focused');
@@ -365,7 +411,7 @@ const script = `
   check(document.documentElement.dataset.palette==='blue'&&document.documentElement.classList.contains('app-dark'),'RTL selection preserved');
   await auditAccessibility('shared-ui-persian-dark');
   check(getComputedStyle(prime).fontFamily.includes('Yekan'),'Persian font stack missing on PrimeNG');check(getComputedStyle(material).fontFamily.includes('Yekan'),'Persian font stack missing on Material');
-  const languagePicker=document.querySelector('[data-language-picker] select');check(languagePicker.options.length===3,'language dropdown');await chooseLanguage('ar');await wait(()=>document.documentElement.lang==='ar'&&!languagePicker.disabled,'Arabic language');check(document.documentElement.dir==='rtl','Arabic direction');check(sample.textContent.includes('عناصر النموذج'),'Arabic catalog');check(themeControl().getAttribute('aria-label')==='المظهر'&&themeControl().textContent.includes('أزرق'),'Arabic theme labels');check(prime.value==='Ali ۱۲۳'&&material.value==='Review','Arabic changed canonical values');await auditAccessibility('shared-ui-arabic-dark');await chooseLanguage('fa');await wait(()=>document.documentElement.lang==='fa'&&!languagePicker.disabled,'Persian restore');
+  const languagePicker=document.querySelector('[data-language-picker] select');check(languagePicker.options.length===3,'language dropdown');await chooseLanguage('ar');await wait(()=>document.documentElement.lang==='ar'&&sample.textContent.includes('عناصر النموذج')&&!languagePicker.disabled,'Arabic language and catalog rendered');check(document.documentElement.dir==='rtl','Arabic direction');check(sample.textContent.includes('عناصر النموذج'),'Arabic catalog');check(themeControl().getAttribute('aria-label')==='المظهر'&&themeControl().textContent.includes('أزرق'),'Arabic theme labels');check(prime.value==='Ali ۱۲۳'&&material.value==='Review','Arabic changed canonical values');await auditAccessibility('shared-ui-arabic-dark');await chooseLanguage('fa');await wait(()=>document.documentElement.lang==='fa'&&!languagePicker.disabled,'Persian restore');
 
   window.fixtureStage='prime-dialog';
   open.focus(); open.click(); await wait(()=>document.querySelector('.p-dialog'),'Prime dialog');
@@ -534,9 +580,18 @@ const script = `
 `;
 const browserServer = createServer(async (req, res) => {
   const url = new URL(req.url, origin);
+  res.on("finish", () => {
+    if (res.statusCode >= 400)
+      failedRequests.push({ path: url.pathname, status: res.statusCode });
+  });
   const parts = [];
   for await (const part of req) {
     parts.push(part);
+  }
+  if (url.pathname === "/test-accessibility") {
+    partialAccessibility.push(JSON.parse(Buffer.concat(parts)));
+    res.end("ok");
+    return;
   }
   if (url.pathname === "/test-diagnostics") {
     browserDiagnostics.push(...JSON.parse(Buffer.concat(parts)));
@@ -577,10 +632,14 @@ const browserServer = createServer(async (req, res) => {
       url.pathname.startsWith("/session/") ||
       url.pathname.startsWith("/api/")
     ) {
+      const abort = new AbortController();
+      const disconnected = () => abort.abort();
+      res.once("close", disconnected);
       const response = await handle(
         new Request(origin + req.url, {
           method: req.method,
           headers: req.headers,
+          signal: abort.signal,
           body: ["GET", "HEAD"].includes(req.method)
             ? undefined
             : Buffer.concat(parts),
@@ -589,7 +648,19 @@ const browserServer = createServer(async (req, res) => {
       boundaryResponses.push({ path: url.pathname, status: response.status });
       if (url.pathname === "/session/logout") completedLogouts += 1;
       res.writeHead(response.status, Object.fromEntries(response.headers));
-      res.end(Buffer.from(await response.arrayBuffer()));
+      if (
+        response.headers.get("content-type")?.startsWith("text/event-stream")
+      ) {
+        res.flushHeaders();
+        try {
+          await pipeline(Readable.fromWeb(response.body), res);
+        } finally {
+          res.off("close", disconnected);
+        }
+      } else {
+        res.end(Buffer.from(await response.arrayBuffer()));
+        res.off("close", disconnected);
+      }
       return;
     }
     if (url.pathname === "/runtime-config.json") {
@@ -614,27 +685,11 @@ const browserServer = createServer(async (req, res) => {
     res.setHeader("content-type", "text/html");
     const diagnostics =
       browserDiagnosticsScript +
-      `
-      const originalFetch = window.fetch.bind(window);
-      const pendingDiagnostics = [];
-      const originalPush = window.fixtureDiagnostics.push.bind(window.fixtureDiagnostics);
-      window.fixtureDiagnostics.push = (...entries) => {
-        const length = originalPush(...entries);
-        pendingDiagnostics.push(originalFetch('/test-diagnostics', {
-          method:'POST', keepalive:true, body:JSON.stringify(entries)
-        }).then(response => response.ok, () => false));
-        return length;
-      };
-      window.fetch = async (input, init) => {
-        if (String(input).startsWith('/test-result')) {
-          const delivered = await Promise.all(pendingDiagnostics);
-          if (delivered.some(ok => !ok)) {
-            await originalFetch('/test-diagnostics', {method:'POST', body:JSON.stringify([{kind:'diagnostic-delivery-failed'}])});
-          }
-        }
-        return originalFetch(input, init);
-      };
-    `;
+      browserDiagnosticDeliveryScript +
+      (process.env.BROWSER_SANDBOX_PROBE === "warning" &&
+      !url.searchParams.has("peer")
+        ? "console.warn('NG0956 diagnostic probe');"
+        : "");
     const injected = url.searchParams.has("peer")
       ? ""
       : "<script>" +
@@ -648,6 +703,10 @@ const browserServer = createServer(async (req, res) => {
         .replace("</body>", injected + "</body>"),
     );
   } catch (error) {
+    if (res.headersSent || res.destroyed) {
+      res.destroy();
+      return;
+    }
     res.writeHead(500);
     res.end("Fixture failed");
   }
@@ -666,6 +725,8 @@ handle = createSessionBoundary({
 });
 let browser;
 let timer;
+let reportOutcome;
+let reportFailure;
 try {
   browser = spawnBrowser(
     origin + "/operations",
@@ -690,6 +751,7 @@ try {
       );
     }),
   ]);
+  reportOutcome = outcome;
   assert.equal(
     outcome.ok,
     true,
@@ -721,19 +783,15 @@ try {
   }
   if (process.env.FOUNDATION_BROWSER_CHECKS === "1") {
     assert.ok(
-      calls.some(
-        (call) => call.path === "/api/v1/notifications/notice-current/read",
-      ),
+      calls.some((call) => call.path === "/api/v1/inbox/notice-current/read"),
     );
     assert.ok(
-      !calls.some(
-        (call) => call.path === "/api/v1/notifications/notice-old/read",
-      ),
+      !calls.some((call) => call.path === "/api/v1/inbox/notice-old/read"),
     );
     assert.ok(
       calls.some(
         (call) =>
-          call.path.endsWith("/notifications/search") &&
+          call.path.endsWith("/inbox/search") &&
           JSON.parse(call.body).filters?.some(
             (filter) =>
               filter.field_name === "subject" && filter.value === "Inbox",
@@ -741,9 +799,23 @@ try {
       ),
     );
     assert.ok(
-      !calls.some((call) =>
-        /\/(calendar|help-state|incidents)(\/|$)/.test(call.path),
+      !calls.some((call) => /\/(calendar|incidents)(\/|$)/.test(call.path)),
+    );
+    const helpWrites = calls.filter(
+      (call) =>
+        call.method === "POST" &&
+        call.path.startsWith("/api/v1/me/help-state/"),
+    );
+    assert.ok(helpWrites.some((call) => call.path.endsWith("/seen")));
+    assert.ok(helpWrites.some((call) => call.path.endsWith("/dismiss")));
+    assert.ok(helpWrites.some((call) => call.path.endsWith("/reset")));
+    assert.ok(
+      helpWrites.every((call) =>
+        Object.keys(JSON.parse(call.body)).every((key) =>
+          ["help_key", "revision", "locale"].includes(key),
+        ),
       ),
+      "Help writes must remain metadata-only",
     );
   }
   if (process.env.STUDIO_CATALOG_BROWSER_CHECKS === "1") {
@@ -798,7 +870,28 @@ try {
       "Studio catalogs: create/edit, applied reports, parent selection, immutable versions passed",
     );
   }
-  if (process.env.RECORD_BROWSER_CHECKS === "1") {
+  if (process.env.TEMPORAL_BROWSER_CHECKS === "1") {
+    const selected = recordsFixture.calls.filter((c) =>
+      c.path.endsWith("/users/select"),
+    );
+    assert.ok(
+      selected.some((c) =>
+        c.payload.filters.some(
+          (f) =>
+            f.field_name === "created_at" &&
+            f.value === "2024-03-19T20:30:00.000Z",
+        ),
+      ),
+      "Calendar selection must send canonical UTC filters",
+    );
+    console.log(
+      "Temporal browser flows passed: three calendars, canonical UTC, invalid drafts, accessible date/time pickers and responsive RTL tables.",
+    );
+  }
+  if (
+    process.env.RECORD_BROWSER_CHECKS === "1" &&
+    process.env.TEMPORAL_BROWSER_CHECKS !== "1"
+  ) {
     const seen = recordsFixture.calls;
     const selected = seen.filter((c) => c.path.endsWith("/users/select"));
     assert.ok(
@@ -863,24 +956,6 @@ try {
     }
     assert.equal(saves.at(-1).payload.outcome_key, "APPROVE");
   }
-  if (process.env.BROWSER_REPORT_PATH) {
-    await mkdir(dirname(process.env.BROWSER_REPORT_PATH), { recursive: true });
-    await writeFile(
-      process.env.BROWSER_REPORT_PATH,
-      JSON.stringify(
-        {
-          engine: browserName(),
-          evidence: "fixture-only",
-          diagnostics: outcome.diagnostics,
-          date: new Date().toISOString(),
-          measurements: outcome.measurements,
-          accessibility: outcome.accessibility,
-        },
-        null,
-        2,
-      ) + "\n",
-    );
-  }
   if (outcome.measurements)
     console.log("Runtime performance: " + JSON.stringify(outcome.measurements));
   if (outcome.accessibility?.length)
@@ -907,20 +982,40 @@ try {
                 : browserName() +
                   " Angular journeys passed: invalid/valid login, reload, multi-page permissions, revocation, cross-tab logout, expiry, safe return, empty storage.",
   );
+} catch (error) {
+  reportFailure = { name: error.name, code: error.code };
+  throw error;
 } finally {
   clearTimeout(timer);
-  if (browser && browser.exitCode === null) {
-    browser.kill("SIGTERM");
-    await once(browser, "exit");
+  try {
+    await writeBrowserReport(
+      process.env.BROWSER_REPORT_PATH,
+      {
+        engine: browserName(),
+        ok: reportOutcome?.ok === true && !reportFailure,
+        stage: lastBrowserStage,
+        failure: reportFailure,
+        diagnostics: browserDiagnostics,
+        failedRequests,
+        accessibility: reportOutcome?.accessibility ?? partialAccessibility,
+        measurements: reportOutcome?.measurements,
+      },
+      browser,
+    );
+  } finally {
+    if (browser && browser.exitCode === null) {
+      browser.kill("SIGTERM");
+      await once(browser, "exit");
+    }
+    await Promise.all([
+      new Promise((resolve) => browserServer.close(resolve)),
+      new Promise((resolve) => upstream.close(resolve)),
+    ]);
+    await rm(profile, {
+      recursive: true,
+      force: true,
+      maxRetries: 10,
+      retryDelay: 100,
+    });
   }
-  await Promise.all([
-    new Promise((resolve) => browserServer.close(resolve)),
-    new Promise((resolve) => upstream.close(resolve)),
-  ]);
-  await rm(profile, {
-    recursive: true,
-    force: true,
-    maxRetries: 10,
-    retryDelay: 100,
-  });
 }

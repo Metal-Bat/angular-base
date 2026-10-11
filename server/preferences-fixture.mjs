@@ -20,8 +20,19 @@ export function createPreferencesFixture() {
         const patch = JSON.parse(body);
         if (patch.ref_id !== `fixture-preferences-${version}`)
           return { status: 409, body: { success: false } };
-        for (const group of ["appearance", "locale"]) {
+        for (const group of [
+          "appearance",
+          "locale",
+          "workspace",
+          "notifications",
+        ]) {
           if (patch[group]) Object.assign(settings[group], patch[group]);
+          else if (group === "appearance" && patch[group] === null)
+            settings.appearance = {
+              theme_key: "blue",
+              theme_mode: "system",
+              density: "comfortable",
+            };
         }
         version++;
       }

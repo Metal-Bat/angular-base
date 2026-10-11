@@ -1,10 +1,36 @@
+import { receiptBrowserJourney } from "./receipt-browser-journey.mjs";
+import { nodeAuthoringBrowserJourney } from "./node-authoring-browser-journey.mjs";
+import { formLayoutBrowserJourney } from "./form-layout-browser-journey.mjs";
+import { analyticsBrowserJourney } from "./analytics-browser-journey.mjs";
+import { calendarBrowserJourney } from "./calendar-browser-journey.mjs";
+import { createHash } from "node:crypto";
+import { supportBrowserJourney } from "./support-browser-journey.mjs";
+import { readinessBrowserJourney } from "./readiness-browser-journey.mjs";
+import { helpBrowserJourney } from "./help-browser-journey.mjs";
+import { collectionsBrowserJourney } from "./collections-browser-journey.mjs";
+import { foundationsBrowserJourney } from "./foundations-browser-journey.mjs";
+import {
+  notificationBrowserJourney,
+  liveObservationScript,
+} from "./notification-browser-journey.mjs";
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
+import { Readable } from "node:stream";
+import { pipeline } from "node:stream/promises";
 import {
   browserDiagnosticsScript,
   assertBrowserDiagnostics,
 } from "./browser-diagnostics.mjs";
 import assert from "node:assert/strict";
 import { createServer } from "node:http";
-import { readFile, mkdtemp, rm } from "node:fs/promises";
+import {
+  readFile,
+  mkdtemp,
+  rm,
+  writeFile,
+  mkdir,
+  readdir,
+} from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { extname, join } from "node:path";
 import { spawn } from "node:child_process";
@@ -20,13 +46,105 @@ const credentials = JSON.parse(
 const directory = process.env.BROWSER_APP_DIR ?? "dist/ng-architect/browser";
 const index = await readFile(join(directory, "index.html"), "utf8");
 const profile = await mkdtemp(join(tmpdir(), "real-backend-browser-"));
+// The optional requester uses only the guarded owned fixture's existing actor.
+if (
+  process.env.RECEIPT_BROWSER_CHECKS === "1" &&
+  process.env.RECEIPT_BACKEND_ROOT
+) {
+  const target = join(profile, "requester.json");
+  await promisify(execFile)(
+    process.env.RECEIPT_BACKEND_PYTHON,
+    [
+      join(process.cwd(), "scripts/receipt-paired-requester.py"),
+      process.env.BACKEND_BROWSER_ACCOUNTS,
+      target,
+    ],
+    {
+      cwd: process.env.RECEIPT_BACKEND_ROOT,
+      env: process.env,
+      maxBuffer: 4 * 1024 * 1024,
+    },
+  );
+  credentials.requester = JSON.parse(await readFile(target, "utf8")).username;
+}
 let resolveResult;
 const result = new Promise((resolve) => {
   resolveResult = resolve;
 });
 let boundary;
 const calls = [];
-const script = `
+const streams = new Set();
+let offline = false;
+let maxStreams = 0;
+const notifications = process.env.NOTIFICATION_BROWSER_CHECKS === "1";
+let receiptDrop =
+  process.env.RECEIPT_BROWSER_CHECKS === "1" &&
+  process.env.RECEIPT_DROP_APPROVAL_RESPONSE === "1";
+let receiptDrops = 0;
+const foundations = process.env.FOUNDATIONS_BROWSER_CHECKS === "1";
+const foundationTask = process.env.FOUNDATION_TASK || null;
+assert.ok(
+  !foundationTask ||
+    (foundations &&
+      ["009", "010", "011", "013", "014", "015", "016", "021"].includes(
+        foundationTask,
+      )),
+  "Unsupported task scope",
+);
+if (foundations) {
+  await mkdir(join(profile, "downloads"));
+  await writeFile(
+    join(profile, "user.js"),
+    [
+      ...(["009", "015", "016"].includes(foundationTask)
+        ? ['user_pref("dom.disable_open_during_load", false);']
+        : []),
+      ...(["015", "016"].includes(foundationTask)
+        ? ['user_pref("dom.disable_window_move_resize", false);']
+        : []),
+      'user_pref("browser.download.folderList", 2);',
+      'user_pref("browser.download.useDownloadDir", true);',
+      'user_pref("browser.download.alwaysOpenPanel", false);',
+      'user_pref("browser.helperApps.neverAsk.saveToDisk", "image/png,image/jpeg,image/webp,application/octet-stream,text/plain");',
+      'user_pref("browser.download.always_ask_before_handling_new_types", false);',
+      'user_pref("browser.download.dir", ' +
+        JSON.stringify(join(profile, "downloads")) +
+        ");",
+    ].join("\n"),
+  );
+}
+let calendarDropResponses = false;
+const calendarCommands = [];
+let supportNetworkFault = false;
+const supportEvidence = [];
+let typedViewApplied = false;
+let progress = { scenarios: [], diagnostics: [] };
+const calendarEvidence = [];
+
+const script =
+  process.env.RECEIPT_BROWSER_CHECKS === "1"
+    ? receiptBrowserJourney(credentials)
+    : foundations
+      ? foundationTask === "009"
+        ? collectionsBrowserJourney(credentials)
+        : foundationTask === "010"
+          ? helpBrowserJourney(credentials)
+          : foundationTask === "011"
+            ? readinessBrowserJourney(credentials)
+            : foundationTask === "013"
+              ? supportBrowserJourney(credentials)
+              : foundationTask === "014"
+                ? calendarBrowserJourney(credentials)
+                : foundationTask === "015"
+                  ? analyticsBrowserJourney(credentials)
+                  : foundationTask === "021"
+                    ? nodeAuthoringBrowserJourney(credentials)
+                    : foundationTask === "016"
+                      ? formLayoutBrowserJourney(credentials)
+                      : foundationsBrowserJourney(credentials)
+      : notifications
+        ? notificationBrowserJourney(credentials)
+        : `
 (async () => {
  const accounts = ${JSON.stringify(credentials).replaceAll("<", "\\u003c")};
  const wait = async (predicate, name) => { for (let n=0;n<400;n++) { if(predicate()) return; await new Promise(r=>setTimeout(r,25)); } throw Error('Timed out: '+name); };
@@ -69,6 +187,244 @@ const server = createServer(async (req, res) => {
     const url = new URL(req.url, "http://localhost");
     const parts = [];
     for await (const part of req) parts.push(part);
+    if (
+      foundationTask === "009" &&
+      url.pathname === "/__collection-query-evidence"
+    ) {
+      res.setHeader("content-type", "application/json");
+      res.end(JSON.stringify({ typedViewApplied }));
+      return;
+    }
+    if (
+      foundationTask === "009" &&
+      url.pathname === "/api/v1/business-requests/search" &&
+      req.method === "POST"
+    ) {
+      const query = JSON.parse(Buffer.concat(parts).toString("utf8"));
+      typedViewApplied ||=
+        query.page === 1 &&
+        query.size === 35 &&
+        query.scope === "mine" &&
+        query.filters?.length === 1 &&
+        query.filters[0].field_name === "priority" &&
+        query.filters[0].operation === "gte" &&
+        query.filters[0].value === 0 &&
+        query.sort_orders?.length === 1 &&
+        query.sort_orders[0].field_name === "created_at" &&
+        query.sort_orders[0].operation === "desc";
+    }
+    if (foundations && url.pathname === "/__foundation-progress") {
+      progress = JSON.parse(Buffer.concat(parts).toString("utf8"));
+      console.log("Foundation progress:", progress.scenarios.at(-1));
+      res.end("ok");
+      return;
+    }
+    if (
+      foundations &&
+      foundationTask === "015" &&
+      url.pathname.startsWith("/__analytics-action/") &&
+      req.method === "POST"
+    ) {
+      const action = url.pathname.split("/").at(-1);
+      assert.ok(["deleted_history", "offline", "online"].includes(action));
+      if (action === "deleted_history") {
+        const result = await promisify(execFile)(
+          process.env.FOUNDATION_BACKEND_PYTHON,
+          [process.env.ANALYTICS_ACTION_SCRIPT],
+          {
+            cwd: process.env.FOUNDATION_BACKEND_ROOT,
+            env: process.env,
+            timeout: 30000,
+          },
+        );
+        res.writeHead(200, {
+          "content-type": "application/json",
+          "cache-control": "no-store",
+        });
+        res.end(result.stdout.trim().split("\n").at(-1));
+      } else {
+        const pid = Number(process.env.OWNED_BACKEND_PID);
+        assert.ok(Number.isSafeInteger(pid) && pid > 1);
+        const { realpath } = await import("node:fs/promises");
+        assert.equal(
+          await realpath("/proc/" + pid + "/cwd"),
+          await realpath(process.env.FOUNDATION_BACKEND_ROOT),
+        );
+        assert.ok(
+          process.env.FOUNDATION_BACKEND_ROOT.includes(
+            "app-fe-notification-backend-",
+          ),
+        );
+        process.kill(pid, action === "offline" ? "SIGSTOP" : "SIGCONT");
+        res.end("ok");
+      }
+      return;
+    }
+    if (
+      foundations &&
+      foundationTask === "014" &&
+      url.pathname.startsWith("/__calendar-action/") &&
+      req.method === "POST"
+    ) {
+      const action = url.pathname.split("/").at(-1);
+      assert.ok(["disconnect", "online", "cancelled"].includes(action));
+      if (action === "cancelled") {
+        const result = await promisify(execFile)(
+          process.env.FOUNDATION_BACKEND_PYTHON,
+          [process.env.CALENDAR_ACTION_SCRIPT],
+          {
+            cwd: process.env.FOUNDATION_BACKEND_ROOT,
+            env: process.env,
+            timeout: 30000,
+          },
+        );
+        res.writeHead(200, {
+          "content-type": "application/json",
+          "cache-control": "no-store",
+        });
+        res.end(result.stdout.trim().split("\n").at(-1));
+      } else {
+        calendarDropResponses = action === "disconnect";
+        res.end("ok");
+      }
+      return;
+    }
+    if (
+      foundations &&
+      foundationTask === "014" &&
+      url.pathname === "/__calendar-evidence"
+    ) {
+      res.writeHead(200, {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+      });
+      res.end(JSON.stringify(calendarCommands));
+      return;
+    }
+    if (
+      foundations &&
+      foundationTask === "013" &&
+      url.pathname.startsWith("/__support-action/") &&
+      req.method === "POST"
+    ) {
+      const action = url.pathname.split("/").at(-1);
+      assert.ok(
+        [
+          "sink_off",
+          "sink_on",
+          "business_fault",
+          "cleanup",
+          "network_once",
+        ].includes(action),
+      );
+      if (action === "network_once") {
+        supportNetworkFault = true;
+        res.end("ok");
+      } else {
+        const result = await promisify(execFile)(
+          process.env.FOUNDATION_BACKEND_PYTHON,
+          [process.env.SUPPORT_ACTION_SCRIPT, action],
+          {
+            cwd: process.env.FOUNDATION_BACKEND_ROOT,
+            env: process.env,
+            timeout: 30000,
+          },
+        );
+        res.writeHead(200, {
+          "content-type": "application/json",
+          "cache-control": "no-store",
+        });
+        res.end(result.stdout.trim().split("\n").at(-1));
+      }
+      return;
+    }
+    if (
+      foundations &&
+      foundationTask === "013" &&
+      url.pathname === "/__support-evidence"
+    ) {
+      res.writeHead(200, {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+      });
+      res.end(JSON.stringify(supportEvidence));
+      return;
+    }
+    if (
+      foundations &&
+      foundationTask === "013" &&
+      url.pathname === "/api/v1/support/client-failures"
+    ) {
+      const body = JSON.parse(Buffer.concat(parts).toString("utf8"));
+      supportNetworkFault = false;
+      supportEvidence.push({
+        fields: Object.keys(body).sort(),
+        screen: body.screen_key,
+        code: body.error_code,
+        requestId: body.request_id,
+        privateDataAbsent:
+          !JSON.stringify(body).includes(credentials.password) &&
+          !JSON.stringify(body).includes("private-test"),
+      });
+    }
+    if (supportNetworkFault && url.pathname === "/api/v1/forms/search") {
+      req.socket.destroy();
+      return;
+    }
+    if (
+      foundations &&
+      url.pathname === "/__foundation-action/reminders" &&
+      req.method === "POST"
+    ) {
+      const result = await promisify(execFile)(
+        process.env.FOUNDATION_BACKEND_PYTHON,
+        [process.env.FOUNDATION_ACTION_SCRIPT],
+        {
+          cwd: process.env.FOUNDATION_BACKEND_ROOT,
+          env: process.env,
+          timeout: 30000,
+        },
+      );
+      res.writeHead(200, {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+      });
+      res.end(result.stdout.trim().split("\n").at(-1));
+      return;
+    }
+    if (notifications && url.pathname.startsWith("/__notification-action/")) {
+      const action = url.pathname.split("/").at(-1);
+      if (action === "disconnect" || action === "offline") {
+        offline = action === "offline";
+        for (const connection of streams) connection.destroy();
+      } else if (action === "online") {
+        offline = false;
+      } else {
+        if (!["account", "task", "duplicate", "cleanup"].includes(action))
+          throw Error("Invalid owned action");
+        console.log("Owned notification action:", action);
+        try {
+          await promisify(execFile)(
+            process.env.NOTIFICATION_BACKEND_PYTHON,
+            [process.env.NOTIFICATION_ACTION_SCRIPT, action],
+            {
+              cwd: process.env.NOTIFICATION_BACKEND_ROOT,
+              env: process.env,
+              timeout: 30000,
+            },
+          );
+        } catch (error) {
+          console.log(
+            "Owned action failed:",
+            error.code,
+            error.stderr?.trim().split("\n").at(-1),
+          );
+          throw error;
+        }
+      }
+      res.end("ok");
+      return;
+    }
     if (url.pathname === "/__result") {
       resolveResult(JSON.parse(Buffer.concat(parts)));
       res.end("ok");
@@ -78,10 +434,22 @@ const server = createServer(async (req, res) => {
       url.pathname.startsWith("/session/") ||
       url.pathname.startsWith("/api/")
     ) {
+      if (notifications && offline && url.pathname === "/api/v1/inbox/events") {
+        res.writeHead(503, {
+          "content-type": "application/json",
+          "cache-control": "private, no-store",
+        });
+        res.end(JSON.stringify({ error: "owned_test_network_outage" }));
+        return;
+      }
+      const abort = new AbortController();
+      const disconnected = () => abort.abort();
+      res.once("close", disconnected);
       const response = await boundary(
         new Request(origin + req.url, {
           method: req.method,
           headers: req.headers,
+          signal: abort.signal,
           body: ["GET", "HEAD"].includes(req.method)
             ? undefined
             : Buffer.concat(parts),
@@ -92,8 +460,79 @@ const server = createServer(async (req, res) => {
         path: url.pathname,
         status: response.status,
       });
+      if (
+        receiptDrop &&
+        req.method === "POST" &&
+        /^\/api\/v1\/work-items\/[^/]+\/complete$/.test(url.pathname) &&
+        response.ok
+      ) {
+        await response.arrayBuffer();
+        receiptDrop = false;
+        receiptDrops += 1;
+        res.off("close", disconnected);
+        // Start the reply before dropping it so the browser cannot transparently
+        // retry an HTTP request whose response never started.
+        res.writeHead(response.status, {
+          "content-type": "application/json",
+          "content-length": "100",
+          connection: "close",
+        });
+        res.write("{", () => res.destroy());
+        return;
+      }
       res.writeHead(response.status, Object.fromEntries(response.headers));
-      res.end(Buffer.from(await response.arrayBuffer()));
+      if (
+        response.headers.get("content-type")?.startsWith("text/event-stream")
+      ) {
+        streams.add(res);
+        maxStreams = Math.max(maxStreams, streams.size);
+        res.once("close", () => streams.delete(res));
+        res.flushHeaders();
+        try {
+          await pipeline(Readable.fromWeb(response.body), res);
+        } finally {
+          res.off("close", disconnected);
+        }
+      } else {
+        const bytes = Buffer.from(await response.arrayBuffer());
+        if (
+          foundations &&
+          url.pathname === "/api/v1/calendar/events/search" &&
+          response.ok
+        ) {
+          const body = JSON.parse(bytes.toString("utf8"));
+          calendarEvidence.push({
+            rows: body.result.items.length,
+            expectedTitle: body.result.items.some(
+              (row) => row.title === "Owned UTC+04 event",
+            ),
+            expectedStart: body.result.items.some(
+              (row) => row.schedule.start_at === "2026-11-02T05:00:00Z",
+            ),
+          });
+        }
+        if (
+          foundations &&
+          foundationTask === "014" &&
+          url.pathname === "/api/v1/calendar/events" &&
+          req.method === "POST"
+        ) {
+          calendarCommands.push({
+            hash: createHash("sha256")
+              .update(Buffer.concat(parts))
+              .digest("hex"),
+            status: response.status,
+            dropped: calendarDropResponses,
+          });
+          if (calendarDropResponses && response.ok) {
+            res.off("close", disconnected);
+            res.destroy();
+            return;
+          }
+        }
+        res.end(bytes);
+        res.off("close", disconnected);
+      }
       return;
     }
     if (url.pathname === "/runtime-config.json") {
@@ -120,11 +559,23 @@ const server = createServer(async (req, res) => {
       index
         .replace(
           "<head>",
-          "<head><script>" + browserDiagnosticsScript + "</script>",
+          "<head><script>" +
+            browserDiagnosticsScript +
+            (notifications ? liveObservationScript : "") +
+            "</script>",
         )
-        .replace("</body>", "<script>" + script + "</script></body>"),
+        .replace(
+          "</body>",
+          "<script>" +
+            (url.searchParams.has("peer") ? "" : script) +
+            "</script></body>",
+        ),
     );
   } catch {
+    if (res.headersSent || res.destroyed) {
+      res.destroy();
+      return;
+    }
     res.writeHead(500);
     res.end("Browser test service failed");
   }
@@ -160,17 +611,41 @@ try {
     result,
     new Promise((resolve) => {
       timeout = setTimeout(
-        () => resolve({ ok: false, error: "Browser journey timeout" }),
-        90000,
+        () =>
+          resolve({ ...progress, ok: false, error: "Browser journey timeout" }),
+        foundations ? 180000 : 90000,
       );
     }),
   ]);
-  assertBrowserDiagnostics(outcome.diagnostics);
-  assert.equal(
-    outcome.ok,
-    true,
-    outcome.error + "\n" + JSON.stringify(calls.slice(-10)),
-  );
+  if (notifications) {
+    assert.ok(maxStreams <= 1, "Components opened concurrent streams");
+    assert.equal(
+      calls.filter((call) =>
+        /\/(claim|approve|reject|forward)$/.test(call.path),
+      ).length,
+      0,
+      "Notification opening executed a business command",
+    );
+  }
+  let privateTransferEvidence;
+  if (foundations && foundationTask === "021" && outcome.ok) {
+    const bytes = await readFile(
+      join(profile, "downloads", "owned-transfer-036.txt"),
+    );
+    const expected = Buffer.from(
+      Uint8Array.from({ length: 256 * 1024 }, (_, index) => 65 + (index % 26)),
+    );
+    assert.deepEqual(
+      bytes,
+      expected,
+      "Private boundary download bytes changed",
+    );
+    privateTransferEvidence = {
+      bytes: bytes.length,
+      sha256: createHash("sha256").update(bytes).digest("hex"),
+      evidence: "actual owned browser download",
+    };
+  }
   if (process.env.BROWSER_REPORT_PATH) {
     const { mkdir, writeFile } = await import("node:fs/promises");
     const { dirname } = await import("node:path");
@@ -182,23 +657,85 @@ try {
           engine: "Firefox",
           evidence: "real-http",
           diagnostics: outcome.diagnostics,
+          live: outcome.live,
+          scenarios: outcome.scenarios,
+          maxConcurrentStreams: maxStreams,
+          receiptDrops,
+          businessCommands: calls.filter((call) =>
+            /\/(claim|approve|reject|forward|submit)$/.test(call.path),
+          ),
           requests: calls.length,
-          status: "passed",
+          lastRequests: outcome.ok ? undefined : calls.slice(-12),
+          ui: outcome.ok ? undefined : outcome.ui,
+          evidenceRequests: outcome.ok
+            ? undefined
+            : calls
+                .filter((call) =>
+                  /\/api\/v1\/(processes|business-requests|work-items)\//.test(
+                    call.path,
+                  ),
+                )
+                .slice(-30)
+                .map((call) => ({
+                  method: call.method,
+                  status: call.status,
+                  path: call.path.replace(
+                    /^(\/api\/v1\/(?:processes|business-requests|work-items)\/)[^/?]+/,
+                    "$1{ref}",
+                  ),
+                })),
+          calendarEvidence: foundations ? calendarEvidence : undefined,
+          privateTransferEvidence,
+          status: outcome.ok ? "passed" : "failed",
+          failure: outcome.ok ? null : outcome.error,
         },
         null,
         2,
       ) + "\n",
     );
   }
+  if (foundations && outcome.ok && !foundationTask) {
+    const downloads = await readdir(join(profile, "downloads"));
+    assert.ok(
+      downloads.some((name) => /\.(png|webp)$/.test(name)),
+      "Private avatar bytes were not downloaded",
+    );
+  }
+  assertBrowserDiagnostics(outcome.diagnostics);
+  assert.equal(
+    outcome.ok,
+    true,
+    outcome.error +
+      "\n" +
+      JSON.stringify(outcome.scenarios ?? []) +
+      "\n" +
+      JSON.stringify(calls.slice(-10)),
+  );
   console.log(
-    "Firefox real backend passed: ordinary requester/reviewer, exact decimal, stable row duplication, private policy, save, submit, timeline, claim and completion.",
+    notifications
+      ? "Firefox actual worker/SSE notification journey passed."
+      : foundations
+        ? "Firefox actual foundation persistence/browser journey passed."
+        : "Firefox real backend passed: ordinary requester/reviewer, exact decimal, stable row duplication, private policy, save, submit, timeline, claim and completion.",
   );
 } finally {
+  if (
+    foundations &&
+    foundationTask === "015" &&
+    process.env.OWNED_BACKEND_PID
+  ) {
+    try {
+      process.kill(Number(process.env.OWNED_BACKEND_PID), "SIGCONT");
+    } catch (error) {
+      if (error.code !== "ESRCH") throw error;
+    }
+  }
   clearTimeout(timeout);
   if (browser && browser.exitCode === null) {
     browser.kill("SIGTERM");
     await once(browser, "exit");
   }
+  server.closeAllConnections();
   await new Promise((resolve) => server.close(resolve));
   await rm(profile, { recursive: true, force: true });
 }

@@ -198,6 +198,14 @@ export class AdminConsole {
       this.error.set('Invalid value: ' + field.title);
     }
   }
+  dismissResult(): void {
+    if (this.busy()) {
+      return;
+    }
+    this.result.set(null);
+    this.currentRow.set(null);
+    this.notice.set('');
+  }
   private accept(result: AdminResult): void {
     this.result.set(result);
     if (

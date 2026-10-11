@@ -35,9 +35,13 @@
           "Open notifications" | localize
         }}</a>
         <ul>
-          @for (item of vm.notifications.items(); track item.ref) {
+          @for (item of vm.notifications.items(); track item.ref_id) {
             <li>
-              <bdi>{{ item.subject }}</bdi>
+              <a
+                routerLink="/operations/notifications"
+                [queryParams]="{ notification: item.ref_id }"
+                ><bdi>{{ item.subject }}</bdi></a
+              >
             </li>
           } @empty {
             <li>{{ "No notifications." | localize }}</li>
@@ -66,4 +70,22 @@
       }
     }
   </section>
+}
+
+@if (vm.auth.profile()) {
+  <div aria-live="polite" class="notification-alerts">
+    @for (item of vm.notifications.alerts(); track item.ref_id) {
+      <p-message
+        severity="info"
+        [closable]="true"
+        (onClose)="vm.notifications.dismiss(item.ref_id)"
+      >
+        <a
+          routerLink="/operations/notifications"
+          [queryParams]="{ notification: item.ref_id }"
+          ><bdi>{{ item.subject }}</bdi></a
+        >
+      </p-message>
+    }
+  </div>
 }

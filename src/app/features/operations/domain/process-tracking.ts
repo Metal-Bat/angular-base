@@ -62,3 +62,7 @@ export type ProcessReader = (
   report?: boolean,
   abort?: AbortSignal,
 ) => Promise<ProcessSnapshot>;
+export type ProcessDestinationReader = (
+  request: string,
+  abort: AbortSignal,
+) => Promise<string | null>;

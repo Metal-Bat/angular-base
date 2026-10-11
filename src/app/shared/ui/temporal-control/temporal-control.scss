@@ -1,0 +1,66 @@
+:host {
+  display: grid;
+  gap: 0.35rem;
+  min-inline-size: 0;
+  max-inline-size: 100%;
+}
+.temporal-fields {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+}
+.date-entry {
+  display: flex;
+  flex: 1 1 11rem;
+  min-inline-size: 0;
+  gap: 0.25rem;
+}
+.date-entry input {
+  inline-size: 100%;
+  min-inline-size: 0;
+}
+.temporal-fields > app-select-control {
+  flex: 1 1 10rem;
+}
+.temporal-fields > p-datepicker {
+  flex: 1 1 9rem;
+  min-inline-size: 0;
+}
+button {
+  margin: 0;
+  flex-shrink: 0;
+}
+small {
+  color: var(--p-text-muted-color);
+  overflow-wrap: anywhere;
+}
+small[role="alert"] {
+  color: var(--mat-sys-error);
+}
+.calendar-navigation {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-block-end: 0.5rem;
+}
+.calendar-days {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0.2rem;
+  text-align: center;
+}
+.calendar-days span {
+  font-size: 0.8rem;
+  padding-block: 0.5rem;
+  color: var(--p-text-muted-color);
+}
+.calendar-days button {
+  min-inline-size: 0;
+  padding: 0.5rem 0.15rem;
+}
+
+.calendar-navigation:dir(rtl) .pi {
+  transform: rotate(180deg);
+}

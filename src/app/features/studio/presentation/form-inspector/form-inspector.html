@@ -149,6 +149,11 @@
   >
     {{ "Add rule" | localize }}
   </button>
+  <app-form-geometry
+    [disabled]="disabled()"
+    [node]="draft()"
+    (patch)="patch($event.key, $event.value)"
+  />
   <app-form-behavior [view]="this" />
   <button
     class="mt-4"

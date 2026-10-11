@@ -44,14 +44,14 @@
           (click)="vm.load(vm.page(), true)"
         >
           <i aria-hidden="true" class="pi pi-file-export"></i
-          >{{ "Request report" | localize }}
+          >{{ "Preview report" | localize }}
         </button>
       }
       @if (vm.spec.actions.includes("create")) {
         <button
           pButton
           type="button"
-          [disabled]="vm.busy() || !vm.canScope()"
+          [disabled]="vm.busy() || !vm.canScope() || vm.reconcileRequired()"
           (click)="vm.create()"
         >
           <i aria-hidden="true" class="pi pi-plus"></i>{{ "Create" | localize }}

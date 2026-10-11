@@ -43,6 +43,7 @@ export class WorkflowDiagram {
   private readonly api = inject(STUDIO_API);
   readonly workflow = input('');
   readonly version = input('');
+  readonly focusNode = input('');
   readonly versions = signal<readonly JsonObject[]>([]);
   readonly current = signal<JsonObject | null>(null);
   readonly page = signal(1);
@@ -110,6 +111,7 @@ export class WorkflowDiagram {
       this.clear();
       release();
     });
+    effect(() => this.focusGraphNode());
     effect(() => {
       const version = this.version();
       const workflow = this.workflow();
@@ -120,6 +122,12 @@ export class WorkflowDiagram {
         void this.loadVersions();
       }
     });
+  }
+  private focusGraphNode(): void {
+    const focus = this.focusNode();
+    if (focus && this.topology().steps.some((step) => step.key === focus)) {
+      this.selected.set(focus);
+    }
   }
   private clear(): void {
     this.generation++;
@@ -192,6 +200,7 @@ export class WorkflowDiagram {
       }
       const topology = readWorkflowTopology(raw);
       this.topology.set(topology);
+      this.focusGraphNode();
       this.graph.set(raw as JsonObject);
       this.positions.set({
         ...diagramPositions(topology),

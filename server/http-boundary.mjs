@@ -34,7 +34,13 @@ export function createHttpBoundary({ browserOrigin, handle, assets = null }) {
         await response.body?.cancel();
         return;
       }
-      outgoing.writeHead(response.status, Object.fromEntries(response.headers));
+      const responseHeaders = Object.fromEntries(response.headers);
+      // An early body rejection cannot reuse a connection with unread request bytes.
+      if (!incoming.complete && response.status >= 400)
+        responseHeaders.connection = "close";
+      outgoing.writeHead(response.status, responseHeaders);
+      if (response.headers.get("content-type")?.startsWith("text/event-stream"))
+        outgoing.flushHeaders();
       if (response.body)
         await pipeline(Readable.fromWeb(response.body), outgoing);
       else outgoing.end();

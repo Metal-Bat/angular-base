@@ -1,3 +1,6 @@
+@if (guidance()) {
+  <p role="status">{{ guidance() | localize }}</p>
+}
 @if (editor().canEdit() && editor().ownTask()) {
   <label for="task-comment">{{ "Comment" | localize }}</label
   ><textarea

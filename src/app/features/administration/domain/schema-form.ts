@@ -1,3 +1,4 @@
+import { gregorianMillis } from '../../../shared/domain/calendar-value';
 import { fieldLabel } from '../../../shared/domain/field-label';
 import { JsonObject, JsonValue } from '../../forms/domain/runtime-document';
 
@@ -95,6 +96,25 @@ export function schemaErrors(
   }
   return primitiveErrors(shape, value, path);
 }
+function temporalErrors(format: string, value: string): string | null {
+  if (['date', 'date-time'].includes(format)) {
+    try {
+      gregorianMillis(value.slice(0, 10));
+    } catch {
+      return 'Enter a valid date.';
+    }
+    if (format === 'date' && value.length !== 10) {
+      return 'Enter a valid date.';
+    }
+  }
+  if (
+    format === 'time' &&
+    !/^(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d{1,6})?)?$/.test(value)
+  ) {
+    return 'Enter a valid time.';
+  }
+  return null;
+}
 function primitiveErrors(
   shape: JsonObject,
   value: JsonValue,
@@ -124,6 +144,10 @@ function primitiveErrors(
       !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
     ) {
       return error('Enter a valid email address.');
+    }
+    const temporalError = temporalErrors(String(shape['format']), value);
+    if (temporalError) {
+      return error(temporalError);
     }
     if (
       shape['format'] === 'date-time' &&

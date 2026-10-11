@@ -57,7 +57,7 @@ const manifest = {
   sourceMaps: 0,
   canvasInInitialJavaScript: false,
   contractSha256: sha(await readFile("docs/reference/platform-openapi.json")),
-  lockfileSha256: sha(await readFile("package-lock.json")),
+  lockfileSha256: sha(await readFile("pnpm-lock.yaml")),
   files,
 };
 await mkdir("artifacts", { recursive: true });

@@ -2,7 +2,9 @@
 <app-field-wrapper
   #field
   [errors]="vm.errors()"
-  [label]="vm.node().label ?? vm.node().scope!"
+  [hint]="vm.description()"
+  [instance]="vm.instance()"
+  [label]="vm.accessibleLabel()"
   [pointer]="vm.pointer()"
 >
   @if (!vm.writable()) {
@@ -41,12 +43,23 @@
       [value]="vm.text()"
       (input)="vm.inputValue($any($event.target).value)"
     ></textarea>
+  } @else if (
+    vm.node().component === "date" || vm.node().component === "datetime"
+  ) {
+    <app-temporal-control
+      [ariaLabel]="vm.accessibleLabel()"
+      [controlId]="field.id()"
+      [describedBy]="field.describedBy()"
+      [invalid]="vm.errors().length > 0"
+      [kind]="vm.node().component"
+      [value]="vm.text()"
+      (valueChange)="vm.inputValue($event)"
+    />
   } @else {
     <input
       [attr.aria-describedby]="field.describedBy()"
       [attr.aria-invalid]="vm.errors().length > 0"
       [id]="field.id()"
-      [type]="vm.node().component === 'date' ? 'date' : 'text'"
       [value]="vm.text()"
       (input)="vm.inputValue($any($event.target).value)"
     />

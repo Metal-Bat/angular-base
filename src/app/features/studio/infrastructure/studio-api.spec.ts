@@ -12,14 +12,20 @@ describe('Studio list contracts', () => {
       providers: [{ provide: ApiClient, useValue: { call } }],
     });
   });
-  it('decodes queued report data and preserves typed filters and parent scope', async () => {
+  it('decodes the actual synchronous report page and preserves filters and parent scope', async () => {
     call.mockReturnValue(
       of(
         new HttpResponse({
-          status: 202,
+          status: 200,
           body: {
             success: true,
-            data: { ref_id: 'queued-report', status: 'QUEUED' },
+            result: {
+              items: [{ ref_id: 'version', number: 2, status: 'PUBLISHED' }],
+              page: 3,
+              size: 35,
+              total: 80,
+              total_pages: 3,
+            },
           },
         }),
       ),
@@ -38,7 +44,7 @@ describe('Studio list contracts', () => {
       true,
     );
     expect(result.items).toEqual([
-      { ref_id: 'queued-report', status: 'QUEUED' },
+      { ref_id: 'version', number: 2, status: 'PUBLISHED' },
     ]);
     expect(call).toHaveBeenCalledWith(
       'report_versions_api_v1_form_versions_report_post',

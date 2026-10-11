@@ -125,4 +125,20 @@ describe('Administration command boundary', () => {
     await command;
     expect(editor.result()).toBeNull();
   });
+  it('dismisses transient results and reusable rows without losing pending input', () => {
+    const editor = TestBed.createComponent(AdminConsole).componentInstance;
+    editor.result.set({
+      value: { secret: 'one-time', ref_id: 'current' },
+      page: 1,
+      totalPages: 1,
+      requestId: null,
+    });
+    editor.currentRow.set({ secret: 'one-time', ref_id: 'current' });
+    editor.change(target, 'path', 'pending-target');
+    editor.dismissResult();
+    expect(editor.result()).toBeNull();
+    expect(editor.currentRow()).toBeNull();
+    expect(editor.input().path['task_id']).toBe('pending-target');
+    expect(editor.dirty()).toBe(true);
+  });
 });

@@ -39,7 +39,6 @@ function prepare(
   const fixture = TestBed.createComponent(PermissionChoices);
   fixture.componentRef.setInput('controlId', 'permissions');
   fixture.componentRef.setInput('value', ['legacy.permission']);
-  fixture.detectChanges();
   return { fixture, send };
 }
 describe('Permission selection', () => {
@@ -65,6 +64,26 @@ describe('Permission selection', () => {
     picker.toggle('legacy.permission');
     expect(picker.selected()).toEqual(['requests.start']);
   });
+  it('pages the applied search and retains it after a failed new search', async () => {
+    const { fixture, send } = prepare();
+    await fixture.whenStable();
+    const picker = fixture.componentInstance;
+    picker.search.set('requests');
+    await picker.load();
+    picker.search.set('unapplied');
+    await picker.load(2, false);
+    expect(send.mock.calls.at(-1)?.[1].body.filters.at(-1).value).toBe(
+      'requests',
+    );
+    send.mockRejectedValueOnce(new Error('offline'));
+    await picker.load();
+    expect(picker.appliedSearch()).toBe('requests');
+    expect(picker.page()).toBe(1);
+    picker.toggle('invented.permission');
+    expect(picker.selected()).toEqual(['legacy.permission']);
+    picker.toggle('legacy.permission');
+    expect(picker.selected()).toEqual([]);
+  });
   it('discards late permission responses and selections on actor change', async () => {
     let resolve!: (value: unknown) => void;
     const { fixture } = prepare(
@@ -75,6 +94,7 @@ describe('Permission selection', () => {
           }),
       ),
     );
+    await vi.waitFor(() => expect(resolve).toBeTypeOf('function'));
     TestBed.inject(ActorState).reset();
     resolve({
       value: [{ name: 'private.permission' }],

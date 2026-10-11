@@ -1,5 +1,7 @@
 :host {
   display: block;
+  min-inline-size: 0;
+  max-inline-size: 100%;
 }
 .row-actions-cell {
   width: 1%;
@@ -68,4 +70,9 @@
 .row-action-icon {
   font-size: 1rem;
   line-height: 1;
+}
+
+td:not(.row-actions-cell) {
+  min-inline-size: 10rem;
+  overflow-wrap: anywhere;
 }

@@ -1,34 +1,30 @@
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, writeFile } from "node:fs/promises";
 import { spawnSync } from "node:child_process";
 
-const lock = JSON.parse(await readFile("package-lock.json", "utf8"));
-const packages = Object.entries(lock.packages)
-  .filter(([path]) => path !== "")
-  .map(([path, item]) => ({
-    path,
-    version: item.version,
-    license: item.license ?? "UNSPECIFIED",
-    developmentOnly: item.dev === true,
-  }));
+const licenseResult = spawnSync("pnpm", ["licenses", "list", "--json"], {
+  encoding: "utf8",
+});
+if (licenseResult.error || licenseResult.status !== 0)
+  throw Error("pnpm license inventory failed");
+const licenses = JSON.parse(licenseResult.stdout);
 await mkdir("artifacts", { recursive: true });
 await writeFile(
   "artifacts/licenses.json",
-  JSON.stringify({ lockfileVersion: lock.lockfileVersion, packages }, null, 2) +
-    "\n",
+  JSON.stringify({ packageManager: "pnpm", licenses }, null, 2) + "\n",
 );
 let failed = false;
 for (const [name, args] of [
   ["all", []],
-  ["production", ["--omit=dev"]],
+  ["production", ["--prod"]],
 ]) {
-  const result = spawnSync("npm", ["audit", "--json", ...args], {
+  const result = spawnSync("pnpm", ["audit", "--json", ...args], {
     encoding: "utf8",
   });
   let audit;
   try {
     audit = JSON.parse(result.stdout);
   } catch {
-    throw new Error("npm audit did not return a JSON report.");
+    throw new Error("pnpm audit did not return a JSON report.");
   }
   await writeFile(
     `artifacts/audit-${name}.json`,
@@ -47,7 +43,7 @@ for (const [name, args] of [
   }
 }
 console.log(
-  `Recorded ${packages.length} lockfile license declarations; these are inventory, not legal approval.`,
+  "Recorded installed pnpm dependency license declarations; these are inventory, not legal approval.",
 );
 if (failed) {
   process.exitCode = 1;

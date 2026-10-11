@@ -24,7 +24,7 @@
             <button
               pButton
               type="button"
-              [disabled]="disabled()"
+              [disabled]="disabled() || busy()"
               (click)="editMessage(message.key)"
             >
               {{ "Edit" | localize }}
@@ -43,7 +43,7 @@
   id="message-key"
   maxlength="128"
   pInputText
-  [disabled]="disabled()"
+  [disabled]="disabled() || busy()"
   [(ngModel)]="key"
   (ngModelChange)="changed.emit()"
 />
@@ -53,7 +53,7 @@
   id="message-en"
   lang="en"
   maxlength="2048"
-  [disabled]="disabled()"
+  [disabled]="disabled() || busy()"
   [(ngModel)]="en"
   (ngModelChange)="changed.emit()"
 ></textarea>
@@ -63,7 +63,7 @@
   id="message-fa"
   lang="fa"
   maxlength="2048"
-  [disabled]="disabled()"
+  [disabled]="disabled() || busy()"
   [(ngModel)]="fa"
   (ngModelChange)="changed.emit()"
 ></textarea>
@@ -89,7 +89,7 @@
     id="page-key"
     maxlength="64"
     pInputText
-    [disabled]="disabled()"
+    [disabled]="disabled() || busy()"
     [(ngModel)]="pageKey"
     (ngModelChange)="changed.emit()"
   />
@@ -98,7 +98,7 @@
     id="page-title"
     maxlength="255"
     pInputText
-    [disabled]="disabled()"
+    [disabled]="disabled() || busy()"
     [(ngModel)]="pageTitle"
     (ngModelChange)="changed.emit()"
   />
@@ -108,14 +108,19 @@
       <label
         ><input
           type="checkbox"
-          [disabled]="disabled()"
+          [disabled]="disabled() || busy()"
           [ngModel]="selectedScopes.includes(field.scope!)"
           (ngModelChange)="toggle(field.scope!, $event)"
         />{{ field.label }}</label
       >
     }
   </fieldset>
-  <button pButton type="button" [disabled]="disabled()" (click)="addPage()">
+  <button
+    pButton
+    type="button"
+    [disabled]="disabled() || busy()"
+    (click)="addPage()"
+  >
     {{ "Add page" | localize }}
   </button>
 }

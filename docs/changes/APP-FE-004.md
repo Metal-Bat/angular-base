@@ -25,3 +25,7 @@ Initial failures and limitations are retained in [gate notes](../delivery/GATES.
 Local verification and the specific real HTTP journey are distinct evidence levels. Chromium, manual assistive technology/device acceptance, workers/live providers, deployment and user acceptance are not claimed. Future producer APIs remain with APP-FE-006–032 and their backend owners. Peer source was read only; the exact consumed APP-BE-001 contract copies are frontend-owned.
 
 Graph refresh: `graphify update .` follows final source changes; no API rebuild cost. The old backlog links the authoritative delivery supplement instead of duplicating APP task bodies.
+
+## User-requested temporal/table continuation — 2026-10-11
+
+[Shared temporal controls and responsive tables](APP-FE-004-TEMPORAL-CONTROLS.md) records the new requested delta and its actual verification independently of the original UI foundation evidence. Existing APP and CONS parent IDs/statuses are retained.

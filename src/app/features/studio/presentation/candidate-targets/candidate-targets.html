@@ -1,0 +1,35 @@
+@if (busy()) {
+  <p role="status">{{ "Loading" | localize }}</p>
+}
+<ul>
+  @for (item of rows(); track item.id) {
+    <li>
+      @for (kind of ["user_ref", "work_group_ref"]; track kind) {
+        @if (item.row[kind]) {
+          <span
+            >{{ (kind === "user_ref" ? "User" : "Work group") | localize }}:
+            {{ label(item.row, kind) | localize }}</span
+          >
+        }
+      }
+      <span>{{ "Priority" | localize }}: {{ item.row["priority"] ?? 0 }}</span>
+      <button
+        pButton
+        type="button"
+        [attr.aria-label]="
+          ('Remove candidate' | localize) +
+          ' ' +
+          (label(item.row, item.row['user_ref'] ? 'user_ref' : 'work_group_ref')
+            | localize)
+        "
+        [disabled]="disabled()"
+        (click)="remove(item.id)"
+      >
+        {{ "Remove candidate" | localize }}
+      </button>
+    </li>
+  }
+</ul>
+@if (error()) {
+  <p role="alert">{{ error() | localize }}</p>
+}

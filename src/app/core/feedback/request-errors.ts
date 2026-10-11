@@ -1,4 +1,12 @@
-import { DestroyRef, inject, Injectable, signal } from '@angular/core';
+import { SessionContext } from '../auth/session-context';
+import type { SupportReceipt } from './support-reporter';
+import {
+  DestroyRef,
+  inject,
+  Injectable,
+  Injector,
+  signal,
+} from '@angular/core';
 import { ActorState } from '../auth/actor-state';
 import { ApiFailure, failure } from '../transport/api-failure';
 
@@ -7,6 +15,7 @@ export type ErrorNotice = {
   code: string;
   message: string;
   requestReference: string | null;
+  support?: SupportReceipt;
   kind:
     | 'validation'
     | 'forbidden'
@@ -22,8 +31,17 @@ export function safeRequestReference(value: unknown): string | null {
     : null;
 }
 
+function failureReference(error: ApiFailure): string | null {
+  return (
+    safeRequestReference(error.requestId) ??
+    (error.httpStatus === 0 ? crypto.randomUUID() : null)
+  );
+}
+
 @Injectable({ providedIn: 'root' })
 export class RequestErrors {
+  private readonly injector = inject(Injector);
+  private readonly session = inject(SessionContext);
   private sequence = 0;
   private readonly current = signal<ErrorNotice | null>(null);
   readonly notice = this.current.asReadonly();
@@ -53,7 +71,7 @@ export class RequestErrors {
             /^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$/.test(raw)
           ? raw
           : '';
-    const reference = safeRequestReference(error.requestId);
+    const reference = failureReference(error);
     const kind = error.uncertain
       ? 'uncertain'
       : error.httpStatus === 403
@@ -78,8 +96,30 @@ export class RequestErrors {
             ? 'Check the highlighted fields before continuing.'
             : message,
       requestReference: reference,
+      ...(error.support ? { support: error.support } : {}),
       kind,
     });
+    this.reportClient(error, reference);
+  }
+  private reportClient(error: ApiFailure, reference: string | null): void {
+    if (
+      error.httpStatus === 0 &&
+      this.session.snapshot().status === 'authenticated'
+    ) {
+      const id = this.sequence;
+      void import('./support-reporter').then(async ({ SupportReporter }) => {
+        if (this.current()?.id !== id) {
+          return;
+        }
+        const support = await this.injector
+          .get(SupportReporter)
+          .report('client.network_failed', reference);
+        const notice = this.current();
+        if (support && notice?.id === id) {
+          this.current.set({ ...notice, support });
+        }
+      });
+    }
   }
 
   dismiss(id: number): void {

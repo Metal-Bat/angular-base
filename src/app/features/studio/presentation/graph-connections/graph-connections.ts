@@ -11,7 +11,6 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ButtonDirective } from 'primeng/button';
-import { InputText } from 'primeng/inputtext';
 import { ActorState } from '../../../../core/auth/actor-state';
 import { LocalizePipe } from '../../../../shared/ui/localize-pipe';
 import { SelectControl } from '../../../../shared/ui/select-control/select-control';
@@ -23,16 +22,18 @@ import {
   addCandidate,
   addMapping,
   mappingSources,
-  patchTransition,
   removeMapping,
 } from '../../domain/graph-controls';
 import { StudioChoice } from '../studio-choice/studio-choice';
+import { CandidateTargets } from '../candidate-targets/candidate-targets';
+import { TransitionEditor } from '../transition-editor/transition-editor';
 @Component({
   selector: 'app-graph-connections',
   imports: [
+    CandidateTargets,
+    TransitionEditor,
     FormsModule,
     ButtonDirective,
-    InputText,
     LocalizePipe,
     SelectControl,
     SchemaInput,
@@ -49,6 +50,12 @@ export class GraphConnections {
   readonly human = input(false);
   readonly disabled = input(false);
   readonly applied = output<JsonObject>();
+  readonly changed = output<void>();
+  readonly discarded = output<void>();
+  readonly transitionPending = signal(false);
+  readonly interactionDisabled = computed(
+    () => this.disabled() || this.transitionPending(),
+  );
   readonly request = signal('');
   readonly rows = signal<readonly JsonObject[]>([]);
   readonly page = signal(1);
@@ -69,7 +76,7 @@ export class GraphConnections {
           (port) =>
             port.direction === 'INPUT' &&
             port.cardinality === 'SCALAR' &&
-            ['string', 'integer', 'number', 'boolean'].includes(
+            ['string', 'integer', 'number', 'boolean', 'object'].includes(
               String(port.schema['type']),
             ),
         ) ?? [],
@@ -143,6 +150,7 @@ export class GraphConnections {
     this.source.set('');
     this.target.set('');
     this.constant.set(undefined);
+    this.transitionPending.set(false);
   }
   setRequest(value: string): void {
     this.generation++;
@@ -202,22 +210,25 @@ export class GraphConnections {
       ),
     );
   }
-  transition(index: number, key: string, value: JsonValue): void {
-    const edge = (this.graph()['transitions'] as JsonObject[])[index];
-    this.apply(() =>
-      patchTransition(this.graph(), index, {
-        priority: edge['priority'] ?? 0,
-        is_default: edge['is_default'] ?? false,
-        condition: edge['condition'] ?? null,
-        [key]: value,
-      }),
-    );
+  transitionChanged(): void {
+    this.transitionPending.set(true);
+    this.changed.emit();
+  }
+  transitionApplied(graph: JsonObject): void {
+    if (!this.disabled()) {
+      this.transitionPending.set(false);
+      this.applied.emit(graph);
+    }
+  }
+  transitionDiscarded(): void {
+    this.transitionPending.set(false);
+    this.discarded.emit();
   }
   candidate(kind: 'user_ref' | 'work_group_ref', value: string): void {
     this.apply(() => addCandidate(this.graph(), this.selected(), kind, value));
   }
   private apply(work: () => JsonObject): void {
-    if (this.disabled()) {
+    if (this.interactionDisabled()) {
       return;
     }
     try {

@@ -27,9 +27,11 @@ import {
 import { NodeDetails } from '../node-details/node-details';
 import { SubprocessPin } from '../subprocess-pin/subprocess-pin';
 import { StudioChoice } from '../studio-choice/studio-choice';
+import { OperationChoice } from '../operation-choice/operation-choice';
 @Component({
   selector: 'app-node-inspector',
   imports: [
+    OperationChoice,
     ButtonDirective,
     LocalizePipe,
     SchemaInput,
@@ -50,6 +52,7 @@ export class NodeInspector {
   readonly disabled = input(false);
   readonly changed = output<void>();
   readonly applied = output<JsonObject>();
+  readonly discarded = output<void>();
   readonly inspector = computed(() =>
     inspectorFor(this.step(), this.catalog()),
   );
@@ -82,6 +85,13 @@ export class NodeInspector {
     );
   }
   readonly String = String;
+  readonly connectionContext = computed<JsonObject>(() => ({
+    ...(this.inspector()?.handler_key === 'notification'
+      ? { kind: 'NOTIFICATION' }
+      : this.inspector()?.handler_key === 'service_task'
+        ? { kind: 'SERVICE' }
+        : {}),
+  }));
   readonly extraKeys = computed(() =>
     Object.keys(this.draft()).filter(
       (key) => !this.fields().some((field) => field.key === key),
@@ -106,6 +116,26 @@ export class NodeInspector {
     this.draft.update((draft) => patchOwned(draft, key, value));
     this.errors.set({});
     this.changed.emit();
+  }
+  discard(): void {
+    if (this.disabled()) {
+      return;
+    }
+    this.draft.set(
+      structuredClone((this.step()['config'] ?? {}) as JsonObject),
+    );
+    this.task.set(
+      structuredClone(this.step()['task_contract'] as JsonObject | undefined),
+    );
+    this.flow.set(
+      structuredClone(this.step()['flow'] as JsonObject | undefined),
+    );
+    this.child.set(
+      structuredClone(this.step()['subprocess'] as JsonObject | undefined),
+    );
+    this.errors.set({});
+    this.childValid.set(true);
+    this.discarded.emit();
   }
   updateSection(
     section: 'task' | 'flow' | 'child',

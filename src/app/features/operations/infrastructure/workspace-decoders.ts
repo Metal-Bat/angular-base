@@ -42,7 +42,30 @@ export function caseRecord(value: unknown): CaseRecord {
   }
   return {
     ref: stringField(item, 'ref_id'),
+    ...(Object.hasOwn(item, 'request_ref_id')
+      ? { request: nullableString(item['request_ref_id']) }
+      : {}),
     status: stringField(item, 'status'),
+    ...(Object.hasOwn(item, 'created_at')
+      ? {
+          summary: Object.fromEntries(
+            ['created_at', 'submitted_at', 'closed_at', 'due_at', 'priority']
+              .filter((key) => Object.hasOwn(item, key))
+              .map((key) => {
+                const summaryValue = item[key];
+                if (
+                  summaryValue !== null &&
+                  typeof summaryValue !== 'string' &&
+                  (typeof summaryValue !== 'number' ||
+                    !Number.isFinite(summaryValue))
+                ) {
+                  throw Error('Invalid case summary');
+                }
+                return [key, summaryValue as string | number | null];
+              }),
+          ),
+        }
+      : {}),
     kind: (kind ?? 'HUMAN_TASK') as CaseRecord['kind'],
     claimant: nullableString(item['claimant_ref_id']),
     process: nullableString(item['process_ref_id']),

@@ -23,18 +23,7 @@
   ><span class="sr-only">{{ "Refresh" | localize }}</span>
 </button>
 @if (pages.state() === "ready") {
-  <ul class="grid gap-3">
-    @for (item of pages.cases(); track item.ref) {
-      <li>
-        <a [routerLink]="['/operations/requests', item.ref]"
-          ><bdi>{{ item.ref }}</bdi></a
-        >
-        <span class="console-record-status">{{ item.status | localize }}</span>
-      </li>
-    } @empty {
-      <li>{{ "No requests" | localize }}</li>
-    }
-  </ul>
+  <app-case-list kind="request" [columns]="columns()" [items]="pages.cases()" />
   <button
     pButton
     severity="secondary"
@@ -60,3 +49,12 @@
 @if (polling.paused()) {
   <p role="status">{{ "Updates paused while offline or hidden" | localize }}</p>
 }
+
+<app-saved-views
+  kind="business_requests"
+  [columnOptions]="columnOptions"
+  [columns]="columns()"
+  [query]="pages.appliedQuery()"
+  (applied)="applyView($event)"
+  (columnsChanged)="columns.set($event)"
+/>

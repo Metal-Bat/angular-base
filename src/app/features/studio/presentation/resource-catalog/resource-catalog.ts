@@ -1,3 +1,9 @@
+import { RepairReturn } from '../../../../shared/ui/repair-return/repair-return';
+import { CatalogExtras } from '../catalog-extras/catalog-extras';
+import {
+  DependencyReport,
+  readDependencies,
+} from '../../../readiness/domain/dependencies';
 import { CatalogEditor } from './catalog-editor';
 import { CatalogActions } from './catalog-actions';
 import { CatalogContent } from './catalog-content';
@@ -8,9 +14,9 @@ import {
   Component,
   computed,
   inject,
+  viewChild,
 } from '@angular/core';
 import { Locale } from '../../../../core/localization/locale';
-import { RouterLink } from '@angular/router';
 import { ButtonDirective } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
 import { ListQueryEditor } from '../../../../shared/ui/list-query/list-query';
@@ -25,6 +31,8 @@ import { CatalogParents } from './catalog-parents';
   host: { class: 'console-page' },
   selector: 'app-resource-catalog',
   imports: [
+    RepairReturn,
+    CatalogExtras,
     CatalogEditor,
     CatalogActions,
     CatalogContent,
@@ -34,7 +42,6 @@ import { CatalogParents } from './catalog-parents';
     ListQueryEditor,
     RecordTable,
     ButtonDirective,
-    RouterLink,
     LocalizePipe,
   ],
   templateUrl: './resource-catalog.html',
@@ -42,6 +49,37 @@ import { CatalogParents } from './catalog-parents';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ResourceCatalog extends CatalogParents {
+  private readonly extras = viewChild(CatalogExtras);
+  override async canLeave(): Promise<boolean> {
+    return (
+      (await super.canLeave()) && ((await this.extras()?.canLeave()) ?? true)
+    );
+  }
+  readonly inspectDependencies = async (
+    ref: string,
+    client?: string,
+  ): Promise<DependencyReport> =>
+    readDependencies(
+      await this.api.auxiliary('readiness', {
+        workflow_version_ref_id: ref,
+        client_release_ref_id: client || null,
+      }),
+    );
+  constructor() {
+    super();
+    const selected = this.route.snapshot.queryParamMap.get('selected');
+    if (selected) {
+      void this.open(selected);
+    }
+  }
+  applySaved(event: { query: JsonObject; columns: string[] }): void {
+    if (this.busy() || this.dirty()) {
+      return;
+    }
+    this.savedColumns.set(event.columns);
+    void this.load(1, false, event.query);
+  }
+
   private readonly locale = inject(Locale);
   readonly enumChoices = computed(() =>
     Object.fromEntries(
@@ -126,7 +164,7 @@ export class ResourceCatalog extends CatalogParents {
     );
   }
   async command(send: () => Promise<JsonObject>): Promise<void> {
-    if (this.busy()) {
+    if (this.busy() || this.reconcileRequired()) {
       return;
     }
     const generation = ++this.generation;
@@ -139,15 +177,23 @@ export class ResourceCatalog extends CatalogParents {
           this.accept(result);
           this.notice.set('Saved');
         } else {
+          this.reconcileRequired.set(true);
           this.notice.set('Command completed. Refresh current state.');
         }
       }
     } catch (error) {
       if (generation === this.generation) {
+        const correctable =
+          error instanceof ApiFailure &&
+          !error.uncertain &&
+          [400, 422].includes(error.httpStatus);
+        this.reconcileRequired.set(!correctable);
         this.error.set(
-          error instanceof ApiFailure && error.httpStatus === 409
-            ? 'This definition changed. Your edits are retained; reopen and compare before retrying.'
-            : 'The command could not be confirmed. Refresh current state before retrying.',
+          correctable
+            ? error.message
+            : error instanceof ApiFailure && error.httpStatus === 409
+              ? 'This definition changed. Your edits are retained; reopen and compare before retrying.'
+              : 'The command could not be confirmed. Refresh current state before retrying.',
         );
       }
     } finally {
@@ -159,7 +205,12 @@ export class ResourceCatalog extends CatalogParents {
   async act(action: string): Promise<void> {
     const reference = this.reference();
     const epoch = this.actor.epoch;
-    if (!this.reference() || this.dirty() || this.busy()) {
+    if (
+      !this.reference() ||
+      this.dirty() ||
+      this.busy() ||
+      this.reconcileRequired()
+    ) {
       return;
     }
     if (
@@ -179,9 +230,6 @@ export class ResourceCatalog extends CatalogParents {
     }
   }
   async history(page = 1, size = this.auditQuery().size): Promise<void> {
-    if (page === 1) {
-      this.historyDetail.set(null);
-    }
     this.historyOpen.set(true);
     if (!this.reference() || this.busy()) {
       return;
@@ -196,6 +244,8 @@ export class ResourceCatalog extends CatalogParents {
         size,
       );
       if (generation === this.generation) {
+        this.historyDetail.set(null);
+        this.error.set('');
         this.audit.set(result.items);
         this.auditQuery.update((query) => ({
           ...query,
@@ -237,7 +287,7 @@ export class ResourceCatalog extends CatalogParents {
     }
   }
   async grant(remove = false): Promise<void> {
-    if (this.dirty() || this.busy()) {
+    if (this.dirty() || this.busy() || this.reconcileRequired()) {
       return;
     }
     const reference = this.reference();

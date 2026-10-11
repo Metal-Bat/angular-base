@@ -21,21 +21,8 @@ export function referenceCommand(
   }
   return commands.find((command) => command.path === paths[key]);
 }
-/** Selector keys are authoritative; a display name is never a fallback key. */
-export type ReferenceChoice = { key: string; label: string; row: JsonObject };
-export function referenceChoice(row: JsonObject): ReferenceChoice {
-  const key = row['key'] ?? row['ref_id'];
-  const label = row['value'] ?? row['name'] ?? row['title'];
-  if (
-    typeof key !== 'string' ||
-    !key ||
-    typeof label !== 'string' ||
-    !label.trim()
-  ) {
-    throw Error('Invalid selector response.');
-  }
-  return { key, label, row };
-}
+export { referenceChoice } from '../../../shared/domain/reference-choice';
+export type { ReferenceChoice } from '../../../shared/domain/reference-choice';
 export function setAt(
   object: JsonObject,
   path: string,

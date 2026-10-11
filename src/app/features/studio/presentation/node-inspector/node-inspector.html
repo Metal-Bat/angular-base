@@ -2,12 +2,37 @@
   <app-node-details [handler]="handler" />
   <h3>{{ "Configuration" | localize }}</h3>
   @for (field of fields(); track field.key) {
-    @if (field.selector === "form_versions") {
-      <p>{{ "Published form" | localize }}</p>
-      <app-studio-choice
-        controlId="node-form"
-        kind="form_versions"
+    @if (
+      handler.handler_key === "service_task" && field.key === "operation_key"
+    ) {
+      <app-operation-choice
+        [compensation]="flow()?.['compensation_only'] === true"
         [disabled]="disabled()"
+        [handler]="handler.handler_key"
+        [value]="String(draft()[field.key] || '')"
+        [version]="handler.handler_version"
+        (picked)="update(field.key, $event)"
+      />
+    } @else if (
+      field.selector === "form_versions" ||
+      field.selector === "connections" ||
+      field.selector === "agent_versions"
+    ) {
+      <p>
+        {{
+          (field.selector === "form_versions"
+            ? "Published form"
+            : field.selector === "connections"
+              ? "Connection"
+              : "Published agent"
+          ) | localize
+        }}
+      </p>
+      <app-studio-choice
+        [context]="field.selector === 'connections' ? connectionContext() : {}"
+        [controlId]="'node-' + field.key"
+        [disabled]="disabled()"
+        [kind]="field.selector"
         [value]="String(draft()[field.key] || '')"
         (picked)="update(field.key, $event)"
       />
@@ -112,3 +137,13 @@
     {{ "Unsupported node metadata; configuration is preserved." | localize }}
   </p>
 }
+
+<button
+  pButton
+  severity="secondary"
+  type="button"
+  [disabled]="disabled()"
+  (click)="discard()"
+>
+  {{ "Discard configuration edits" | localize }}
+</button>

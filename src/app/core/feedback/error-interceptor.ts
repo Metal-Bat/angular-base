@@ -1,3 +1,4 @@
+import { SUPPORT_INTAKE } from './support-context';
 import {
   HttpErrorResponse,
   HttpInterceptorFn,
@@ -21,6 +22,9 @@ async function responseBody(body: unknown): Promise<unknown> {
 }
 
 export const errorInterceptor: HttpInterceptorFn = (request, next) => {
+  if (request.context.get(SUPPORT_INTAKE)) {
+    return next(request);
+  }
   if (
     !request.url.startsWith('/api/v1/') &&
     !request.url.startsWith('/session/')

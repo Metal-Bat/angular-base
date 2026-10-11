@@ -23,3 +23,9 @@ No dependencies, migrations, seeds, shared/backend data, credentials, paid calls
 Inventory-driven authorized scope/field-policy controls, named-view/purpose refinement, candidate reconciliation/removal and labels after reopen remain frontend work. 022.3 required approval and real create/publish/claim/complete/return with an ordinary reviewer await APP-BE-021/C12 and paired evidence. No quorum, self-approval or delegation policy is invented.
 
 The parent remains BLOCKED; the available implementation does not constitute complete normal authoring or integrated execution.
+
+## Independent continuation — 2026-10-10
+
+022.1 restores authorized candidate labels and removes an exact candidate with existing undo/redo. Existing subtask IDs are reused; parent status remains BLOCKED / IMPLEMENTED. Current backend capabilities and producer/client were reconciled before use; historical results above are preserved.
+
+Delivered files, actual satisfied acceptance, all commands/results (including intermediate failures), exact source/contract identities, remaining criteria and owners are recorded in [APP-FE-021–025 continuation acceptance](../delivery/APP-FE-021-025-ACCEPTANCE.md). This slice does not establish full parent publication/execution or strict paired readiness.

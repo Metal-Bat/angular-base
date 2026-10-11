@@ -1,3 +1,5 @@
+import { signal } from '@angular/core';
+import { HELP_STATE } from '../../bindings';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { SessionContext } from '../../../../core/auth/session-context';
@@ -13,6 +15,15 @@ describe('Permission-aware session help', () => {
     TestBed.configureTestingModule({
       providers: [
         provideRouter([]),
+        {
+          provide: HELP_STATE,
+          useValue: {
+            status: signal('unsaved'),
+            saved: (): undefined => undefined,
+            acknowledge: vi.fn().mockResolvedValue(undefined),
+            reset: vi.fn().mockResolvedValue(true),
+          },
+        },
         { provide: Feedback, useValue: { confirm } },
       ],
     });

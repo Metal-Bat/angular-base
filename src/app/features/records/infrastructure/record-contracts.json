@@ -7,23 +7,10 @@
     "columns": [{ "key": "value", "label": "Username" }],
     "queryFields": [
       {
-        "key": "username",
-        "label": "Username",
-        "type": "text",
-        "nullable": false
-      },
-      { "key": "email", "label": "Email", "type": "text", "nullable": true },
-      {
         "key": "created_at",
         "label": "Created At",
         "type": "datetime",
         "nullable": false
-      },
-      {
-        "key": "updated_at",
-        "label": "Updated At",
-        "type": "datetime",
-        "nullable": true
       },
       {
         "key": "deleted_at",
@@ -31,11 +18,18 @@
         "type": "datetime",
         "nullable": true
       },
+      { "key": "email", "label": "Email", "type": "text", "nullable": true },
       {
         "key": "first_name",
         "label": "First Name",
         "type": "text",
         "nullable": true
+      },
+      {
+        "key": "is_superuser",
+        "label": "Administrator",
+        "type": "boolean",
+        "nullable": false
       },
       {
         "key": "last_name",
@@ -44,9 +38,15 @@
         "nullable": true
       },
       {
-        "key": "is_superuser",
-        "label": "Administrator",
-        "type": "boolean",
+        "key": "updated_at",
+        "label": "Updated At",
+        "type": "datetime",
+        "nullable": true
+      },
+      {
+        "key": "username",
+        "label": "Username",
+        "type": "text",
         "nullable": false
       }
     ],
@@ -56,29 +56,16 @@
     ],
     "fields": [
       {
-        "key": "username",
-        "label": "Username",
-        "type": "text",
-        "schema": {
-          "anyOf": [{ "type": "string", "maxLength": 255 }, { "type": "null" }],
-          "title": "Username",
-          "description": "Unique username."
-        },
-        "required": false,
-        "nullable": true,
-        "max": 255
-      },
-      {
         "key": "email",
         "label": "Email",
         "type": "email",
         "schema": {
           "anyOf": [
-            { "type": "string", "format": "email" },
+            { "format": "email", "type": "string" },
             { "type": "null" }
           ],
-          "title": "Email",
-          "description": "Unique email address."
+          "description": "Unique email address.",
+          "title": "Email"
         },
         "required": false,
         "nullable": true
@@ -88,9 +75,9 @@
         "label": "First Name",
         "type": "text",
         "schema": {
-          "anyOf": [{ "type": "string", "maxLength": 255 }, { "type": "null" }],
-          "title": "First Name",
-          "description": "Given name."
+          "anyOf": [{ "maxLength": 255, "type": "string" }, { "type": "null" }],
+          "description": "Given name.",
+          "title": "First Name"
         },
         "required": false,
         "nullable": true,
@@ -101,9 +88,22 @@
         "label": "Last Name",
         "type": "text",
         "schema": {
-          "anyOf": [{ "type": "string", "maxLength": 255 }, { "type": "null" }],
-          "title": "Last Name",
-          "description": "Family name."
+          "anyOf": [{ "maxLength": 255, "type": "string" }, { "type": "null" }],
+          "description": "Family name.",
+          "title": "Last Name"
+        },
+        "required": false,
+        "nullable": true,
+        "max": 255
+      },
+      {
+        "key": "username",
+        "label": "Username",
+        "type": "text",
+        "schema": {
+          "anyOf": [{ "maxLength": 255, "type": "string" }, { "type": "null" }],
+          "description": "Unique username.",
+          "title": "Username"
         },
         "required": false,
         "nullable": true,
@@ -112,44 +112,16 @@
     ],
     "createFields": [
       {
-        "key": "username",
-        "label": "Username",
-        "type": "text",
-        "schema": {
-          "type": "string",
-          "maxLength": 255,
-          "title": "Username",
-          "description": "Unique username."
-        },
-        "required": true,
-        "nullable": false,
-        "max": 255
-      },
-      {
-        "key": "password",
-        "label": "Password",
-        "type": "password",
-        "schema": {
-          "type": "string",
-          "minLength": 8,
-          "title": "Password",
-          "description": "Plaintext password accepted only as input."
-        },
-        "required": true,
-        "nullable": false,
-        "min": 8
-      },
-      {
         "key": "email",
         "label": "Email",
         "type": "email",
         "schema": {
           "anyOf": [
-            { "type": "string", "format": "email" },
+            { "format": "email", "type": "string" },
             { "type": "null" }
           ],
-          "title": "Email",
-          "description": "Unique email address."
+          "description": "Unique email address.",
+          "title": "Email"
         },
         "required": false,
         "nullable": true
@@ -159,9 +131,9 @@
         "label": "First Name",
         "type": "text",
         "schema": {
-          "anyOf": [{ "type": "string", "maxLength": 255 }, { "type": "null" }],
-          "title": "First Name",
-          "description": "Given name."
+          "anyOf": [{ "maxLength": 255, "type": "string" }, { "type": "null" }],
+          "description": "Given name.",
+          "title": "First Name"
         },
         "required": false,
         "nullable": true,
@@ -172,12 +144,40 @@
         "label": "Last Name",
         "type": "text",
         "schema": {
-          "anyOf": [{ "type": "string", "maxLength": 255 }, { "type": "null" }],
-          "title": "Last Name",
-          "description": "Family name."
+          "anyOf": [{ "maxLength": 255, "type": "string" }, { "type": "null" }],
+          "description": "Family name.",
+          "title": "Last Name"
         },
         "required": false,
         "nullable": true,
+        "max": 255
+      },
+      {
+        "key": "password",
+        "label": "Password",
+        "type": "password",
+        "schema": {
+          "description": "Plaintext password accepted only as input.",
+          "minLength": 8,
+          "title": "Password",
+          "type": "string"
+        },
+        "required": true,
+        "nullable": false,
+        "min": 8
+      },
+      {
+        "key": "username",
+        "label": "Username",
+        "type": "text",
+        "schema": {
+          "description": "Unique username.",
+          "maxLength": 255,
+          "title": "Username",
+          "type": "string"
+        },
+        "required": true,
+        "nullable": false,
         "max": 255
       }
     ],
@@ -208,23 +208,10 @@
     ],
     "queryFields": [
       {
-        "key": "username",
-        "label": "Username",
-        "type": "text",
-        "nullable": false
-      },
-      { "key": "email", "label": "Email", "type": "text", "nullable": true },
-      {
         "key": "created_at",
         "label": "Created At",
         "type": "datetime",
         "nullable": false
-      },
-      {
-        "key": "updated_at",
-        "label": "Updated At",
-        "type": "datetime",
-        "nullable": true
       },
       {
         "key": "deleted_at",
@@ -232,11 +219,18 @@
         "type": "datetime",
         "nullable": true
       },
+      { "key": "email", "label": "Email", "type": "text", "nullable": true },
       {
         "key": "first_name",
         "label": "First Name",
         "type": "text",
         "nullable": true
+      },
+      {
+        "key": "is_superuser",
+        "label": "Administrator",
+        "type": "boolean",
+        "nullable": false
       },
       {
         "key": "last_name",
@@ -245,9 +239,15 @@
         "nullable": true
       },
       {
-        "key": "is_superuser",
-        "label": "Administrator",
-        "type": "boolean",
+        "key": "updated_at",
+        "label": "Updated At",
+        "type": "datetime",
+        "nullable": true
+      },
+      {
+        "key": "username",
+        "label": "Username",
+        "type": "text",
         "nullable": false
       }
     ],
@@ -257,29 +257,16 @@
     ],
     "fields": [
       {
-        "key": "username",
-        "label": "Username",
-        "type": "text",
-        "schema": {
-          "anyOf": [{ "type": "string", "maxLength": 255 }, { "type": "null" }],
-          "title": "Username",
-          "description": "Unique username."
-        },
-        "required": false,
-        "nullable": true,
-        "max": 255
-      },
-      {
         "key": "email",
         "label": "Email",
         "type": "email",
         "schema": {
           "anyOf": [
-            { "type": "string", "format": "email" },
+            { "format": "email", "type": "string" },
             { "type": "null" }
           ],
-          "title": "Email",
-          "description": "Unique email address."
+          "description": "Unique email address.",
+          "title": "Email"
         },
         "required": false,
         "nullable": true
@@ -289,9 +276,9 @@
         "label": "First Name",
         "type": "text",
         "schema": {
-          "anyOf": [{ "type": "string", "maxLength": 255 }, { "type": "null" }],
-          "title": "First Name",
-          "description": "Given name."
+          "anyOf": [{ "maxLength": 255, "type": "string" }, { "type": "null" }],
+          "description": "Given name.",
+          "title": "First Name"
         },
         "required": false,
         "nullable": true,
@@ -302,9 +289,22 @@
         "label": "Last Name",
         "type": "text",
         "schema": {
-          "anyOf": [{ "type": "string", "maxLength": 255 }, { "type": "null" }],
-          "title": "Last Name",
-          "description": "Family name."
+          "anyOf": [{ "maxLength": 255, "type": "string" }, { "type": "null" }],
+          "description": "Family name.",
+          "title": "Last Name"
+        },
+        "required": false,
+        "nullable": true,
+        "max": 255
+      },
+      {
+        "key": "username",
+        "label": "Username",
+        "type": "text",
+        "schema": {
+          "anyOf": [{ "maxLength": 255, "type": "string" }, { "type": "null" }],
+          "description": "Unique username.",
+          "title": "Username"
         },
         "required": false,
         "nullable": true,
@@ -313,44 +313,16 @@
     ],
     "createFields": [
       {
-        "key": "username",
-        "label": "Username",
-        "type": "text",
-        "schema": {
-          "type": "string",
-          "maxLength": 255,
-          "title": "Username",
-          "description": "Unique username."
-        },
-        "required": true,
-        "nullable": false,
-        "max": 255
-      },
-      {
-        "key": "password",
-        "label": "Password",
-        "type": "password",
-        "schema": {
-          "type": "string",
-          "minLength": 8,
-          "title": "Password",
-          "description": "Plaintext password accepted only as input."
-        },
-        "required": true,
-        "nullable": false,
-        "min": 8
-      },
-      {
         "key": "email",
         "label": "Email",
         "type": "email",
         "schema": {
           "anyOf": [
-            { "type": "string", "format": "email" },
+            { "format": "email", "type": "string" },
             { "type": "null" }
           ],
-          "title": "Email",
-          "description": "Unique email address."
+          "description": "Unique email address.",
+          "title": "Email"
         },
         "required": false,
         "nullable": true
@@ -360,9 +332,9 @@
         "label": "First Name",
         "type": "text",
         "schema": {
-          "anyOf": [{ "type": "string", "maxLength": 255 }, { "type": "null" }],
-          "title": "First Name",
-          "description": "Given name."
+          "anyOf": [{ "maxLength": 255, "type": "string" }, { "type": "null" }],
+          "description": "Given name.",
+          "title": "First Name"
         },
         "required": false,
         "nullable": true,
@@ -373,12 +345,40 @@
         "label": "Last Name",
         "type": "text",
         "schema": {
-          "anyOf": [{ "type": "string", "maxLength": 255 }, { "type": "null" }],
-          "title": "Last Name",
-          "description": "Family name."
+          "anyOf": [{ "maxLength": 255, "type": "string" }, { "type": "null" }],
+          "description": "Family name.",
+          "title": "Last Name"
         },
         "required": false,
         "nullable": true,
+        "max": 255
+      },
+      {
+        "key": "password",
+        "label": "Password",
+        "type": "password",
+        "schema": {
+          "description": "Plaintext password accepted only as input.",
+          "minLength": 8,
+          "title": "Password",
+          "type": "string"
+        },
+        "required": true,
+        "nullable": false,
+        "min": 8
+      },
+      {
+        "key": "username",
+        "label": "Username",
+        "type": "text",
+        "schema": {
+          "description": "Unique username.",
+          "maxLength": 255,
+          "title": "Username",
+          "type": "string"
+        },
+        "required": true,
+        "nullable": false,
         "max": 255
       }
     ],
@@ -405,13 +405,6 @@
       { "key": "created_at", "label": "Created At" }
     ],
     "queryFields": [
-      { "key": "name", "label": "Name", "type": "text", "nullable": false },
-      {
-        "key": "description",
-        "label": "Description",
-        "type": "text",
-        "nullable": true
-      },
       {
         "key": "created_at",
         "label": "Created At",
@@ -419,14 +412,21 @@
         "nullable": false
       },
       {
-        "key": "updated_at",
-        "label": "Updated At",
+        "key": "deleted_at",
+        "label": "Deleted At",
         "type": "datetime",
         "nullable": true
       },
       {
-        "key": "deleted_at",
-        "label": "Deleted At",
+        "key": "description",
+        "label": "Description",
+        "type": "text",
+        "nullable": true
+      },
+      { "key": "name", "label": "Name", "type": "text", "nullable": false },
+      {
+        "key": "updated_at",
+        "label": "Updated At",
         "type": "datetime",
         "nullable": true
       }
@@ -434,18 +434,6 @@
     "extras": [],
     "fixed": [],
     "fields": [
-      {
-        "key": "name",
-        "label": "Name",
-        "type": "text",
-        "schema": {
-          "anyOf": [{ "type": "string", "maxLength": 255 }, { "type": "null" }],
-          "title": "Name"
-        },
-        "required": false,
-        "nullable": true,
-        "max": 255
-      },
       {
         "key": "description",
         "label": "Description",
@@ -456,6 +444,18 @@
         },
         "required": false,
         "nullable": true
+      },
+      {
+        "key": "name",
+        "label": "Name",
+        "type": "text",
+        "schema": {
+          "anyOf": [{ "maxLength": 255, "type": "string" }, { "type": "null" }],
+          "title": "Name"
+        },
+        "required": false,
+        "nullable": true,
+        "max": 255
       },
       {
         "key": "permissions",
@@ -474,15 +474,6 @@
     ],
     "createFields": [
       {
-        "key": "name",
-        "label": "Name",
-        "type": "text",
-        "schema": { "type": "string", "maxLength": 255, "title": "Name" },
-        "required": true,
-        "nullable": false,
-        "max": 255
-      },
-      {
         "key": "description",
         "label": "Description",
         "type": "text",
@@ -494,13 +485,22 @@
         "nullable": true
       },
       {
+        "key": "name",
+        "label": "Name",
+        "type": "text",
+        "schema": { "maxLength": 255, "title": "Name", "type": "string" },
+        "required": true,
+        "nullable": false,
+        "max": 255
+      },
+      {
         "key": "permissions",
         "label": "Permissions",
         "type": "strings",
         "schema": {
           "items": { "type": "string" },
-          "type": "array",
-          "title": "Permissions"
+          "title": "Permissions",
+          "type": "array"
         },
         "required": false,
         "nullable": false
@@ -527,13 +527,6 @@
       { "key": "created_at", "label": "Created At" }
     ],
     "queryFields": [
-      { "key": "name", "label": "Name", "type": "text", "nullable": false },
-      {
-        "key": "description",
-        "label": "Description",
-        "type": "text",
-        "nullable": true
-      },
       {
         "key": "created_at",
         "label": "Created At",
@@ -541,14 +534,21 @@
         "nullable": false
       },
       {
-        "key": "updated_at",
-        "label": "Updated At",
+        "key": "deleted_at",
+        "label": "Deleted At",
         "type": "datetime",
         "nullable": true
       },
       {
-        "key": "deleted_at",
-        "label": "Deleted At",
+        "key": "description",
+        "label": "Description",
+        "type": "text",
+        "nullable": true
+      },
+      { "key": "name", "label": "Name", "type": "text", "nullable": false },
+      {
+        "key": "updated_at",
+        "label": "Updated At",
         "type": "datetime",
         "nullable": true
       }
@@ -557,40 +557,31 @@
     "fixed": [],
     "fields": [
       {
+        "key": "description",
+        "label": "Description",
+        "type": "text",
+        "schema": {
+          "anyOf": [{ "type": "string" }, { "type": "null" }],
+          "title": "Description"
+        },
+        "required": false,
+        "nullable": true
+      },
+      {
         "key": "name",
         "label": "Name",
         "type": "text",
         "schema": {
-          "anyOf": [{ "type": "string", "maxLength": 255 }, { "type": "null" }],
+          "anyOf": [{ "maxLength": 255, "type": "string" }, { "type": "null" }],
           "title": "Name"
         },
         "required": false,
         "nullable": true,
         "max": 255
-      },
-      {
-        "key": "description",
-        "label": "Description",
-        "type": "text",
-        "schema": {
-          "anyOf": [{ "type": "string" }, { "type": "null" }],
-          "title": "Description"
-        },
-        "required": false,
-        "nullable": true
       }
     ],
     "createFields": [
       {
-        "key": "name",
-        "label": "Name",
-        "type": "text",
-        "schema": { "type": "string", "maxLength": 255, "title": "Name" },
-        "required": true,
-        "nullable": false,
-        "max": 255
-      },
-      {
         "key": "description",
         "label": "Description",
         "type": "text",
@@ -600,6 +591,15 @@
         },
         "required": false,
         "nullable": true
+      },
+      {
+        "key": "name",
+        "label": "Name",
+        "type": "text",
+        "schema": { "maxLength": 255, "title": "Name", "type": "string" },
+        "required": true,
+        "nullable": false,
+        "max": 255
       }
     ],
     "operations": {
@@ -626,10 +626,10 @@
     ],
     "queryFields": [
       {
-        "key": "user_id",
-        "label": "User ID",
-        "type": "uuid",
-        "nullable": true
+        "key": "created_at",
+        "label": "Created At",
+        "type": "datetime",
+        "nullable": false
       },
       {
         "key": "event_type",
@@ -638,10 +638,10 @@
         "nullable": false
       },
       {
-        "key": "success",
-        "label": "Successful",
-        "type": "boolean",
-        "nullable": false
+        "key": "ip_address",
+        "label": "IP Address",
+        "type": "text",
+        "nullable": true
       },
       {
         "key": "request_id",
@@ -650,10 +650,10 @@
         "nullable": true
       },
       {
-        "key": "ip_address",
-        "label": "IP Address",
-        "type": "text",
-        "nullable": true
+        "key": "success",
+        "label": "Successful",
+        "type": "boolean",
+        "nullable": false
       },
       {
         "key": "user_agent",
@@ -661,12 +661,7 @@
         "type": "text",
         "nullable": true
       },
-      {
-        "key": "created_at",
-        "label": "Created At",
-        "type": "datetime",
-        "nullable": false
-      }
+      { "key": "user_id", "label": "User ID", "type": "uuid", "nullable": true }
     ],
     "extras": [],
     "fixed": [],
@@ -691,11 +686,23 @@
       { "key": "reason", "label": "Reason" }
     ],
     "queryFields": [
-      { "key": "id", "label": "ID", "type": "uuid", "nullable": false },
+      {
+        "key": "changed_at",
+        "label": "Changed At",
+        "type": "datetime",
+        "nullable": false
+      },
       {
         "key": "entity_id",
         "label": "Entity ID",
         "type": "uuid",
+        "nullable": false
+      },
+      { "key": "id", "label": "ID", "type": "uuid", "nullable": false },
+      {
+        "key": "modifier_id",
+        "label": "Actor ID",
+        "type": "text",
         "nullable": false
       },
       {
@@ -705,23 +712,12 @@
         "nullable": false
       },
       {
-        "key": "modifier_id",
-        "label": "Actor ID",
-        "type": "text",
-        "nullable": false
-      },
-      {
-        "key": "changed_at",
-        "label": "Changed At",
-        "type": "datetime",
-        "nullable": false
-      },
-      {
         "key": "operation",
         "label": "Operation",
         "type": "text",
         "nullable": false
       },
+      { "key": "reason", "label": "Reason", "type": "text", "nullable": true },
       {
         "key": "request_id",
         "label": "Request ID",
@@ -729,15 +725,14 @@
         "nullable": true
       },
       {
-        "key": "trace_id",
-        "label": "Trace ID",
+        "key": "source_ip",
+        "label": "Source IP",
         "type": "text",
         "nullable": true
       },
-      { "key": "reason", "label": "Reason", "type": "text", "nullable": true },
       {
-        "key": "source_ip",
-        "label": "Source IP",
+        "key": "trace_id",
+        "label": "Trace ID",
         "type": "text",
         "nullable": true
       },
@@ -770,12 +765,29 @@
     ],
     "queryFields": [
       {
+        "key": "completed_at",
+        "label": "Completed At",
+        "type": "datetime",
+        "nullable": true
+      },
+      {
+        "key": "created_at",
+        "label": "Created At",
+        "type": "datetime",
+        "nullable": false
+      },
+      {
         "key": "definition_key",
         "label": "Report Type",
         "type": "text",
         "nullable": false
       },
-      { "key": "status", "label": "Status", "type": "text", "nullable": false },
+      {
+        "key": "expires_at",
+        "label": "Expires At",
+        "type": "datetime",
+        "nullable": false
+      },
       {
         "key": "file_name",
         "label": "File Name",
@@ -794,24 +806,7 @@
         "type": "datetime",
         "nullable": true
       },
-      {
-        "key": "completed_at",
-        "label": "Completed At",
-        "type": "datetime",
-        "nullable": true
-      },
-      {
-        "key": "expires_at",
-        "label": "Expires At",
-        "type": "datetime",
-        "nullable": false
-      },
-      {
-        "key": "created_at",
-        "label": "Created At",
-        "type": "datetime",
-        "nullable": false
-      }
+      { "key": "status", "label": "Status", "type": "text", "nullable": false }
     ],
     "extras": [],
     "fixed": [],
@@ -837,7 +832,18 @@
     ],
     "queryFields": [
       { "key": "code", "label": "Code", "type": "text", "nullable": false },
-      { "key": "name", "label": "Name", "type": "text", "nullable": false },
+      {
+        "key": "created_at",
+        "label": "Created At",
+        "type": "datetime",
+        "nullable": false
+      },
+      {
+        "key": "deleted_at",
+        "label": "Deleted At",
+        "type": "datetime",
+        "nullable": true
+      },
       {
         "key": "description",
         "label": "Description",
@@ -850,21 +856,10 @@
         "type": "boolean",
         "nullable": false
       },
-      {
-        "key": "created_at",
-        "label": "Created At",
-        "type": "datetime",
-        "nullable": false
-      },
+      { "key": "name", "label": "Name", "type": "text", "nullable": false },
       {
         "key": "updated_at",
         "label": "Updated At",
-        "type": "datetime",
-        "nullable": true
-      },
-      {
-        "key": "deleted_at",
-        "label": "Deleted At",
         "type": "datetime",
         "nullable": true
       }
@@ -877,11 +872,11 @@
         "label": "Code",
         "type": "text",
         "schema": {
-          "type": "string",
           "maxLength": 64,
           "minLength": 1,
           "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]*$",
-          "title": "Code"
+          "title": "Code",
+          "type": "string"
         },
         "required": true,
         "nullable": false,
@@ -889,27 +884,12 @@
         "max": 64
       },
       {
-        "key": "name",
-        "label": "Name",
-        "type": "text",
-        "schema": {
-          "type": "string",
-          "maxLength": 255,
-          "minLength": 1,
-          "title": "Name"
-        },
-        "required": true,
-        "nullable": false,
-        "min": 1,
-        "max": 255
-      },
-      {
         "key": "description",
         "label": "Description",
         "type": "text",
         "schema": {
           "anyOf": [
-            { "type": "string", "maxLength": 1024 },
+            { "maxLength": 1024, "type": "string" },
             { "type": "null" }
           ],
           "title": "Description"
@@ -922,10 +902,25 @@
         "key": "is_active",
         "label": "Active",
         "type": "boolean",
-        "schema": { "type": "boolean", "title": "Is Active", "default": true },
+        "schema": { "default": true, "title": "Is Active", "type": "boolean" },
         "initial": true,
         "required": false,
         "nullable": false
+      },
+      {
+        "key": "name",
+        "label": "Name",
+        "type": "text",
+        "schema": {
+          "maxLength": 255,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "required": true,
+        "nullable": false,
+        "min": 1,
+        "max": 255
       }
     ],
     "createFields": [
@@ -934,11 +929,11 @@
         "label": "Code",
         "type": "text",
         "schema": {
-          "type": "string",
           "maxLength": 64,
           "minLength": 1,
           "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]*$",
-          "title": "Code"
+          "title": "Code",
+          "type": "string"
         },
         "required": true,
         "nullable": false,
@@ -946,27 +941,12 @@
         "max": 64
       },
       {
-        "key": "name",
-        "label": "Name",
-        "type": "text",
-        "schema": {
-          "type": "string",
-          "maxLength": 255,
-          "minLength": 1,
-          "title": "Name"
-        },
-        "required": true,
-        "nullable": false,
-        "min": 1,
-        "max": 255
-      },
-      {
         "key": "description",
         "label": "Description",
         "type": "text",
         "schema": {
           "anyOf": [
-            { "type": "string", "maxLength": 1024 },
+            { "maxLength": 1024, "type": "string" },
             { "type": "null" }
           ],
           "title": "Description"
@@ -979,10 +959,25 @@
         "key": "is_active",
         "label": "Active",
         "type": "boolean",
-        "schema": { "type": "boolean", "title": "Is Active", "default": true },
+        "schema": { "default": true, "title": "Is Active", "type": "boolean" },
         "initial": true,
         "required": false,
         "nullable": false
+      },
+      {
+        "key": "name",
+        "label": "Name",
+        "type": "text",
+        "schema": {
+          "maxLength": 255,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "required": true,
+        "nullable": false,
+        "min": 1,
+        "max": 255
       }
     ],
     "operations": {
@@ -1012,6 +1007,13 @@
     ],
     "queryFields": [
       { "key": "code", "label": "Code", "type": "text", "nullable": false },
+      {
+        "key": "created_at",
+        "label": "Created At",
+        "type": "datetime",
+        "nullable": false
+      },
+      { "key": "kind", "label": "Type", "type": "text", "nullable": false },
       { "key": "name", "label": "Name", "type": "text", "nullable": false },
       {
         "key": "provider",
@@ -1019,18 +1021,11 @@
         "type": "text",
         "nullable": false
       },
-      { "key": "kind", "label": "Type", "type": "text", "nullable": false },
       { "key": "status", "label": "Status", "type": "text", "nullable": false },
       {
         "key": "verification_status",
         "label": "Verification status",
         "type": "text",
-        "nullable": false
-      },
-      {
-        "key": "created_at",
-        "label": "Created At",
-        "type": "datetime",
         "nullable": false
       }
     ],
@@ -1042,10 +1037,10 @@
         "label": "Name",
         "type": "text",
         "schema": {
-          "type": "string",
           "maxLength": 255,
           "minLength": 1,
-          "title": "Name"
+          "title": "Name",
+          "type": "string"
         },
         "required": true,
         "nullable": false,
@@ -1057,9 +1052,9 @@
         "label": "Status",
         "type": "text",
         "schema": {
-          "type": "string",
           "enum": ["ACTIVE", "DISABLED"],
-          "title": "Status"
+          "title": "Status",
+          "type": "string"
         },
         "options": ["ACTIVE", "DISABLED"],
         "required": true,
@@ -1072,40 +1067,10 @@
         "label": "Code",
         "type": "text",
         "schema": {
-          "type": "string",
           "maxLength": 64,
           "minLength": 1,
-          "pattern": "^[A-Za-z0-9_-]+$"
-        },
-        "required": true,
-        "nullable": false,
-        "min": 1,
-        "max": 64
-      },
-      {
-        "key": "name",
-        "label": "Name",
-        "type": "text",
-        "schema": {
-          "type": "string",
-          "maxLength": 255,
-          "minLength": 1,
-          "title": "Name"
-        },
-        "required": true,
-        "nullable": false,
-        "min": 1,
-        "max": 255
-      },
-      {
-        "key": "provider",
-        "label": "Provider",
-        "type": "text",
-        "schema": {
-          "type": "string",
-          "maxLength": 64,
-          "minLength": 1,
-          "title": "Provider"
+          "pattern": "^[A-Za-z0-9_-]+$",
+          "type": "string"
         },
         "required": true,
         "nullable": false,
@@ -1117,13 +1082,28 @@
         "label": "Type",
         "type": "text",
         "schema": {
-          "type": "string",
           "enum": ["SERVICE", "NOTIFICATION", "AI"],
-          "title": "Kind"
+          "title": "Kind",
+          "type": "string"
         },
         "options": ["SERVICE", "NOTIFICATION", "AI"],
         "required": true,
         "nullable": false
+      },
+      {
+        "key": "name",
+        "label": "Name",
+        "type": "text",
+        "schema": {
+          "maxLength": 255,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "required": true,
+        "nullable": false,
+        "min": 1,
+        "max": 255
       },
       {
         "key": "non_secret_config",
@@ -1132,67 +1112,67 @@
         "schema": {
           "anyOf": [
             {
+              "additionalProperties": false,
               "properties": {
                 "endpoint_key": {
-                  "type": "string",
                   "maxLength": 64,
                   "minLength": 1,
-                  "pattern": "^[A-Za-z0-9_-]+$"
+                  "pattern": "^[A-Za-z0-9_-]+$",
+                  "type": "string"
                 }
               },
-              "additionalProperties": false,
-              "type": "object",
               "required": ["endpoint_key"],
-              "title": "ConnectionConfig"
+              "title": "ConnectionConfig",
+              "type": "object"
             },
             {
+              "additionalProperties": false,
               "properties": {
+                "account": {
+                  "anyOf": [
+                    { "maxLength": 128, "type": "string" },
+                    { "type": "null" }
+                  ],
+                  "description": "Required account identifier for Snowflake or OpenAI Codex connections. ASCII letters, digits, underscores and hyphens only; never credentials.",
+                  "title": "Account"
+                },
                 "endpoint_key": {
-                  "type": "string",
                   "maxLength": 64,
                   "minLength": 1,
-                  "pattern": "^[A-Za-z0-9_-]+$"
+                  "pattern": "^[A-Za-z0-9_-]+$",
+                  "type": "string"
                 },
                 "models": {
                   "items": { "type": "string" },
-                  "type": "array",
                   "maxItems": 100,
                   "minItems": 1,
-                  "title": "Models"
+                  "title": "Models",
+                  "type": "array"
+                },
+                "provider_retention": {
+                  "maxLength": 256,
+                  "minLength": 1,
+                  "title": "Provider Retention",
+                  "type": "string"
                 },
                 "region": {
                   "anyOf": [
-                    { "type": "string", "maxLength": 64 },
+                    { "maxLength": 64, "type": "string" },
                     { "type": "null" }
                   ],
                   "title": "Region"
                 },
-                "account": {
-                  "anyOf": [
-                    { "type": "string", "maxLength": 128 },
-                    { "type": "null" }
-                  ],
-                  "title": "Account",
-                  "description": "Required account identifier for Snowflake or OpenAI Codex connections. ASCII letters, digits, underscores and hyphens only; never credentials."
-                },
-                "provider_retention": {
-                  "type": "string",
-                  "maxLength": 256,
-                  "minLength": 1,
-                  "title": "Provider Retention"
-                },
                 "transport_attempts": {
-                  "type": "integer",
+                  "default": 1,
                   "maximum": 3,
                   "minimum": 1,
                   "title": "Transport Attempts",
-                  "default": 1
+                  "type": "integer"
                 }
               },
-              "additionalProperties": false,
-              "type": "object",
               "required": ["models", "provider_retention"],
-              "title": "AIConnectionConfig"
+              "title": "AIConnectionConfig",
+              "type": "object"
             }
           ],
           "title": "Non Secret Config"
@@ -1201,14 +1181,29 @@
         "nullable": false
       },
       {
+        "key": "provider",
+        "label": "Provider",
+        "type": "text",
+        "schema": {
+          "maxLength": 64,
+          "minLength": 1,
+          "title": "Provider",
+          "type": "string"
+        },
+        "required": true,
+        "nullable": false,
+        "min": 1,
+        "max": 64
+      },
+      {
         "key": "secret_ref",
         "label": "Secret reference",
         "type": "text",
         "schema": {
-          "type": "string",
           "maxLength": 64,
           "minLength": 1,
-          "pattern": "^[A-Za-z0-9_-]+$"
+          "pattern": "^[A-Za-z0-9_-]+$",
+          "type": "string"
         },
         "required": true,
         "nullable": false,
@@ -1220,10 +1215,10 @@
         "label": "Secret version",
         "type": "text",
         "schema": {
-          "type": "string",
           "maxLength": 64,
           "minLength": 1,
-          "pattern": "^[A-Za-z0-9_-]+$"
+          "pattern": "^[A-Za-z0-9_-]+$",
+          "type": "string"
         },
         "required": true,
         "nullable": false,
@@ -1258,19 +1253,19 @@
     "queryFields": [
       { "key": "code", "label": "Code", "type": "text", "nullable": false },
       {
+        "key": "created_at",
+        "label": "Created At",
+        "type": "datetime",
+        "nullable": false
+      },
+      { "key": "name", "label": "Name", "type": "text", "nullable": false },
+      {
         "key": "number",
         "label": "Version Number",
         "type": "number",
         "nullable": false
       },
-      { "key": "name", "label": "Name", "type": "text", "nullable": false },
-      { "key": "status", "label": "Status", "type": "text", "nullable": false },
-      {
-        "key": "created_at",
-        "label": "Created At",
-        "type": "datetime",
-        "nullable": false
-      }
+      { "key": "status", "label": "Status", "type": "text", "nullable": false }
     ],
     "extras": [],
     "fixed": [],
@@ -1280,10 +1275,10 @@
         "label": "Name",
         "type": "text",
         "schema": {
-          "type": "string",
           "maxLength": 255,
           "minLength": 1,
-          "title": "Name"
+          "title": "Name",
+          "type": "string"
         },
         "required": true,
         "nullable": false,
@@ -1295,237 +1290,238 @@
         "label": "Agent configuration",
         "type": "json",
         "schema": {
+          "additionalProperties": false,
+          "description": "Author-controlled values. All references are resolved at publication.",
           "properties": {
             "connection_ref": {
-              "type": "string",
               "maxLength": 128,
               "minLength": 1,
-              "title": "Connection Ref"
+              "title": "Connection Ref",
+              "type": "string"
             },
-            "provider_key": {
-              "type": "string",
-              "maxLength": 64,
-              "minLength": 1,
-              "title": "Provider Key"
-            },
-            "model_id": {
-              "type": "string",
-              "maxLength": 255,
-              "minLength": 1,
-              "title": "Model Id"
-            },
-            "prompt_version": {
-              "type": "string",
-              "maxLength": 128,
-              "minLength": 1,
-              "title": "Prompt Version"
-            },
-            "instructions": {
-              "type": "string",
-              "maxLength": 8192,
-              "minLength": 1,
-              "title": "Instructions"
+            "data_policy": {
+              "additionalProperties": false,
+              "properties": {
+                "allowed_classifications": {
+                  "items": {
+                    "enum": ["PUBLIC", "INTERNAL", "CONFIDENTIAL"],
+                    "type": "string"
+                  },
+                  "maxItems": 3,
+                  "minItems": 1,
+                  "title": "Allowed Classifications",
+                  "type": "array",
+                  "uniqueItems": true
+                },
+                "allowed_fields": {
+                  "items": { "type": "string" },
+                  "maxItems": 64,
+                  "minItems": 1,
+                  "title": "Allowed Fields",
+                  "type": "array",
+                  "uniqueItems": true
+                },
+                "allowed_retrieval_sources": {
+                  "items": { "type": "string" },
+                  "maxItems": 32,
+                  "title": "Allowed Retrieval Sources",
+                  "type": "array",
+                  "uniqueItems": true
+                },
+                "allowed_tools": {
+                  "items": { "type": "string" },
+                  "maxItems": 32,
+                  "title": "Allowed Tools",
+                  "type": "array",
+                  "uniqueItems": true
+                },
+                "redacted_fields": {
+                  "items": { "type": "string" },
+                  "maxItems": 64,
+                  "title": "Redacted Fields",
+                  "type": "array",
+                  "uniqueItems": true
+                }
+              },
+              "required": ["allowed_fields", "allowed_classifications"],
+              "title": "AIPermittedData",
+              "type": "object"
             },
             "decision": {
               "anyOf": [
                 {
+                  "additionalProperties": false,
                   "properties": {
-                    "question": {
-                      "type": "string",
-                      "maxLength": 1024,
-                      "minLength": 1,
-                      "title": "Question"
-                    },
                     "options": {
                       "items": {
+                        "additionalProperties": false,
                         "properties": {
+                          "description": {
+                            "maxLength": 512,
+                            "minLength": 1,
+                            "title": "Description",
+                            "type": "string"
+                          },
                           "key": {
-                            "type": "string",
                             "maxLength": 64,
                             "minLength": 1,
                             "pattern": "^[A-Za-z][A-Za-z0-9_.-]*$",
-                            "title": "Key"
+                            "title": "Key",
+                            "type": "string"
                           },
                           "labels": {
                             "additionalProperties": { "type": "string" },
-                            "propertyNames": { "enum": ["en", "fa"] },
-                            "type": "object",
                             "maxProperties": 2,
                             "minProperties": 1,
-                            "title": "Labels"
-                          },
-                          "description": {
-                            "type": "string",
-                            "maxLength": 512,
-                            "minLength": 1,
-                            "title": "Description"
+                            "propertyNames": { "enum": ["en", "fa"] },
+                            "title": "Labels",
+                            "type": "object"
                           }
                         },
-                        "additionalProperties": false,
-                        "type": "object",
                         "required": ["key", "labels", "description"],
-                        "title": "AIChoice"
+                        "title": "AIChoice",
+                        "type": "object"
                       },
-                      "type": "array",
                       "maxItems": 254,
                       "minItems": 2,
-                      "title": "Options"
+                      "title": "Options",
+                      "type": "array"
                     },
-                    "review_below": {
-                      "type": "number",
-                      "maximum": 1,
-                      "minimum": 0,
-                      "title": "Review Below",
-                      "default": 0.8
-                    }
-                  },
-                  "additionalProperties": false,
-                  "type": "object",
-                  "required": ["question", "options"],
-                  "title": "AIDecisionContract"
-                },
-                {
-                  "properties": {
                     "question": {
-                      "type": "string",
                       "maxLength": 1024,
                       "minLength": 1,
-                      "title": "Question"
-                    },
-                    "options_input_key": {
-                      "type": "string",
-                      "maxLength": 64,
-                      "minLength": 1,
-                      "title": "Options Input Key"
+                      "title": "Question",
+                      "type": "string"
                     },
                     "review_below": {
-                      "type": "number",
+                      "default": 0.8,
                       "maximum": 1,
                       "minimum": 0,
                       "title": "Review Below",
-                      "default": 0.8
+                      "type": "number"
                     }
                   },
+                  "required": ["question", "options"],
+                  "title": "AIDecisionContract",
+                  "type": "object"
+                },
+                {
                   "additionalProperties": false,
-                  "type": "object",
+                  "properties": {
+                    "options_input_key": {
+                      "maxLength": 64,
+                      "minLength": 1,
+                      "title": "Options Input Key",
+                      "type": "string"
+                    },
+                    "question": {
+                      "maxLength": 1024,
+                      "minLength": 1,
+                      "title": "Question",
+                      "type": "string"
+                    },
+                    "review_below": {
+                      "default": 0.8,
+                      "maximum": 1,
+                      "minimum": 0,
+                      "title": "Review Below",
+                      "type": "number"
+                    }
+                  },
                   "required": ["question", "options_input_key"],
-                  "title": "AIInputDecision"
+                  "title": "AIInputDecision",
+                  "type": "object"
                 }
               ],
               "title": "Decision"
             },
-            "data_policy": {
-              "properties": {
-                "allowed_fields": {
-                  "items": { "type": "string" },
-                  "type": "array",
-                  "maxItems": 64,
-                  "minItems": 1,
-                  "uniqueItems": true,
-                  "title": "Allowed Fields"
-                },
-                "allowed_classifications": {
-                  "items": {
-                    "type": "string",
-                    "enum": ["PUBLIC", "INTERNAL", "CONFIDENTIAL"]
-                  },
-                  "type": "array",
-                  "maxItems": 3,
-                  "minItems": 1,
-                  "uniqueItems": true,
-                  "title": "Allowed Classifications"
-                },
-                "redacted_fields": {
-                  "items": { "type": "string" },
-                  "type": "array",
-                  "maxItems": 64,
-                  "uniqueItems": true,
-                  "title": "Redacted Fields"
-                },
-                "allowed_tools": {
-                  "items": { "type": "string" },
-                  "type": "array",
-                  "maxItems": 32,
-                  "uniqueItems": true,
-                  "title": "Allowed Tools"
-                },
-                "allowed_retrieval_sources": {
-                  "items": { "type": "string" },
-                  "type": "array",
-                  "maxItems": 32,
-                  "uniqueItems": true,
-                  "title": "Allowed Retrieval Sources"
-                }
-              },
-              "additionalProperties": false,
-              "type": "object",
-              "required": ["allowed_fields", "allowed_classifications"],
-              "title": "AIPermittedData"
-            },
             "field_classifications": {
               "additionalProperties": {
-                "type": "string",
-                "enum": ["PUBLIC", "INTERNAL", "CONFIDENTIAL"]
+                "enum": ["PUBLIC", "INTERNAL", "CONFIDENTIAL"],
+                "type": "string"
               },
-              "type": "object",
-              "title": "Field Classifications"
+              "title": "Field Classifications",
+              "type": "object"
+            },
+            "instructions": {
+              "maxLength": 8192,
+              "minLength": 1,
+              "title": "Instructions",
+              "type": "string"
+            },
+            "model_id": {
+              "maxLength": 255,
+              "minLength": 1,
+              "title": "Model Id",
+              "type": "string"
+            },
+            "prompt_version": {
+              "maxLength": 128,
+              "minLength": 1,
+              "title": "Prompt Version",
+              "type": "string"
+            },
+            "provider_key": {
+              "maxLength": 64,
+              "minLength": 1,
+              "title": "Provider Key",
+              "type": "string"
             },
             "user_limits": {
+              "additionalProperties": false,
               "properties": {
-                "requests": {
-                  "type": "integer",
-                  "maximum": 1000,
-                  "minimum": 1,
-                  "title": "Requests"
-                },
-                "tool_calls": {
-                  "type": "integer",
-                  "maximum": 1000,
-                  "minimum": 0,
-                  "title": "Tool Calls"
-                },
-                "input_tokens": {
-                  "type": "integer",
-                  "maximum": 10000000,
-                  "minimum": 1,
-                  "title": "Input Tokens"
-                },
-                "output_tokens": {
-                  "type": "integer",
-                  "maximum": 10000000,
-                  "minimum": 1,
-                  "title": "Output Tokens"
-                },
-                "total_tokens": {
-                  "type": "integer",
-                  "maximum": 20000000,
-                  "minimum": 1,
-                  "title": "Total Tokens"
-                },
                 "elapsed_seconds": {
-                  "type": "integer",
                   "maximum": 86400,
                   "minimum": 1,
-                  "title": "Elapsed Seconds"
+                  "title": "Elapsed Seconds",
+                  "type": "integer"
+                },
+                "input_tokens": {
+                  "maximum": 10000000,
+                  "minimum": 1,
+                  "title": "Input Tokens",
+                  "type": "integer"
+                },
+                "output_tokens": {
+                  "maximum": 10000000,
+                  "minimum": 1,
+                  "title": "Output Tokens",
+                  "type": "integer"
+                },
+                "requests": {
+                  "maximum": 1000,
+                  "minimum": 1,
+                  "title": "Requests",
+                  "type": "integer"
                 },
                 "spend_usd": {
                   "anyOf": [
-                    { "type": "number", "minimum": 0 },
+                    { "minimum": 0, "type": "number" },
                     {
-                      "type": "string",
-                      "pattern": "^(?!^[-+.]*$)[+-]?0*(?:\\d{0,6}|(?=[\\d.]{1,13}0*$)\\d{0,6}\\.\\d{0,6}0*$)"
+                      "pattern": "^(?!^[-+.]*$)[+-]?0*(?:\\d{0,6}|(?=[\\d.]{1,13}0*$)\\d{0,6}\\.\\d{0,6}0*$)",
+                      "type": "string"
                     }
                   ],
                   "title": "Spend Usd"
                 },
                 "strict_spend": {
-                  "type": "boolean",
+                  "default": true,
                   "title": "Strict Spend",
-                  "default": true
+                  "type": "boolean"
+                },
+                "tool_calls": {
+                  "maximum": 1000,
+                  "minimum": 0,
+                  "title": "Tool Calls",
+                  "type": "integer"
+                },
+                "total_tokens": {
+                  "maximum": 20000000,
+                  "minimum": 1,
+                  "title": "Total Tokens",
+                  "type": "integer"
                 }
               },
-              "additionalProperties": false,
-              "type": "object",
               "required": [
                 "requests",
                 "tool_calls",
@@ -1535,11 +1531,10 @@
                 "elapsed_seconds",
                 "spend_usd"
               ],
-              "title": "AITaskLimits"
+              "title": "AITaskLimits",
+              "type": "object"
             }
           },
-          "additionalProperties": false,
-          "type": "object",
           "required": [
             "connection_ref",
             "provider_key",
@@ -1552,7 +1547,7 @@
             "user_limits"
           ],
           "title": "AIAgentDraftSpec",
-          "description": "Author-controlled values. All references are resolved at publication."
+          "type": "object"
         },
         "required": true,
         "nullable": false
@@ -1564,11 +1559,11 @@
         "label": "Code",
         "type": "text",
         "schema": {
-          "type": "string",
           "maxLength": 64,
           "minLength": 1,
           "pattern": "^[A-Za-z][A-Za-z0-9_.-]*$",
-          "title": "Code"
+          "title": "Code",
+          "type": "string"
         },
         "required": true,
         "nullable": false,
@@ -1580,10 +1575,10 @@
         "label": "Name",
         "type": "text",
         "schema": {
-          "type": "string",
           "maxLength": 255,
           "minLength": 1,
-          "title": "Name"
+          "title": "Name",
+          "type": "string"
         },
         "required": true,
         "nullable": false,
@@ -1595,237 +1590,238 @@
         "label": "Agent configuration",
         "type": "json",
         "schema": {
+          "additionalProperties": false,
+          "description": "Author-controlled values. All references are resolved at publication.",
           "properties": {
             "connection_ref": {
-              "type": "string",
               "maxLength": 128,
               "minLength": 1,
-              "title": "Connection Ref"
+              "title": "Connection Ref",
+              "type": "string"
             },
-            "provider_key": {
-              "type": "string",
-              "maxLength": 64,
-              "minLength": 1,
-              "title": "Provider Key"
-            },
-            "model_id": {
-              "type": "string",
-              "maxLength": 255,
-              "minLength": 1,
-              "title": "Model Id"
-            },
-            "prompt_version": {
-              "type": "string",
-              "maxLength": 128,
-              "minLength": 1,
-              "title": "Prompt Version"
-            },
-            "instructions": {
-              "type": "string",
-              "maxLength": 8192,
-              "minLength": 1,
-              "title": "Instructions"
+            "data_policy": {
+              "additionalProperties": false,
+              "properties": {
+                "allowed_classifications": {
+                  "items": {
+                    "enum": ["PUBLIC", "INTERNAL", "CONFIDENTIAL"],
+                    "type": "string"
+                  },
+                  "maxItems": 3,
+                  "minItems": 1,
+                  "title": "Allowed Classifications",
+                  "type": "array",
+                  "uniqueItems": true
+                },
+                "allowed_fields": {
+                  "items": { "type": "string" },
+                  "maxItems": 64,
+                  "minItems": 1,
+                  "title": "Allowed Fields",
+                  "type": "array",
+                  "uniqueItems": true
+                },
+                "allowed_retrieval_sources": {
+                  "items": { "type": "string" },
+                  "maxItems": 32,
+                  "title": "Allowed Retrieval Sources",
+                  "type": "array",
+                  "uniqueItems": true
+                },
+                "allowed_tools": {
+                  "items": { "type": "string" },
+                  "maxItems": 32,
+                  "title": "Allowed Tools",
+                  "type": "array",
+                  "uniqueItems": true
+                },
+                "redacted_fields": {
+                  "items": { "type": "string" },
+                  "maxItems": 64,
+                  "title": "Redacted Fields",
+                  "type": "array",
+                  "uniqueItems": true
+                }
+              },
+              "required": ["allowed_fields", "allowed_classifications"],
+              "title": "AIPermittedData",
+              "type": "object"
             },
             "decision": {
               "anyOf": [
                 {
+                  "additionalProperties": false,
                   "properties": {
-                    "question": {
-                      "type": "string",
-                      "maxLength": 1024,
-                      "minLength": 1,
-                      "title": "Question"
-                    },
                     "options": {
                       "items": {
+                        "additionalProperties": false,
                         "properties": {
+                          "description": {
+                            "maxLength": 512,
+                            "minLength": 1,
+                            "title": "Description",
+                            "type": "string"
+                          },
                           "key": {
-                            "type": "string",
                             "maxLength": 64,
                             "minLength": 1,
                             "pattern": "^[A-Za-z][A-Za-z0-9_.-]*$",
-                            "title": "Key"
+                            "title": "Key",
+                            "type": "string"
                           },
                           "labels": {
                             "additionalProperties": { "type": "string" },
-                            "propertyNames": { "enum": ["en", "fa"] },
-                            "type": "object",
                             "maxProperties": 2,
                             "minProperties": 1,
-                            "title": "Labels"
-                          },
-                          "description": {
-                            "type": "string",
-                            "maxLength": 512,
-                            "minLength": 1,
-                            "title": "Description"
+                            "propertyNames": { "enum": ["en", "fa"] },
+                            "title": "Labels",
+                            "type": "object"
                           }
                         },
-                        "additionalProperties": false,
-                        "type": "object",
                         "required": ["key", "labels", "description"],
-                        "title": "AIChoice"
+                        "title": "AIChoice",
+                        "type": "object"
                       },
-                      "type": "array",
                       "maxItems": 254,
                       "minItems": 2,
-                      "title": "Options"
+                      "title": "Options",
+                      "type": "array"
                     },
-                    "review_below": {
-                      "type": "number",
-                      "maximum": 1,
-                      "minimum": 0,
-                      "title": "Review Below",
-                      "default": 0.8
-                    }
-                  },
-                  "additionalProperties": false,
-                  "type": "object",
-                  "required": ["question", "options"],
-                  "title": "AIDecisionContract"
-                },
-                {
-                  "properties": {
                     "question": {
-                      "type": "string",
                       "maxLength": 1024,
                       "minLength": 1,
-                      "title": "Question"
-                    },
-                    "options_input_key": {
-                      "type": "string",
-                      "maxLength": 64,
-                      "minLength": 1,
-                      "title": "Options Input Key"
+                      "title": "Question",
+                      "type": "string"
                     },
                     "review_below": {
-                      "type": "number",
+                      "default": 0.8,
                       "maximum": 1,
                       "minimum": 0,
                       "title": "Review Below",
-                      "default": 0.8
+                      "type": "number"
                     }
                   },
+                  "required": ["question", "options"],
+                  "title": "AIDecisionContract",
+                  "type": "object"
+                },
+                {
                   "additionalProperties": false,
-                  "type": "object",
+                  "properties": {
+                    "options_input_key": {
+                      "maxLength": 64,
+                      "minLength": 1,
+                      "title": "Options Input Key",
+                      "type": "string"
+                    },
+                    "question": {
+                      "maxLength": 1024,
+                      "minLength": 1,
+                      "title": "Question",
+                      "type": "string"
+                    },
+                    "review_below": {
+                      "default": 0.8,
+                      "maximum": 1,
+                      "minimum": 0,
+                      "title": "Review Below",
+                      "type": "number"
+                    }
+                  },
                   "required": ["question", "options_input_key"],
-                  "title": "AIInputDecision"
+                  "title": "AIInputDecision",
+                  "type": "object"
                 }
               ],
               "title": "Decision"
             },
-            "data_policy": {
-              "properties": {
-                "allowed_fields": {
-                  "items": { "type": "string" },
-                  "type": "array",
-                  "maxItems": 64,
-                  "minItems": 1,
-                  "uniqueItems": true,
-                  "title": "Allowed Fields"
-                },
-                "allowed_classifications": {
-                  "items": {
-                    "type": "string",
-                    "enum": ["PUBLIC", "INTERNAL", "CONFIDENTIAL"]
-                  },
-                  "type": "array",
-                  "maxItems": 3,
-                  "minItems": 1,
-                  "uniqueItems": true,
-                  "title": "Allowed Classifications"
-                },
-                "redacted_fields": {
-                  "items": { "type": "string" },
-                  "type": "array",
-                  "maxItems": 64,
-                  "uniqueItems": true,
-                  "title": "Redacted Fields"
-                },
-                "allowed_tools": {
-                  "items": { "type": "string" },
-                  "type": "array",
-                  "maxItems": 32,
-                  "uniqueItems": true,
-                  "title": "Allowed Tools"
-                },
-                "allowed_retrieval_sources": {
-                  "items": { "type": "string" },
-                  "type": "array",
-                  "maxItems": 32,
-                  "uniqueItems": true,
-                  "title": "Allowed Retrieval Sources"
-                }
-              },
-              "additionalProperties": false,
-              "type": "object",
-              "required": ["allowed_fields", "allowed_classifications"],
-              "title": "AIPermittedData"
-            },
             "field_classifications": {
               "additionalProperties": {
-                "type": "string",
-                "enum": ["PUBLIC", "INTERNAL", "CONFIDENTIAL"]
+                "enum": ["PUBLIC", "INTERNAL", "CONFIDENTIAL"],
+                "type": "string"
               },
-              "type": "object",
-              "title": "Field Classifications"
+              "title": "Field Classifications",
+              "type": "object"
+            },
+            "instructions": {
+              "maxLength": 8192,
+              "minLength": 1,
+              "title": "Instructions",
+              "type": "string"
+            },
+            "model_id": {
+              "maxLength": 255,
+              "minLength": 1,
+              "title": "Model Id",
+              "type": "string"
+            },
+            "prompt_version": {
+              "maxLength": 128,
+              "minLength": 1,
+              "title": "Prompt Version",
+              "type": "string"
+            },
+            "provider_key": {
+              "maxLength": 64,
+              "minLength": 1,
+              "title": "Provider Key",
+              "type": "string"
             },
             "user_limits": {
+              "additionalProperties": false,
               "properties": {
-                "requests": {
-                  "type": "integer",
-                  "maximum": 1000,
-                  "minimum": 1,
-                  "title": "Requests"
-                },
-                "tool_calls": {
-                  "type": "integer",
-                  "maximum": 1000,
-                  "minimum": 0,
-                  "title": "Tool Calls"
-                },
-                "input_tokens": {
-                  "type": "integer",
-                  "maximum": 10000000,
-                  "minimum": 1,
-                  "title": "Input Tokens"
-                },
-                "output_tokens": {
-                  "type": "integer",
-                  "maximum": 10000000,
-                  "minimum": 1,
-                  "title": "Output Tokens"
-                },
-                "total_tokens": {
-                  "type": "integer",
-                  "maximum": 20000000,
-                  "minimum": 1,
-                  "title": "Total Tokens"
-                },
                 "elapsed_seconds": {
-                  "type": "integer",
                   "maximum": 86400,
                   "minimum": 1,
-                  "title": "Elapsed Seconds"
+                  "title": "Elapsed Seconds",
+                  "type": "integer"
+                },
+                "input_tokens": {
+                  "maximum": 10000000,
+                  "minimum": 1,
+                  "title": "Input Tokens",
+                  "type": "integer"
+                },
+                "output_tokens": {
+                  "maximum": 10000000,
+                  "minimum": 1,
+                  "title": "Output Tokens",
+                  "type": "integer"
+                },
+                "requests": {
+                  "maximum": 1000,
+                  "minimum": 1,
+                  "title": "Requests",
+                  "type": "integer"
                 },
                 "spend_usd": {
                   "anyOf": [
-                    { "type": "number", "minimum": 0 },
+                    { "minimum": 0, "type": "number" },
                     {
-                      "type": "string",
-                      "pattern": "^(?!^[-+.]*$)[+-]?0*(?:\\d{0,6}|(?=[\\d.]{1,13}0*$)\\d{0,6}\\.\\d{0,6}0*$)"
+                      "pattern": "^(?!^[-+.]*$)[+-]?0*(?:\\d{0,6}|(?=[\\d.]{1,13}0*$)\\d{0,6}\\.\\d{0,6}0*$)",
+                      "type": "string"
                     }
                   ],
                   "title": "Spend Usd"
                 },
                 "strict_spend": {
-                  "type": "boolean",
+                  "default": true,
                   "title": "Strict Spend",
-                  "default": true
+                  "type": "boolean"
+                },
+                "tool_calls": {
+                  "maximum": 1000,
+                  "minimum": 0,
+                  "title": "Tool Calls",
+                  "type": "integer"
+                },
+                "total_tokens": {
+                  "maximum": 20000000,
+                  "minimum": 1,
+                  "title": "Total Tokens",
+                  "type": "integer"
                 }
               },
-              "additionalProperties": false,
-              "type": "object",
               "required": [
                 "requests",
                 "tool_calls",
@@ -1835,11 +1831,10 @@
                 "elapsed_seconds",
                 "spend_usd"
               ],
-              "title": "AITaskLimits"
+              "title": "AITaskLimits",
+              "type": "object"
             }
           },
-          "additionalProperties": false,
-          "type": "object",
           "required": [
             "connection_ref",
             "provider_key",
@@ -1852,7 +1847,7 @@
             "user_limits"
           ],
           "title": "AIAgentDraftSpec",
-          "description": "Author-controlled values. All references are resolved at publication."
+          "type": "object"
         },
         "required": true,
         "nullable": false
@@ -1871,6 +1866,30 @@
     "commandBase": "/api/v1/ai-agents",
     "immutableStatuses": ["PUBLISHED", "RETIRED"]
   },
+  "step-types": {
+    "key": "step-types",
+    "title": "Step versions",
+    "description": "Inspect pinned step metadata without publishing or changing it.",
+    "permission": "workflows.manage",
+    "columns": [
+      { "key": "code", "label": "Code" },
+      { "key": "name", "label": "Name" },
+      { "key": "number", "label": "Version Number" },
+      { "key": "status", "label": "Status" },
+      { "key": "is_available", "label": "Available" }
+    ],
+    "queryFields": [],
+    "extras": [],
+    "fixed": [],
+    "fields": [],
+    "createFields": [],
+    "operations": {
+      "search": "search_step_types_api_v1_step_types_search_post",
+      "get": "get_step_type_api_v1_step_types__ref_id__get"
+    },
+    "selectQuery": true,
+    "immutableStatuses": ["DRAFT", "PUBLISHED", "RETIRED"]
+  },
   "task-definitions": {
     "key": "task-definitions",
     "title": "Task definitions",
@@ -1883,17 +1902,15 @@
       { "key": "max_retries", "label": "Maximum retries" }
     ],
     "queryFields": [
-      { "key": "name", "label": "Name", "type": "text", "nullable": false },
-      { "key": "module", "label": "Module", "type": "text", "nullable": false },
       {
-        "key": "callable_name",
-        "label": "Function name",
-        "type": "text",
+        "key": "bind",
+        "label": "Bind task",
+        "type": "boolean",
         "nullable": false
       },
       {
-        "key": "signature",
-        "label": "Signature",
+        "key": "callable_name",
+        "label": "Function name",
         "type": "text",
         "nullable": false
       },
@@ -1904,18 +1921,14 @@
         "nullable": true
       },
       {
-        "key": "bind",
-        "label": "Bind task",
-        "type": "boolean",
-        "nullable": false
-      },
-      { "key": "queue", "label": "Queue", "type": "text", "nullable": false },
-      {
         "key": "max_retries",
         "label": "Maximum retries",
         "type": "number",
         "nullable": false
       },
+      { "key": "module", "label": "Module", "type": "text", "nullable": false },
+      { "key": "name", "label": "Name", "type": "text", "nullable": false },
+      { "key": "queue", "label": "Queue", "type": "text", "nullable": false },
       {
         "key": "retry_backoff",
         "label": "Retry backoff",
@@ -1926,6 +1939,12 @@
         "key": "retry_jitter",
         "label": "Retry jitter",
         "type": "boolean",
+        "nullable": false
+      },
+      {
+        "key": "signature",
+        "label": "Signature",
+        "type": "text",
         "nullable": false
       },
       {
@@ -1967,83 +1986,9 @@
       { "key": "created_at", "label": "Created At" }
     ],
     "queryFields": [
-      { "key": "name", "label": "Name", "type": "text", "nullable": false },
-      {
-        "key": "task_name",
-        "label": "Task name",
-        "type": "text",
-        "nullable": false
-      },
-      { "key": "queue", "label": "Queue", "type": "text", "nullable": true },
-      {
-        "key": "schedule_type",
-        "label": "Schedule type",
-        "type": "text",
-        "nullable": false
-      },
-      {
-        "key": "interval_seconds",
-        "label": "Interval (seconds)",
-        "type": "number",
-        "nullable": true
-      },
-      {
-        "key": "cron_minute",
-        "label": "Cron minute",
-        "type": "text",
-        "nullable": true
-      },
-      {
-        "key": "cron_hour",
-        "label": "Cron hour",
-        "type": "text",
-        "nullable": true
-      },
-      {
-        "key": "cron_day_of_week",
-        "label": "Cron day of week",
-        "type": "text",
-        "nullable": true
-      },
-      {
-        "key": "cron_day_of_month",
-        "label": "Cron day of month",
-        "type": "text",
-        "nullable": true
-      },
-      {
-        "key": "cron_month_of_year",
-        "label": "Cron month",
-        "type": "text",
-        "nullable": true
-      },
       {
         "key": "clocked_at",
         "label": "Scheduled time",
-        "type": "datetime",
-        "nullable": true
-      },
-      {
-        "key": "enabled",
-        "label": "Enabled",
-        "type": "boolean",
-        "nullable": false
-      },
-      {
-        "key": "one_off",
-        "label": "Run once",
-        "type": "boolean",
-        "nullable": false
-      },
-      {
-        "key": "start_at",
-        "label": "Start at",
-        "type": "datetime",
-        "nullable": true
-      },
-      {
-        "key": "expires_at",
-        "label": "Expires At",
         "type": "datetime",
         "nullable": true
       },
@@ -2054,9 +1999,33 @@
         "nullable": false
       },
       {
-        "key": "updated_at",
-        "label": "Updated At",
-        "type": "datetime",
+        "key": "cron_day_of_month",
+        "label": "Cron day of month",
+        "type": "text",
+        "nullable": true
+      },
+      {
+        "key": "cron_day_of_week",
+        "label": "Cron day of week",
+        "type": "text",
+        "nullable": true
+      },
+      {
+        "key": "cron_hour",
+        "label": "Cron hour",
+        "type": "text",
+        "nullable": true
+      },
+      {
+        "key": "cron_minute",
+        "label": "Cron minute",
+        "type": "text",
+        "nullable": true
+      },
+      {
+        "key": "cron_month_of_year",
+        "label": "Cron month",
+        "type": "text",
         "nullable": true
       },
       {
@@ -2066,16 +2035,66 @@
         "nullable": true
       },
       {
+        "key": "enabled",
+        "label": "Enabled",
+        "type": "boolean",
+        "nullable": false
+      },
+      {
+        "key": "expires_at",
+        "label": "Expires At",
+        "type": "datetime",
+        "nullable": true
+      },
+      {
+        "key": "interval_seconds",
+        "label": "Interval (seconds)",
+        "type": "number",
+        "nullable": true
+      },
+      {
         "key": "last_run_at",
         "label": "Last run at",
         "type": "datetime",
         "nullable": true
+      },
+      { "key": "name", "label": "Name", "type": "text", "nullable": false },
+      {
+        "key": "one_off",
+        "label": "Run once",
+        "type": "boolean",
+        "nullable": false
+      },
+      { "key": "queue", "label": "Queue", "type": "text", "nullable": true },
+      {
+        "key": "schedule_type",
+        "label": "Schedule type",
+        "type": "text",
+        "nullable": false
+      },
+      {
+        "key": "start_at",
+        "label": "Start at",
+        "type": "datetime",
+        "nullable": true
+      },
+      {
+        "key": "task_name",
+        "label": "Task name",
+        "type": "text",
+        "nullable": false
       },
       {
         "key": "total_run_count",
         "label": "Total runs",
         "type": "number",
         "nullable": false
+      },
+      {
+        "key": "updated_at",
+        "label": "Updated At",
+        "type": "datetime",
+        "nullable": true
       }
     ],
     "extras": [],
@@ -2087,47 +2106,8 @@
         "type": "boolean",
         "schema": {
           "anyOf": [{ "type": "boolean" }, { "type": "null" }],
+          "description": "Whether the scheduler may dispatch this row; false pauses it without deleting history.",
           "title": "Enabled"
-        },
-        "required": false,
-        "nullable": true
-      },
-      {
-        "key": "queue",
-        "label": "Queue",
-        "type": "text",
-        "schema": {
-          "anyOf": [{ "type": "string", "maxLength": 255 }, { "type": "null" }],
-          "title": "Queue"
-        },
-        "required": false,
-        "nullable": true,
-        "max": 255
-      },
-      {
-        "key": "interval_seconds",
-        "label": "Interval (seconds)",
-        "type": "number",
-        "schema": {
-          "anyOf": [
-            { "type": "number", "exclusiveMinimum": 0 },
-            { "type": "null" }
-          ],
-          "title": "Interval Seconds"
-        },
-        "required": false,
-        "nullable": true
-      },
-      {
-        "key": "start_at",
-        "label": "Start at",
-        "type": "text",
-        "schema": {
-          "anyOf": [
-            { "type": "string", "format": "date-time" },
-            { "type": "null" }
-          ],
-          "title": "Start At"
         },
         "required": false,
         "nullable": true
@@ -2138,69 +2118,14 @@
         "type": "text",
         "schema": {
           "anyOf": [
-            { "type": "string", "format": "date-time" },
+            { "format": "date-time", "type": "string" },
             { "type": "null" }
           ],
+          "description": "Optional timezone-aware expiry after start and clocked instant; omitted preserves it on update, null clears it.",
           "title": "Expires At"
         },
         "required": false,
         "nullable": true
-      }
-    ],
-    "createFields": [
-      {
-        "key": "name",
-        "label": "Name",
-        "type": "text",
-        "schema": {
-          "type": "string",
-          "maxLength": 255,
-          "title": "Name",
-          "description": "Unique schedule name."
-        },
-        "required": true,
-        "nullable": false,
-        "max": 255
-      },
-      {
-        "key": "task_name",
-        "label": "Task name",
-        "type": "text",
-        "schema": {
-          "type": "string",
-          "maxLength": 255,
-          "title": "Task Name",
-          "description": "Registered Celery task name."
-        },
-        "required": true,
-        "nullable": false,
-        "max": 255
-      },
-      {
-        "key": "queue",
-        "label": "Queue",
-        "type": "text",
-        "schema": {
-          "anyOf": [{ "type": "string", "maxLength": 255 }, { "type": "null" }],
-          "title": "Queue",
-          "description": "Destination queue."
-        },
-        "required": false,
-        "nullable": true,
-        "max": 255
-      },
-      {
-        "key": "schedule_type",
-        "label": "Schedule type",
-        "type": "text",
-        "schema": {
-          "type": "string",
-          "enum": ["interval", "crontab", "clocked"],
-          "title": "Schedule Type"
-        },
-        "options": ["interval", "crontab", "clocked"],
-        "required": true,
-        "nullable": false
       },
       {
         "key": "interval_seconds",
@@ -2208,43 +2133,69 @@
         "type": "number",
         "schema": {
           "anyOf": [
-            { "type": "number", "exclusiveMinimum": 0 },
+            { "exclusiveMinimum": 0, "type": "number" },
             { "type": "null" }
           ],
+          "description": "Positive interval in seconds; required only for interval schedules. Retained legacy reads may be null.",
           "title": "Interval Seconds"
         },
         "required": false,
         "nullable": true
       },
       {
-        "key": "cron_minute",
-        "label": "Cron minute",
+        "key": "queue",
+        "label": "Queue",
         "type": "text",
         "schema": {
-          "anyOf": [{ "type": "string" }, { "type": "null" }],
-          "title": "Cron Minute"
+          "anyOf": [{ "maxLength": 255, "type": "string" }, { "type": "null" }],
+          "description": "Configured queue choice; omitted preserves it on update, null uses the scheduler default.",
+          "title": "Queue"
+        },
+        "required": false,
+        "nullable": true,
+        "max": 255
+      },
+      {
+        "key": "start_at",
+        "label": "Start at",
+        "type": "text",
+        "schema": {
+          "anyOf": [
+            { "format": "date-time", "type": "string" },
+            { "type": "null" }
+          ],
+          "description": "Optional timezone-aware lower execution bound; omitted preserves it on update, null clears it.",
+          "title": "Start At"
         },
         "required": false,
         "nullable": true
-      },
+      }
+    ],
+    "createFields": [
       {
-        "key": "cron_hour",
-        "label": "Cron hour",
-        "type": "text",
+        "key": "args",
+        "label": "Arguments",
+        "type": "json",
         "schema": {
-          "anyOf": [{ "type": "string" }, { "type": "null" }],
-          "title": "Cron Hour"
+          "description": "JSON positional arguments bound to the registered task signature before saving.",
+          "items": {},
+          "title": "Args",
+          "type": "array"
         },
         "required": false,
-        "nullable": true
+        "nullable": false
       },
       {
-        "key": "cron_day_of_week",
-        "label": "Cron day of week",
+        "key": "clocked_at",
+        "label": "Scheduled time",
         "type": "text",
         "schema": {
-          "anyOf": [{ "type": "string" }, { "type": "null" }],
-          "title": "Cron Day Of Week"
+          "anyOf": [
+            { "format": "date-time", "type": "string" },
+            { "type": "null" }
+          ],
+          "description": "Timezone-aware execution instant; required only for clocked one-off schedules.",
+          "title": "Clocked At"
         },
         "required": false,
         "nullable": true
@@ -2255,7 +2206,44 @@
         "type": "text",
         "schema": {
           "anyOf": [{ "type": "string" }, { "type": "null" }],
+          "description": "Celery cron day of month expression; null defaults to * for crontab schedules and must be absent for other variants.",
           "title": "Cron Day Of Month"
+        },
+        "required": false,
+        "nullable": true
+      },
+      {
+        "key": "cron_day_of_week",
+        "label": "Cron day of week",
+        "type": "text",
+        "schema": {
+          "anyOf": [{ "type": "string" }, { "type": "null" }],
+          "description": "Celery cron day of week expression; null defaults to * for crontab schedules and must be absent for other variants.",
+          "title": "Cron Day Of Week"
+        },
+        "required": false,
+        "nullable": true
+      },
+      {
+        "key": "cron_hour",
+        "label": "Cron hour",
+        "type": "text",
+        "schema": {
+          "anyOf": [{ "type": "string" }, { "type": "null" }],
+          "description": "Celery cron hour expression; null defaults to * for crontab schedules and must be absent for other variants.",
+          "title": "Cron Hour"
+        },
+        "required": false,
+        "nullable": true
+      },
+      {
+        "key": "cron_minute",
+        "label": "Cron minute",
+        "type": "text",
+        "schema": {
+          "anyOf": [{ "type": "string" }, { "type": "null" }],
+          "description": "Celery cron minute expression; null defaults to * for crontab schedules and must be absent for other variants.",
+          "title": "Cron Minute"
         },
         "required": false,
         "nullable": true
@@ -2266,32 +2254,55 @@
         "type": "text",
         "schema": {
           "anyOf": [{ "type": "string" }, { "type": "null" }],
+          "description": "Celery cron month of year expression; null defaults to * for crontab schedules and must be absent for other variants.",
           "title": "Cron Month Of Year"
         },
         "required": false,
         "nullable": true
       },
       {
-        "key": "clocked_at",
-        "label": "Scheduled time",
+        "key": "enabled",
+        "label": "Enabled",
+        "type": "boolean",
+        "schema": {
+          "default": true,
+          "description": "Whether the scheduler may dispatch this row; false pauses it without deleting history.",
+          "title": "Enabled",
+          "type": "boolean"
+        },
+        "initial": true,
+        "required": false,
+        "nullable": false
+      },
+      {
+        "key": "expires_at",
+        "label": "Expires At",
         "type": "text",
         "schema": {
           "anyOf": [
-            { "type": "string", "format": "date-time" },
+            { "format": "date-time", "type": "string" },
             { "type": "null" }
           ],
-          "title": "Clocked At"
+          "description": "Optional timezone-aware expiry after start and clocked instant; omitted preserves it on update, null clears it.",
+          "title": "Expires At"
         },
         "required": false,
         "nullable": true
       },
       {
-        "key": "args",
-        "label": "Arguments",
-        "type": "json",
-        "schema": { "items": {}, "type": "array", "title": "Args" },
+        "key": "interval_seconds",
+        "label": "Interval (seconds)",
+        "type": "number",
+        "schema": {
+          "anyOf": [
+            { "exclusiveMinimum": 0, "type": "number" },
+            { "type": "null" }
+          ],
+          "description": "Positive interval in seconds; required only for interval schedules. Retained legacy reads may be null.",
+          "title": "Interval Seconds"
+        },
         "required": false,
-        "nullable": false
+        "nullable": true
       },
       {
         "key": "kwargs",
@@ -2299,28 +2310,66 @@
         "type": "json",
         "schema": {
           "additionalProperties": true,
-          "type": "object",
-          "title": "Kwargs"
+          "description": "JSON keyword arguments bound to the registered task signature before saving.",
+          "title": "Kwargs",
+          "type": "object"
         },
         "required": false,
         "nullable": false
       },
       {
-        "key": "enabled",
-        "label": "Enabled",
-        "type": "boolean",
-        "schema": { "type": "boolean", "title": "Enabled", "default": true },
-        "initial": true,
-        "required": false,
-        "nullable": false
+        "key": "name",
+        "label": "Name",
+        "type": "text",
+        "schema": {
+          "description": "Unique schedule name.",
+          "maxLength": 255,
+          "title": "Name",
+          "type": "string"
+        },
+        "required": true,
+        "nullable": false,
+        "max": 255
       },
       {
         "key": "one_off",
         "label": "Run once",
         "type": "boolean",
-        "schema": { "type": "boolean", "title": "One Off", "default": false },
+        "schema": {
+          "default": false,
+          "description": "Whether the schedule disables itself after dispatch; clocked schedules require true.",
+          "title": "One Off",
+          "type": "boolean"
+        },
         "initial": false,
         "required": false,
+        "nullable": false
+      },
+      {
+        "key": "queue",
+        "label": "Queue",
+        "type": "text",
+        "schema": {
+          "anyOf": [{ "maxLength": 255, "type": "string" }, { "type": "null" }],
+          "description": "Destination queue.",
+          "title": "Queue"
+        },
+        "required": false,
+        "nullable": true,
+        "max": 255
+      },
+      {
+        "key": "schedule_type",
+        "label": "Schedule type",
+        "type": "text",
+        "schema": {
+          "description": "Schedule variant. Only fields belonging to this variant may be supplied on writes.",
+          "enum": ["interval", "crontab", "clocked"],
+          "title": "Schedule Type",
+          "type": "string"
+        },
+        "options": ["interval", "crontab", "clocked"],
+        "required": true,
         "nullable": false
       },
       {
@@ -2329,27 +2378,28 @@
         "type": "text",
         "schema": {
           "anyOf": [
-            { "type": "string", "format": "date-time" },
+            { "format": "date-time", "type": "string" },
             { "type": "null" }
           ],
+          "description": "Optional timezone-aware lower execution bound; omitted preserves it on update, null clears it.",
           "title": "Start At"
         },
         "required": false,
         "nullable": true
       },
       {
-        "key": "expires_at",
-        "label": "Expires At",
+        "key": "task_name",
+        "label": "Task name",
         "type": "text",
         "schema": {
-          "anyOf": [
-            { "type": "string", "format": "date-time" },
-            { "type": "null" }
-          ],
-          "title": "Expires At"
+          "description": "Registered Celery task name.",
+          "maxLength": 255,
+          "title": "Task Name",
+          "type": "string"
         },
-        "required": false,
-        "nullable": true
+        "required": true,
+        "nullable": false,
+        "max": 255
       }
     ],
     "operations": {
@@ -2378,20 +2428,24 @@
     ],
     "queryFields": [
       {
-        "key": "task_id",
-        "label": "Task ID",
-        "type": "text",
+        "key": "created_at",
+        "label": "Created At",
+        "type": "datetime",
         "nullable": false
       },
       {
-        "key": "task_name",
-        "label": "Task name",
-        "type": "text",
-        "nullable": false
+        "key": "duration_seconds",
+        "label": "Duration (seconds)",
+        "type": "number",
+        "nullable": true
+      },
+      {
+        "key": "finished_at",
+        "label": "Finished at",
+        "type": "datetime",
+        "nullable": true
       },
       { "key": "queue", "label": "Queue", "type": "text", "nullable": true },
-      { "key": "status", "label": "Status", "type": "text", "nullable": false },
-      { "key": "worker", "label": "Worker", "type": "text", "nullable": true },
       {
         "key": "retries",
         "label": "Retries",
@@ -2404,22 +2458,17 @@
         "type": "datetime",
         "nullable": true
       },
+      { "key": "status", "label": "Status", "type": "text", "nullable": false },
       {
-        "key": "finished_at",
-        "label": "Finished at",
-        "type": "datetime",
-        "nullable": true
+        "key": "task_id",
+        "label": "Task ID",
+        "type": "text",
+        "nullable": false
       },
       {
-        "key": "duration_seconds",
-        "label": "Duration (seconds)",
-        "type": "number",
-        "nullable": true
-      },
-      {
-        "key": "created_at",
-        "label": "Created At",
-        "type": "datetime",
+        "key": "task_name",
+        "label": "Task name",
+        "type": "text",
         "nullable": false
       },
       {
@@ -2427,7 +2476,8 @@
         "label": "Updated At",
         "type": "datetime",
         "nullable": true
-      }
+      },
+      { "key": "worker", "label": "Worker", "type": "text", "nullable": true }
     ],
     "extras": [],
     "fixed": [],

@@ -35,7 +35,7 @@ assert.deepEqual(
 );
 assert.equal(manifest.peer_commit, "afe4bbe5f566c80e7eb45f6ef9f12c041d60139d");
 console.log(
-  `Verified APP-BE-001 ${manifest.backend_commit}: exact English paths and 425 shared schemas match generated-client source; en/fa hashes verified. Live HTTP is separate.`,
+  `Verified APP-BE-001 ${manifest.current_intake?.backend_commit ?? manifest.backend_commit}: exact English paths and ${Object.keys(platform.components.schemas).length} shared schemas match generated-client source; en/fa hashes verified. Live HTTP is separate.`,
 );
 
 const waveRoot = "docs/reference/app-be-wave-four/";
@@ -72,4 +72,27 @@ assert.deepEqual(
 );
 console.log(
   "Verified 20 copied field option schemas and the metric dictionary against frozen producer hashes; no new transport/integration claim.",
+);
+
+const inboxBytes = await readFile("docs/reference/inbox.openapi.json");
+assert.equal(
+  createHash("sha256").update(inboxBytes).digest("hex"),
+  manifest.notification_intake.sha256,
+  "Unified inbox intake hash drift",
+);
+const inbox = JSON.parse(inboxBytes);
+for (const [path, operations] of Object.entries(inbox.paths))
+  assert.deepEqual(
+    platform.paths[path],
+    operations,
+    "Unified inbox operation differs from main generated transport",
+  );
+for (const [name, schema] of Object.entries(inbox.components.schemas))
+  assert.deepEqual(
+    platform.components.schemas[name],
+    schema,
+    "Unified inbox schema differs from main generated transport",
+  );
+console.log(
+  "Verified current inbox/SSE intake and the main client share one producer manifest.",
 );

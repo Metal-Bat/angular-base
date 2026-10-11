@@ -15,6 +15,7 @@ export type CalendarEvent = {
 } & (
   | { kind: 'all_day'; start: string; end: string }
   | { kind: 'timed'; start: string; end: string; timezone: string }
+  | { kind: 'deadline'; start: string; timezone: string }
 );
 export type CalendarProjection = {
   status: 'loading' | 'ready' | 'failed';
@@ -31,6 +32,9 @@ export function eventValid(event: CalendarEvent): boolean {
     }
     validateZone(event.timezone);
     zonedDate(event.start, event.timezone);
+    if (event.kind === 'deadline') {
+      return true;
+    }
     zonedDate(event.end, event.timezone);
     return instantMicroseconds(event.end) > instantMicroseconds(event.start);
   } catch {
@@ -53,7 +57,8 @@ export function eventsOnDay(
       return dateMillis(event.start) <= start && dateMillis(event.end) > start;
     }
     const first = zonedDate(event.start, zone);
-    const last = exclusiveEndDate(event.end, zone);
+    const last =
+      event.kind === 'deadline' ? first : exclusiveEndDate(event.end, zone);
     return first <= day && day <= last;
   });
 }
@@ -73,7 +78,9 @@ export function eventsInWindow(
     const last =
       event.kind === 'all_day'
         ? shiftDate(event.end, -1)
-        : exclusiveEndDate(event.end, zone);
+        : event.kind === 'deadline'
+          ? first
+          : exclusiveEndDate(event.end, zone);
     return first < window.end && last >= window.start;
   });
 }

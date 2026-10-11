@@ -1,3 +1,4 @@
+import { TemporalControl } from '../../../../shared/ui/temporal-control/temporal-control';
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import type { RuntimeNode } from './runtime-node';
 import { SelectControl } from '../../../../shared/ui/select-control/select-control';
@@ -10,6 +11,7 @@ import { LocalizePipe } from '../../../../shared/ui/localize-pipe';
 @Component({
   selector: 'app-runtime-field',
   imports: [
+    TemporalControl,
     SelectControl,
     ButtonDirective,
     ChoiceControl,
@@ -28,6 +30,8 @@ export class RuntimeField {
     input.required<
       Pick<
         RuntimeNode,
+        | 'accessibleLabel'
+        | 'description'
         | 'bool'
         | 'choice'
         | 'clear'
@@ -36,6 +40,7 @@ export class RuntimeField {
         | 'edit'
         | 'errors'
         | 'indices'
+        | 'instance'
         | 'inputValue'
         | 'node'
         | 'nullable'

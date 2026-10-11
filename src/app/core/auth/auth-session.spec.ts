@@ -34,6 +34,79 @@ describe('Authenticated bootstrap', () => {
   afterEach(() => {
     http.verify();
   });
+  it('navigates after its own bootstrap and fences a logout during preference lookup', async () => {
+    const navigate = vi
+      .spyOn(TestBed.inject(Router), 'navigateByUrl')
+      .mockResolvedValue(true);
+    const login = auth.login('requester', 'private', null);
+    http.expectOne('/session/login').flush({ csrfToken: 'csrf' });
+    (await vi.waitFor(() => http.expectOne('/session/status'))).flush({
+      authenticated: true,
+      csrfToken: 'csrf',
+    });
+    (await vi.waitFor(() => http.expectOne('/api/v1/auth/me'))).flush(
+      blob({
+        success: true,
+        data: { ref_id: 'actor', username: 'requester', is_active: true },
+      }),
+    );
+    (
+      await vi.waitFor(() => http.expectOne('/api/v1/auth/permissions/search'))
+    ).flush(
+      blob({
+        success: true,
+        result: {
+          items: ['requests.start'],
+          page: 1,
+          size: 100,
+          total: 1,
+          total_pages: 1,
+        },
+      }),
+    );
+    (await vi.waitFor(() => http.expectOne('/api/v1/me/preferences'))).flush({
+      success: true,
+      data: { workspace: { landing_key: 'dashboard', page_size: 35 } },
+    });
+    await login;
+    expect(navigate).toHaveBeenCalledWith('/operations/dashboard');
+    navigate.mockClear();
+    const second = auth.login('requester', 'private', null);
+    const failed = second.catch((error: unknown) => error);
+    http.expectOne('/session/login').flush({ csrfToken: 'csrf' });
+    (await vi.waitFor(() => http.expectOne('/session/status'))).flush({
+      authenticated: true,
+      csrfToken: 'csrf',
+    });
+    (await vi.waitFor(() => http.expectOne('/api/v1/auth/me'))).flush(
+      blob({
+        success: true,
+        data: { ref_id: 'actor', username: 'requester', is_active: true },
+      }),
+    );
+    (
+      await vi.waitFor(() => http.expectOne('/api/v1/auth/permissions/search'))
+    ).flush(
+      blob({
+        success: true,
+        result: {
+          items: ['requests.start'],
+          page: 1,
+          size: 100,
+          total: 1,
+          total_pages: 1,
+        },
+      }),
+    );
+    const preference = await vi.waitFor(() =>
+      http.expectOne('/api/v1/me/preferences'),
+    );
+    auth.invalidate(false);
+    expect(preference.cancelled).toBe(true);
+    expect(await failed).toEqual(Error('Sign-in cancelled.'));
+    expect(navigate).not.toHaveBeenCalled();
+    expect(auth.profile()).toBeNull();
+  });
   it('waits for the account and every permission page before granting access', async () => {
     const work = auth.bootstrap();
     expect(auth.bootstrap()).toBe(work);

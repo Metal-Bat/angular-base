@@ -89,6 +89,15 @@
                 <option value="true">{{ "Yes" | localize }}</option>
                 <option value="false">{{ "No" | localize }}</option>
               </app-select-control>
+            } @else if (
+              ["date", "datetime", "time"].includes(vm.fieldType(filter.field))
+            ) {
+              <app-temporal-control
+                [controlId]="vm.sortFieldsId + '-value-' + index"
+                [disabled]="vm.busy()"
+                [kind]="vm.fieldType(filter.field)"
+                [(value)]="filter.value"
+              />
             } @else {
               <input
                 pInputText
@@ -96,11 +105,7 @@
                 [id]="vm.sortFieldsId + '-value-' + index"
                 [name]="'value' + index"
                 [type]="
-                  vm.fieldType(filter.field) === 'date'
-                    ? 'date'
-                    : vm.fieldType(filter.field) === 'number'
-                      ? 'number'
-                      : 'text'
+                  vm.fieldType(filter.field) === 'number' ? 'number' : 'text'
                 "
                 [(ngModel)]="filter.value"
               />
@@ -110,19 +115,30 @@
             <app-control-field
               label="To"
               [controlId]="vm.sortFieldsId + '-end-' + index"
-              ><input
-                pInputText
-                [id]="vm.sortFieldsId + '-end-' + index"
-                [name]="'end' + index"
-                [type]="
-                  vm.fieldType(filter.field) === 'date'
-                    ? 'date'
-                    : vm.fieldType(filter.field) === 'number'
-                      ? 'number'
-                      : 'text'
-                "
-                [(ngModel)]="filter.end"
-            /></app-control-field>
+            >
+              @if (
+                ["date", "datetime", "time"].includes(
+                  vm.fieldType(filter.field)
+                )
+              ) {
+                <app-temporal-control
+                  [controlId]="vm.sortFieldsId + '-end-' + index"
+                  [disabled]="vm.busy()"
+                  [kind]="vm.fieldType(filter.field)"
+                  [(value)]="filter.end"
+                />
+              } @else {
+                <input
+                  pInputText
+                  [id]="vm.sortFieldsId + '-end-' + index"
+                  [name]="'end' + index"
+                  [type]="
+                    vm.fieldType(filter.field) === 'number' ? 'number' : 'text'
+                  "
+                  [(ngModel)]="filter.end"
+                />
+              }
+            </app-control-field>
           }
         </div>
       } @else {

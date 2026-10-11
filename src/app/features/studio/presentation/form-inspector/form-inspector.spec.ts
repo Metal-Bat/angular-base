@@ -71,4 +71,74 @@ describe('Typed form inspector', () => {
     }
     expect(vm.rules()).toHaveLength(16);
   });
+  it('retains invalid grid drafts and canonical fields until corrected', async () => {
+    const fixture = TestBed.createComponent(FormInspector);
+    fixture.componentRef.setInput('documents', documents);
+    fixture.componentRef.setInput('path', [0]);
+    await fixture.whenStable();
+    const vm = fixture.componentInstance;
+    const applied = vi.fn();
+    vm.applied.subscribe(applied);
+    vm.patch('grid', { column: 12, span: 2, row: 1 });
+    vm.apply();
+    expect(applied).not.toHaveBeenCalled();
+    expect(vm.error()).toBe('Invalid grid placement');
+    expect(vm.draft()['grid']).toEqual({ column: 12, span: 2, row: 1 });
+    vm.patch('grid', { column: 2, span: 3, row: 4 });
+    vm.patch('accessibility', { label: 'Amount', description: 'Whole units' });
+    vm.apply();
+    expect(applied.mock.calls[0][0]['data_schema']).toEqual(
+      documents['data_schema'],
+    );
+    expect(applied).toHaveBeenCalledTimes(1);
+  });
+  it('switches registered functions and expressions while retaining override policy', async () => {
+    const fixture = TestBed.createComponent(FormInspector);
+    const data: JsonObject = {
+      ...documents,
+      render_schema: {
+        root: {
+          component: 'vertical',
+          children: [
+            {
+              component: 'calculated',
+              scope: '/properties/amount',
+              calculation: {
+                expression: '0',
+                override_permission: 'forms.manage',
+              },
+            },
+          ],
+        },
+      },
+    };
+    fixture.componentRef.setInput('documents', data);
+    fixture.componentRef.setInput('path', [0]);
+    await fixture.whenStable();
+    const vm = fixture.componentInstance;
+    vm.calculationScope('/properties/missing', true);
+    vm.setFunction();
+    expect(vm.draft()['calculation']).toEqual({
+      expression: '0',
+      override_permission: 'forms.manage',
+    });
+    vm.calculationScope('/properties/amount', true);
+    vm.calculationFunction = 'count';
+    vm.setFunction();
+    expect(vm.draft()['calculation']).toEqual({
+      function: 'count',
+      scopes: ['/properties/amount'],
+      override_permission: 'forms.manage',
+    });
+    vm.expression = '0';
+    vm.setExpression();
+    expect(vm.draft()['calculation']).toEqual({
+      expression: '0',
+      override_permission: 'forms.manage',
+    });
+    fixture.componentRef.setInput('disabled', true);
+    vm.calculationFunction = 'sum';
+    vm.setFunction();
+    expect((vm.draft()['calculation'] as JsonObject)['expression']).toBe('0');
+  });
 });

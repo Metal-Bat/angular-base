@@ -17,17 +17,22 @@
       [step]="step"
       (applied)="view().applyTyped($event)"
       (changed)="view().markPending('typed')"
+      (discarded)="view().discardPending('typed')"
     />
   }
   @if (view().selectedStep(); as step) {
     <app-graph-connections
-      [disabled]="view().readonly() || view().pending().length > 0"
+      [disabled]="
+        view().readonly() || view().pending().some(isOtherConnectionPanel)
+      "
       [graph]="view().document().graph"
       [human]="step['type_code'] === 'HUMAN_TASK'"
       [nodes]="view().nodes()"
       [selected]="view().selected()"
       [version]="view().reference()"
       (applied)="view().applyConnections($event)"
+      (changed)="view().markPending('connections')"
+      (discarded)="view().discardPending('connections')"
     />
   }
   <details>

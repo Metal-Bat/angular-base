@@ -19,6 +19,7 @@ export class CatalogHeader {
         ResourceCatalog,
         | 'appliedQuery'
         | 'busy'
+        | 'reconcileRequired'
         | 'canScope'
         | 'create'
         | 'edit'

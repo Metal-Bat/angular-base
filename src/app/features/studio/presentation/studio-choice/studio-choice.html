@@ -1,11 +1,23 @@
 <div class="flex flex-col gap-2">
+  @if (kind() === "connections" && !context()["kind"]) {
+    <app-select-control
+      [ariaLabel]="'Connection kind' | localize"
+      [disabled]="disabled()"
+      [ngModel]="connectionKind()"
+      (ngModelChange)="connectionKind.set($event)"
+    >
+      <option value="">{{ "Choose" | localize }}</option>
+      <option value="SERVICE">{{ "Service" | localize }}</option>
+      <option value="NOTIFICATION">{{ "Notification" | localize }}</option>
+    </app-select-control>
+  }
   <label [for]="controlId() + '-search'">{{ "Search" | localize }}</label>
   <input
     pInputText
-    [disabled]="disabled() || busy()"
+    [disabled]="disabled()"
     [id]="controlId() + '-search'"
     [ngModel]="search()"
-    (ngModelChange)="search.set($event)"
+    (ngModelChange)="scheduleSearch($event)"
   />
   <button
     pButton
@@ -24,12 +36,22 @@
   >
     <option value="">{{ "Choose" | localize }}</option>
     @if (fallback()) {
-      <option [value]="value()">{{ "Selected resource" | localize }}</option>
+      <option [value]="value()">
+        {{ selected()?.label || ("Selected resource" | localize) }}
+      </option>
     }
     @for (row of rows(); track row.key) {
       <option [value]="row.key">{{ row.label }}</option>
     }
   </app-select-control>
+  <button
+    pButton
+    type="button"
+    [disabled]="disabled() || !value()"
+    (click)="choose('')"
+  >
+    {{ "Clear" | localize }}
+  </button>
   @if (pages() > 1) {
     <div class="flex gap-2">
       <button

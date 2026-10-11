@@ -50,6 +50,31 @@ describe('Resource operation adapters', () => {
     );
     expect((await work).items[0]['key']).toBe('user-v2');
   });
+  it('uses the actual step-version SelectQuery and rejects unsupported restrictions', async () => {
+    const definition = recordDefinitions['step-types'];
+    await expect(
+      api.list(definition, {
+        ...emptyQuery(),
+        filters: [
+          { field_name: 'code', operation: 'equal', value: 'restricted' },
+        ],
+      }),
+    ).rejects.toThrow('Unsupported step-version query');
+    const pending = api.list(definition, { ...emptyQuery(), page: 2 });
+    const request = await vi.waitFor(() =>
+      http.expectOne('/api/v1/step-types/search'),
+    );
+    expect(request.request.body).toEqual({ page: 2, size: 20 });
+    request.flush(
+      new Blob([
+        JSON.stringify({
+          success: true,
+          result: { items: [], page: 2, size: 20, total: 0, total_pages: 0 },
+        }),
+      ]),
+    );
+    expect((await pending).items).toEqual([]);
+  });
   it('retains the archive password only on owned report detail', async () => {
     const work = api.detail(recordDefinitions['reports'], 'owned-report');
     const request = await vi.waitFor(() =>

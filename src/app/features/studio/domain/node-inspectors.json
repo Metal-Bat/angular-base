@@ -978,230 +978,230 @@
     }
   ],
   "task": {
+    "additionalProperties": false,
     "properties": {
-      "default_view": { "type": "string", "title": "Default View" },
-      "correction_entry": {
-        "type": "boolean",
-        "title": "Correction Entry",
-        "default": false
-      },
-      "inherit_previous": {
-        "type": "boolean",
-        "title": "Inherit Previous",
-        "default": false
-      },
-      "views": {
-        "items": {
-          "properties": {
-            "key": {
-              "type": "string",
-              "maxLength": 64,
-              "minLength": 1,
-              "pattern": "^[A-Za-z][A-Za-z0-9_.-]*$",
-              "title": "Key"
-            },
-            "purpose": {
-              "type": "string",
-              "enum": ["edit", "summary", "print"],
-              "title": "Purpose"
-            },
-            "title": {
-              "properties": {
-                "en": {
-                  "type": "string",
-                  "maxLength": 255,
-                  "minLength": 1,
-                  "title": "En"
-                },
-                "fa": {
-                  "anyOf": [
-                    { "type": "string", "maxLength": 255, "minLength": 1 },
-                    { "type": "null" }
-                  ],
-                  "title": "Fa"
-                }
-              },
-              "additionalProperties": false,
-              "type": "object",
-              "required": ["en"],
-              "title": "LocalizedTaskText"
-            },
-            "scopes": {
-              "items": { "type": "string" },
-              "type": "array",
-              "maxItems": 128,
-              "title": "Scopes"
-            }
-          },
-          "additionalProperties": false,
-          "type": "object",
-          "required": ["key", "purpose", "title", "scopes"],
-          "title": "TaskView"
-        },
-        "type": "array",
-        "maxItems": 12,
-        "minItems": 1,
-        "title": "Views"
-      },
       "actions": {
         "items": {
+          "additionalProperties": false,
           "properties": {
-            "key": {
-              "type": "string",
-              "maxLength": 64,
-              "minLength": 1,
-              "pattern": "^[A-Za-z][A-Za-z0-9_.-]*$",
-              "title": "Key"
-            },
-            "kind": {
-              "type": "string",
-              "enum": ["complete", "reject", "return"],
-              "title": "Kind"
-            },
-            "outcome_key": {
-              "type": "string",
-              "maxLength": 64,
-              "minLength": 1,
-              "title": "Outcome Key"
-            },
-            "title": {
-              "properties": {
-                "en": {
-                  "type": "string",
-                  "maxLength": 255,
-                  "minLength": 1,
-                  "title": "En"
-                },
-                "fa": {
-                  "anyOf": [
-                    { "type": "string", "maxLength": 255, "minLength": 1 },
-                    { "type": "null" }
-                  ],
-                  "title": "Fa"
-                }
-              },
-              "additionalProperties": false,
-              "type": "object",
-              "required": ["en"],
-              "title": "LocalizedTaskText"
-            },
             "confirmation": {
               "anyOf": [
                 {
+                  "additionalProperties": false,
                   "properties": {
                     "en": {
-                      "type": "string",
                       "maxLength": 255,
                       "minLength": 1,
-                      "title": "En"
+                      "title": "En",
+                      "type": "string"
                     },
                     "fa": {
                       "anyOf": [
-                        { "type": "string", "maxLength": 255, "minLength": 1 },
+                        { "maxLength": 255, "minLength": 1, "type": "string" },
                         { "type": "null" }
                       ],
                       "title": "Fa"
                     }
                   },
-                  "additionalProperties": false,
-                  "type": "object",
                   "required": ["en"],
-                  "title": "LocalizedTaskText"
+                  "title": "LocalizedTaskText",
+                  "type": "object"
                 },
                 { "type": "null" }
               ]
             },
-            "required_scopes": {
-              "items": { "type": "string" },
-              "type": "array",
-              "maxItems": 128,
-              "title": "Required Scopes"
+            "key": {
+              "maxLength": 64,
+              "minLength": 1,
+              "pattern": "^[A-Za-z][A-Za-z0-9_.-]*$",
+              "title": "Key",
+              "type": "string"
+            },
+            "kind": {
+              "enum": ["complete", "reject", "return"],
+              "title": "Kind",
+              "type": "string"
+            },
+            "outcome_key": {
+              "maxLength": 64,
+              "minLength": 1,
+              "title": "Outcome Key",
+              "type": "string"
             },
             "require_comment": {
-              "type": "boolean",
+              "default": false,
               "title": "Require Comment",
-              "default": false
+              "type": "boolean"
+            },
+            "required_scopes": {
+              "items": { "type": "string" },
+              "maxItems": 128,
+              "title": "Required Scopes",
+              "type": "array"
+            },
+            "title": {
+              "additionalProperties": false,
+              "properties": {
+                "en": {
+                  "maxLength": 255,
+                  "minLength": 1,
+                  "title": "En",
+                  "type": "string"
+                },
+                "fa": {
+                  "anyOf": [
+                    { "maxLength": 255, "minLength": 1, "type": "string" },
+                    { "type": "null" }
+                  ],
+                  "title": "Fa"
+                }
+              },
+              "required": ["en"],
+              "title": "LocalizedTaskText",
+              "type": "object"
             },
             "validation": {
-              "type": "string",
+              "default": "complete",
               "enum": ["complete", "partial"],
               "title": "Validation",
-              "default": "complete"
+              "type": "string"
             }
           },
-          "additionalProperties": false,
-          "type": "object",
           "required": ["key", "kind", "outcome_key", "title"],
-          "title": "TaskAction"
+          "title": "TaskAction",
+          "type": "object"
         },
-        "type": "array",
         "maxItems": 16,
         "minItems": 1,
-        "title": "Actions"
+        "title": "Actions",
+        "type": "array"
+      },
+      "correction_entry": {
+        "default": false,
+        "title": "Correction Entry",
+        "type": "boolean"
+      },
+      "default_view": { "title": "Default View", "type": "string" },
+      "inherit_previous": {
+        "default": false,
+        "title": "Inherit Previous",
+        "type": "boolean"
+      },
+      "views": {
+        "items": {
+          "additionalProperties": false,
+          "properties": {
+            "key": {
+              "maxLength": 64,
+              "minLength": 1,
+              "pattern": "^[A-Za-z][A-Za-z0-9_.-]*$",
+              "title": "Key",
+              "type": "string"
+            },
+            "purpose": {
+              "enum": ["edit", "summary", "print"],
+              "title": "Purpose",
+              "type": "string"
+            },
+            "scopes": {
+              "items": { "type": "string" },
+              "maxItems": 128,
+              "title": "Scopes",
+              "type": "array"
+            },
+            "title": {
+              "additionalProperties": false,
+              "properties": {
+                "en": {
+                  "maxLength": 255,
+                  "minLength": 1,
+                  "title": "En",
+                  "type": "string"
+                },
+                "fa": {
+                  "anyOf": [
+                    { "maxLength": 255, "minLength": 1, "type": "string" },
+                    { "type": "null" }
+                  ],
+                  "title": "Fa"
+                }
+              },
+              "required": ["en"],
+              "title": "LocalizedTaskText",
+              "type": "object"
+            }
+          },
+          "required": ["key", "purpose", "title", "scopes"],
+          "title": "TaskView",
+          "type": "object"
+        },
+        "maxItems": 12,
+        "minItems": 1,
+        "title": "Views",
+        "type": "array"
       }
     },
-    "additionalProperties": false,
-    "type": "object",
     "required": ["default_view", "views", "actions"],
-    "title": "HumanTaskContract"
+    "title": "HumanTaskContract",
+    "type": "object"
   },
   "flow": {
+    "additionalProperties": false,
+    "description": "Optional advanced control-flow policy; absent means legacy single-path behavior.",
     "properties": {
-      "split": {
-        "anyOf": [
-          { "type": "string", "const": "ALL", "enum": ["ALL"] },
-          { "type": "null" }
-        ],
-        "title": "Split"
-      },
-      "join": {
-        "anyOf": [
-          { "type": "string", "const": "ALL", "enum": ["ALL"] },
-          { "type": "null" }
-        ],
-        "title": "Join"
-      },
       "cancelled_branches": {
-        "type": "string",
+        "default": "ARRIVE",
         "enum": ["ARRIVE", "FAIL"],
         "title": "Cancelled Branches",
-        "default": "ARRIVE"
+        "type": "string"
       },
-      "max_visits": {
-        "anyOf": [
-          { "type": "integer", "maximum": 10000, "minimum": 1 },
-          { "type": "null" }
-        ],
-        "title": "Max Visits"
-      },
-      "retry_limit": {
-        "type": "integer",
-        "maximum": 20,
-        "minimum": 0,
-        "title": "Retry Limit",
-        "default": 3
+      "compensation_only": {
+        "default": false,
+        "title": "Compensation Only",
+        "type": "boolean"
       },
       "compensation_step": {
         "anyOf": [
           {
-            "type": "string",
             "maxLength": 64,
             "minLength": 1,
-            "pattern": "^[A-Za-z][A-Za-z0-9_.-]*$"
+            "pattern": "^[A-Za-z][A-Za-z0-9_.-]*$",
+            "type": "string"
           },
           { "type": "null" }
         ],
         "title": "Compensation Step"
       },
-      "compensation_only": {
-        "type": "boolean",
-        "title": "Compensation Only",
-        "default": false
+      "join": {
+        "anyOf": [
+          { "const": "ALL", "type": "string", "enum": ["ALL"] },
+          { "type": "null" }
+        ],
+        "title": "Join"
+      },
+      "max_visits": {
+        "anyOf": [
+          { "maximum": 10000, "minimum": 1, "type": "integer" },
+          { "type": "null" }
+        ],
+        "title": "Max Visits"
+      },
+      "retry_limit": {
+        "default": 3,
+        "maximum": 20,
+        "minimum": 0,
+        "title": "Retry Limit",
+        "type": "integer"
+      },
+      "split": {
+        "anyOf": [
+          { "const": "ALL", "type": "string", "enum": ["ALL"] },
+          { "type": "null" }
+        ],
+        "title": "Split"
       }
     },
-    "additionalProperties": false,
-    "type": "object",
     "title": "GraphFlow",
-    "description": "Optional advanced control-flow policy; absent means legacy single-path behavior."
+    "type": "object"
   }
 }

@@ -1,0 +1,14 @@
+@if (context(); as source) {
+  <aside class="my-4 grid gap-2 rounded-lg border border-console-border p-4">
+    <p>
+      {{
+        "A repair is not confirmed until the definition is rechecked."
+          | localize
+      }}
+    </p>
+    <bdi>{{ source.repair_node }}</bdi>
+    <a routerLink="/studio/workflow-versions" [queryParams]="source">{{
+      "Return to definition and recheck" | localize
+    }}</a>
+  </aside>
+}

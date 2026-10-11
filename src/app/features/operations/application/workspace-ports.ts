@@ -19,6 +19,7 @@ export type PagesPort = {
   readonly cases: () => readonly CaseRecord[];
   readonly page: () => number;
   readonly totalPages: () => number;
+  readonly appliedQuery: () => JsonObject | null;
   readonly state: () => 'loading' | 'ready' | 'error';
   readonly error: () => string;
   load(
@@ -26,6 +27,7 @@ export type PagesPort = {
     page?: number,
     cartable?: Cartable,
     abort?: AbortSignal,
+    query?: JsonObject,
   ): Promise<void>;
 };
 export type CreationPort = {

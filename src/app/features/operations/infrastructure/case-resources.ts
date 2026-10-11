@@ -251,7 +251,15 @@ export class CaseResources extends CaseFiles implements FormResources {
         await firstValueFrom(
           this.api.call(
             'report_requests_api_v1_business_requests_report_post',
-            { body: { page: 1, size: 20, filters: [], sort_orders: [] } },
+            {
+              body: {
+                page: 1,
+                size: 20,
+                scope: 'mine',
+                filters: [],
+                sort_orders: [],
+              },
+            },
           ),
         ),
         (raw) => {

@@ -1,0 +1,91 @@
+<section class="my-5 grid gap-3 rounded-xl border border-console-border p-5">
+  <h2>{{ "Workspace settings" | localize }}</h2>
+  <label for="preference-density">{{ "Density" | localize }}</label>
+  <app-select-control
+    inputId="preference-density"
+    [ariaLabel]="'Density' | localize"
+    [disabled]="preferences.loading()"
+    [value]="preferences.settings()?.appearance?.density || 'comfortable'"
+    (selectionChanged)="density($event.target.value)"
+    ><option value="comfortable">{{ "Comfortable" | localize }}</option>
+    <option value="compact">
+      {{ "Compact" | localize }}
+    </option></app-select-control
+  >
+  <form class="grid gap-3" (ngSubmit)="zone()">
+    <label for="preference-timezone">{{ "Timezone" | localize }}</label
+    ><input
+      id="preference-timezone"
+      maxlength="64"
+      name="timezone"
+      pInputText
+      [attr.aria-describedby]="
+        invalidZone() ? 'preference-timezone-error' : null
+      "
+      [attr.aria-invalid]="invalidZone() ? 'true' : null"
+      [disabled]="preferences.loading()"
+      [(ngModel)]="timezone"
+    /><button pButton type="submit" [disabled]="preferences.loading()">
+      {{ "Save timezone" | localize }}
+    </button>
+  </form>
+  @if (invalidZone()) {
+    <p id="preference-timezone-error" role="alert">
+      {{ "Invalid timezone" | localize }}
+    </p>
+  }
+  <label for="preference-numbering">{{ "Display digits" | localize }}</label
+  ><app-select-control
+    inputId="preference-numbering"
+    [ariaLabel]="'Display digits' | localize"
+    [disabled]="preferences.loading()"
+    [value]="preferences.settings()?.locale?.numbering || 'latn'"
+    (selectionChanged)="numbering($event.target.value)"
+    ><option value="latn">0123456789</option>
+    <option value="arabext">۰۱۲۳۴۵۶۷۸۹</option></app-select-control
+  >
+  <label for="preference-page-size">{{ "Page size" | localize }}</label
+  ><input
+    id="preference-page-size"
+    max="100"
+    min="1"
+    pInputText
+    type="number"
+    [attr.aria-describedby]="
+      invalidSize() ? 'preference-page-size-error' : null
+    "
+    [attr.aria-invalid]="invalidSize() ? 'true' : null"
+    [disabled]="preferences.loading()"
+    [value]="preferences.settings()?.workspace?.page_size || 20"
+    (change)="pageSize($event)"
+  />
+  @if (invalidSize()) {
+    <p id="preference-page-size-error" role="alert">
+      {{ "Page size must be between 1 and 100." | localize }}
+    </p>
+  }
+  <label
+    ><input
+      type="checkbox"
+      [checked]="preferences.settings()?.notifications?.email_enabled || false"
+      [disabled]="preferences.loading()"
+      (change)="emailChange($event)"
+    />
+    {{ "Optional email notifications" | localize }}</label
+  >
+  <label for="preference-landing">{{ "Default workspace" | localize }}</label>
+  <app-select-control
+    inputId="preference-landing"
+    [ariaLabel]="'Default workspace' | localize"
+    [disabled]="preferences.loading()"
+    [value]="preferences.settings()?.workspace?.landing_key || 'requests'"
+    (selectionChanged)="landing($event.target.value)"
+    ><option value="requests">{{ "My requests" | localize }}</option>
+    <option value="work_items">{{ "Task inbox" | localize }}</option>
+    <option value="studio">{{ "Studio" | localize }}</option>
+    <option value="dashboard">
+      {{ "Dashboard" | localize }}
+    </option></app-select-control
+  >
+  <p>{{ "Gregorian calendar" | localize }}</p>
+</section>
