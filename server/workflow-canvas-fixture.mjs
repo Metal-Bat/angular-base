@@ -180,6 +180,7 @@ export function createCanvasFixture() {
 }
 
 export const canvasBrowserScript = `
+ const canvasNode = key => [...document.querySelectorAll('.board-node')].find(item => item.querySelector('.node-title small')?.textContent.trim()===key);
  const dragPort = async (from, to) => {
    await click('Fit to view');
    document.querySelector('.canvas-stage').scrollIntoView({block:'center',behavior:'instant'});
@@ -203,13 +204,30 @@ export const canvasBrowserScript = `
  await wait(()=>document.querySelectorAll('.board-node').length===2 && document.querySelector('.data-port'),'canvas nodes and typed ports');
  check(document.querySelector('.data-edge'),'data edge');
  check(getComputedStyle(document.querySelector('f-flow')).backgroundImage.includes('radial-gradient'),'visible grid');
- const node = document.querySelector('.board-node');
+ const node = canvasNode('prepare');
  node.querySelector('button').click();
  await wait(()=>node.classList.contains('selected') && node.querySelector('button').getAttribute('aria-pressed')==='true','selected node and inspector');
  check(document.querySelector('.step-inspector h2').textContent.includes('prepare'),'selected inspector key');
  const original=node.style.transform;
  node.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowRight',bubbles:true,cancelable:true}));
  await wait(()=>node.style.transform!==original,'keyboard movement');
+
+ window.fixtureStage='canvas-body-drag';
+ await wait(()=>button('Fit to view')&&!button('Fit to view').disabled,'Measured canvas ready for dragging');
+ await click('Fit to view');document.querySelector('.canvas-stage').scrollIntoView({block:'center',behavior:'instant'});await new Promise(requestAnimationFrame);
+ const bodyHandle=node.querySelector('.control-port');const bodyRect=bodyHandle.getBoundingClientRect();const bodyStart={clientX:bodyRect.left+bodyRect.width/2,clientY:bodyRect.top+bodyRect.height/2};const beforeBodyDrag=node.style.transform;
+ bodyHandle.dispatchEvent(new MouseEvent('mousedown',{...bodyStart,button:0,buttons:1,bubbles:true,cancelable:true}));
+ document.dispatchEvent(new MouseEvent('mousemove',{clientX:bodyStart.clientX+15,clientY:bodyStart.clientY+10,buttons:1,bubbles:true,cancelable:true}));await new Promise(r=>setTimeout(r,50));
+ document.dispatchEvent(new MouseEvent('mousemove',{clientX:bodyStart.clientX+60,clientY:bodyStart.clientY+35,buttons:1,bubbles:true,cancelable:true}));await new Promise(r=>setTimeout(r,50));
+ bodyHandle.dispatchEvent(new PointerEvent('pointerup',{clientX:bodyStart.clientX+60,clientY:bodyStart.clientY+35,button:0,buttons:0,bubbles:true,cancelable:true}));
+ await wait(()=>node.style.transform!==beforeBodyDrag,'Drag node by card body');await click('Undo');await wait(()=>node.style.transform===beforeBodyDrag,'Undo body drag restores persisted model');
+ window.fixtureStage='canvas-context-menu';
+ node.dispatchEvent(new MouseEvent('contextmenu',{...bodyStart,button:2,bubbles:true,cancelable:true}));
+ await wait(()=>[...document.querySelectorAll('.p-contextmenu [role="menuitem"]')].some(item=>item.textContent.includes('Duplicate step')),'Right-click step actions');
+ await auditAccessibility('workflow-node-menu');
+ [...document.querySelectorAll('.p-contextmenu [role="menuitem"]')].find(item=>item.textContent.includes('Duplicate step')).querySelector('.p-contextmenu-item-link').click();
+ await wait(()=>document.querySelectorAll('.board-node').length===3,'Context duplicate');await click('Undo');await wait(()=>document.querySelectorAll('.board-node').length===2,'Undo context duplicate');
+ await click('Reset view');await wait(()=>document.querySelector('.zoom-value').textContent==='100%','Restore baseline after drag and menu checks');
  window.fixtureStage='canvas-zoom';
  await wait(()=>!document.querySelector('button[aria-label="Zoom in"]').disabled,'canvas controls rendered');
  document.querySelector('button[aria-label="Zoom in"]').click();
@@ -221,9 +239,9 @@ export const canvasBrowserScript = `
  window.fixtureStage='canvas-save';
  const moved=node.style.transform;
  await click('Save workspace');await wait(()=>text().includes('Workspace saved.'),'saved workspace');
- await click('Reload');await wait(()=>document.querySelector('.board-node')?.style.transform===moved,'saved position reloaded');
+ await click('Reload');await wait(()=>canvasNode('prepare')?.style.transform===moved,'saved position reloaded');
  check(!document.querySelector('.board-node.selected'),'reload clears selection');
- document.querySelector('.board-node button').click();
+ canvasNode('prepare').querySelector('.node-handle').click();
  await wait(()=>JSON.parse(document.querySelector('#step-json').value).key==='prepare','selected configuration');
  const editor=document.querySelector('#step-json');const expert=JSON.parse(editor.value);expert.config.fixture=true;editor.value=JSON.stringify(expert);editor.dispatchEvent(new Event('input',{bubbles:true}));
  await wait(()=>document.querySelector('button[aria-label="Zoom in"]').disabled,'pending JSON fences canvas commands');
@@ -250,15 +268,22 @@ export const canvasBrowserScript = `
  const selectionPanel=[...document.querySelectorAll('details')].find(item=>item.querySelector('summary')?.textContent.trim()==='Selection and connections');selectionPanel.open=true;
  const selections=[...selectionPanel.querySelectorAll('input[type="checkbox"]')];selections[0].click();selections[1].click();
  const originalPositions=[...document.querySelectorAll('.board-node')].map(item=>item.style.transform);
- document.querySelector('.board-node').dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowRight',bubbles:true,cancelable:true}));
+ canvasNode('prepare').dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowRight',bubbles:true,cancelable:true}));
  await wait(()=>[...document.querySelectorAll('.board-node')].every((item,index)=>item.style.transform!==originalPositions[index]),'atomic selected group keyboard movement');
  await click('Undo');await click('Duplicate selection');await wait(()=>document.querySelectorAll('.board-node').length===3,'single selection duplicate after undo');
  await click('Undo');await wait(()=>document.querySelectorAll('.board-node').length===2,'undo duplicated node');
  document.getElementById('connection-select').click();await wait(()=>[...document.querySelectorAll('[role="option"]')].some(option=>option.textContent.includes('control')),'connection options');
  [...document.querySelectorAll('[role="option"]')].find(option=>option.textContent.includes('control')).click();
  await wait(()=>button('Remove connection')&&!button('Remove connection').disabled,'remove connection action ready');await click('Remove connection');await wait(()=>!document.querySelector('f-connection:not(.data-edge)')&&document.querySelector('.data-edge'),'control removal preserves data bindings');
+
+ window.fixtureStage='canvas-click-control-connection';
+ canvasNode('prepare').querySelector('.node-actions').click();await wait(()=>[...document.querySelectorAll('.p-contextmenu [role="menuitem"]')].some(item=>item.textContent.includes('Connect to another step')),'Visible step actions');
+ [...document.querySelectorAll('.p-contextmenu [role="menuitem"]')].find(item=>item.textContent.includes('Connect to another step')).querySelector('.p-contextmenu-item-link').click();
+ await wait(()=>document.querySelector('.connection-source'),'Click connection source');
+ canvasNode('review').querySelector('.node-handle').click();await wait(()=>document.querySelector('f-connection:not(.data-edge)'),'Click creates control connection');
+ check(!document.querySelector('.connection-source'),'Completed connection clears source');await click('Undo');await wait(()=>!document.querySelector('f-connection:not(.data-edge)'),'Undo click connection');
  window.fixtureStage='canvas-drag-control-connection';
- await dragPort(document.querySelector('.board-node .control-port.output-port .port-socket'),document.querySelectorAll('.board-node')[1].querySelector('.control-port .input-socket'));
+ await dragPort(canvasNode('prepare').querySelector('.control-port.output-port .port-socket'),canvasNode('review').querySelector('.control-port .input-socket'));
  await wait(()=>document.querySelector('f-connection:not(.data-edge)'),'drag creates control connection');
  await click('Save workspace');await click('Reload');await wait(()=>document.querySelector('f-connection:not(.data-edge)'),'dragged control connection saved and reloaded');
  document.getElementById('canvas-find').click();await wait(()=>[...document.querySelectorAll('[role="option"]')].some(option=>option.textContent.includes('review')),'find review');
@@ -268,16 +293,16 @@ export const canvasBrowserScript = `
  selectionPanel.open=true;document.getElementById('connection-select').click();await wait(()=>[...document.querySelectorAll('[role="option"]')].some(option=>option.textContent.includes('data')),'data mapping options');
  [...document.querySelectorAll('[role="option"]')].find(option=>option.textContent.includes('data')).click();await wait(()=>!button('Remove connection').disabled,'remove existing mapping ready');await click('Remove connection');
  window.fixtureStage='canvas-drag-data-connection';
- await dragPort(document.querySelector('.board-node .data-port.output-port .port-socket'),document.querySelectorAll('.board-node')[1].querySelector('.data-port .input-socket'));
+ await dragPort(canvasNode('prepare').querySelector('.data-port.output-port .port-socket'),canvasNode('review').querySelector('.data-port .input-socket'));
  await wait(()=>document.querySelector('.data-edge'),'drag creates typed data connection');
  await click('Save workspace');await click('Reload');await wait(()=>document.querySelector('.data-edge'),'dragged data connection saved and reloaded');
- document.querySelectorAll('.board-node button')[1].click();
+ canvasNode('review').querySelector('.node-handle').click();
  await wait(()=>JSON.parse(document.getElementById('graph-json').value).bindings[0]?.source_kind==='STEP_OUTPUT','dragged mapping retains source kind');
  document.getElementById('connection-select').click();await wait(()=>[...document.querySelectorAll('[role="option"]')].some(option=>option.textContent.includes('data')),'dragged mapping options');
  [...document.querySelectorAll('[role="option"]')].find(option=>option.textContent.includes('data')).click();await wait(()=>!button('Remove connection').disabled,'dragged mapping removal ready');await click('Remove connection');
  document.getElementById('mapping-target').click();await wait(()=>[...document.querySelectorAll('[role="option"]')].some(option=>option.textContent.includes('value')),'typed target options');
  [...document.querySelectorAll('[role="option"]')].find(option=>option.textContent.includes('value')).click();await wait(()=>document.getElementById('mapping-constant'),'typed constant');
- const constant=document.getElementById('mapping-constant');constant.value='mapped sample';constant.dispatchEvent(new Event('input',{bubbles:true}));await click('Add data mapping');await click('Save workspace');await click('Reload');document.querySelectorAll('.board-node button')[1].click();await wait(()=>JSON.parse(document.getElementById('graph-json').value).bindings[0]?.constant_value==='mapped sample','mapping saved and reloaded');
+ const constant=document.getElementById('mapping-constant');constant.value='mapped sample';constant.dispatchEvent(new Event('input',{bubbles:true}));await click('Add data mapping');await click('Save workspace');await click('Reload');canvasNode('review').querySelector('.node-handle').click();await wait(()=>JSON.parse(document.getElementById('graph-json').value).bindings[0]?.constant_value==='mapped sample','mapping saved and reloaded');
  check(JSON.parse(document.getElementById('graph-json').value).transitions.length===1,'mapping preserved control transitions');selectionPanel.open=false;
  window.fixtureStage='typed-timer-roundtrip';
  [...document.querySelectorAll('.palette-card')].find(card=>card.textContent.includes('Timer')).querySelector('.palette-add').click();

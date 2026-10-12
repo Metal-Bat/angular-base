@@ -1,5 +1,23 @@
 <section class="canvas-panel" [attr.aria-label]="'Workflow canvas' | localize">
   <app-canvas-toolbar [view]="this" />
+  <app-context-menu-control [items]="menuItems()" />
+  @if (linkSource()) {
+    <div
+      class="flex flex-wrap items-center justify-between gap-3 bg-console-accent-soft px-4 py-3 text-console-text"
+      role="status"
+    >
+      <span>{{
+        "Select a target step to create a control connection." | localize
+      }}</span>
+      <button
+        class="rounded border border-console-border bg-console-surface px-3 py-1 text-console-text"
+        type="button"
+        (click)="linkSource.set('')"
+      >
+        {{ "Cancel" | localize }}
+      </button>
+    </div>
+  }
   <div
     class="canvas-stage"
     role="region"
@@ -7,6 +25,7 @@
     [attr.aria-label]="'Workflow canvas' | localize"
     [class.placing-step]="!!paletteKey() && !disabled() && !readOnly()"
     (click)="place($event)"
+    (contextmenu)="openMenu($event)"
     (dragover)="dragOver($event)"
     (drop)="drop($event)"
     (keydown.enter)="placeWithKeyboard($event)"
@@ -50,11 +69,15 @@
         @for (node of nodes(); track node.key) {
           <div
             class="board-node"
+            fDragHandle
             fNode
             tabindex="0"
             [attr.aria-invalid]="invalidNodes().includes(node.key)"
             [attr.aria-label]="node.title"
             [class.collapsed]="collapsed().includes(node.key)"
+            [class.connection-source]="linkSource() === node.key"
+            [class.cursor-grab]="!readOnly() && !disabled()"
+            [class.cursor-pointer]="readOnly()"
             [class.node-invalid]="invalidNodes().includes(node.key)"
             [class.selected]="
               selected() === node.key || selectionKeys().includes(node.key)
@@ -62,17 +85,21 @@
             [fNodeDraggingDisabled]="disabled() || readOnly()"
             [fNodeId]="node.key"
             [fNodePosition]="node.position"
+            (click)="select($event, node.key)"
+            (contextmenu)="openMenu($event, node.key)"
             (fNodePositionChange)="!readOnly() && moveNode()(node.key, $event)"
             (keydown)="keyMove($event, node)"
           >
             <button
               class="node-handle"
-              fDragHandle
               type="button"
               [attr.aria-pressed]="
                 selected() === node.key || selectionKeys().includes(node.key)
               "
-              (click)="select($event, node.key)"
+              [style.cursor]="
+                readOnly() ? 'pointer' : disabled() ? 'default' : 'grab'
+              "
+              [style.padding-inline-end.rem]="readOnly() ? 0.5 : 2.5"
             >
               <span aria-hidden="true" class="node-icon"
                 ><i class="pi pi-sitemap"></i
@@ -82,6 +109,20 @@
                 ><small>{{ node.key }}</small></span
               >
             </button>
+            @if (!readOnly()) {
+              <button
+                class="node-actions absolute top-3 right-3 grid size-8 cursor-pointer place-items-center rounded border border-console-border bg-console-surface text-console-text hover:bg-console-accent-soft focus-visible:outline-2 focus-visible:outline-console-accent"
+                type="button"
+                [attr.aria-label]="
+                  ('Step actions' | localize) + ': ' + node.title
+                "
+                [disabled]="disabled()"
+                (click)="openMenu($event, node.key)"
+                (mousedown)="$event.stopPropagation()"
+              >
+                <i aria-hidden="true" class="pi pi-ellipsis-h"></i>
+              </button>
+            }
             <div class="control-port">
               <span
                 class="port-socket input-socket"
@@ -171,6 +212,12 @@
         : "Drag steps to arrange them. Use arrow keys to move a focused step."
       ) | localize
     }}</span>
+    @if (!readOnly()) {
+      <span>{{
+        "Use step actions to connect, or drag from an output port to an input port."
+          | localize
+      }}</span>
+    }
     <div class="edge-legend">
       <span
         ><i aria-hidden="true" class="control-line"></i

@@ -6,6 +6,7 @@
     id="notification-panel"
     [attr.aria-label]="'Notifications' | localize"
   >
+    <app-inbox-read-control [disabled]="!vm.notifications.unreadCount()" />
     @switch (vm.notifications.status()) {
       @case ("loading") {
         <p role="status">{{ "Loading…" | localize }}</p>

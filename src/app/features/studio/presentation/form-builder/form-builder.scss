@@ -1,7 +1,11 @@
 .designer,
 .inspectors {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+  grid-template-columns: minmax(12rem, 0.7fr) minmax(0, 1.25fr) minmax(
+      17rem,
+      1fr
+    );
+  grid-template-areas: "palette canvas properties";
   gap: 1.5rem;
   margin-block: 1.5rem;
 }
@@ -29,9 +33,23 @@ textarea {
   color: var(--console-muted);
   overflow-wrap: anywhere;
 }
-@media (max-width: 60rem) {
+.designer > .form-design-canvas {
+  background: var(--console-canvas);
+}
+@media (max-width: 80rem) {
   .designer,
   .inspectors {
     grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "canvas" "properties" "palette";
   }
+}
+
+.form-palette {
+  grid-area: palette;
+}
+.form-design-canvas {
+  grid-area: canvas;
+}
+.form-properties {
+  grid-area: properties;
 }

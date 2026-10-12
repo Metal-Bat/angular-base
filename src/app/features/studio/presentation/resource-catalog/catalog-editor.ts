@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  input,
+  signal,
+} from '@angular/core';
 import type { FieldSpec } from '../../domain/authoring';
 import type { ResourceCatalog } from './resource-catalog';
 import { SelectModule } from 'primeng/select';
@@ -25,6 +31,7 @@ import { LocalizePipe } from '../../../../shared/ui/localize-pipe';
   changeDetection: ChangeDetectionStrategy.Default,
 })
 export class CatalogEditor {
+  readonly advanced = signal(false);
   hints(field: FieldSpec): { label: string; value: string }[] {
     const hints: { label: string; value: string }[] = [];
     for (const [key, label] of [
@@ -62,9 +69,20 @@ export class CatalogEditor {
         | 'fields'
         | 'formOpen'
         | 'invalid'
+        | 'key'
         | 'save'
         | 'selected'
         | 'values'
       >
     >();
+  readonly visibleFields = computed(() => {
+    const vm = this.view();
+    return vm.key === 'form-versions' && !vm.selected() && !this.advanced()
+      ? vm
+          .fields()
+          .filter(
+            (field) => field.key === 'number' || field.key === 'form_ref_id',
+          )
+      : vm.fields();
+  });
 }

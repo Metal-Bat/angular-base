@@ -1,0 +1,18 @@
+<button
+  pButton
+  severity="secondary"
+  type="button"
+  [disabled]="disabled() || action.busy()"
+  [outlined]="true"
+  (click)="run()"
+>
+  {{ "Mark all as read" | localize }}
+</button>
+@if (action.message()) {
+  <p [attr.role]="action.failed() ? 'alert' : 'status'">
+    {{ action.message() | localize }}
+    @if (action.busy()) {
+      <bdi>{{ action.completed() }}</bdi>
+    }
+  </p>
+}

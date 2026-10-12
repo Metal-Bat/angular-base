@@ -177,4 +177,25 @@ describe('Form authoring commands', () => {
     vm.duplicate();
     expect(vm.documents()).toEqual(duplicated);
   });
+  it('adds fields visually with fresh keys, selects new cards and preserves pending and published edits', async () => {
+    const fixture = TestBed.createComponent(FormBuilder);
+    await fixture.whenStable();
+    const vm = fixture.componentInstance;
+    vm.quickAdd('text');
+    const first = structuredClone(vm.documents());
+    expect(vm.selected()).toEqual([0]);
+    expect(vm.outline()[1].scope).toBe('/properties/field_1');
+    vm.quickAdd('boolean');
+    expect(vm.selected()).toEqual([1]);
+    expect(vm.outline()[2].scope).toBe('/properties/field_2');
+    vm.undo();
+    expect(vm.documents()).toEqual(first);
+    vm.markPending('inspector');
+    vm.quickAdd('date');
+    expect(vm.documents()).toEqual(first);
+    vm.pending.set([]);
+    vm.status.set('PUBLISHED');
+    vm.quickAdd('choice');
+    expect(vm.documents()).toEqual(first);
+  });
 });

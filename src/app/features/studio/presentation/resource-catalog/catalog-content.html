@@ -49,12 +49,22 @@
         [title]="vm.label(row)"
       />
     </ng-template>
-    @if (vm.key === "workflows" || vm.key === "workflow-versions") {
+    @if (
+      vm.key === "workflows" ||
+      vm.key === "workflow-versions" ||
+      vm.key === "forms" ||
+      vm.key === "form-versions"
+    ) {
       <p-tabs [lazy]="true" [value]="repairNode() ? 'display' : 'overview'">
         <p-tablist>
           <p-tab value="overview">{{ "Overview" | localize }}</p-tab>
           <p-tab value="display"
-            ><i aria-hidden="true" class="pi pi-sitemap"></i>
+            ><i
+              aria-hidden="true"
+              [class]="
+                vm.key.startsWith('form') ? 'pi pi-file' : 'pi pi-sitemap'
+              "
+            ></i>
             {{ "Display" | localize }}</p-tab
           >
         </p-tablist>
@@ -64,18 +74,27 @@
           /></p-tabpanel>
           <p-tabpanel value="display">
             <ng-template #content>
-              @defer (when vm.reference()) {
-                <app-workflow-diagram
-                  [focusNode]="repairNode()"
-                  [version]="
-                    vm.key === 'workflow-versions' ? vm.reference() : ''
-                  "
-                  [workflow]="vm.key === 'workflows' ? vm.reference() : ''"
-                />
-              } @placeholder {
-                <p role="status">
-                  {{ "Loading workflow diagram…" | localize }}
-                </p>
+              @if (vm.key === "forms" || vm.key === "form-versions") {
+                @defer (when vm.reference()) {
+                  <app-form-display
+                    [form]="vm.key === 'forms' ? vm.reference() : ''"
+                    [version]="vm.key === 'form-versions' ? vm.reference() : ''"
+                  />
+                }
+              } @else {
+                @defer (when vm.reference()) {
+                  <app-workflow-diagram
+                    [focusNode]="repairNode()"
+                    [version]="
+                      vm.key === 'workflow-versions' ? vm.reference() : ''
+                    "
+                    [workflow]="vm.key === 'workflows' ? vm.reference() : ''"
+                  />
+                } @placeholder {
+                  <p role="status">
+                    {{ "Loading workflow diagram…" | localize }}
+                  </p>
+                }
               }
             </ng-template>
           </p-tabpanel>

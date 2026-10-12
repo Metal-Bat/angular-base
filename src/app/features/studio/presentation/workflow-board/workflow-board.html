@@ -102,6 +102,10 @@
 @if (pending().length) {
   <p role="status">
     {{ "Apply pending inspector edits before saving." | localize }}
+    {{
+      "Apply or discard pending edits to move steps and create connections."
+        | localize
+    }}
   </p>
 }
 <details>

@@ -102,9 +102,10 @@
     "backend_commit": "9999641f8e37077829ebbe7159a6cd794fb94b91",
     "owner": "APP-FE-008.1",
     "scope": "Full en/fa/ar producer intake; additive Arabic locales, numbering, plural branches and task text. Operation IDs, security, wire values and operation structure are unchanged except the additive Arabic help-state query locale.",
-    "producer_source_sha256": "f98c98a8c58429d315621301eac4c4b4947753cde5e3a6e0df765eb0acf29ddb",
-    "producer_manifest_sha256": "35f9caf32cd11626b3699c9e258cca380cede2216b0f1efc2ec6604445294969",
-    "diff": "../app-fe-008.1/contract-intake.json"
+    "producer_source_sha256": "ab19ef1fa950baf108ae7d9598458e8c6c18ff778009311d86a3876df49cd85c",
+    "producer_manifest_sha256": "1a6ad3abcee7a45c3f078e4df9b1bb6a511977aba34488cd61a9cd676428fb47",
+    "diff": "../app-fe-008.1/contract-intake.json",
+    "documentation_cleanup": "2026-10-11: removed unused backend backlog mirror; public contracts unchanged. Current source acknowledged for required paired checks."
   },
   "ordered_011_description_intake": {
     "date": "2026-10-09",

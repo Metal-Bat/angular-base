@@ -1,8 +1,8 @@
 {
   "date": "2026-10-11",
   "owner": "APP-FE-008.1",
-  "producer_source_sha256": "f98c98a8c58429d315621301eac4c4b4947753cde5e3a6e0df765eb0acf29ddb",
-  "producer_manifest_sha256": "35f9caf32cd11626b3699c9e258cca380cede2216b0f1efc2ec6604445294969",
+  "producer_source_sha256": "ab19ef1fa950baf108ae7d9598458e8c6c18ff778009311d86a3876df49cd85c",
+  "producer_manifest_sha256": "1a6ad3abcee7a45c3f078e4df9b1bb6a511977aba34488cd61a9cd676428fb47",
   "languages": [
     "en",
     "fa",
@@ -25,5 +25,6 @@
   "structural_operation_changes": [
     "GET /api/v1/me/help-state: language query enum adds ar"
   ],
-  "review": "Additive Arabic locale/numbering enums, optional Arabic task text and plural branches, and localization documentation. Existing published values, canonical keys and required fields are preserved. Actual paired acceptance is recorded separately."
+  "review": "Additive Arabic locale/numbering enums, optional Arabic task text and plural branches, and localization documentation. Existing published values, canonical keys and required fields are preserved. Actual paired acceptance is recorded separately.",
+  "documentation_cleanup": "2026-10-11 backend consolidation removes dead mirror tooling; no wire/schema changes."
 }

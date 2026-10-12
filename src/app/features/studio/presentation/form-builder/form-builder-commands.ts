@@ -15,17 +15,7 @@ import { parseDocument } from '../../domain/authoring';
 import { authorIssues } from '../../domain/authoring-diagnostics';
 import { outline, palette } from '../../domain/form-authoring';
 import { STUDIO_API } from '../../bindings';
-const documentKeys = [
-  'data_dialect',
-  'render_dialect',
-  'behavior_dialect',
-  'data_schema',
-  'render_schema',
-  'page_settings',
-  'variants',
-  'reuse_instances',
-  'localization',
-];
+import { formDocuments } from '../../domain/form-documents';
 @Directive()
 export abstract class FormBuilderCommands {
   abstract select(path: readonly number[]): void;
@@ -147,13 +137,7 @@ export abstract class FormBuilderCommands {
       if (generation === this.generation) {
         this.reference.set(String(row['ref_id']));
         this.status.set(String(row['status']));
-        this.documents.set(
-          Object.fromEntries(
-            documentKeys
-              .filter((key) => row[key] !== undefined)
-              .map((key) => [key, row[key]]),
-          ),
-        );
+        this.documents.set(formDocuments(row));
         this.schemaJson = JSON.stringify(row['data_schema'], null, 2);
         this.behaviorJson = JSON.stringify(
           {

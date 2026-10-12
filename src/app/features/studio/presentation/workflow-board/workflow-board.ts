@@ -127,6 +127,13 @@ export class WorkflowBoard extends WorkflowInteractions {
       this.routeEdge(key, points),
     selectNode: (key: string): void => this.select(key),
     moveNode: (key: string, point: Point): void => this.move(key, point),
+    duplicateNode: (key: string): void => {
+      if (this.readonly() || this.pending().length) {
+        return;
+      }
+      this.selectMany([key]);
+      this.duplicate();
+    },
     connect: (source: string, target: string): void =>
       this.connect(source, target),
     transform: (viewport: Point & { zoom: number }): void =>

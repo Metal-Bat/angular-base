@@ -12,6 +12,7 @@ import { JsonObject, JsonValue } from '../../../forms/domain/runtime-document';
 import { FieldSpec, parseDocument, ResourceKey } from '../../domain/authoring';
 import { STUDIO_API } from '../../bindings';
 import { displayValue, initialValue } from './resource-values';
+import { blankFormDocuments } from '../../domain/form-documents';
 export class CatalogState {
   protected readonly actor = inject(ActorState);
   readonly historyDetail = signal<JsonObject | null>(null);
@@ -173,6 +174,9 @@ export class CatalogState {
       if (value !== undefined) {
         values[field.key] = value;
       }
+    }
+    if (this.key === 'form-versions') {
+      Object.assign(values, blankFormDocuments());
     }
     this.values.set(values);
   }

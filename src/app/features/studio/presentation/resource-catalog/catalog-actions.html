@@ -12,6 +12,14 @@
         >{{ "Versions" | localize }}</a
       >
     }
+    @if (vm.key === "forms") {
+      <a
+        class="p-button"
+        [queryParams]="{ parent: vm.reference(), create: '1' }"
+        [routerLink]="['/studio/form-versions']"
+        >{{ "Create draft" | localize }}</a
+      >
+    }
     @if (vm.spec.editor) {
       <a
         class="p-button p-button-outlined"

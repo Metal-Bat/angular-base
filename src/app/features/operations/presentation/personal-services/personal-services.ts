@@ -1,3 +1,4 @@
+import { InboxReadControl } from '../../../../core/notifications/inbox-read-control/inbox-read-control';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AuthSession } from '../../../../core/auth/auth-session';
 import { PersonalServiceDetail } from './personal-service-detail';
@@ -33,6 +34,7 @@ import { PERSONAL_SERVICES } from '../../bindings';
   selector: 'app-personal-services',
   providers: [BinaryTransfer, BoundedPolling],
   imports: [
+    InboxReadControl,
     FormsModule,
     InputTextModule,
     SelectControl,

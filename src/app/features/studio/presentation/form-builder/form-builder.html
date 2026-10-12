@@ -47,47 +47,77 @@
   </p>
 }
 <div class="designer">
-  <section [attr.aria-label]="'Component palette' | localize">
-    <h2>{{ "Components" | localize }}</h2>
-    <label for="form-palette-search">{{ "Search components" | localize }}</label
-    ><input
-      id="form-palette-search"
-      [ngModel]="paletteSearch()"
-      (ngModelChange)="paletteSearch.set($event)"
+  <section
+    class="form-design-canvas"
+    [attr.aria-label]="'Form layout' | localize"
+  >
+    <h2>{{ "Form layout" | localize }}</h2>
+    <p>
+      {{
+        "Select a field to edit its label, choices, validation and appearance."
+          | localize
+      }}
+    </p>
+    <app-form-canvas
+      [disabled]="readonly() || pending().length > 0"
+      [documents]="documents()"
+      [selected]="selected()"
+      (addRequested)="quickAdd($event)"
+      (selectedChange)="select($event)"
     />
-    <label for="palette-category">{{ "Component category" | localize }}</label>
-    <app-select-control
-      inputId="palette-category"
-      [ngModel]="paletteCategory()"
-      (ngModelChange)="paletteCategory.set($event)"
-    >
-      <option value="">{{ "All components" | localize }}</option>
-      @for (category of categories; track category) {
-        <option [value]="category">{{ category | localize }}</option>
-      }
-    </app-select-control>
-    <label for="primitive">{{ "Component" | localize }}</label
-    ><app-select-control inputId="primitive" [(ngModel)]="primitive">
-      @for (kind of filteredPalette(); track kind) {
-        <option [value]="kind">{{ componentLabels[kind] | localize }}</option>
-      }</app-select-control
-    ><label for="property-name">{{ "Canonical field key" | localize }}</label
-    ><input id="property-name" [(ngModel)]="propertyName" />
-    <label for="component-label">{{ "Display label" | localize }}</label
-    ><input
-      id="component-label"
-      maxlength="255"
-      [(ngModel)]="componentLabel"
-    /><button
-      pButton
-      severity="secondary"
-      type="button"
-      [disabled]="readonly()"
-      [outlined]="true"
-      (click)="add()"
-    >
-      {{ "Add to selected layout" | localize }}
-    </button>
+  </section>
+
+  <section
+    class="form-palette"
+    [attr.aria-label]="'Component palette' | localize"
+  >
+    <h2>{{ "Components" | localize }}</h2>
+    <details>
+      <summary>{{ "All field types and layouts" | localize }}</summary>
+      <label for="form-palette-search">{{
+        "Search components" | localize
+      }}</label
+      ><input
+        id="form-palette-search"
+        [ngModel]="paletteSearch()"
+        (ngModelChange)="paletteSearch.set($event)"
+      />
+      <label for="palette-category">{{
+        "Component category" | localize
+      }}</label>
+      <app-select-control
+        inputId="palette-category"
+        [ngModel]="paletteCategory()"
+        (ngModelChange)="paletteCategory.set($event)"
+      >
+        <option value="">{{ "All components" | localize }}</option>
+        @for (category of categories; track category) {
+          <option [value]="category">{{ category | localize }}</option>
+        }
+      </app-select-control>
+      <label for="primitive">{{ "Component" | localize }}</label
+      ><app-select-control inputId="primitive" [(ngModel)]="primitive">
+        @for (kind of filteredPalette(); track kind) {
+          <option [value]="kind">{{ componentLabels[kind] | localize }}</option>
+        }</app-select-control
+      ><label for="property-name">{{ "Canonical field key" | localize }}</label
+      ><input id="property-name" [(ngModel)]="propertyName" />
+      <label for="component-label">{{ "Display label" | localize }}</label
+      ><input
+        id="component-label"
+        maxlength="255"
+        [(ngModel)]="componentLabel"
+      /><button
+        pButton
+        severity="secondary"
+        type="button"
+        [disabled]="readonly()"
+        [outlined]="true"
+        (click)="add()"
+      >
+        {{ "Add to selected layout" | localize }}
+      </button>
+    </details>
     <h2>{{ "Outline" | localize }}</h2>
     <ul>
       @for (item of outline(); track item.identity) {
@@ -144,7 +174,10 @@
       (moveRequested)="reparent($event)"
     />
   </section>
-  <section aria-label="Component inspector">
+  <section
+    class="form-properties"
+    [attr.aria-label]="'Selected component' | localize"
+  >
     <h2>{{ "Selected component" | localize }}</h2>
     <app-form-inspector
       [disabled]="readonly()"

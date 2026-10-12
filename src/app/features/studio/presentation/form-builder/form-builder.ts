@@ -1,4 +1,6 @@
 import { FormFieldPlacement } from '../form-field-placement/form-field-placement';
+import { FormCanvas } from '../form-canvas/form-canvas';
+import { addQuickField } from '../../domain/quick-fields';
 import { Locale } from '../../../../core/localization/locale';
 import { componentCategory, componentLabels } from './form-palette';
 import { SelectControl } from '../../../../shared/ui/select-control/select-control';
@@ -65,6 +67,7 @@ import { FormEditState } from '../../domain/form-editing';
   ],
   imports: [
     FormFieldPlacement,
+    FormCanvas,
     FormPlacementControls,
     FormInspector,
     FormSettings,
@@ -281,6 +284,16 @@ export class FormBuilder extends FormBuilderCommands {
       }
       return next;
     });
+  }
+  quickAdd(kind: (typeof palette)[number]): void {
+    this.placementEdit(() =>
+      addQuickField(
+        this.documents(),
+        this.selected(),
+        kind,
+        this.translation.text(componentLabels[kind]),
+      ),
+    );
   }
   move(offset: number): void {
     if (this.readonly() || this.pending().length || !this.selected().length) {

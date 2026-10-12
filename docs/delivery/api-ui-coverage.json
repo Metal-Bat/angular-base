@@ -44914,7 +44914,14 @@
       "path": "src/app/core/layout/workspace-notifications.html",
       "owner": "APP-FE-004",
       "delta": "REUSE",
-      "controls": ["button", "p-message"],
+      "controls": ["app-inbox-read-control", "button", "p-message"],
+      "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
+    },
+    {
+      "path": "src/app/core/notifications/inbox-read-control/inbox-read-control.html",
+      "owner": "APP-FE-004",
+      "delta": "REUSE",
+      "controls": ["button"],
       "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
     },
     {
@@ -45279,6 +45286,7 @@
       "owner": "APP-FE-012",
       "delta": "REUSE",
       "controls": [
+        "app-inbox-read-control",
         "app-personal-service-detail",
         "app-select-control",
         "button",
@@ -45452,7 +45460,7 @@
       "path": "src/app/features/studio/infrastructure/workflow-canvas/workflow-canvas.html",
       "owner": "APP-FE-020",
       "delta": "REUSE",
-      "controls": ["app-canvas-toolbar", "button"],
+      "controls": ["app-canvas-toolbar", "app-context-menu-control", "button"],
       "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
     },
     {
@@ -45499,6 +45507,7 @@
       "owner": "APP-FE-016",
       "delta": "EXTEND",
       "controls": [
+        "app-form-canvas",
         "app-form-field-placement",
         "app-form-inspector",
         "app-form-placement-controls",
@@ -45509,6 +45518,20 @@
         "input",
         "textarea"
       ],
+      "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
+    },
+    {
+      "path": "src/app/features/studio/presentation/form-canvas/form-canvas.html",
+      "owner": "APP-FE-020",
+      "delta": "REUSE",
+      "controls": ["button"],
+      "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
+    },
+    {
+      "path": "src/app/features/studio/presentation/form-display/form-display.html",
+      "owner": "APP-FE-020",
+      "delta": "REUSE",
+      "controls": ["app-runtime-form", "app-select-control", "button"],
       "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
     },
     {
@@ -45628,6 +45651,7 @@
       "owner": "APP-FE-027",
       "delta": "REUSE",
       "controls": [
+        "app-form-display",
         "app-list-query",
         "app-record-summary",
         "app-record-table",
@@ -45794,6 +45818,13 @@
       "owner": "APP-FE-004",
       "delta": "REUSE",
       "controls": ["button", "dialog"],
+      "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
+    },
+    {
+      "path": "src/app/shared/ui/context-menu-control/context-menu-control.ts",
+      "owner": "APP-FE-004",
+      "delta": "REUSE",
+      "controls": ["p-contextmenu"],
       "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
     },
     {
@@ -46072,7 +46103,7 @@
     },
     {
       "path": "src/app/features/studio/presentation/form-builder/form-builder.html",
-      "line": 158,
+      "line": 191,
       "owner": "APP-FE-016",
       "source": "<label for=\"node-json\">{{",
       "disposition": "REPLACE_NORMAL",
@@ -46080,7 +46111,7 @@
     },
     {
       "path": "src/app/features/studio/presentation/form-builder/form-builder.html",
-      "line": 161,
+      "line": 194,
       "owner": "APP-FE-016",
       "source": "><textarea",
       "disposition": "REPLACE_NORMAL",
@@ -46088,7 +46119,7 @@
     },
     {
       "path": "src/app/features/studio/presentation/form-builder/form-builder.html",
-      "line": 163,
+      "line": 196,
       "owner": "APP-FE-016",
       "source": "id=\"node-json\"",
       "disposition": "REPLACE_NORMAL",
@@ -46096,7 +46127,7 @@
     },
     {
       "path": "src/app/features/studio/presentation/form-builder/form-builder.html",
-      "line": 167,
+      "line": 200,
       "owner": "APP-FE-016",
       "source": "[(ngModel)]=\"selectedJson\"",
       "disposition": "REPLACE_NORMAL",
@@ -46104,7 +46135,7 @@
     },
     {
       "path": "src/app/features/studio/presentation/form-builder/form-builder.html",
-      "line": 183,
+      "line": 216,
       "owner": "APP-FE-016",
       "source": "<label for=\"schema-json\">{{ \"Canonical data schema\" | localize }}</label",
       "disposition": "REPLACE_NORMAL",
@@ -46112,7 +46143,7 @@
     },
     {
       "path": "src/app/features/studio/presentation/form-builder/form-builder.html",
-      "line": 184,
+      "line": 217,
       "owner": "APP-FE-016",
       "source": "><textarea",
       "disposition": "REPLACE_NORMAL",
@@ -46120,7 +46151,7 @@
     },
     {
       "path": "src/app/features/studio/presentation/form-builder/form-builder.html",
-      "line": 186,
+      "line": 219,
       "owner": "APP-FE-016",
       "source": "id=\"schema-json\"",
       "disposition": "REPLACE_NORMAL",
@@ -46128,7 +46159,7 @@
     },
     {
       "path": "src/app/features/studio/presentation/form-builder/form-builder.html",
-      "line": 189,
+      "line": 222,
       "owner": "APP-FE-016",
       "source": "[(ngModel)]=\"schemaJson\"",
       "disposition": "REPLACE_NORMAL",
@@ -46136,7 +46167,7 @@
     },
     {
       "path": "src/app/features/studio/presentation/form-builder/form-builder.html",
-      "line": 205,
+      "line": 238,
       "owner": "APP-FE-016",
       "source": "<label for=\"behavior-json\">{{",
       "disposition": "REPLACE_NORMAL",
@@ -46144,7 +46175,7 @@
     },
     {
       "path": "src/app/features/studio/presentation/form-builder/form-builder.html",
-      "line": 208,
+      "line": 241,
       "owner": "APP-FE-016",
       "source": "><textarea",
       "disposition": "REPLACE_NORMAL",
@@ -46152,7 +46183,7 @@
     },
     {
       "path": "src/app/features/studio/presentation/form-builder/form-builder.html",
-      "line": 210,
+      "line": 243,
       "owner": "APP-FE-016",
       "source": "id=\"behavior-json\"",
       "disposition": "REPLACE_NORMAL",
@@ -46160,7 +46191,7 @@
     },
     {
       "path": "src/app/features/studio/presentation/form-builder/form-builder.html",
-      "line": 213,
+      "line": 246,
       "owner": "APP-FE-016",
       "source": "[(ngModel)]=\"behaviorJson\"",
       "disposition": "REPLACE_NORMAL",
@@ -46168,7 +46199,7 @@
     },
     {
       "path": "src/app/features/studio/presentation/form-builder/form-builder.html",
-      "line": 260,
+      "line": 293,
       "owner": "APP-FE-016",
       "source": "(sample)=\"sampleJson = JSON.stringify($event)\"",
       "disposition": "REPLACE_NORMAL",
@@ -46176,7 +46207,7 @@
     },
     {
       "path": "src/app/features/studio/presentation/form-builder/form-builder.html",
-      "line": 283,
+      "line": 316,
       "owner": "APP-FE-016",
       "source": "<label for=\"sample-json\">{{ \"Synthetic sample values\" | localize }}</label",
       "disposition": "REPLACE_NORMAL",
@@ -46184,7 +46215,7 @@
     },
     {
       "path": "src/app/features/studio/presentation/form-builder/form-builder.html",
-      "line": 284,
+      "line": 317,
       "owner": "APP-FE-016",
       "source": "><textarea",
       "disposition": "REPLACE_NORMAL",
@@ -46192,7 +46223,7 @@
     },
     {
       "path": "src/app/features/studio/presentation/form-builder/form-builder.html",
-      "line": 286,
+      "line": 319,
       "owner": "APP-FE-016",
       "source": "id=\"sample-json\"",
       "disposition": "REPLACE_NORMAL",
@@ -46200,7 +46231,7 @@
     },
     {
       "path": "src/app/features/studio/presentation/form-builder/form-builder.html",
-      "line": 288,
+      "line": 321,
       "owner": "APP-FE-016",
       "source": "[(ngModel)]=\"sampleJson\"",
       "disposition": "REPLACE_NORMAL",
@@ -46208,7 +46239,7 @@
     },
     {
       "path": "src/app/features/studio/presentation/form-builder/form-builder.html",
-      "line": 293,
+      "line": 326,
       "owner": "APP-FE-016",
       "source": "><textarea",
       "disposition": "REPLACE_NORMAL",
@@ -46216,7 +46247,7 @@
     },
     {
       "path": "src/app/features/studio/presentation/form-builder/form-builder.html",
-      "line": 296,
+      "line": 329,
       "owner": "APP-FE-016",
       "source": "[(ngModel)]=\"previewContextJson\"",
       "disposition": "REPLACE_NORMAL",
@@ -46224,7 +46255,7 @@
     },
     {
       "path": "src/app/features/studio/presentation/form-builder/form-builder.html",
-      "line": 348,
+      "line": 381,
       "owner": "APP-FE-016",
       "source": "<label for=\"interaction-json\">{{",
       "disposition": "REPLACE_NORMAL",
@@ -46232,7 +46263,7 @@
     },
     {
       "path": "src/app/features/studio/presentation/form-builder/form-builder.html",
-      "line": 351,
+      "line": 384,
       "owner": "APP-FE-016",
       "source": "><textarea",
       "disposition": "REPLACE_NORMAL",
@@ -46240,7 +46271,7 @@
     },
     {
       "path": "src/app/features/studio/presentation/form-builder/form-builder.html",
-      "line": 353,
+      "line": 386,
       "owner": "APP-FE-016",
       "source": "id=\"interaction-json\"",
       "disposition": "REPLACE_NORMAL",
@@ -46248,7 +46279,7 @@
     },
     {
       "path": "src/app/features/studio/presentation/form-builder/form-builder.html",
-      "line": 354,
+      "line": 387,
       "owner": "APP-FE-016",
       "source": "[(ngModel)]=\"interactionJson\"",
       "disposition": "REPLACE_NORMAL",
@@ -46256,7 +46287,7 @@
     },
     {
       "path": "src/app/features/studio/presentation/form-builder/form-builder.html",
-      "line": 376,
+      "line": 409,
       "owner": "APP-FE-016",
       "source": "@if (diagnostics()) {",
       "disposition": "REPLACE_NORMAL",
@@ -46264,7 +46295,7 @@
     },
     {
       "path": "src/app/features/studio/presentation/form-builder/form-builder.html",
-      "line": 398,
+      "line": 431,
       "owner": "APP-FE-016",
       "source": "<pre>{{ diagnostics() }}</pre>",
       "disposition": "REPLACE_NORMAL",
@@ -46312,7 +46343,7 @@
     },
     {
       "path": "src/app/features/studio/presentation/resource-catalog/catalog-actions.html",
-      "line": 54,
+      "line": 62,
       "owner": "APP-FE-027",
       "source": "<pre>{{ vm.grants() }}</pre>",
       "disposition": "REPLACE_NORMAL",
@@ -46320,7 +46351,7 @@
     },
     {
       "path": "src/app/features/studio/presentation/resource-catalog/catalog-actions.html",
-      "line": 78,
+      "line": 86,
       "owner": "APP-FE-027",
       "source": "><textarea",
       "disposition": "REPLACE_NORMAL",
@@ -46328,7 +46359,7 @@
     },
     {
       "path": "src/app/features/studio/presentation/resource-catalog/catalog-editor.html",
-      "line": 30,
+      "line": 48,
       "owner": "APP-FE-027",
       "source": "@case (\"json\") {",
       "disposition": "REPLACE_NORMAL",
@@ -46336,7 +46367,7 @@
     },
     {
       "path": "src/app/features/studio/presentation/resource-catalog/catalog-editor.html",
-      "line": 31,
+      "line": 49,
       "owner": "APP-FE-027",
       "source": "<textarea",
       "disposition": "REPLACE_NORMAL",
@@ -46344,7 +46375,7 @@
     },
     {
       "path": "src/app/features/studio/presentation/workflow-board/workflow-board.html",
-      "line": 301,
+      "line": 305,
       "owner": "APP-FE-021",
       "source": "><label for=\"graph-json\">{{",
       "disposition": "REPLACE_NORMAL",
@@ -46352,7 +46383,7 @@
     },
     {
       "path": "src/app/features/studio/presentation/workflow-board/workflow-board.html",
-      "line": 304,
+      "line": 308,
       "owner": "APP-FE-021",
       "source": "><textarea",
       "disposition": "REPLACE_NORMAL",
@@ -46360,7 +46391,7 @@
     },
     {
       "path": "src/app/features/studio/presentation/workflow-board/workflow-board.html",
-      "line": 306,
+      "line": 310,
       "owner": "APP-FE-021",
       "source": "id=\"graph-json\"",
       "disposition": "REPLACE_NORMAL",
@@ -46368,7 +46399,7 @@
     },
     {
       "path": "src/app/features/studio/presentation/workflow-board/workflow-board.html",
-      "line": 309,
+      "line": 313,
       "owner": "APP-FE-021",
       "source": "[(ngModel)]=\"graphJson\"",
       "disposition": "REPLACE_NORMAL",
@@ -46376,7 +46407,7 @@
     },
     {
       "path": "src/app/features/studio/presentation/workflow-board/workflow-board.html",
-      "line": 411,
+      "line": 415,
       "owner": "APP-FE-021",
       "source": "><textarea",
       "disposition": "REPLACE_NORMAL",
@@ -46384,7 +46415,7 @@
     },
     {
       "path": "src/app/features/studio/presentation/workflow-board/workflow-board.html",
-      "line": 414,
+      "line": 418,
       "owner": "APP-FE-021",
       "source": "[(ngModel)]=\"collapsedJson\"",
       "disposition": "REPLACE_NORMAL",
@@ -46392,7 +46423,7 @@
     },
     {
       "path": "src/app/features/studio/presentation/workflow-board/workflow-board.html",
-      "line": 420,
+      "line": 424,
       "owner": "APP-FE-021",
       "source": "><textarea",
       "disposition": "REPLACE_NORMAL",
@@ -46400,7 +46431,7 @@
     },
     {
       "path": "src/app/features/studio/presentation/workflow-board/workflow-board.html",
-      "line": 423,
+      "line": 427,
       "owner": "APP-FE-021",
       "source": "[(ngModel)]=\"routingJson\"",
       "disposition": "REPLACE_NORMAL",

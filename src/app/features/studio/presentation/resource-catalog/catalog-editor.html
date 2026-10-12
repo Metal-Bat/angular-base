@@ -14,8 +14,26 @@
     <p class="text-sm text-console-muted">
       {{ "Required fields are marked with *." | localize }}
     </p>
+    @if (vm.key === "form-versions" && !vm.selected()) {
+      <p>
+        {{
+          "Start with a blank form. Add fields and configure the layout in the designer after saving."
+            | localize
+        }}
+      </p>
+      <button
+        pButton
+        severity="secondary"
+        type="button"
+        [attr.aria-expanded]="advanced()"
+        [text]="true"
+        (click)="advanced.set(!advanced())"
+      >
+        {{ "Expert document setup" | localize }}
+      </button>
+    }
     <form class="editor-form" (ngSubmit)="vm.save()">
-      @for (field of vm.fields(); track field.key) {
+      @for (field of visibleFields(); track field.key) {
         <app-control-field
           [controlId]="'author-' + field.key"
           [error]="

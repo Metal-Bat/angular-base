@@ -196,3 +196,8 @@ f-flow {
   outline: 2px solid var(--console-accent);
   outline-offset: -2px;
 }
+
+.board-node.connection-source {
+  outline: 3px dashed var(--console-accent);
+  outline-offset: 4px;
+}

@@ -1,0 +1,33 @@
+:host {
+  display: block;
+  min-inline-size: 0;
+}
+.display-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-block-end: 1.25rem;
+}
+.display-toolbar > div {
+  min-inline-size: 0;
+}
+.form-sheet {
+  max-inline-size: 70rem;
+  margin: 1.5rem auto;
+  padding: clamp(1rem, 3vw, 2.5rem);
+  border: 1px solid var(--console-border);
+  border-radius: 1rem;
+  background: var(--console-surface);
+}
+.sheet-caption {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding-block-end: 1rem;
+  margin-block-end: 1rem;
+  border-block-end: 1px solid var(--console-border);
+  color: var(--console-muted);
+}

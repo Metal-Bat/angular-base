@@ -1,0 +1,63 @@
+<div class="canvas-sheet">
+  @for (card of cards(); track card.identity) {
+    <button
+      class="field-card"
+      type="button"
+      [attr.aria-pressed]="card.active"
+      [class.field-card-selected]="card.active"
+      [style.margin-inline-start.rem]="(card.path.length - 1) * 0.75"
+      (click)="selectedChange.emit(card.path)"
+    >
+      <span class="card-type">{{ card.type | localize }}</span>
+      @if (card.invalidBinding) {
+        <span>{{ "Invalid field scope" | localize }}</span>
+      }
+      <strong
+        >{{ card.label }}
+        @if (card.required) {
+          <span aria-hidden="true">*</span
+          ><span class="sr-only">{{ "Required" | localize }}</span>
+        }
+      </strong>
+      <span aria-hidden="true" class="field-shape">
+        <i [class]="card.icon"></i>
+        <span
+          class="answer-line"
+          [class.multiline]="card.kind === 'textarea'"
+        ></span>
+      </span>
+    </button>
+  } @empty {
+    <div class="canvas-empty">
+      <i aria-hidden="true" class="pi pi-file-edit"></i>
+      <h3>{{ "Your form starts here" | localize }}</h3>
+      <p>{{ "Add your first field using the field types." | localize }}</p>
+    </div>
+  }
+  <button
+    pButton
+    severity="secondary"
+    type="button"
+    [text]="true"
+    (click)="selectedChange.emit([])"
+  >
+    {{ "Select root layout" | localize }}
+  </button>
+</div>
+
+<p>{{ "Choose a field type to add it to your form." | localize }}</p>
+<div class="field-type-buttons">
+  @for (kind of quickTypes; track kind) {
+    <button
+      pButton
+      severity="secondary"
+      type="button"
+      [disabled]="disabled()"
+      [outlined]="true"
+      (click)="addRequested.emit(kind)"
+    >
+      <i aria-hidden="true" class="pi pi-plus"></i
+      >{{ componentLabels[kind] | localize }}
+    </button>
+  }
+</div>

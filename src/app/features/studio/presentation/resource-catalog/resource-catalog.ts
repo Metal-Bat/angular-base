@@ -70,6 +70,12 @@ export class ResourceCatalog extends CatalogParents {
     const selected = this.route.snapshot.queryParamMap.get('selected');
     if (selected) {
       void this.open(selected);
+    } else if (
+      this.key === 'form-versions' &&
+      this.query()['form_ref_id'] &&
+      this.route.snapshot.queryParamMap.get('create') === '1'
+    ) {
+      void this.create();
     }
   }
   applySaved(event: { query: JsonObject; columns: string[] }): void {

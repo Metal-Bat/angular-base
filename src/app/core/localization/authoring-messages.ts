@@ -1,4 +1,47 @@
 export const authoringMessages: Readonly<Record<string, string>> = {
+  'Mark all as read': 'علامت‌گذاری همه به‌عنوان خوانده‌شده',
+  'Marking notifications as read…':
+    'در حال علامت‌گذاری اعلان‌ها به‌عنوان خوانده‌شده…',
+  'Existing notifications are marked as read.':
+    'اعلان‌های موجود به‌عنوان خوانده‌شده علامت‌گذاری شدند.',
+  'Some notifications may remain unread. Refresh and try again.':
+    'ممکن است برخی اعلان‌ها خوانده‌نشده باشند. صفحه را تازه کنید و دوباره تلاش کنید.',
+  'Apply or discard pending edits to move steps and create connections.':
+    'برای جابه‌جایی مراحل و ایجاد اتصال، ویرایش‌های معلق را اعمال یا لغو کنید.',
+  'Inspect step': 'بررسی مرحله',
+  'Connect to another step': 'اتصال به مرحله دیگر',
+  'Duplicate step': 'کپی مرحله',
+  'Step actions': 'عملیات مرحله',
+  'Select a target step to create a control connection.':
+    'برای ایجاد اتصال کنترل، مرحله مقصد را انتخاب کنید.',
+  'Use step actions to connect, or drag from an output port to an input port.':
+    'برای اتصال از عملیات مرحله استفاده کنید، یا از پورت خروجی به پورت ورودی بکشید.',
+  'Display form': 'نمایش فرم',
+  'Try the saved form in different views. Sample answers are not saved.':
+    'فرم ذخیره‌شده را در نماهای مختلف امتحان کنید. پاسخ‌های آزمایشی ذخیره نمی‌شوند.',
+  'Form view': 'نمای فرم',
+  'Entry form': 'فرم ورود اطلاعات',
+  'Print view': 'نمای چاپ',
+  Correction: 'اصلاح',
+  'Refresh preview': 'به‌روزرسانی پیش‌نمایش',
+  'Reset sample answers': 'پاک کردن پاسخ‌های آزمایشی',
+  'This form has no versions yet.': 'این فرم هنوز نسخه‌ای ندارد.',
+  'Form versions are unavailable.': 'نسخه‌های فرم در دسترس نیستند.',
+  'The form display is unavailable.': 'نمایش فرم در دسترس نیست.',
+  'Start with a blank form. Add fields and configure the layout in the designer after saving.':
+    'با یک فرم خالی شروع کنید. پس از ذخیره، فیلدها و چیدمان را در طراح تنظیم کنید.',
+  'Expert document setup': 'تنظیم پیشرفته اسناد',
+  'Choose a field type to add it to your form.':
+    'نوع فیلد را برای افزودن به فرم انتخاب کنید.',
+  'All field types and layouts': 'همه انواع فیلد و چیدمان',
+  'Form layout': 'چیدمان فرم',
+  'Select a field to edit its label, choices, validation and appearance.':
+    'برای ویرایش عنوان، گزینه‌ها، اعتبارسنجی و ظاهر، یک فیلد را انتخاب کنید.',
+  'Your form starts here': 'فرم شما از اینجا شروع می‌شود',
+  'Add your first field using the field types.':
+    'اولین فیلد را با انتخاب نوع فیلد اضافه کنید.',
+  'Select root layout': 'انتخاب چیدمان اصلی',
+
   'Published versions are immutable. Create a draft to make changes.':
     'نسخه‌های منتشرشده تغییرناپذیرند. برای تغییر، پیش‌نویس بسازید.',
   'Apply or discard pending inspector edits before saving.':

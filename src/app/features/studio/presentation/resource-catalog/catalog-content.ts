@@ -18,6 +18,7 @@ import { ListQueryEditor } from '../../../../shared/ui/list-query/list-query';
 import { RecordTable } from '../../../../shared/ui/record-table/record-table';
 import { LocalizePipe } from '../../../../shared/ui/localize-pipe';
 import { WorkflowDiagram } from '../workflow-diagram/workflow-diagram';
+import { FormDisplay } from '../form-display/form-display';
 
 @Component({
   selector: 'app-catalog-content',
@@ -32,6 +33,7 @@ import { WorkflowDiagram } from '../workflow-diagram/workflow-diagram';
     RecordTable,
     LocalizePipe,
     WorkflowDiagram,
+    FormDisplay,
   ],
   templateUrl: './catalog-content.html',
   styleUrl: './resource-catalog.scss',

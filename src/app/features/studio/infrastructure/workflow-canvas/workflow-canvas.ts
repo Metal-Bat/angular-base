@@ -3,6 +3,8 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  effect,
+  inject,
   input,
   signal,
   viewChild,
@@ -18,14 +20,114 @@ import {
 import { CanvasEdge, CanvasNode } from '../../domain/workflow-authoring';
 import { Point } from '../../domain/authoring';
 import { LocalizePipe } from '../../../../shared/ui/localize-pipe';
+import { Locale } from '../../../../core/localization/locale';
+import {
+  ContextAction,
+  ContextMenuControl,
+} from '../../../../shared/ui/context-menu-control/context-menu-control';
 @Component({
   selector: 'app-workflow-canvas',
-  imports: [CanvasToolbar, FFlowModule, FZoomDirective, LocalizePipe],
+  imports: [
+    CanvasToolbar,
+    ContextMenuControl,
+    FFlowModule,
+    FZoomDirective,
+    LocalizePipe,
+  ],
   templateUrl: './workflow-canvas.html',
   styleUrl: './workflow-canvas.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class WorkflowCanvas {
+  private readonly locale = inject(Locale);
+  private readonly menu = viewChild(ContextMenuControl);
+  readonly menuNode = signal('');
+  readonly linkSource = signal('');
+  readonly duplicateNode = input<((key: string) => void) | null>(null);
+  readonly menuItems = computed<ContextAction[]>(() => {
+    const key = this.menuNode();
+    const blocked = this.disabled() || this.readOnly();
+    return key
+      ? [
+          {
+            label: this.locale.text('Inspect step'),
+            icon: 'pi pi-search',
+            command: (): void => this.selectNode()(key),
+          },
+          {
+            label: this.locale.text('Connect to another step'),
+            icon: 'pi pi-link',
+            disabled: blocked,
+            command: (): void => this.beginLink(key),
+          },
+          {
+            label: this.locale.text('Duplicate step'),
+            icon: 'pi pi-copy',
+            disabled: blocked || !this.duplicateNode(),
+            command: (): void => {
+              if (
+                !this.disabled() &&
+                !this.readOnly() &&
+                this.nodes().some((node) => node.key === key)
+              ) {
+                this.duplicateNode()?.(key);
+              }
+            },
+          },
+        ]
+      : [
+          {
+            label: this.locale.text('Fit to view'),
+            icon: 'pi pi-expand',
+            command: (): void => this.fit(),
+          },
+          {
+            label: this.locale.text('Reset view'),
+            icon: 'pi pi-refresh',
+            command: (): void => this.reset(),
+          },
+        ];
+  });
+  constructor() {
+    effect(() => {
+      if (
+        this.disabled() ||
+        this.readOnly() ||
+        !this.nodes().some((node) => node.key === this.linkSource())
+      ) {
+        this.linkSource.set('');
+      }
+      if (
+        this.disabled() ||
+        (this.menuNode() &&
+          !this.nodes().some((node) => node.key === this.menuNode()))
+      ) {
+        this.menu()?.hide();
+        this.menuNode.set('');
+      }
+    });
+  }
+  openMenu(event: MouseEvent, key = ''): void {
+    event.preventDefault();
+    event.stopPropagation();
+    if (this.disabled()) {
+      return;
+    }
+    this.menuNode.set(key);
+    if (key) {
+      this.selectNode()(key);
+    }
+    this.menu()?.show(event);
+  }
+  beginLink(key: string): void {
+    if (
+      !this.disabled() &&
+      !this.readOnly() &&
+      this.nodes().some((node) => node.key === key)
+    ) {
+      this.linkSource.set(key);
+    }
+  }
   readonly nodes = input.required<readonly CanvasNode[]>();
   readonly edges = input.required<readonly CanvasEdge[]>();
   readonly viewport = input.required<Point & { zoom: number }>();
@@ -109,6 +211,14 @@ export class WorkflowCanvas {
     ((id: string, source: string, target: string) => void) | null
   >(null);
   select(event: MouseEvent, key: string): void {
+    const source = this.linkSource();
+    if (source) {
+      if (!this.disabled() && !this.readOnly() && source !== key) {
+        this.connect()('control:' + source + ':out', 'control:' + key + ':in');
+        this.linkSource.set('');
+      }
+      return;
+    }
     if (event.shiftKey && this.selectNodes()) {
       const keys = this.selectionKeys();
       this.selectNodes()!(

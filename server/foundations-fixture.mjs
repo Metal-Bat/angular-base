@@ -1,5 +1,17 @@
+import { formPreviewFixture } from "./form-preview-fixture.mjs";
 export function createFoundationsFixture() {
   let read = false;
+  let bulkMode = false;
+  let bulkArrivalStaged = false;
+  const bulkUnread = new Set(
+    Array.from({ length: 21 }, (_, index) => "bulk-" + index),
+  );
+  const bulkCreated = "2026-10-12T03:00:00Z";
+  const bulkItem = (ref) => ({
+    ...item(ref),
+    created_at: ref === "bulk-new" ? "2026-10-12T04:00:00Z" : bulkCreated,
+    read_at: bulkUnread.has(ref) ? null : "2026-10-12T05:00:00Z",
+  });
   let form = {
     ref_id: "form-fixture-current",
     status: "DRAFT",
@@ -46,6 +58,8 @@ export function createFoundationsFixture() {
   });
   return {
     handle(method, path, body) {
+      if (method === "POST" && path === "/api/v1/forms/runtime-preview")
+        return formPreviewFixture(JSON.parse(body));
       if (path.split("?")[0] === "/api/v1/me/help-state" && method === "GET")
         return {
           success: true,
@@ -79,9 +93,50 @@ export function createFoundationsFixture() {
         }
       }
       if (path === "/api/v1/inbox/unread")
-        return { success: true, data: { total: read ? 0 : 31 } };
+        return {
+          success: true,
+          data: { total: bulkMode ? bulkUnread.size : read ? 0 : 31 },
+        };
       if (path === "/api/v1/inbox/search") {
         const query = JSON.parse(body);
+        if (
+          query.sort_orders?.some(
+            (sort) =>
+              sort.field_name === "created_at" && sort.operation === "desc",
+          )
+        )
+          bulkMode = true;
+        if (bulkMode) {
+          const cutoff = query.filters?.find(
+            (filter) =>
+              filter.field_name === "created_at" && filter.operation === "lte",
+          )?.value;
+          const rows = [
+            ...Array.from({ length: 21 }, (_, index) => "bulk-" + index),
+            ...(bulkUnread.has("bulk-new") ? ["bulk-new"] : []),
+          ]
+            .map(bulkItem)
+            .filter(
+              (row) =>
+                (!query.unread || row.read_at === null) &&
+                (!cutoff || row.created_at <= cutoff),
+            );
+          const result = {
+            success: true,
+            result: {
+              items: rows.slice((query.page - 1) * 20, query.page * 20),
+              page: query.page,
+              size: 20,
+              total: rows.length,
+              total_pages: Math.ceil(rows.length / 20),
+            },
+          };
+          if (!cutoff && !bulkArrivalStaged) {
+            bulkUnread.add("bulk-new");
+            bulkArrivalStaged = true;
+          }
+          return result;
+        }
         const unread = query.filters?.some(
           (filter) =>
             filter.field_name === "read_at" && filter.operation === "isNull",
@@ -105,6 +160,11 @@ export function createFoundationsFixture() {
             total_pages: unread && read ? 0 : 2,
           },
         };
+      }
+      if (bulkMode && path.startsWith("/api/v1/inbox/bulk-")) {
+        const ref = path.split("/")[4];
+        if (method === "POST" && path.endsWith("/read")) bulkUnread.delete(ref);
+        return { success: true, data: bulkItem(ref) };
       }
       if (
         method === "GET" &&
@@ -187,6 +247,16 @@ export const foundationsBrowserScript = `
   await wait(()=>document.querySelector('app-error-notification').getAnimations({subtree:true}).every(animation=>animation.playState!=='running'),'support toast animation settled');
   await auditAccessibility('support-reference');
   document.querySelector('app-error-notification .p-toast-close-button').click();
+  const bulkButton = [...services.querySelectorAll('button')].find(button=>button.textContent.trim()==='Mark all as read');
+  check(bulkButton && !bulkButton.disabled,'mark all read available');bulkButton.click();
+  await wait(()=>services.textContent.includes('Existing notifications are marked as read.')&&!bulkButton.disabled,'bulk read finished');
+  check(vm.preview.unreadCount()===1,'notification arriving during batch remains unread');
+  await auditAccessibility('notification-mark-all-read');
+  document.querySelector('button[aria-label="Notifications"]').click();
+  await wait(()=>document.querySelector('#notification-panel app-inbox-read-control button')&&!document.querySelector('#notification-panel app-inbox-read-control button').disabled,'bell mark all read action');
+  document.querySelector('#notification-panel app-inbox-read-control button').click();
+  await wait(()=>vm.preview.unreadCount()===0&&document.querySelector('#notification-panel app-inbox-read-control button').disabled,'bell batch refreshes unread badge');
+  document.querySelector('button[aria-label="Notifications"]').click();
   await router.navigateByUrl('/operations/foundation-preview');
   await wait(()=>document.querySelector('app-calendar-views'),'calendar preview');
   const calendar=document.querySelector('app-calendar-views');
@@ -246,6 +316,7 @@ export const foundationsBrowserScript = `
   [...builder.querySelectorAll('button')].find(button=>button.textContent.trim()==='Save draft').click();
   await wait(()=>editorVm.reference()==='form-fixture-1'&&!editorVm.busy(),'save replaces current reference');
   builder.querySelector('.designer ul button').click();
+  builder.querySelector('.designer > .form-palette details > summary').click();
   const nameInput=document.getElementById('property-name');nameInput.value='note';nameInput.dispatchEvent(new Event('input',{bubbles:true}));
   const displayInput=document.getElementById('component-label');displayInput.value='Note label';displayInput.dispatchEvent(new Event('input',{bubbles:true}));
   await wait(()=>[...builder.querySelectorAll('button')].some(button=>button.textContent.trim()==='Add to selected layout'&&!button.disabled),'add button rendered enabled');
@@ -258,6 +329,21 @@ export const foundationsBrowserScript = `
   builder.querySelector('button[aria-label="Reload"]').click();await wait(()=>!editorVm.busy()&&editorVm.outline().length===3,'saved form reopened');
   check(editorVm.documents().render_schema.root.children[0].label==='Friendly amount'&&editorVm.documents().render_schema.root.children[0].node_key==='stable_amount'&&editorVm.documents().render_schema.root.children[1].node_key===addedKey&&editorVm.documents().render_schema.root.children[1].scope==='/properties/note','form roundtrip preserves keys/scopes/labels');
   check(editorVm.documents().data_schema.properties.amount.minimum===0&&editorVm.documents().reuse_instances.retained,'form save retains canonical and reuse metadata');
+
+  const formCards=builder.querySelector('app-form-canvas');
+  [...formCards.querySelectorAll('.field-type-buttons button')].find(button=>button.textContent.trim()==='Text').click();
+  await wait(()=>editorVm.outline().length===4&&editorVm.selected().length,'Visual field added');
+  const cardKey=editorVm.outline().at(-1).identity;
+  check(editorVm.outline().at(-1).scope==='/properties/field_1','Automatic stable field key');
+  await wait(()=>[...formCards.querySelectorAll('.field-card')].at(-1)?.getAttribute('aria-pressed')==='true','New field selected in the rendered canvas');
+  const visualLabel=document.getElementById('field-label');visualLabel.value='Visual field';visualLabel.dispatchEvent(new Event('input',{bubbles:true}));
+  [...builder.querySelectorAll('button')].find(button=>button.textContent.trim()==='Apply properties').click();
+  await wait(()=>formCards.textContent.includes('Visual field'),'Card label updated');
+  const outlineBefore=JSON.stringify(editorVm.documents());
+  [...builder.querySelectorAll('button')].find(button=>button.textContent.trim()==='Preview').click();
+  await wait(()=>!editorVm.busy()&&builder.querySelector('app-runtime-form input'),'Unsaved form rendered');
+  check(JSON.stringify(editorVm.documents())===outlineBefore&&editorVm.dirty(),'Preview preserves unsaved design');
+  check(editorVm.outline().at(-1).identity===cardKey,'Preview preserves field identity');
   await auditAccessibility('form-builder-english');await chooseLanguage('fa');await wait(()=>builder.textContent.includes('اعمال ویژگی‌ها'),'form builder Persian');await auditAccessibility('form-builder-persian');
   check(localStorage.length===0&&sessionStorage.length===0,'no personal browser persistence');
   await fetch('/test-result',{method:'POST',body:JSON.stringify({ok:true, accessibility, measurements})});

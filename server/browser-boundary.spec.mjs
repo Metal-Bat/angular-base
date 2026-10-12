@@ -74,6 +74,7 @@ if (tls) {
 }
 const browserCookies = [];
 const cookieHeaders = [];
+const boundaryResponses = [];
 const calls = [];
 const upstream = createServer(async (req, res) => {
   const parts = [];
@@ -109,6 +110,7 @@ const result = new Promise((resolve) => {
 const page = `<!doctype html><script>
 (async () => {
  const check = (ok, message) => { if (!ok) throw Error(message); };
+ check((await fetch('/favicon.ico')).status === 404, 'anonymous favicon reached the session boundary');
  ${
    tls
      ? `
@@ -133,6 +135,8 @@ const page = `<!doctype html><script>
  check(!/fixture-access|fixture-refresh|fixture-server-secret/.test(text), 'server tokens leaked');
  check(!document.cookie.includes('workspace_session'), 'cookie readable by JavaScript');
  check(localStorage.length === 0 && sessionStorage.length === 0, 'persistent state');
+ const session = await (await fetch('/session/status')).json();
+ check(session.authenticated && session.csrfToken === state.csrfToken, 'login cookie did not establish the browser session');
  const denied = await fetch('/api/v1/work-items/search', {method:'POST',headers:{'content-type':'application/json'},body:'{}'});
  check(denied.status === 403, 'missing CSRF rejection status '+denied.status);
  const accepted = await fetch('/api/v1/work-items/search', {method:'POST',headers:{'content-type':'application/json','x-csrf-token':state.csrfToken,'authorization':'Bearer browser-forgery'},body:'{}'});
@@ -172,6 +176,20 @@ const serveBrowser = async (req, res) => {
     res.end("ok");
     return;
   }
+  // Browser asset requests must not reach the session boundary: an anonymous
+  // favicon response can clear a newly issued login cookie if it arrives late.
+  const pathname = new URL(req.url, origin).pathname;
+  if (!pathname.startsWith("/session/") && !pathname.startsWith("/api/")) {
+    const response = tls && (await assets(new Request(origin + req.url)));
+    if (response) {
+      res.writeHead(response.status, Object.fromEntries(response.headers));
+      res.end(Buffer.from(await response.arrayBuffer()));
+    } else {
+      res.writeHead(404);
+      res.end();
+    }
+    return;
+  }
   try {
     const request = new Request(origin + req.url, {
       method: req.method,
@@ -180,8 +198,20 @@ const serveBrowser = async (req, res) => {
         ? undefined
         : Buffer.concat(parts),
     });
-    const response =
-      (tls && (await assets(request))) || (await handle(request));
+    const response = await handle(request);
+    boundaryResponses.push({
+      path: pathname,
+      status: response.status,
+      hasSessionCookie: (req.headers.cookie ?? "")
+        .split(";")
+        .some((part) =>
+          part
+            .trim()
+            .startsWith(
+              tls ? "__Host-workspace_session=" : "workspace_session_dev=",
+            ),
+        ),
+    });
     if (response.headers.has("set-cookie"))
       cookieHeaders.push(response.headers.get("set-cookie"));
     res.writeHead(response.status, Object.fromEntries(response.headers));
@@ -229,6 +259,11 @@ try {
     }),
   ]);
   assert.equal(outcome.ok, true, outcome.error);
+  assert.equal(boundaryResponses[0].path, "/session/login");
+  assert.equal(
+    boundaryResponses.some((response) => response.path === "/favicon.ico"),
+    false,
+  );
   assert.equal(
     JSON.parse(calls[0].body).client_secret,
     "fixture-server-secret",
@@ -276,6 +311,7 @@ try {
         ok: !reportFailure,
         failure: reportFailure,
         diagnostics: [],
+        boundaryResponses,
       },
       browser,
     );

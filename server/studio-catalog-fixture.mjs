@@ -1,3 +1,4 @@
+import { formPreviewFixture } from "./form-preview-fixture.mjs";
 // Disposable catalogs: no requests are sent to the user's backend.
 export function createStudioCatalogFixture() {
   const calls = [];
@@ -35,6 +36,23 @@ export function createStudioCatalogFixture() {
       ],
     ]),
   );
+  Object.assign(rows.get("form-versions")[0], {
+    data_schema: { type: "object", properties: { name: { type: "string" } } },
+    render_schema: {
+      dialect: "bpms.render/1",
+      root: {
+        component: "vertical",
+        children: [
+          {
+            component: "text",
+            node_key: "sample_name",
+            scope: "/properties/name",
+            label: "Sample name",
+          },
+        ],
+      },
+    },
+  });
   rows.get("workflows").push({
     ...rows.get("workflows")[0],
     ref_id: "fixture-empty-workflow",
@@ -55,6 +73,16 @@ export function createStudioCatalogFixture() {
   return {
     calls,
     handle(method, url, raw) {
+      if (method === "POST" && url === "/api/v1/forms/runtime-preview") {
+        const body = JSON.parse(raw);
+        calls.push({
+          method,
+          key: "forms",
+          reference: "runtime-preview",
+          body,
+        });
+        return formPreviewFixture(body);
+      }
       const [, , , key, reference, action] = new URL(
         url,
         "http://fixture.invalid",
@@ -200,6 +228,14 @@ export const studioCatalogBrowserScript = String.raw`
  await click(root(),'History');await wait(()=>modal()?.querySelector('tbody button'),'Studio history list');await click(modal(),'Open');await wait(()=>modal()?.querySelector('.change-comparison tbody tr'),'Studio history comparison');const historyRow=modal().querySelector('.change-comparison tbody tr');check(historyRow.textContent.includes('Name')&&historyRow.textContent.includes('No value')&&historyRow.textContent.includes('Changed'),'Studio comparison values');check(!modal().querySelector('pre')&&!modal().textContent.includes('hidden'),'Studio raw history or secret');await auditAccessibility('studio-history-comparison',modal());modal().querySelector('.p-dialog-close-button').click();await wait(()=>!modal(),'Studio history closed');
  await click(root(),'Back to list');await wait(()=>root()?.querySelector('tbody button')&&!root().textContent.includes('Loading…'),'Back to list');await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
  await click(root(),'Advanced filters');await click(root(),'Add filter');await wait(()=>root().querySelector('input[data-query-value="0"]'),'Filter');const val=root().querySelector('input[data-query-value="0"]');val.value='example';val.dispatchEvent(new Event('input',{bubbles:true}));await click(root(),'Apply');await wait(()=>!root().textContent.includes('Loading…'),'Apply');val.value='unapplied';val.dispatchEvent(new Event('input',{bubbles:true}));await click(root(),'Preview report');await confirm();await wait(()=>modal()?.textContent.includes('Report preview'),'Report');check(modal().textContent.includes('Renamed form'),'Typed report result');modal().querySelector('.p-dialog-close-button').click();await wait(()=>!modal(),'Report preview closed');check(root().querySelector('tbody').textContent.includes('Renamed form'),'Report replaced list');
+
+ // Creation reuses the existing form and version contracts with a blank document.
+ await navigate('forms');await click(root(),'Open');await wait(()=>root().querySelector('a[href*="form-versions"]'),'Form actions');
+ [...root().querySelectorAll('a')].find(link=>link.textContent.trim()==='Create draft').click();
+ await wait(()=>modal()?.querySelector('#author-number'),'Blank draft creation');
+ check(!modal().querySelector('textarea'),'No required document JSON in normal draft creation');
+ fill('author-number','2');await click(modal(),'Save');await wait(()=>!modal()&&root().querySelector('a[href$="/edit"]'),'Draft created');
+ check(root().textContent.includes('DRAFT'),'Created version remains a draft');
  for(const key of ['workflows','clients','request-types','form-components','form-data-types']){await navigate(key);await wait(()=>root().querySelector('tbody button'),'Table '+key);await auditAccessibility('studio-'+key);
  if(key==='workflows'){
    await click(root(),'Create');await wait(()=>modal()?.querySelector('p-select'),'Workflow access dropdown');
@@ -233,6 +269,23 @@ export const studioCatalogBrowserScript = String.raw`
  await click(library,'Create template');await wait(()=>modal()?.querySelector('#template-code'),'Template create again');fill('template-code','copied');fill('template-name','Copied definition');await click(modal(),'Create template');await confirm();await wait(()=>!modal(),'Template created');
  await auditAccessibility('studio-library');
  await navigate('form-versions');await click(root(),'Choose parent');await wait(()=>modal()?.querySelector('tbody button'),'Parent dialog');await click(modal(),'Select');await wait(()=>!modal()&&root().querySelector('tbody button'),'Versions');await click(root(),'Open');await wait(()=>button(root(),'Edit'),'Draft detail');await click(root(),'publish');await confirm();await wait(()=>root().textContent.includes('PUBLISHED'),'Published');check(!button(root(),'Edit'),'Published version editable');
+
+ // Saved and immutable versions use the same runtime renderer in four views.
+ check(!root().querySelector('app-form-display'),'Form display loaded before its tab');
+ [...root().querySelectorAll('[role="tab"]')].find(tab=>tab.textContent.trim()==='Display').click();
+ await wait(()=>root().querySelector('app-form-display app-runtime-form input'),'Form display input');
+ const formDisplay=root().querySelector('app-form-display');
+ const sampleInput=formDisplay.querySelector('app-runtime-form input');
+ sampleInput.value='Preview answer';sampleInput.dispatchEvent(new Event('input',{bubbles:true}));
+ await wait(()=>formDisplay.querySelector('app-runtime-form input').value==='Preview answer','Synthetic answer updated');
+ const chooseView=async(label)=>{document.getElementById('display-form-state').click();await wait(()=>[...document.querySelectorAll('[role="option"]')].some(option=>option.textContent.trim()===label),'Form view choices');[...document.querySelectorAll('[role="option"]')].find(option=>option.textContent.trim()===label).click();};
+ for(const [purpose,label] of [['summary','Summary'],['print','Print view'],['correction','Correction'],['edit','Entry form']]) {
+   await chooseView(label);await wait(()=>formDisplay.querySelector('[data-preview-purpose="'+purpose+'"]'),'Form view '+purpose);
+   check(formDisplay.textContent.includes('Preview answer')||formDisplay.querySelector('app-runtime-form input')?.value==='Preview answer','Answers retained across views');
+   check(formDisplay.textContent.includes('Sample name'),'Saved form definition retained');
+   await auditAccessibility('form-display-'+purpose);
+ }
+ await click(formDisplay,'Reset sample answers');await wait(()=>formDisplay.querySelector('app-runtime-form input')?.value==='','Explicit sample reset');
  await toggleTheme();await wait(()=>document.documentElement.classList.contains('app-dark'),'Dark');await auditAccessibility('studio-published-dark');{document.querySelector('[data-language-picker] [role="combobox"]').click();await wait(()=>[...document.querySelectorAll('[role="option"]')].some(option=>option.textContent.includes('فارسی')),'Language options');[...document.querySelectorAll('[role="option"]')].find(option=>option.textContent.includes('فارسی')).click();}await wait(()=>document.documentElement.dir==='rtl','RTL');await auditAccessibility('studio-published-rtl');
  await fetch('/test-result',{method:'POST',body:JSON.stringify({ok:true,accessibility})});
 `;

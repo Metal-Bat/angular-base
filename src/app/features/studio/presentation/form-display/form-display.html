@@ -1,0 +1,168 @@
+<section [attr.aria-label]="'Display form' | localize">
+  <header class="display-toolbar">
+    <div>
+      <h2>{{ "Display form" | localize }}</h2>
+      <p>
+        {{
+          "Try the saved form in different views. Sample answers are not saved."
+            | localize
+        }}
+      </p>
+    </div>
+    @if (current(); as row) {
+      <a
+        class="p-button p-button-outlined"
+        [routerLink]="['/studio/form-versions', row['ref_id'], 'edit']"
+        >{{ "Open designer" | localize }}</a
+      >
+    }
+  </header>
+  <div class="display-toolbar">
+    @if (form() && versions().length) {
+      <div>
+        <label for="display-form-version">{{ "Version" | localize }}</label>
+        <app-select-control
+          inputId="display-form-version"
+          [disabled]="busy()"
+          [ngModel]="current()?.['ref_id'] ?? ''"
+          (ngModelChange)="show($event)"
+        >
+          @for (row of versions(); track row["ref_id"]) {
+            <option [value]="row['ref_id']">
+              {{ "Version" | localize }} {{ row["number"] }} ·
+              {{ row["status"] }}
+            </option>
+          }
+        </app-select-control>
+      </div>
+    }
+    @if (pages() > 1) {
+      <button
+        pButton
+        severity="secondary"
+        type="button"
+        [disabled]="busy() || page() <= 1"
+        [outlined]="true"
+        (click)="loadVersions(page() - 1)"
+      >
+        {{ "Previous" | localize }}
+      </button>
+      <button
+        pButton
+        severity="secondary"
+        type="button"
+        [disabled]="busy() || page() >= pages()"
+        [outlined]="true"
+        (click)="loadVersions(page() + 1)"
+      >
+        {{ "Next" | localize }}
+      </button>
+    }
+    <div>
+      <label for="display-form-state">{{ "Form view" | localize }}</label>
+      <app-select-control
+        inputId="display-form-state"
+        [disabled]="busy() || !current()"
+        [ngModel]="purpose()"
+        (ngModelChange)="purpose.set($event); refresh()"
+      >
+        @for (state of states; track state.value) {
+          <option [value]="state.value">{{ state.label | localize }}</option>
+        }
+      </app-select-control>
+    </div>
+    <div>
+      <label for="display-form-locale">{{ "Locale" | localize }}</label>
+      <app-select-control
+        inputId="display-form-locale"
+        [disabled]="busy() || !current()"
+        [ngModel]="locale()"
+        (ngModelChange)="locale.set($event); refresh()"
+      >
+        <option value="en">English</option>
+        <option value="fa">فارسی</option>
+        <option value="ar">العربية</option>
+      </app-select-control>
+    </div>
+    <button
+      pButton
+      severity="secondary"
+      type="button"
+      [disabled]="busy() || !current()"
+      [outlined]="true"
+      (click)="refresh()"
+    >
+      {{ "Refresh preview" | localize }}
+    </button>
+    <button
+      pButton
+      severity="secondary"
+      type="button"
+      [disabled]="busy() || !current()"
+      [text]="true"
+      (click)="refresh(true)"
+    >
+      {{ "Reset sample answers" | localize }}
+    </button>
+  </div>
+  <p class="text-console-muted">
+    {{
+      "Simulated author context. No request is created; uploads and structural case commands are unavailable."
+        | localize
+    }}
+  </p>
+  @if (busy()) {
+    <p role="status">{{ "Loading…" | localize }}</p>
+  }
+  @if (error()) {
+    <p role="alert">{{ error() | localize }}</p>
+    <button
+      pButton
+      severity="secondary"
+      type="button"
+      [disabled]="busy()"
+      [outlined]="true"
+      (click)="
+        current()
+          ? refresh()
+          : version()
+            ? show(version())
+            : loadVersions(page())
+      "
+    >
+      {{ "Retry" | localize }}
+    </button>
+  }
+  @if (runtime(); as document) {
+    <div
+      class="form-sheet"
+      [attr.data-preview-purpose]="document.purpose"
+      [attr.dir]="document.locale.direction"
+      [attr.lang]="document.locale.language"
+    >
+      <div class="sheet-caption">
+        <strong>{{ stateLabel() | localize }}</strong
+        ><span
+          >{{ "Version" | localize }} {{ current()?.["number"] }} ·
+          {{ current()?.["status"] }}</span
+        >
+      </div>
+      <app-runtime-form
+        [busy]="busy()"
+        [data]="data()"
+        [document]="document"
+        (edit)="editSample($event)"
+      />
+    </div>
+  } @else if (!busy() && !error() && !current()) {
+    <p>{{ "This form has no versions yet." | localize }}</p>
+    @if (form()) {
+      <a
+        class="p-button"
+        routerLink="/studio/form-versions"
+        [queryParams]="{ parent: form(), create: '1' }"
+        >{{ "Create draft" | localize }}</a
+      >
+    }
+  }
+</section>

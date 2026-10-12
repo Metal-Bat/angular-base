@@ -44,4 +44,30 @@ describe('Workflow palette placement', () => {
     fixture.componentInstance.place({ target: node } as unknown as MouseEvent);
     expect(add).not.toHaveBeenCalled();
   });
+  it('connects control ports and fences read-only and pending modes', async () => {
+    const fixture = TestBed.createComponent(WorkflowCanvas);
+    const nodes = [
+      { key: 'a', title: 'First', position: { x: 0, y: 0 }, ports: [] },
+      { key: 'b', title: 'Second', position: { x: 200, y: 0 }, ports: [] },
+    ];
+    fixture.componentRef.setInput('nodes', nodes);
+    fixture.componentRef.setInput('selectNode', vi.fn());
+    const connect = vi.fn();
+    fixture.componentRef.setInput('connect', connect);
+    const vm = fixture.componentInstance;
+    vm.beginLink('a');
+    vm.select(new MouseEvent('click'), 'b');
+    expect(connect).toHaveBeenCalledWith('control:a:out', 'control:b:in');
+    expect(vm.linkSource()).toBe('');
+    vm.beginLink('a');
+    fixture.componentRef.setInput('disabled', true);
+    await fixture.whenStable();
+    expect(vm.linkSource()).toBe('');
+    vm.select(new MouseEvent('click'), 'b');
+    expect(connect).toHaveBeenCalledTimes(1);
+    fixture.componentRef.setInput('disabled', false);
+    fixture.componentRef.setInput('readOnly', true);
+    vm.beginLink('a');
+    expect(vm.linkSource()).toBe('');
+  });
 });
