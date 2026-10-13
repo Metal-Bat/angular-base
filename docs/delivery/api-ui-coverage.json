@@ -45460,7 +45460,13 @@
       "path": "src/app/features/studio/infrastructure/workflow-canvas/workflow-canvas.html",
       "owner": "APP-FE-020",
       "delta": "REUSE",
-      "controls": ["app-canvas-toolbar", "app-context-menu-control", "button"],
+      "controls": [
+        "app-canvas-toolbar",
+        "app-context-menu-control",
+        "app-select-control",
+        "button",
+        "input"
+      ],
       "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
     },
     {
@@ -45786,6 +45792,7 @@
       "delta": "EXTEND",
       "controls": [
         "app-graph-connections",
+        "app-node-details",
         "app-node-inspector",
         "button",
         "textarea"
@@ -46103,7 +46110,7 @@
     },
     {
       "path": "src/app/features/studio/presentation/form-builder/form-builder.html",
-      "line": 191,
+      "line": 199,
       "owner": "APP-FE-016",
       "source": "<label for=\"node-json\">{{",
       "disposition": "REPLACE_NORMAL",
@@ -46111,7 +46118,7 @@
     },
     {
       "path": "src/app/features/studio/presentation/form-builder/form-builder.html",
-      "line": 194,
+      "line": 202,
       "owner": "APP-FE-016",
       "source": "><textarea",
       "disposition": "REPLACE_NORMAL",
@@ -46119,7 +46126,7 @@
     },
     {
       "path": "src/app/features/studio/presentation/form-builder/form-builder.html",
-      "line": 196,
+      "line": 204,
       "owner": "APP-FE-016",
       "source": "id=\"node-json\"",
       "disposition": "REPLACE_NORMAL",
@@ -46127,7 +46134,7 @@
     },
     {
       "path": "src/app/features/studio/presentation/form-builder/form-builder.html",
-      "line": 200,
+      "line": 208,
       "owner": "APP-FE-016",
       "source": "[(ngModel)]=\"selectedJson\"",
       "disposition": "REPLACE_NORMAL",
@@ -46135,7 +46142,7 @@
     },
     {
       "path": "src/app/features/studio/presentation/form-builder/form-builder.html",
-      "line": 216,
+      "line": 224,
       "owner": "APP-FE-016",
       "source": "<label for=\"schema-json\">{{ \"Canonical data schema\" | localize }}</label",
       "disposition": "REPLACE_NORMAL",
@@ -46143,7 +46150,7 @@
     },
     {
       "path": "src/app/features/studio/presentation/form-builder/form-builder.html",
-      "line": 217,
+      "line": 225,
       "owner": "APP-FE-016",
       "source": "><textarea",
       "disposition": "REPLACE_NORMAL",
@@ -46151,7 +46158,7 @@
     },
     {
       "path": "src/app/features/studio/presentation/form-builder/form-builder.html",
-      "line": 219,
+      "line": 227,
       "owner": "APP-FE-016",
       "source": "id=\"schema-json\"",
       "disposition": "REPLACE_NORMAL",
@@ -46159,7 +46166,7 @@
     },
     {
       "path": "src/app/features/studio/presentation/form-builder/form-builder.html",
-      "line": 222,
+      "line": 230,
       "owner": "APP-FE-016",
       "source": "[(ngModel)]=\"schemaJson\"",
       "disposition": "REPLACE_NORMAL",
@@ -46167,7 +46174,7 @@
     },
     {
       "path": "src/app/features/studio/presentation/form-builder/form-builder.html",
-      "line": 238,
+      "line": 246,
       "owner": "APP-FE-016",
       "source": "<label for=\"behavior-json\">{{",
       "disposition": "REPLACE_NORMAL",
@@ -46175,7 +46182,7 @@
     },
     {
       "path": "src/app/features/studio/presentation/form-builder/form-builder.html",
-      "line": 241,
+      "line": 249,
       "owner": "APP-FE-016",
       "source": "><textarea",
       "disposition": "REPLACE_NORMAL",
@@ -46183,7 +46190,7 @@
     },
     {
       "path": "src/app/features/studio/presentation/form-builder/form-builder.html",
-      "line": 243,
+      "line": 251,
       "owner": "APP-FE-016",
       "source": "id=\"behavior-json\"",
       "disposition": "REPLACE_NORMAL",
@@ -46191,7 +46198,7 @@
     },
     {
       "path": "src/app/features/studio/presentation/form-builder/form-builder.html",
-      "line": 246,
+      "line": 254,
       "owner": "APP-FE-016",
       "source": "[(ngModel)]=\"behaviorJson\"",
       "disposition": "REPLACE_NORMAL",
@@ -46199,15 +46206,7 @@
     },
     {
       "path": "src/app/features/studio/presentation/form-builder/form-builder.html",
-      "line": 293,
-      "owner": "APP-FE-016",
-      "source": "(sample)=\"sampleJson = JSON.stringify($event)\"",
-      "disposition": "REPLACE_NORMAL",
-      "replacement": "Typed form/validation/behavior inspectors"
-    },
-    {
-      "path": "src/app/features/studio/presentation/form-builder/form-builder.html",
-      "line": 316,
+      "line": 302,
       "owner": "APP-FE-016",
       "source": "<label for=\"sample-json\">{{ \"Synthetic sample values\" | localize }}</label",
       "disposition": "REPLACE_NORMAL",
@@ -46215,7 +46214,7 @@
     },
     {
       "path": "src/app/features/studio/presentation/form-builder/form-builder.html",
-      "line": 317,
+      "line": 303,
       "owner": "APP-FE-016",
       "source": "><textarea",
       "disposition": "REPLACE_NORMAL",
@@ -46223,7 +46222,7 @@
     },
     {
       "path": "src/app/features/studio/presentation/form-builder/form-builder.html",
-      "line": 319,
+      "line": 305,
       "owner": "APP-FE-016",
       "source": "id=\"sample-json\"",
       "disposition": "REPLACE_NORMAL",
@@ -46231,7 +46230,7 @@
     },
     {
       "path": "src/app/features/studio/presentation/form-builder/form-builder.html",
-      "line": 321,
+      "line": 307,
       "owner": "APP-FE-016",
       "source": "[(ngModel)]=\"sampleJson\"",
       "disposition": "REPLACE_NORMAL",
@@ -46239,7 +46238,7 @@
     },
     {
       "path": "src/app/features/studio/presentation/form-builder/form-builder.html",
-      "line": 326,
+      "line": 313,
       "owner": "APP-FE-016",
       "source": "><textarea",
       "disposition": "REPLACE_NORMAL",
@@ -46247,7 +46246,7 @@
     },
     {
       "path": "src/app/features/studio/presentation/form-builder/form-builder.html",
-      "line": 329,
+      "line": 316,
       "owner": "APP-FE-016",
       "source": "[(ngModel)]=\"previewContextJson\"",
       "disposition": "REPLACE_NORMAL",
@@ -46255,7 +46254,15 @@
     },
     {
       "path": "src/app/features/studio/presentation/form-builder/form-builder.html",
-      "line": 381,
+      "line": 388,
+      "owner": "APP-FE-016",
+      "source": "(sample)=\"sampleJson = JSON.stringify($event); queuePreview()\"",
+      "disposition": "REPLACE_NORMAL",
+      "replacement": "Typed form/validation/behavior inspectors"
+    },
+    {
+      "path": "src/app/features/studio/presentation/form-builder/form-builder.html",
+      "line": 421,
       "owner": "APP-FE-016",
       "source": "<label for=\"interaction-json\">{{",
       "disposition": "REPLACE_NORMAL",
@@ -46263,7 +46270,7 @@
     },
     {
       "path": "src/app/features/studio/presentation/form-builder/form-builder.html",
-      "line": 384,
+      "line": 424,
       "owner": "APP-FE-016",
       "source": "><textarea",
       "disposition": "REPLACE_NORMAL",
@@ -46271,7 +46278,7 @@
     },
     {
       "path": "src/app/features/studio/presentation/form-builder/form-builder.html",
-      "line": 386,
+      "line": 426,
       "owner": "APP-FE-016",
       "source": "id=\"interaction-json\"",
       "disposition": "REPLACE_NORMAL",
@@ -46279,7 +46286,7 @@
     },
     {
       "path": "src/app/features/studio/presentation/form-builder/form-builder.html",
-      "line": 387,
+      "line": 427,
       "owner": "APP-FE-016",
       "source": "[(ngModel)]=\"interactionJson\"",
       "disposition": "REPLACE_NORMAL",
@@ -46287,7 +46294,7 @@
     },
     {
       "path": "src/app/features/studio/presentation/form-builder/form-builder.html",
-      "line": 409,
+      "line": 449,
       "owner": "APP-FE-016",
       "source": "@if (diagnostics()) {",
       "disposition": "REPLACE_NORMAL",
@@ -46295,7 +46302,7 @@
     },
     {
       "path": "src/app/features/studio/presentation/form-builder/form-builder.html",
-      "line": 431,
+      "line": 471,
       "owner": "APP-FE-016",
       "source": "<pre>{{ diagnostics() }}</pre>",
       "disposition": "REPLACE_NORMAL",
@@ -46375,7 +46382,7 @@
     },
     {
       "path": "src/app/features/studio/presentation/workflow-board/workflow-board.html",
-      "line": 305,
+      "line": 306,
       "owner": "APP-FE-021",
       "source": "><label for=\"graph-json\">{{",
       "disposition": "REPLACE_NORMAL",
@@ -46383,7 +46390,7 @@
     },
     {
       "path": "src/app/features/studio/presentation/workflow-board/workflow-board.html",
-      "line": 308,
+      "line": 309,
       "owner": "APP-FE-021",
       "source": "><textarea",
       "disposition": "REPLACE_NORMAL",
@@ -46391,7 +46398,7 @@
     },
     {
       "path": "src/app/features/studio/presentation/workflow-board/workflow-board.html",
-      "line": 310,
+      "line": 311,
       "owner": "APP-FE-021",
       "source": "id=\"graph-json\"",
       "disposition": "REPLACE_NORMAL",
@@ -46399,7 +46406,7 @@
     },
     {
       "path": "src/app/features/studio/presentation/workflow-board/workflow-board.html",
-      "line": 313,
+      "line": 314,
       "owner": "APP-FE-021",
       "source": "[(ngModel)]=\"graphJson\"",
       "disposition": "REPLACE_NORMAL",
@@ -46407,7 +46414,7 @@
     },
     {
       "path": "src/app/features/studio/presentation/workflow-board/workflow-board.html",
-      "line": 415,
+      "line": 416,
       "owner": "APP-FE-021",
       "source": "><textarea",
       "disposition": "REPLACE_NORMAL",
@@ -46415,7 +46422,7 @@
     },
     {
       "path": "src/app/features/studio/presentation/workflow-board/workflow-board.html",
-      "line": 418,
+      "line": 419,
       "owner": "APP-FE-021",
       "source": "[(ngModel)]=\"collapsedJson\"",
       "disposition": "REPLACE_NORMAL",
@@ -46423,7 +46430,7 @@
     },
     {
       "path": "src/app/features/studio/presentation/workflow-board/workflow-board.html",
-      "line": 424,
+      "line": 425,
       "owner": "APP-FE-021",
       "source": "><textarea",
       "disposition": "REPLACE_NORMAL",
@@ -46431,7 +46438,7 @@
     },
     {
       "path": "src/app/features/studio/presentation/workflow-board/workflow-board.html",
-      "line": 427,
+      "line": 428,
       "owner": "APP-FE-021",
       "source": "[(ngModel)]=\"routingJson\"",
       "disposition": "REPLACE_NORMAL",
@@ -46447,7 +46454,7 @@
     },
     {
       "path": "src/app/features/studio/presentation/workflow-editor-pane/workflow-editor-pane.html",
-      "line": 40,
+      "line": 56,
       "owner": "APP-FE-020",
       "source": "<label for=\"step-json\">{{",
       "disposition": "REPLACE_NORMAL",
@@ -46455,7 +46462,7 @@
     },
     {
       "path": "src/app/features/studio/presentation/workflow-editor-pane/workflow-editor-pane.html",
-      "line": 44,
+      "line": 60,
       "owner": "APP-FE-020",
       "source": "><textarea",
       "disposition": "REPLACE_NORMAL",
@@ -46463,7 +46470,7 @@
     },
     {
       "path": "src/app/features/studio/presentation/workflow-editor-pane/workflow-editor-pane.html",
-      "line": 46,
+      "line": 62,
       "owner": "APP-FE-020",
       "source": "id=\"step-json\"",
       "disposition": "REPLACE_NORMAL",
@@ -46471,7 +46478,7 @@
     },
     {
       "path": "src/app/features/studio/presentation/workflow-editor-pane/workflow-editor-pane.html",
-      "line": 49,
+      "line": 65,
       "owner": "APP-FE-020",
       "source": "[(ngModel)]=\"view().selectedJson\"",
       "disposition": "REPLACE_NORMAL",

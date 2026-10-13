@@ -4,6 +4,8 @@ export const requiredCheckStages = [
   "api:check",
   "delivery:check",
   "typecheck",
+  "typecheck:playwright",
+  "lint:playwright",
   "lint",
   "test:ci",
   "test:boundary",
@@ -11,6 +13,7 @@ export const requiredCheckStages = [
   "test:diagnostics",
   "build",
   "test:browser-quality",
+  "test:playwright",
   "release:evidence",
 ];
 const hash = (value) =>

@@ -278,6 +278,7 @@
 <app-canvas-connections
   [disabled]="readonly() || pending().length > 0"
   [edges]="connections()"
+  [inspectedEdge]="inspectedConnection()"
   [nodes]="nodes()"
   (connectRequested)="connect($event.source, $event.target, $event.outcome)"
   (reconnectRequested)="reconnect($event.id, $event.source, $event.target)"

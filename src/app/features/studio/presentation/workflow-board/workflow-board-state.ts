@@ -25,6 +25,7 @@ export abstract class WorkflowBoardState {
   readonly childCatalog = signal<readonly JsonObject[]>([]);
   readonly catalogEntries = signal<readonly JsonObject[]>([]);
   readonly pending = signal<readonly string[]>([]);
+  readonly pendingStep = signal('');
   readonly catalog = signal<readonly JsonObject[]>([]);
   readonly catalogPage = signal(1);
   readonly catalogPages = signal(0);
@@ -45,7 +46,10 @@ export abstract class WorkflowBoardState {
   });
   readonly readonly = computed(() => this.busy() || this.status() !== 'DRAFT');
   readonly typedReadonly = computed(
-    () => this.readonly() || this.pending().some((panel) => panel !== 'typed'),
+    () =>
+      this.readonly() ||
+      (!!this.pendingStep() && this.pendingStep() !== this.selected()) ||
+      this.pending().some((panel) => panel !== 'typed'),
   );
   readonly expertReadonly = computed(
     () => this.readonly() || this.pending().some((panel) => panel !== 'node'),
@@ -92,6 +96,7 @@ export abstract class WorkflowBoardState {
     this.catalogEntries.set([]);
     this.childCatalog.set([]);
     this.pending.set([]);
+    this.pendingStep.set('');
     this.status.set('');
     this.error.set('');
     this.busy.set(false);
@@ -133,6 +138,7 @@ export abstract class WorkflowBoardState {
       this.routingJson = JSON.stringify(state.document.routing, null, 2);
       this.history.clear();
       this.pending.set([]);
+      this.pendingStep.set('');
       this.dirty.set(false);
     });
   }

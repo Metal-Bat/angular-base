@@ -54,7 +54,12 @@
     "test:paired-smoke": "python3 scripts/paired-smoke.py",
     "delivery:status": "node scripts/delivery-status.mjs",
     "test:browser-sandbox": "node scripts/browser-sandbox.mjs",
-    "ui:prepare": "node scripts/prepare-ant-design.mjs"
+    "ui:prepare": "node scripts/prepare-ant-design.mjs",
+    "typecheck:playwright": "tsc --noEmit -p tsconfig.playwright.json",
+    "lint:playwright": "eslint playwright.config.ts tests/playwright --max-warnings=0",
+    "test:playwright": "env -u NO_COLOR PLAYWRIGHT_BROWSERS_PATH=./node_modules/.cache/playwright playwright test --project=chromium --project=firefox",
+    "test:playwright:webkit": "env -u NO_COLOR PLAYWRIGHT_BROWSERS_PATH=./node_modules/.cache/playwright playwright test --project=webkit",
+    "playwright:install": "PLAYWRIGHT_BROWSERS_PATH=./node_modules/.cache/playwright playwright install chromium firefox"
   },
   "prettier": {
     "overrides": [
@@ -112,7 +117,9 @@
     "@commitlint/cli": "21.2.3",
     "@commitlint/config-conventional": "21.2.3",
     "@eslint/js": "10.0.1",
+    "@playwright/test": "1.64.0",
     "@release-it/conventional-changelog": "12.0.2",
+    "@types/node": "26.6.4",
     "angular-eslint": "21.4.0",
     "axe-core": "4.13.0",
     "commitizen": "4.3.2",

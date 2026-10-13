@@ -50,6 +50,7 @@ export function reparentPlacement(
   documents: JsonObject,
   source: readonly number[],
   destination: readonly number[],
+  insertionIndex?: number,
 ): FormEditState {
   if (!canReparent(documents, source, destination)) {
     throw Error('Choose a layout in the same collection context');
@@ -61,9 +62,26 @@ export function reparentPlacement(
   const siblings = authoredNode(render, source.slice(0, -1))[
     'children'
   ] as JsonObject[];
+  const originalChildren = (target['children'] ?? []) as JsonObject[];
+  if (
+    insertionIndex !== undefined &&
+    (!Number.isInteger(insertionIndex) ||
+      insertionIndex < 0 ||
+      insertionIndex > originalChildren.length)
+  ) {
+    throw Error('Choose a valid insertion position');
+  }
+  let index = insertionIndex ?? originalChildren.length;
+  if (
+    target === authoredNode(render, source.slice(0, -1)) &&
+    source.at(-1)! < index
+  ) {
+    index--;
+  }
   const [node] = siblings.splice(source.at(-1)!, 1);
   const children = (target['children'] ?? []) as JsonObject[];
-  target['children'] = [...children, node];
+  children.splice(index, 0, node);
+  target['children'] = children;
   checkBounds(render);
   const adjusted = [...destination];
   const depth = source.length - 1;
@@ -73,7 +91,7 @@ export function reparentPlacement(
   ) {
     adjusted[depth]--;
   }
-  return { documents: next, selection: [...adjusted, children.length] };
+  return { documents: next, selection: [...adjusted, index] };
 }
 
 export function canDuplicateLayout(

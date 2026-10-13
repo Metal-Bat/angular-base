@@ -331,6 +331,7 @@ export const foundationsBrowserScript = `
   check(editorVm.documents().data_schema.properties.amount.minimum===0&&editorVm.documents().reuse_instances.retained,'form save retains canonical and reuse metadata');
 
   const formCards=builder.querySelector('app-form-canvas');
+  await wait(()=>[...formCards.querySelectorAll('.field-type-buttons button')].some(button=>button.textContent.trim()==='Text'&&!button.disabled),'Visual field control enabled after reload');
   [...formCards.querySelectorAll('.field-type-buttons button')].find(button=>button.textContent.trim()==='Text').click();
   await wait(()=>editorVm.outline().length===4&&editorVm.selected().length,'Visual field added');
   const cardKey=editorVm.outline().at(-1).identity;

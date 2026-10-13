@@ -197,6 +197,8 @@ Change-Record: docs/changes/APP-FE-002.md
 
 Completed implementation plan removed. Scope and acceptance evidence remain in the linked change record.
 
+Master revision 3.3 continuation (2026-10-13): [selection/navigation, placement, live preview and Playwright pilot evidence](../changes/APP-FE-020.UX01.md). This adds scoped implementation under APP-FE-002; full parent acceptance/status is unchanged.
+
 ## APP-FE-003 — Perform and close the feature-focused Angular code review
 
 Status: DONE  
@@ -430,6 +432,8 @@ Current continuation (2026-10-10): APP-BE-019 is DONE / VERIFIED_WITH_EXCEPTION 
 
 Current five-scope continuation (2026-10-10): existing APP-FE-016 work was extended, with the delivered behavior and exact remaining owners in [APP-FE-016](../changes/APP-FE-016.md) and [shared acceptance](APP-FE-016-020-ACCEPTANCE.md). APP-BE-019/020 are implemented; APP-BE-022 now records completed scoped verification and its new frozen producer was compared and consumed. Older missing/unfrozen-backend summaries are historical. Parent status remains BLOCKED for its full required acceptance; independent slices continue.
 
+Master revision 3.3 continuation (2026-10-13): [selection/navigation, placement, live preview and Playwright pilot evidence](../changes/APP-FE-020.UX01.md). This adds scoped implementation under APP-FE-016; full parent acceptance/status is unchanged.
+
 ### Goal
 
 Designers can compose and rearrange the twenty supported form primitives without editing render-schema JSON.
@@ -589,6 +593,8 @@ Implementation note: available frontend slice delivered; remaining acceptance an
 
 Current five-scope continuation (2026-10-10): existing APP-FE-019 work was extended, with the delivered behavior and exact remaining owners in [APP-FE-019](../changes/APP-FE-019.md) and [shared acceptance](APP-FE-016-020-ACCEPTANCE.md). APP-BE-019/020 are implemented; APP-BE-022 now records completed scoped verification and its new frozen producer was compared and consumed. Older missing/unfrozen-backend summaries are historical. Parent status remains BLOCKED for its full required acceptance; independent slices continue.
 
+Master revision 3.3 continuation (2026-10-13): [selection/navigation, placement, live preview and Playwright pilot evidence](../changes/APP-FE-020.UX01.md). This adds scoped implementation under APP-FE-019; full parent acceptance/status is unchanged.
+
 ### Goal
 
 Authors manage English/Farsi text, multipage layouts and declared views with a trustworthy preview of the same runtime renderer.
@@ -642,6 +648,8 @@ Implementation note: available frontend slice delivered; remaining acceptance an
 
 Current five-scope continuation (2026-10-10): existing APP-FE-020 work was extended, with the delivered behavior and exact remaining owners in [APP-FE-020](../changes/APP-FE-020.md) and [shared acceptance](APP-FE-016-020-ACCEPTANCE.md). APP-BE-019/020 are implemented; APP-BE-022 now records completed scoped verification and its new frozen producer was compared and consumed. Older missing/unfrozen-backend summaries are historical. Parent status remains BLOCKED for its full required acceptance; independent slices continue.
 
+Master revision 3.3 continuation (2026-10-13): [selection/navigation, placement, live preview and Playwright pilot evidence](../changes/APP-FE-020.UX01.md). This adds scoped implementation under APP-FE-020; full parent acceptance/status is unchanged.
+
 ### Goal
 
 A designer can comfortably build, navigate and edit substantial workflows using the current owned graph models and a polished canvas.
@@ -694,6 +702,8 @@ Change-Record: docs/changes/APP-FE-021.md
 Current continuation (2026-10-10): 021.2 adds explicit typed-buffer discard and preserves previously applied workspace edits. Full parent acceptance remains BLOCKED. See [continuation acceptance](APP-FE-021-025-ACCEPTANCE.md) for source identities, actual browser results and remaining criteria.
 
 Available frontend slice implemented; full parent acceptance remains BLOCKED. Per-handler coverage, remaining frontend work, fixture evidence and peer limits: docs/delivery/NODE-INSPECTOR-COVERAGE.md and the change record.
+
+Master revision 3.3 continuation (2026-10-13): [selection/navigation, placement, live preview and Playwright pilot evidence](../changes/APP-FE-020.UX01.md). This adds scoped implementation under APP-FE-021; full parent acceptance/status is unchanged.
 
 ### Goal
 

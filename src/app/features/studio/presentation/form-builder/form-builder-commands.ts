@@ -1,4 +1,11 @@
-import { computed, DestroyRef, Directive, inject, signal } from '@angular/core';
+import {
+  computed,
+  DestroyRef,
+  Directive,
+  effect,
+  inject,
+  signal,
+} from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { distinctUntilChanged, map } from 'rxjs';
@@ -50,6 +57,30 @@ export abstract class FormBuilderCommands {
   );
   readonly readonly = computed(() => this.status() !== 'DRAFT' || this.busy());
   readonly preview = signal<RuntimeCompatibility | null>(null);
+  readonly previewBusy = signal(false);
+  readonly previewError = signal('');
+  readonly previewFreshness = signal<
+    'idle' | 'pending' | 'loading' | 'ready' | 'invalid' | 'failed'
+  >('idle');
+  private previewSequence = 0;
+  private previewTimer: ReturnType<typeof setTimeout> | undefined;
+  queuePreview(): void {
+    this.previewSequence++;
+    clearTimeout(this.previewTimer);
+    this.preview.set(null);
+    this.previewBusy.set(false);
+    this.previewError.set('');
+    if (!this.reference() || !this.status()) {
+      this.previewFreshness.set('idle');
+      return;
+    }
+    if (this.pending().length) {
+      this.previewFreshness.set('pending');
+      return;
+    }
+    this.previewFreshness.set('loading');
+    this.previewTimer = setTimeout(() => void this.renderPreview(), 300);
+  }
   readonly runtime = computed(() => {
     const value = this.preview();
     return value?.status === 'ready' ? value.document : null;
@@ -68,6 +99,13 @@ export abstract class FormBuilderCommands {
   primitive: (typeof palette)[number] = 'text';
   protected generation = 0;
   protected initialize(): void {
+    effect(() => {
+      this.documents();
+      this.pending();
+      this.status();
+      this.reference();
+      this.queuePreview();
+    });
     const release = inject(ActorState).register(() => this.clear());
     inject(DestroyRef).onDestroy(() => {
       this.clear();
@@ -85,6 +123,11 @@ export abstract class FormBuilderCommands {
   protected clear(): void {
     this.resetEditorHistory();
     this.generation++;
+    this.previewSequence++;
+    clearTimeout(this.previewTimer);
+    this.previewBusy.set(false);
+    this.previewFreshness.set('idle');
+    this.previewError.set('');
     this.reference.set('');
     this.selected.set([]);
     this.previewContextJson = '';
@@ -200,25 +243,60 @@ export abstract class FormBuilderCommands {
     });
   }
   async renderPreview(): Promise<void> {
-    await this.run(async (generation) => {
-      const sample = parseDocument(this.sampleJson);
+    clearTimeout(this.previewTimer);
+    if (!this.reference() || !this.status() || this.pending().length) {
+      this.queuePreview();
+      return;
+    }
+    const sequence = ++this.previewSequence;
+    const generation = this.generation;
+    const documents = this.documents();
+    const purpose = this.purpose;
+    const locale = this.locale;
+    const context = this.previewContextJson;
+    const sampleJson = this.sampleJson;
+    const current = (): boolean =>
+      sequence === this.previewSequence &&
+      generation === this.generation &&
+      documents === this.documents() &&
+      purpose === this.purpose &&
+      locale === this.locale &&
+      context === this.previewContextJson &&
+      sampleJson === this.sampleJson &&
+      !this.pending().length;
+    this.previewBusy.set(true);
+    this.previewFreshness.set('loading');
+    this.previewError.set('');
+    this.preview.set(null);
+    try {
       const result = await this.api.preview(
-        this.documents(),
-        sample,
-        this.purpose,
-        this.locale,
-        parseDocument(this.previewContextJson),
+        documents,
+        parseDocument(sampleJson),
+        purpose,
+        locale,
+        parseDocument(context),
       );
-      if (generation !== this.generation) {
+      if (!current()) {
         return;
       }
       this.preview.set(result);
       if (result.status === 'ready') {
         this.data.set(result.document.canonical);
+        this.previewFreshness.set('ready');
       } else {
-        this.error.set('Preview is incompatible');
+        this.previewFreshness.set('invalid');
+        this.previewError.set('Preview is incompatible');
       }
-    });
+    } catch {
+      if (current()) {
+        this.previewFreshness.set('failed');
+        this.previewError.set('The form display is unavailable.');
+      }
+    } finally {
+      if (sequence === this.previewSequence && generation === this.generation) {
+        this.previewBusy.set(false);
+      }
+    }
   }
   editSample(change: FieldEdit): void {
     if (change.error) {

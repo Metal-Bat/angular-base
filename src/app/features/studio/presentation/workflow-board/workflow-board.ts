@@ -114,11 +114,22 @@ export class WorkflowBoard extends WorkflowInteractions {
     edges: canvasEdges(this.document().graph, this.nodes()),
     viewport: this.document().viewport,
     disabled: this.readonly() || this.pending().length > 0,
+    readOnly: this.status() !== 'DRAFT',
     selected: this.selected(),
     selectionKeys: this.selectionKeys(),
     selectNodes: (keys: string[]): void => this.selectMany(keys),
     keyboardMove: (key: string, point: Point): void =>
       this.keyboardMove(key, point),
+    inspectEdge: (id: string): void => this.inspectConnection(id),
+    deleteEdge: (id: string): void => {
+      if (this.readonly() || this.pending().length) {
+        return;
+      }
+      this.inspectConnection(id);
+      if (this.connectionId === id) {
+        this.removeConnection();
+      }
+    },
     reconnect: (id: string, source: string, target: string): void =>
       this.reconnect(id, source, target),
     routing: this.document().routing,
@@ -134,16 +145,17 @@ export class WorkflowBoard extends WorkflowInteractions {
       this.selectMany([key]);
       this.duplicate();
     },
-    connect: (source: string, target: string): void =>
-      this.connect(source, target),
+    connect: (source: string, target: string, outcome?: string): void =>
+      this.connect(source, target, outcome),
     transform: (viewport: Point & { zoom: number }): void =>
       this.viewport(viewport),
   }));
-  markPending(key: string): void {
-    this.pending.update((keys) => [...new Set([...keys, key])]);
-  }
   override select(key: string): void {
-    if (this.pending().some((panel) => panel === 'node' || panel === 'typed')) {
+    if (key === this.selected()) {
+      this.selectionKeys.set(key ? [key] : []);
+      return;
+    }
+    if (this.pending().includes('node')) {
       this.error.set(
         'Apply or reload component edits before selecting another step',
       );
@@ -152,9 +164,10 @@ export class WorkflowBoard extends WorkflowInteractions {
     const node = graphSteps(this.document().graph).find(
       (step) => step['key'] === key,
     );
-    if (node) {
+    if (node || !key) {
+      this.selectionKeys.set(node ? [key] : []);
       this.selected.set(key);
-      this.selectedJson = JSON.stringify(node, null, 2);
+      this.selectedJson = JSON.stringify(node ?? {}, null, 2);
     }
   }
   protected override change(next: Workspace): void {
@@ -300,12 +313,6 @@ export class WorkflowBoard extends WorkflowInteractions {
       positions: { ...this.document().positions, [key]: point },
     });
   }
-  viewport(viewport: Point & { zoom: number }): void {
-    if (JSON.stringify(viewport) === JSON.stringify(this.document().viewport)) {
-      return;
-    }
-    this.change({ ...this.document(), viewport });
-  }
   connect(
     source = this.source,
     target = this.target,
@@ -335,7 +342,7 @@ export class WorkflowBoard extends WorkflowInteractions {
       ? this.history.redo(this.document())
       : this.history.undo(this.document());
     if (value) {
-      this.document.set(value);
+      this.document.set({ ...value, viewport: this.document().viewport });
       this.selectionKeys.set([]);
       this.syncSelection(value);
       this.graphJson = JSON.stringify(value.graph, null, 2);

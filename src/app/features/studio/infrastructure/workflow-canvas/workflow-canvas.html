@@ -18,6 +18,46 @@
       </button>
     </div>
   }
+  @if (pendingConnection(); as connection) {
+    <section
+      class="connection-choice flex flex-wrap items-center gap-3 p-4"
+      [attr.aria-label]="'Control outcome' | localize"
+    >
+      <bdi
+        >{{ connection.source.split(":")[1] }} →
+        {{ connection.target.split(":")[1] }}</bdi
+      >
+      <label for="direct-outcome">{{ "Control outcome" | localize }}</label>
+      @if (connectionOutcomes().length) {
+        <app-select-control
+          inputId="direct-outcome"
+          [ngModel]="connectionOutcome()"
+          (ngModelChange)="connectionOutcome.set($event)"
+        >
+          <option value="">{{ "Choose" | localize }}</option>
+          @for (outcome of connectionOutcomes(); track outcome) {
+            <option [value]="outcome">{{ outcome }}</option>
+          }
+        </app-select-control>
+      } @else {
+        <input
+          id="direct-outcome"
+          [ngModel]="connectionOutcome()"
+          (ngModelChange)="connectionOutcome.set($event)"
+        />
+      }
+      <button
+        type="button"
+        [disabled]="disabled() || !connectionOutcome().trim()"
+        (click)="confirmConnection()"
+      >
+        {{ "Connect" | localize }}
+      </button>
+      <button type="button" (click)="pendingConnection.set(null)">
+        {{ "Cancel" | localize }}
+      </button>
+    </section>
+  }
   <div
     class="canvas-stage"
     role="region"
@@ -33,7 +73,7 @@
   >
     <f-flow
       fDraggable
-      [fDraggableDisabled]="disabled()"
+      [fDraggableDisabled]="false"
       (fCreateConnection)="created($event)"
       (fNodesRendered)="nodesRendered()"
       (fReassignConnection)="reassigned($event)"
@@ -49,11 +89,24 @@
         /></f-connection-for-create>
         @for (edge of edges(); track edge.id) {
           <f-connection
+            role="button"
+            tabindex="0"
+            [attr.aria-label]="
+              ('Inspect connection' | localize) +
+              ': ' +
+              edge.source +
+              ' → ' +
+              edge.target
+            "
             [class.data-edge]="edge.kind === 'data'"
             [fConnectionId]="edge.id"
             [fReassignDisabled]="disabled() || readOnly()"
             [fSourceId]="edge.source"
             [fTargetId]="edge.target"
+            (click)="selectEdge($event, edge.id)"
+            (contextmenu)="openEdgeMenu($event, edge.id)"
+            (keydown.enter)="selectEdge($event, edge.id)"
+            (keydown.space)="selectEdge($event, edge.id)"
             ><f-connection-marker-arrow />
             @if (edge.label) {
               <span class="transition-label" fConnectionContent>{{
@@ -63,7 +116,9 @@
             <f-connection-waypoints
               [visibility]="!readOnly()"
               [waypoints]="routing()[edge.id] || []"
-              (waypointsChange)="!readOnly() && routeEdge()(edge.id, $event)"
+              (waypointsChange)="
+                !disabled() && !readOnly() && routeEdge()(edge.id, $event)
+              "
           /></f-connection>
         }
         @for (node of nodes(); track node.key) {
@@ -87,7 +142,9 @@
             [fNodePosition]="node.position"
             (click)="select($event, node.key)"
             (contextmenu)="openMenu($event, node.key)"
-            (fNodePositionChange)="!readOnly() && moveNode()(node.key, $event)"
+            (fNodePositionChange)="
+              !disabled() && !readOnly() && moveNode()(node.key, $event)
+            "
             (keydown)="keyMove($event, node)"
           >
             <button
@@ -116,7 +173,6 @@
                 [attr.aria-label]="
                   ('Step actions' | localize) + ': ' + node.title
                 "
-                [disabled]="disabled()"
                 (click)="openMenu($event, node.key)"
                 (mousedown)="$event.stopPropagation()"
               >
@@ -212,12 +268,10 @@
         : "Drag steps to arrange them. Use arrow keys to move a focused step."
       ) | localize
     }}</span>
-    @if (!readOnly()) {
-      <span>{{
-        "Use step actions to connect, or drag from an output port to an input port."
-          | localize
-      }}</span>
-    }
+    <span [hidden]="readOnly()">{{
+      "Use step actions to connect, or drag from an output port to an input port."
+        | localize
+    }}</span>
     <div class="edge-legend">
       <span
         ><i aria-hidden="true" class="control-line"></i

@@ -53,3 +53,31 @@ textarea {
 .form-properties {
   grid-area: properties;
 }
+
+.authoring-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(20rem, 2fr);
+  gap: 1.5rem;
+  align-items: start;
+}
+.form-live-preview {
+  min-inline-size: 0;
+  position: sticky;
+  top: 1rem;
+  max-block-size: calc(100dvh - 2rem);
+  overflow: auto;
+  padding: 1.5rem;
+  margin-block: 1.5rem;
+  border: 1px solid var(--console-border);
+  border-radius: 1rem;
+  background: var(--console-surface);
+}
+@media (max-width: 64rem) {
+  .authoring-workspace {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .form-live-preview {
+    position: static;
+    max-block-size: none;
+  }
+}

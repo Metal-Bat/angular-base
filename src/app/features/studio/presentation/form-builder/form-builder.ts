@@ -150,7 +150,11 @@ export class FormBuilder extends FormBuilderCommands {
     this.dragDocuments = this.documents();
     event.dataTransfer?.setData('application/x-form-placement', 'placement');
   }
-  drop(event: DragEvent, target: readonly number[]): void {
+  drop(
+    event: DragEvent,
+    target: readonly number[],
+    position: 'before' | 'after' | 'inside' = 'inside',
+  ): void {
     event.preventDefault();
     const path = this.dragPath;
     this.dragPath = null;
@@ -160,23 +164,16 @@ export class FormBuilder extends FormBuilderCommands {
     if (!path || !path.length || this.readonly() || this.pending().length) {
       return;
     }
-    const node = authoredNode(renderOf(this.documents()), target);
-    if (
-      ['vertical', 'horizontal', 'grid', 'repeater', 'table'].includes(
-        String(node['component']),
-      )
-    ) {
-      this.placementEdit(() =>
-        reparentPlacement(this.documents(), path, target),
-      );
-      return;
-    }
-    if (path.slice(0, -1).join('.') !== target.slice(0, -1).join('.')) {
-      return;
-    }
-    this.selected.set(path);
-    this.move(target.at(-1)! - path.at(-1)!);
+    const destination = position === 'inside' ? target : target.slice(0, -1);
+    const index =
+      position === 'inside'
+        ? undefined
+        : target.at(-1)! + (position === 'after' ? 1 : 0);
+    this.placementEdit(() =>
+      reparentPlacement(this.documents(), path, destination, index),
+    );
   }
+
   reparent(destination: readonly number[]): void {
     this.placementEdit(() =>
       reparentPlacement(this.documents(), this.selected(), destination),

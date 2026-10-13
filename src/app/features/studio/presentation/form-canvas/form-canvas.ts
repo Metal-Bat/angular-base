@@ -21,6 +21,37 @@ import { componentLabels } from '../form-builder/form-palette';
 })
 export class FormCanvas {
   readonly disabled = input(false);
+  readonly dragStarted = output<{
+    event: DragEvent;
+    path: readonly number[];
+  }>();
+  readonly dragEnded = output<void>();
+  readonly dropRequested = output<{
+    event: DragEvent;
+    target: readonly number[];
+    position: 'before' | 'after' | 'inside';
+  }>();
+  dragOver(event: DragEvent): void {
+    if (
+      !this.disabled() &&
+      event.dataTransfer?.types.includes('application/x-form-placement')
+    ) {
+      event.preventDefault();
+      event.dataTransfer.dropEffect = 'move';
+    }
+  }
+  drop(
+    event: DragEvent,
+    target: readonly number[],
+    position: 'before' | 'after' | 'inside',
+  ): void {
+    if (this.disabled()) {
+      return;
+    }
+    event.preventDefault();
+    event.stopPropagation();
+    this.dropRequested.emit({ event, target, position });
+  }
   readonly addRequested = output<(typeof palette)[number]>();
   readonly quickTypes = [
     'text',
@@ -60,6 +91,14 @@ export class FormCanvas {
               } as Record<string, string>
             )[kind] ?? 'pi pi-pencil',
 
+          container: [
+            'vertical',
+            'horizontal',
+            'grid',
+            'repeater',
+            'table',
+          ].includes(kind),
+          empty: !Array.isArray(node['children']) || !node['children'].length,
           kind,
           type: componentLabels[kind] ?? kind,
           active: item.path.join('.') === this.selected().join('.'),

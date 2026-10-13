@@ -32,6 +32,8 @@ jobs:
           key: pnpm-${{ runner.os }}-${{ hashFiles('mise.toml', 'pnpm-lock.yaml') }}
       - name: Install exact dependencies
         run: mise run install
+      - name: Install matching Playwright browsers
+        run: mise exec -- env PLAYWRIGHT_BROWSERS_PATH=./node_modules/.cache/playwright pnpm exec playwright install --with-deps chromium firefox
       - name: Install Chrome for browser quality checks
         id: chrome
         uses: browser-actions/setup-chrome@v2

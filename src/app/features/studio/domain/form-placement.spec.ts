@@ -102,4 +102,25 @@ describe('Layout placement operations', () => {
     expect(() => reparentPlacement(initial, [0, 0], [1])).toThrow('100');
     expect(initial).toEqual(before);
   });
+  it('inserts before/after siblings and across parents without changing bindings', () => {
+    let initial = fixture();
+    initial = addPrimitive(initial, [1], 'date', 'when');
+    const moved = reparentPlacement(initial, [0, 0], [1], 0);
+    expect(moved.selection).toEqual([1, 0]);
+    expect(authoredNode(renderOf(moved.documents), [1, 0])['scope']).toBe(
+      '/properties/name',
+    );
+    const after = reparentPlacement(moved.documents, [1, 0], [1], 2);
+    expect(after.selection).toEqual([1, 1]);
+    expect(authoredNode(renderOf(after.documents), [1, 1])['scope']).toBe(
+      '/properties/name',
+    );
+    expect(after.documents['data_schema']).toEqual(initial['data_schema']);
+    expect(() => reparentPlacement(initial, [0, 0], [1], -1)).toThrow(
+      'insertion',
+    );
+    expect(() => reparentPlacement(initial, [0, 0], [1], 4)).toThrow(
+      'insertion',
+    );
+  });
 });

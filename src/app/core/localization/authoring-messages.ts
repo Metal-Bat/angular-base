@@ -1,4 +1,21 @@
 export const authoringMessages: Readonly<Record<string, string>> = {
+  'Pending edits are retained on another step.':
+    'ویرایش‌های در انتظار روی مرحلهٔ دیگر حفظ شده‌اند.',
+  'Return to pending edits': 'بازگشت به ویرایش‌های در انتظار',
+  'Validation diagnostics': 'گزارش اعتبارسنجی',
+  'Simulated runtime preview': 'پیش‌نمایش شبیه‌سازی‌شدهٔ فرم',
+  'Apply pending editor changes before previewing.':
+    'پیش از پیش‌نمایش، تغییرات در انتظار ویرایشگر را اعمال کنید.',
+  'Refreshing preview…': 'در حال به‌روزرسانی پیش‌نمایش…',
+  'Preview matches the current design.': 'پیش‌نمایش با طراحی فعلی یکسان است.',
+  'Preview unavailable': 'پیش‌نمایش در دسترس نیست',
+  'Inspect connection': 'بررسی اتصال',
+  'Insert before': 'درج قبل',
+  'Insert after': 'درج بعد',
+  'Drop a field inside this empty layout':
+    'یک فیلد را داخل این چیدمان خالی رها کنید',
+  'Drop inside this layout': 'داخل این چیدمان رها کنید',
+
   'Mark all as read': 'علامت‌گذاری همه به‌عنوان خوانده‌شده',
   'Marking notifications as read…':
     'در حال علامت‌گذاری اعلان‌ها به‌عنوان خوانده‌شده…',

@@ -11,6 +11,7 @@ export type CanvasNode = {
   title: string;
   position: Point;
   ports: readonly CanvasPort[];
+  outcomes?: readonly string[];
 };
 export type CanvasEdge = {
   id: string;

@@ -29,6 +29,7 @@ export class CanvasConnections {
   readonly nodes = input.required<readonly CanvasNode[]>();
   readonly edges = input.required<readonly CanvasEdge[]>();
   readonly disabled = input(false);
+  readonly inspectedEdge = input('');
   readonly connectRequested = output<{
     source: string;
     target: string;
@@ -42,14 +43,26 @@ export class CanvasConnections {
   readonly sources = computed(() => selectablePorts(this.nodes(), 'OUTPUT'));
   readonly inputs = computed(() => selectablePorts(this.nodes(), 'INPUT'));
   readonly edgeId = linkedSignal<
-    { edges: readonly CanvasEdge[]; disabled: boolean },
+    { edges: readonly CanvasEdge[]; disabled: boolean; inspected: string },
     string
   >({
-    source: () => ({ edges: this.edges(), disabled: this.disabled() }),
-    computation: (state, previous) =>
-      !state.disabled && state.edges.some((edge) => edge.id === previous?.value)
+    source: () => ({
+      edges: this.edges(),
+      disabled: this.disabled(),
+      inspected: this.inspectedEdge(),
+    }),
+    computation: (state, previous) => {
+      if (
+        state.inspected !== previous?.source.inspected &&
+        state.edges.some((edge) => edge.id === state.inspected)
+      ) {
+        return state.inspected;
+      }
+      return !state.disabled &&
+        state.edges.some((edge) => edge.id === previous?.value)
         ? previous!.value
-        : '',
+        : '';
+    },
   });
   readonly edge = computed(() =>
     this.edges().find((edge) => edge.id === this.edgeId()),

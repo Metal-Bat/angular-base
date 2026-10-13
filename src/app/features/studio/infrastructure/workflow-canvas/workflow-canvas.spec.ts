@@ -57,7 +57,18 @@ describe('Workflow palette placement', () => {
     const vm = fixture.componentInstance;
     vm.beginLink('a');
     vm.select(new MouseEvent('click'), 'b');
-    expect(connect).toHaveBeenCalledWith('control:a:out', 'control:b:in');
+    expect(connect).not.toHaveBeenCalled();
+    expect(vm.pendingConnection()).toEqual({
+      source: 'control:a:out',
+      target: 'control:b:in',
+    });
+    vm.connectionOutcome.set('next');
+    vm.confirmConnection();
+    expect(connect).toHaveBeenCalledWith(
+      'control:a:out',
+      'control:b:in',
+      'next',
+    );
     expect(vm.linkSource()).toBe('');
     vm.beginLink('a');
     fixture.componentRef.setInput('disabled', true);
@@ -69,5 +80,91 @@ describe('Workflow palette placement', () => {
     fixture.componentRef.setInput('readOnly', true);
     vm.beginLink('a');
     expect(vm.linkSource()).toBe('');
+  });
+  it('anchors modifier selection and clears selection on a blank click', () => {
+    const fixture = TestBed.createComponent(WorkflowCanvas);
+    const select = vi.fn();
+    const many = vi.fn();
+    fixture.componentRef.setInput('selected', 'a');
+    fixture.componentRef.setInput('selectionKeys', []);
+    fixture.componentRef.setInput('selectNode', select);
+    fixture.componentRef.setInput('selectNodes', many);
+    const vm = fixture.componentInstance;
+    vm.select(new MouseEvent('click', { shiftKey: true }), 'b');
+    expect(many).toHaveBeenCalledWith(['a', 'b']);
+    const stage = document.createElement('div');
+    vm.place({ target: stage } as unknown as MouseEvent);
+    expect(select).toHaveBeenCalledWith('');
+  });
+  it('keeps read-only navigation and inspection usable while blocking mutations', () => {
+    const fixture = TestBed.createComponent(WorkflowCanvas);
+    const node = {
+      key: 'a',
+      title: 'First',
+      position: { x: 0, y: 0 },
+      ports: [],
+    };
+    fixture.componentRef.setInput('nodes', [node]);
+    fixture.componentRef.setInput('edges', []);
+    fixture.componentRef.setInput('disabled', true);
+    fixture.componentRef.setInput('readOnly', true);
+    const select = vi.fn();
+    const transform = vi.fn();
+    fixture.componentRef.setInput('selectNode', select);
+    fixture.componentRef.setInput('transform', transform);
+    const vm = fixture.componentInstance;
+    vm.rendered.set(true);
+    vm.openMenu(new MouseEvent('contextmenu'), 'a');
+    expect(select).toHaveBeenCalledWith('a');
+    expect(vm.menuItems()[0].disabled).toBeUndefined();
+    expect(vm.menuItems()[1].disabled).toBe(true);
+    vm.changed({ position: { x: 10, y: 20 }, scale: 2 } as never);
+    expect(transform).toHaveBeenCalledWith({ x: 10, y: 20, zoom: 2 });
+    vm.beginLink('a');
+    expect(vm.linkSource()).toBe('');
+  });
+  it('requires a deliberately chosen supported outcome and targets edge menu actions', () => {
+    const fixture = TestBed.createComponent(WorkflowCanvas);
+    fixture.componentRef.setInput('nodes', [
+      {
+        key: 'a',
+        title: 'A',
+        position: { x: 0, y: 0 },
+        ports: [],
+        outcomes: ['approve', 'return'],
+      },
+      { key: 'b', title: 'B', position: { x: 0, y: 0 }, ports: [] },
+    ]);
+    fixture.componentRef.setInput('edges', [
+      {
+        id: 'edge',
+        source: 'control:a:out',
+        target: 'control:b:in',
+        kind: 'control',
+      },
+    ]);
+    const connect = vi.fn();
+    const inspect = vi.fn();
+    const remove = vi.fn();
+    fixture.componentRef.setInput('connect', connect);
+    fixture.componentRef.setInput('inspectEdge', inspect);
+    fixture.componentRef.setInput('deleteEdge', remove);
+    const vm = fixture.componentInstance;
+    vm.requestConnection('control:a:out', 'control:b:in');
+    vm.confirmConnection();
+    vm.connectionOutcome.set('invented');
+    vm.confirmConnection();
+    expect(connect).not.toHaveBeenCalled();
+    vm.connectionOutcome.set('return');
+    vm.confirmConnection();
+    expect(connect).toHaveBeenCalledWith(
+      'control:a:out',
+      'control:b:in',
+      'return',
+    );
+    vm.openEdgeMenu(new MouseEvent('contextmenu'), 'edge');
+    expect(inspect).toHaveBeenCalledWith('edge');
+    vm.menuItems()[1].command();
+    expect(remove).toHaveBeenCalledWith('edge');
   });
 });

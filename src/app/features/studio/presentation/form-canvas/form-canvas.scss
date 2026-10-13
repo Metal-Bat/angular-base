@@ -67,3 +67,15 @@
   gap: 0.5rem;
   margin-block: 1rem;
 }
+
+.placement-drop {
+  padding: 0.35rem 0.75rem;
+  border: 1px dashed var(--console-border);
+  border-radius: 0.35rem;
+  color: var(--console-muted);
+  font-size: 0.75rem;
+}
+.placement-drop:hover {
+  border-color: var(--console-accent);
+  background: var(--console-accent-soft);
+}

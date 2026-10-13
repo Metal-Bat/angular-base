@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { NodeDetails } from '../node-details/node-details';
+import { inspectorFor } from '../../domain/node-inspector';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  input,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ButtonDirective } from 'primeng/button';
 import { LocalizePipe } from '../../../../shared/ui/localize-pipe';
@@ -12,6 +19,7 @@ import type { WorkflowBoard } from '../workflow-board/workflow-board';
     ButtonDirective,
     LocalizePipe,
     NodeInspector,
+    NodeDetails,
     GraphConnections,
   ],
   templateUrl: './workflow-editor-pane.html',
@@ -36,6 +44,18 @@ import type { WorkflowBoard } from '../workflow-board/workflow-board';
   changeDetection: ChangeDetectionStrategy.Default,
 })
 export class WorkflowEditorPane {
+  readonly String = String;
+  readonly browsingPending = computed(
+    () =>
+      !!this.view().pendingStep() &&
+      this.view().pendingStep() !== this.view().selected(),
+  );
+  readonly browsingInspector = computed(() =>
+    inspectorFor(
+      this.view().selectedStep() ?? {},
+      this.view().catalogEntries(),
+    ),
+  );
   readonly isOtherConnectionPanel = (key: string): boolean =>
     key !== 'connections';
   readonly view =
@@ -43,7 +63,10 @@ export class WorkflowEditorPane {
       Pick<
         WorkflowBoard,
         | 'selected'
+        | 'select'
         | 'selectedStep'
+        | 'inspectedSteps'
+        | 'pendingStep'
         | 'catalogEntries'
         | 'childCatalog'
         | 'readonly'

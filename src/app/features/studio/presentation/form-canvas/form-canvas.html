@@ -1,12 +1,23 @@
 <div class="canvas-sheet">
   @for (card of cards(); track card.identity) {
+    <div
+      aria-hidden="true"
+      class="placement-drop"
+      (dragover)="dragOver($event)"
+      (drop)="drop($event, card.path, 'before')"
+    >
+      {{ "Insert before" | localize }}
+    </div>
     <button
       class="field-card"
       type="button"
       [attr.aria-pressed]="card.active"
       [class.field-card-selected]="card.active"
+      [draggable]="!disabled()"
       [style.margin-inline-start.rem]="(card.path.length - 1) * 0.75"
       (click)="selectedChange.emit(card.path)"
+      (dragend)="dragEnded.emit()"
+      (dragstart)="dragStarted.emit({ event: $event, path: card.path })"
     >
       <span class="card-type">{{ card.type | localize }}</span>
       @if (card.invalidBinding) {
@@ -27,6 +38,28 @@
         ></span>
       </span>
     </button>
+    @if (card.container) {
+      <div
+        class="placement-drop"
+        (dragover)="dragOver($event)"
+        (drop)="drop($event, card.path, 'inside')"
+      >
+        {{
+          (card.empty
+            ? "Drop a field inside this empty layout"
+            : "Drop inside this layout"
+          ) | localize
+        }}
+      </div>
+    }
+    <div
+      aria-hidden="true"
+      class="placement-drop"
+      (dragover)="dragOver($event)"
+      (drop)="drop($event, card.path, 'after')"
+    >
+      {{ "Insert after" | localize }}
+    </div>
   } @empty {
     <div class="canvas-empty">
       <i aria-hidden="true" class="pi pi-file-edit"></i>

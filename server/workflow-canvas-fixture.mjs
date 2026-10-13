@@ -244,7 +244,11 @@ export const canvasBrowserScript = `
  canvasNode('prepare').querySelector('.node-handle').click();
  await wait(()=>JSON.parse(document.querySelector('#step-json').value).key==='prepare','selected configuration');
  const editor=document.querySelector('#step-json');const expert=JSON.parse(editor.value);expert.config.fixture=true;editor.value=JSON.stringify(expert);editor.dispatchEvent(new Event('input',{bubbles:true}));
- await wait(()=>document.querySelector('button[aria-label="Zoom in"]').disabled,'pending JSON fences canvas commands');
+ await wait(()=>!document.querySelector('button[aria-label="Zoom in"]').disabled,'pending JSON permits navigation');
+ const pendingBuffer=editor.value;const pendingGraph=document.getElementById('graph-json').value;
+ document.querySelector('button[aria-label="Zoom in"]').click();await wait(()=>document.querySelector('.zoom-value').textContent.trim()==='110%','zoom while an expert buffer is pending');
+ check(editor.value===pendingBuffer&&document.getElementById('graph-json').value===pendingGraph,'navigation preserves pending input and semantic graph');
+ check(button('Save workspace').disabled&&button('Add step').disabled,'pending JSON still fences mutation');
  await click('Apply step');await click('Save workspace');
  window.fixtureStage='canvas-add-undo';
  const keyInput=document.querySelector('#step-key');keyInput.value='added';keyInput.dispatchEvent(new Event('input',{bubbles:true}));
@@ -276,15 +280,23 @@ export const canvasBrowserScript = `
  [...document.querySelectorAll('[role="option"]')].find(option=>option.textContent.includes('control')).click();
  await wait(()=>button('Remove connection')&&!button('Remove connection').disabled,'remove connection action ready');await click('Remove connection');await wait(()=>!document.querySelector('f-connection:not(.data-edge)')&&document.querySelector('.data-edge'),'control removal preserves data bindings');
 
+ const chooseDirectOutcome=async()=>{
+  await wait(()=>document.querySelector('.connection-choice'),'Direct connection outcome choice');
+  const outcome=document.getElementById('direct-outcome');
+  if(outcome.tagName==='INPUT'){outcome.value='next';outcome.dispatchEvent(new Event('input',{bubbles:true}));}
+  else{outcome.click();await wait(()=>[...document.querySelectorAll('[role="option"]')].some(option=>option.textContent.trim()==='next'),'Supported direct outcome');[...document.querySelectorAll('[role="option"]')].find(option=>option.textContent.trim()==='next').click();}
+  await wait(()=>[...document.querySelectorAll('.connection-choice button')].some(button=>button.textContent.trim()==='Connect'&&!button.disabled),'Explicit connection ready');
+  [...document.querySelectorAll('.connection-choice button')].find(button=>button.textContent.trim()==='Connect').click();
+ };
  window.fixtureStage='canvas-click-control-connection';
  canvasNode('prepare').querySelector('.node-actions').click();await wait(()=>[...document.querySelectorAll('.p-contextmenu [role="menuitem"]')].some(item=>item.textContent.includes('Connect to another step')),'Visible step actions');
  [...document.querySelectorAll('.p-contextmenu [role="menuitem"]')].find(item=>item.textContent.includes('Connect to another step')).querySelector('.p-contextmenu-item-link').click();
  await wait(()=>document.querySelector('.connection-source'),'Click connection source');
- canvasNode('review').querySelector('.node-handle').click();await wait(()=>document.querySelector('f-connection:not(.data-edge)'),'Click creates control connection');
+ canvasNode('review').querySelector('.node-handle').click();await chooseDirectOutcome();await wait(()=>document.querySelector('f-connection:not(.data-edge)'),'Click creates deliberately chosen control connection');
  check(!document.querySelector('.connection-source'),'Completed connection clears source');await click('Undo');await wait(()=>!document.querySelector('f-connection:not(.data-edge)'),'Undo click connection');
  window.fixtureStage='canvas-drag-control-connection';
  await dragPort(canvasNode('prepare').querySelector('.control-port.output-port .port-socket'),canvasNode('review').querySelector('.control-port .input-socket'));
- await wait(()=>document.querySelector('f-connection:not(.data-edge)'),'drag creates control connection');
+ await chooseDirectOutcome();await wait(()=>document.querySelector('f-connection:not(.data-edge)'),'drag creates deliberately chosen control connection');
  await click('Save workspace');await click('Reload');await wait(()=>document.querySelector('f-connection:not(.data-edge)'),'dragged control connection saved and reloaded');
  document.getElementById('canvas-find').click();await wait(()=>[...document.querySelectorAll('[role="option"]')].some(option=>option.textContent.includes('review')),'find review');
  [...document.querySelectorAll('[role="option"]')].find(option=>option.textContent.includes('review')).click();await wait(()=>document.querySelector('.step-inspector h2').textContent.includes('review'),'find selected review');

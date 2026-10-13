@@ -1,3 +1,6 @@
+import { CanvasNavigation } from './canvas-navigation';
+import { FormsModule } from '@angular/forms';
+import { SelectControl } from '../../../../shared/ui/select-control/select-control';
 import { CanvasToolbar } from './canvas-toolbar';
 import {
   ChangeDetectionStrategy,
@@ -10,8 +13,6 @@ import {
   viewChild,
 } from '@angular/core';
 import {
-  FCanvasChangeEvent,
-  FCanvasComponent,
   FCreateConnectionEvent,
   FFlowModule,
   FReassignConnectionEvent,
@@ -28,6 +29,8 @@ import {
 @Component({
   selector: 'app-workflow-canvas',
   imports: [
+    FormsModule,
+    SelectControl,
     CanvasToolbar,
     ContextMenuControl,
     FFlowModule,
@@ -38,15 +41,80 @@ import {
   styleUrl: './workflow-canvas.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class WorkflowCanvas {
+export class WorkflowCanvas extends CanvasNavigation {
   private readonly locale = inject(Locale);
   private readonly menu = viewChild(ContextMenuControl);
   readonly menuNode = signal('');
+  readonly menuEdge = signal('');
+  readonly inspectEdge = input<((id: string) => void) | null>(null);
+  readonly deleteEdge = input<((id: string) => void) | null>(null);
   readonly linkSource = signal('');
+  readonly pendingConnection = signal<{
+    source: string;
+    target: string;
+  } | null>(null);
+  readonly connectionOutcome = signal('');
+  readonly connectionOutcomes = computed(
+    () =>
+      this.nodes().find(
+        (node) => node.key === this.pendingConnection()?.source.split(':')[1],
+      )?.outcomes ?? [],
+  );
+  requestConnection(source: string, target: string): void {
+    if (this.disabled() || this.readOnly()) {
+      return;
+    }
+    if (source.startsWith('data:')) {
+      this.connect()(source, target);
+      return;
+    }
+    this.connectionOutcome.set('');
+    this.pendingConnection.set({ source, target });
+  }
+  confirmConnection(): void {
+    const connection = this.pendingConnection();
+    const outcome = this.connectionOutcome().trim();
+    if (
+      !connection ||
+      this.disabled() ||
+      this.readOnly() ||
+      !outcome ||
+      (this.connectionOutcomes().length &&
+        !this.connectionOutcomes().includes(outcome))
+    ) {
+      return;
+    }
+    this.connect()(connection.source, connection.target, outcome);
+    this.pendingConnection.set(null);
+  }
   readonly duplicateNode = input<((key: string) => void) | null>(null);
   readonly menuItems = computed<ContextAction[]>(() => {
     const key = this.menuNode();
+    const edge = this.menuEdge();
     const blocked = this.disabled() || this.readOnly();
+    if (edge) {
+      return [
+        {
+          label: this.locale.text('Inspect connection'),
+          icon: 'pi pi-search',
+          command: (): void => this.inspectEdge()?.(edge),
+        },
+        {
+          label: this.locale.text('Remove connection'),
+          icon: 'pi pi-trash',
+          disabled: blocked || !this.deleteEdge(),
+          command: (): void => {
+            if (
+              !this.disabled() &&
+              !this.readOnly() &&
+              this.edges().some((item) => item.id === edge)
+            ) {
+              this.deleteEdge()?.(edge);
+            }
+          },
+        },
+      ];
+    }
     return key
       ? [
           {
@@ -89,18 +157,37 @@ export class WorkflowCanvas {
         ];
   });
   constructor() {
+    super();
     effect(() => {
       if (
         this.disabled() ||
         this.readOnly() ||
-        !this.nodes().some((node) => node.key === this.linkSource())
+        (this.linkSource() &&
+          !this.nodes().some((node) => node.key === this.linkSource()))
       ) {
         this.linkSource.set('');
+        this.pendingConnection.set(null);
+      }
+      const connection = this.pendingConnection();
+      if (
+        connection &&
+        [connection.source, connection.target].some(
+          (port) =>
+            !this.nodes().some((node) => node.key === port.split(':')[1]),
+        )
+      ) {
+        this.pendingConnection.set(null);
       }
       if (
-        this.disabled() ||
-        (this.menuNode() &&
-          !this.nodes().some((node) => node.key === this.menuNode()))
+        this.menuEdge() &&
+        !this.edges().some((edge) => edge.id === this.menuEdge())
+      ) {
+        this.menu()?.hide();
+        this.menuEdge.set('');
+      }
+      if (
+        this.menuNode() &&
+        !this.nodes().some((node) => node.key === this.menuNode())
       ) {
         this.menu()?.hide();
         this.menuNode.set('');
@@ -110,14 +197,24 @@ export class WorkflowCanvas {
   openMenu(event: MouseEvent, key = ''): void {
     event.preventDefault();
     event.stopPropagation();
-    if (this.disabled()) {
-      return;
-    }
+    this.menuEdge.set('');
     this.menuNode.set(key);
     if (key) {
       this.selectNode()(key);
     }
     this.menu()?.show(event);
+  }
+  openEdgeMenu(event: MouseEvent, id: string): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.menuNode.set('');
+    this.menuEdge.set(id);
+    this.inspectEdge()?.(id);
+    this.menu()?.show(event);
+  }
+  selectEdge(event: Event, id: string): void {
+    event.stopPropagation();
+    this.inspectEdge()?.(id);
   }
   beginLink(key: string): void {
     if (
@@ -128,11 +225,8 @@ export class WorkflowCanvas {
       this.linkSource.set(key);
     }
   }
-  readonly nodes = input.required<readonly CanvasNode[]>();
   readonly edges = input.required<readonly CanvasEdge[]>();
-  readonly viewport = input.required<Point & { zoom: number }>();
   readonly disabled = input(false);
-  readonly readOnly = input(false);
   readonly addStep = input<(key: string, point: Point) => void>(
     () => undefined,
   );
@@ -165,6 +259,12 @@ export class WorkflowCanvas {
   }
   readonly paletteKey = input('');
   place(event: MouseEvent): void {
+    if (
+      !(event.target as HTMLElement).closest('.board-node, f-connection') &&
+      !this.paletteKey()
+    ) {
+      this.selectNode()('');
+    }
     if (
       !this.paletteKey() ||
       this.disabled() ||
@@ -214,13 +314,20 @@ export class WorkflowCanvas {
     const source = this.linkSource();
     if (source) {
       if (!this.disabled() && !this.readOnly() && source !== key) {
-        this.connect()('control:' + source + ':out', 'control:' + key + ':in');
+        this.requestConnection(
+          'control:' + source + ':out',
+          'control:' + key + ':in',
+        );
         this.linkSource.set('');
       }
       return;
     }
     if (event.shiftKey && this.selectNodes()) {
-      const keys = this.selectionKeys();
+      const keys = this.selectionKeys().length
+        ? this.selectionKeys()
+        : this.selected()
+          ? [this.selected()]
+          : [];
       this.selectNodes()!(
         keys.includes(key)
           ? keys.filter((item) => item !== key)
@@ -251,61 +358,27 @@ export class WorkflowCanvas {
       );
     }
   }
-  private readonly canvas = viewChild(FCanvasComponent);
-  readonly zoomPercent = computed(() => Math.round(this.viewport().zoom * 100));
   readonly collapsed = input<readonly string[]>([]);
   readonly routing = input<Record<string, Point[]>>({});
   readonly routeEdge = input.required<(key: string, points: Point[]) => void>();
   readonly selectNode = input.required<(key: string) => void>();
   readonly moveNode = input.required<(key: string, point: Point) => void>();
-  readonly connect = input.required<(source: string, target: string) => void>();
-  readonly transform =
-    input.required<(viewport: Point & { zoom: number }) => void>();
-  readonly rendered = signal(false);
-  nodesRendered(): void {
-    this.rendered.set(true);
-    if (this.readOnly()) {
-      this.fit();
-    }
-  }
-  zoom(delta: number): void {
-    if (!this.disabled() && this.rendered()) {
-      const canvas = this.canvas();
-      canvas?.setScale(
-        Math.min(4, Math.max(0.1, this.viewport().zoom + delta)),
-      );
-      canvas?.redraw();
-      canvas?.emitCanvasChangeEvent();
-    }
-  }
-  fit(): void {
-    if (!this.disabled() && this.rendered() && this.nodes().length) {
-      this.canvas()?.fitToScreen({ x: 40, y: 40 }, false, true, 1);
-    }
-  }
-  reset(): void {
-    if (!this.disabled() && this.rendered()) {
-      if (!this.nodes().length) {
-        this.transform()({ x: 0, y: 0, zoom: 1 });
-        return;
-      }
-      this.canvas()?.resetScaleAndCenter(false, true);
-    }
-  }
+  readonly connect =
+    input.required<
+      (source: string, target: string, outcome?: string) => void
+    >();
   created(event: FCreateConnectionEvent): void {
     if (!this.disabled() && !this.readOnly() && event.targetId) {
-      this.connect()(event.sourceId, event.targetId);
-    }
-  }
-  changed(event: FCanvasChangeEvent): void {
-    if (!this.disabled() && this.rendered()) {
-      this.transform()({
-        ...event.position,
-        zoom: Math.min(4, Math.max(0.1, event.scale)),
-      });
+      this.requestConnection(event.sourceId, event.targetId);
     }
   }
   keyMove(event: KeyboardEvent, node: CanvasNode): void {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      event.stopPropagation();
+      this.select(event as unknown as MouseEvent, node.key);
+      return;
+    }
     if (
       this.disabled() ||
       this.readOnly() ||

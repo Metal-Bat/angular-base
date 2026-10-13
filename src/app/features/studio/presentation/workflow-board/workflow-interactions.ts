@@ -20,9 +20,20 @@ import { Point, Workspace } from '../../domain/authoring';
 import { WorkflowBoardState } from './workflow-board-state';
 @Directive()
 export abstract class WorkflowInteractions extends WorkflowBoardState {
+  markPending(key: string): void {
+    if (['typed', 'connections'].includes(key)) {
+      this.pendingStep.set(this.selected());
+    }
+    this.pending.update((keys) => [...new Set([...keys, key])]);
+  }
   discardPending(panel: string): void {
     if (!this.readonly()) {
       this.pending.update((keys) => keys.filter((key) => key !== panel));
+      if (
+        !this.pending().some((key) => ['typed', 'connections'].includes(key))
+      ) {
+        this.pendingStep.set('');
+      }
       this.error.set('');
     }
   }
@@ -35,7 +46,9 @@ export abstract class WorkflowInteractions extends WorkflowBoardState {
       return;
     }
     const pending = this.pending();
+    const pendingStep = this.pendingStep();
     this.pending.set([]);
+    this.pendingStep.set('');
     try {
       this.change({
         ...this.document(),
@@ -48,6 +61,7 @@ export abstract class WorkflowInteractions extends WorkflowBoardState {
       });
     } catch {
       this.pending.set(pending);
+      this.pendingStep.set(pendingStep);
       this.error.set('Invalid step configuration');
     }
   }
@@ -59,11 +73,14 @@ export abstract class WorkflowInteractions extends WorkflowBoardState {
       return;
     }
     const pending = this.pending();
+    const pendingStep = this.pendingStep();
     this.pending.set([]);
+    this.pendingStep.set('');
     try {
       this.change({ ...this.document(), graph });
     } catch {
       this.pending.set(pending);
+      this.pendingStep.set(pendingStep);
       this.error.set('Invalid connection');
     }
   }
@@ -76,6 +93,7 @@ export abstract class WorkflowInteractions extends WorkflowBoardState {
     const release = inject(ActorState).register(() => {
       this.selectionKeys.set([]);
       this.connectionId = '';
+      this.inspectedConnection.set('');
     });
     inject(DestroyRef).onDestroy(release);
   }
@@ -83,31 +101,62 @@ export abstract class WorkflowInteractions extends WorkflowBoardState {
     super.clear();
     this.selectionKeys.set([]);
     this.connectionId = '';
+    this.inspectedConnection.set('');
   }
   override async load(): Promise<void> {
     await super.load();
     if (!this.dirty()) {
       this.selectionKeys.set([]);
       this.connectionId = '';
+      this.inspectedConnection.set('');
     }
+  }
+  readonly inspectedSteps = computed(() =>
+    graphSteps(this.document().graph).filter(
+      (step) => step['key'] === (this.pendingStep() || this.selected()),
+    ),
+  );
+  viewport(viewport: Point & { zoom: number }): void {
+    if (JSON.stringify(viewport) === JSON.stringify(this.document().viewport)) {
+      return;
+    }
+    if (
+      !Number.isFinite(viewport.x) ||
+      !Number.isFinite(viewport.y) ||
+      !Number.isFinite(viewport.zoom) ||
+      viewport.zoom < 0.1 ||
+      viewport.zoom > 4
+    ) {
+      return;
+    }
+    // View navigation is independent of definition edits and semantic history.
+    this.document.update((document) => ({ ...document, viewport }));
   }
   readonly selectionKeys = signal<readonly string[]>([]);
   readonly connections = computed(() =>
     canvasEdges(this.document().graph, this.nodes()),
   );
+  readonly inspectedConnection = signal('');
   connectionId = '';
+  inspectConnection(id: string): void {
+    if (this.connections().some((edge) => edge.id === id)) {
+      this.connectionId = id;
+      this.inspectedConnection.set(id);
+    }
+  }
   selectMany(keys: readonly string[]): void {
     if (this.pending().length) {
       return;
     }
     const existing = new Set(this.nodes().map((node) => node.key));
-    this.selectionKeys.set(
-      [...new Set(keys)].filter((key) => existing.has(key)),
-    );
-    if (this.selectionKeys()[0]) {
-      this.select(this.selectionKeys()[0]);
+    const selection = [...new Set(keys)].filter((key) => existing.has(key));
+    const first = selection[0] ?? '';
+    this.select(first);
+    if (this.selected() === first) {
+      this.selectionKeys.set(selection);
     }
   }
+
   toggleSelection(key: string, checked: boolean): void {
     this.selectMany(
       checked
@@ -142,6 +191,7 @@ export abstract class WorkflowInteractions extends WorkflowBoardState {
     try {
       this.change(removeConnection(this.document(), this.connectionId));
       this.connectionId = '';
+      this.inspectedConnection.set('');
     } catch (error) {
       this.error.set(
         error instanceof Error ? error.message : 'Invalid connection',

@@ -1,3 +1,4 @@
+import { inspectorFor } from './node-inspector';
 import { Workspace } from './authoring';
 import { CanvasNode, graphSteps } from './workflow-authoring';
 import { JsonObject } from '../../forms/domain/runtime-document';
@@ -37,6 +38,17 @@ export function nodeModels(
         y: 40 + Math.floor(index / 4) * 240,
       },
       ports,
+      outcomes: [
+        ...new Set([
+          ...(inspectorFor(step, catalog)?.outcomes ?? []),
+          ...(
+            ((step['task_contract'] as JsonObject | undefined)?.['actions'] ??
+              []) as JsonObject[]
+          )
+            .map((action) => action['outcome_key'])
+            .filter((key): key is string => typeof key === 'string' && !!key),
+        ]),
+      ],
     };
   });
 }
