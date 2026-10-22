@@ -1,0 +1,34 @@
+:host {
+  display: block;
+  min-inline-size: 0;
+}
+fieldset {
+  border: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.5rem;
+  min-inline-size: 0;
+}
+legend {
+  font-weight: 600;
+  margin-block: 1rem 0.5rem;
+}
+.rule-list {
+  padding-inline-start: 1.25rem;
+}
+.rule-list li {
+  padding-block: 0.5rem;
+  border-block-end: 1px solid var(--console-border);
+}
+p {
+  overflow-wrap: anywhere;
+}
+input {
+  min-inline-size: 0;
+  inline-size: 100%;
+}
+.rule-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}

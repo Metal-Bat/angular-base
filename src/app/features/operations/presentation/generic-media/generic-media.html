@@ -19,9 +19,7 @@
   (change)="pick($event)"
 />
 @if (transfer.busy()) {
-  <p role="status">
-    {{ "Transfer in progress" | localize }} {{ transfer.progress() }}%
-  </p>
+  <app-transfer-progress [value]="transfer.progress()" />
   <button
     pButton
     severity="secondary"

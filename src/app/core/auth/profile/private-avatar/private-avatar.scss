@@ -1,0 +1,28 @@
+figure {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 0;
+}
+img,
+figure > i {
+  inline-size: 6rem;
+  block-size: 6rem;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--console-accent-soft);
+}
+figure > i {
+  display: grid;
+  place-items: center;
+  font-size: 2rem;
+  color: var(--console-accent);
+}
+figcaption {
+  display: grid;
+  gap: 0.25rem;
+  font-size: 0.875rem;
+}
+figcaption span {
+  color: var(--console-muted);
+}

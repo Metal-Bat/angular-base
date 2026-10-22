@@ -1,0 +1,58 @@
+:host {
+  display: block;
+  min-inline-size: 0;
+}
+.task-feedback {
+  margin-block: 1rem;
+  overflow-wrap: anywhere;
+}
+ul {
+  display: grid;
+  gap: 1rem;
+  padding: 0;
+  list-style: none;
+}
+// Keep one list surface instead of inheriting generic nested workspace cards.
+li {
+  min-inline-size: 0;
+  padding: 0.75rem 0;
+  border: 0;
+  border-block-end: 1px solid var(--p-content-border-color);
+  border-radius: 0;
+  background: transparent;
+}
+li:last-child {
+  border-block-end: 0;
+}
+.feedback-heading,
+.feedback-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+.feedback-heading bdi,
+dt {
+  font-weight: 600;
+}
+.feedback-heading + p {
+  margin-block: 0.5rem 0.75rem;
+}
+.feedback-values {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-block: 0.75rem;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+dd {
+  margin: 0;
+}
+@media (max-width: 40rem) {
+  .feedback-values {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

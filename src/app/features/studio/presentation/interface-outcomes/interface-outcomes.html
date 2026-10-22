@@ -1,0 +1,62 @@
+<h3>{{ "Child outcomes" | localize }}</h3>
+@for (row of rows(); track $index; let index = $index) {
+  <fieldset>
+    <legend>{{ "Business outcome" | localize }} {{ index + 1 }}</legend>
+    <label [for]="'interface-outcome-name-' + index">{{
+      "Outcome name" | localize
+    }}</label>
+    <input
+      maxlength="64"
+      pInputText
+      [disabled]="disabled()"
+      [id]="'interface-outcome-name-' + index"
+      [ngModel]="row.name"
+      (ngModelChange)="edited.emit({ index, key: 'name', value: $event })"
+    />
+    <label [for]="'interface-outcome-finish-' + index">{{
+      "Finish step" | localize
+    }}</label>
+    <app-select-control
+      [disabled]="disabled()"
+      [inputId]="'interface-outcome-finish-' + index"
+      [ngModel]="row.step"
+      (ngModelChange)="edited.emit({ index, key: 'step', value: $event })"
+    >
+      @if (!row.step) {
+        <option value="">{{ "Choose a Finish step" | localize }}</option>
+      }
+      @if (row.step && !finishes().some(isFinish(row.step))) {
+        <option [value]="row.step">
+          {{ "Unavailable" | localize }} · {{ row.step }}
+        </option>
+      }
+      @for (finish of finishes(); track finish["key"]) {
+        <option [value]="finish['key']">{{ finish["key"] }}</option>
+      }
+    </app-select-control>
+    <button
+      pButton
+      severity="secondary"
+      type="button"
+      [disabled]="disabled()"
+      (click)="removed.emit(index)"
+    >
+      {{ "Remove outcome" | localize }}
+    </button>
+  </fieldset>
+}
+<button
+  pButton
+  severity="secondary"
+  type="button"
+  [disabled]="disabled() || rows().length >= 16"
+  (click)="added.emit()"
+>
+  {{ "Add outcome" | localize }}
+</button>
+<p>
+  {{
+    "Technical failure is reserved and is handled by the parent workflow."
+      | localize
+  }}
+</p>

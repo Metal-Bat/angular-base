@@ -3,106 +3,197 @@ import {
   Component,
   computed,
   DestroyRef,
+  effect,
   inject,
   input,
   output,
   signal,
+  untracked,
+  viewChild,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
+import { FormMessageCatalog } from '../form-message-catalog/form-message-catalog';
 import { LocalizePipe } from '../../../../shared/ui/localize-pipe';
-import { JsonObject, JsonValue } from '../../../forms/domain/runtime-document';
+import {
+  JsonObject,
+  JsonValue,
+  RenderNode,
+} from '../../../forms/domain/runtime-document';
 import { ActorState } from '../../../../core/auth/actor-state';
-import { SchemaInput } from '../../../administration/presentation/schema-input/schema-input';
-import { outline } from '../../domain/form-authoring';
+import { FormPages } from '../form-pages/form-pages';
+import { presentationOutline } from '../form-selection-label';
 import { renderOf } from '../../domain/form-editing';
 import { translateMessage } from '../../domain/form-localization';
+import {
+  MessageSummary,
+  summarizeMessages,
+} from '../../domain/form-message-summary';
+import { changeFormOutcome } from '../../domain/form-outcomes';
 @Component({
   selector: 'app-form-settings',
   imports: [
     FormsModule,
     ButtonModule,
     InputTextModule,
+    FormMessageCatalog,
+    FormPages,
     LocalizePipe,
-    SchemaInput,
   ],
   templateUrl: './form-settings.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FormSettings {
   readonly documents = input.required<JsonObject>();
+  private readonly pageEditor = viewChild(FormPages);
+  editPage(key: string): void {
+    const editor = this.pageEditor();
+    const page = editor?.pages()?.find((candidate) => candidate.key === key);
+    if (page) {
+      editor!.edit(page);
+    }
+  }
   readonly disabled = input(false);
-  /** Enabled only for development fixtures until page-settings semantics are frozen. */
-  readonly pageAuthoring = input(false);
+  readonly blocked = input(false);
+  readonly context = input(0);
+  readonly mode = input<'languages' | 'settings'>('languages');
+  /** Existing producer page_settings.pages contract; see the scoped form-pages handoff. */
+  readonly pageAuthoring = input(true);
+  readonly resolvedRender = input<RenderNode | null>(null);
+  readonly pagePending = signal(false);
   readonly applied = output<JsonObject>();
   readonly changed = output<void>();
+  readonly discarded = output<void>();
   readonly sample = output<JsonObject>();
   readonly synthetic = signal<JsonObject>({});
   readonly schema = computed(
     () => this.documents()['data_schema'] as JsonObject,
   );
   readonly fields = computed(() =>
-    outline(renderOf(this.documents())).filter((item) => item.scope),
+    presentationOutline(
+      renderOf(this.documents()),
+      this.resolvedRender(),
+    ).filter((item) => item.scope),
   );
-  readonly pages = computed(
-    () =>
-      (((this.documents()['page_settings'] ?? {}) as JsonObject)['pages'] ??
-        []) as JsonObject[],
-  );
-  readonly messages = computed(() => {
-    const catalogs = (((this.documents()['localization'] ?? {}) as JsonObject)[
-      'catalogs'
-    ] ?? {}) as JsonObject;
-    const en = (catalogs['en'] ?? {}) as JsonObject;
-    const fa = (catalogs['fa'] ?? {}) as JsonObject;
-    const ar = (catalogs['ar'] ?? {}) as JsonObject;
-    return [
-      ...new Set([...Object.keys(en), ...Object.keys(fa), ...Object.keys(ar)]),
-    ].map((key) => ({
-      key,
-      en:
-        typeof (en[key] as JsonObject | undefined)?.['text'] === 'string'
-          ? (en[key] as JsonObject)['text']
-          : 'Contract editor required',
-      ar: (ar[key] as JsonObject | undefined)?.['text'] ?? '',
-      fa:
-        typeof (fa[key] as JsonObject | undefined)?.['text'] === 'string'
-          ? (fa[key] as JsonObject)['text']
-          : 'Contract editor required',
-    }));
+  readonly messages = signal<MessageSummary[]>([]);
+  readonly outcomes = computed(() => {
+    const values = renderOf(this.documents())['outcomes'];
+    return Array.isArray(values)
+      ? values.filter((value): value is string => typeof value === 'string')
+      : [];
   });
+  outcome = '';
   key = '';
   en = '';
   fa = '';
   ar = '';
-  pageKey = '';
-  pageTitle = '';
-  selectedScopes: string[] = [];
   readonly error = signal('');
   readonly busy = signal(false);
   private generation = 0;
+  private editedKey = '';
+  translationPending(): boolean {
+    const catalogs = ((this.documents()['localization'] ?? {}) as JsonObject)[
+      'catalogs'
+    ] as JsonObject | undefined;
+    return (
+      this.key !== this.editedKey ||
+      (['en', 'fa', 'ar'] as const).some((locale) => {
+        const entry = (catalogs?.[locale] as JsonObject | undefined)?.[
+          this.editedKey
+        ] as JsonObject | undefined;
+        return this[locale] !== (entry?.['text'] ?? '');
+      })
+    );
+  }
+  discardTranslation(): void {
+    if (this.disabled() || this.blocked() || this.busy()) {
+      return;
+    }
+    this.key = this.en = this.fa = this.ar = this.editedKey = '';
+    this.error.set('');
+    if (!this.outcome && !this.pagePending()) {
+      this.discarded.emit();
+    }
+  }
   constructor() {
+    effect(() => {
+      this.context();
+      untracked(() => this.clearEditorBuffers());
+    });
+    effect((onCleanup) => {
+      this.context();
+      const documents = this.documents();
+      const generation = this.generation;
+      let active = true;
+      this.messages.set([]);
+      void summarizeMessages(documents)
+        .then((messages) => {
+          if (active && generation === this.generation) {
+            this.messages.set(messages);
+          }
+        })
+        .catch((): void => {
+          if (active && generation === this.generation) {
+            this.error.set('The service is unavailable.');
+          }
+        });
+      onCleanup((): void => {
+        active = false;
+      });
+    });
     const release = inject(ActorState).register(() => {
-      this.generation++;
-      this.key = '';
-      this.en = '';
-      this.fa = '';
-      this.ar = '';
-      this.selectedScopes = [];
-      this.pageKey = '';
-      this.pageTitle = '';
+      this.clearEditorBuffers();
+      this.messages.set([]);
       this.synthetic.set({});
-      this.error.set('');
-      this.busy.set(false);
     });
     inject(DestroyRef).onDestroy(() => {
       this.generation++;
       release();
     });
   }
+  private clearEditorBuffers(): void {
+    this.generation++;
+    this.editedKey = this.key = this.en = this.fa = this.ar = this.outcome = '';
+    this.pagePending.set(false);
+    this.error.set('');
+    this.busy.set(false);
+  }
+  applyOutcome(value = this.outcome, remove = false): void {
+    if (
+      this.disabled() ||
+      this.blocked() ||
+      this.busy() ||
+      this.translationPending() ||
+      this.pagePending()
+    ) {
+      return;
+    }
+    try {
+      this.applied.emit(changeFormOutcome(this.documents(), value, remove));
+      this.outcome = '';
+      this.error.set('');
+    } catch (error) {
+      this.error.set(error instanceof Error ? error.message : 'Invalid value');
+    }
+  }
+  discardOutcome(): void {
+    if (this.disabled() || this.blocked() || this.busy()) {
+      return;
+    }
+    this.outcome = '';
+    if (!this.translationPending() && !this.pagePending()) {
+      this.discarded.emit();
+    }
+  }
   editMessage(key: string): void {
-    if (this.disabled() || this.busy()) {
+    if (this.disabled() || this.blocked() || this.busy()) {
+      return;
+    }
+    if (this.translationPending()) {
+      this.error.set(
+        'Apply or discard translation edits before opening another translation.',
+      );
       return;
     }
     const catalogs = ((this.documents()['localization'] ?? {}) as JsonObject)[
@@ -133,13 +224,20 @@ export class FormSettings {
       return;
     }
     this.key = key;
+    this.editedKey = key;
     this.en = typeof message.en === 'string' ? message.en : '';
     this.fa = typeof message.fa === 'string' ? message.fa : '';
     this.ar = typeof message.ar === 'string' ? message.ar : '';
     this.error.set('');
   }
   async applyTranslation(): Promise<void> {
-    if (this.disabled() || this.busy()) {
+    if (
+      this.disabled() ||
+      this.blocked() ||
+      this.busy() ||
+      this.outcome ||
+      this.pagePending()
+    ) {
       return;
     }
     const generation = this.generation;
@@ -166,9 +264,11 @@ export class FormSettings {
         this.en === translationDraft.en &&
         this.fa === translationDraft.fa &&
         this.ar === translationDraft.ar &&
-        !this.disabled()
+        !this.disabled() &&
+        !this.blocked()
       ) {
         this.applied.emit(next);
+        this.editedKey = translationDraft.key;
         this.error.set('');
       }
     } catch (error) {
@@ -183,53 +283,11 @@ export class FormSettings {
       }
     }
   }
-  toggle(scope: string, selected: boolean): void {
-    if (
-      this.disabled() ||
-      !this.fields().some((item) => item.scope === scope)
-    ) {
-      return;
+  discardPages(): void {
+    this.pagePending.set(false);
+    if (!this.translationPending() && !this.outcome) {
+      this.discarded.emit();
     }
-    this.changed.emit();
-    this.selectedScopes = selected
-      ? [...new Set([...this.selectedScopes, scope])]
-      : this.selectedScopes.filter((item) => item !== scope);
-  }
-  addPage(): void {
-    if (
-      this.disabled() ||
-      !this.pageAuthoring() ||
-      !/^[A-Za-z][A-Za-z0-9_.-]{0,63}$/.test(this.pageKey) ||
-      !this.pageTitle.trim() ||
-      this.pageTitle.length > 255 ||
-      this.selectedScopes.some(
-        (scope) => !this.fields().some((item) => item.scope === scope),
-      ) ||
-      this.pages().length >= 32 ||
-      this.pages().some((page) => page['key'] === this.pageKey)
-    ) {
-      this.error.set('Use a unique page key and title');
-      return;
-    }
-    const pages = [
-      ...this.pages(),
-      {
-        key: this.pageKey,
-        title: this.pageTitle,
-        scopes: [...this.selectedScopes],
-      },
-    ];
-    this.applied.emit({
-      ...this.documents(),
-      page_settings: {
-        ...((this.documents()['page_settings'] ?? {}) as JsonObject),
-        pages,
-      },
-    });
-    this.error.set('');
-    this.pageKey = '';
-    this.pageTitle = '';
-    this.selectedScopes = [];
   }
   setSample(value: JsonValue | undefined): void {
     if (value && typeof value === 'object' && !Array.isArray(value)) {

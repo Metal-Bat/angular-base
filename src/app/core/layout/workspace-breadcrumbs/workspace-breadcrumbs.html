@@ -1,0 +1,33 @@
+<nav class="breadcrumb" [attr.aria-label]="'Breadcrumb' | localize">
+  <ol>
+    @for (item of navigation.items(); track $index; let last = $last) {
+      <li>
+        @if (item.path && !last) {
+          <a
+            [routerLink]="item.path"
+            (click)="navigation.activate($event, item)"
+            >{{ item.literal ? item.label : (item.label | localize) }}</a
+          >
+        } @else {
+          <span aria-current="page">{{
+            item.literal ? item.label : (item.label | localize)
+          }}</span>
+        }
+        @if (!last) {
+          <i aria-hidden="true" class="pi pi-angle-right rtl:rotate-180"></i>
+        }
+      </li>
+    }
+  </ol>
+  @if (navigation.editor()) {
+    <button
+      pButton
+      severity="secondary"
+      type="button"
+      [attr.aria-pressed]="navigation.focusMode()"
+      (click)="navigation.focusMode.set(!navigation.focusMode())"
+    >
+      {{ "Focus mode" | localize }}
+    </button>
+  }
+</nav>

@@ -1,0 +1,11 @@
+:host {
+  display: block;
+  min-inline-size: 0;
+}
+h2 {
+  margin-block: 1.5rem 0.75rem;
+}
+li,
+td {
+  overflow-wrap: anywhere;
+}

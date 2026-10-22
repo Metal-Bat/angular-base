@@ -19,6 +19,47 @@ describe('Resource operation adapters', () => {
     api = TestBed.inject(RecordsApi);
   });
   afterEach(() => http.verify());
+  it('preserves public numeric agent budgets while redacting credential lookalikes', async () => {
+    const work = api.detail(recordDefinitions['agents'], 'agent-current');
+    const request = await vi.waitFor(() =>
+      http.expectOne('/api/v1/ai-agents/agent-current'),
+    );
+    request.flush(
+      new Blob([
+        JSON.stringify({
+          success: true,
+          data: {
+            spec: {
+              user_limits: {
+                input_tokens: 10,
+                output_tokens: 0,
+                total_tokens: 10,
+                access_token: 'private',
+              },
+            },
+            effective_limits: {
+              input_tokens: 5,
+              output_tokens: 0,
+              total_tokens: 5,
+            },
+            credentials: { input_tokens: 'private', token: 123 },
+          },
+        }),
+      ]),
+    );
+    expect(await work).toEqual({
+      spec: {
+        user_limits: {
+          input_tokens: 10,
+          output_tokens: 0,
+          total_tokens: 10,
+          access_token: '[redacted]',
+        },
+      },
+      effective_limits: { input_tokens: 5, output_tokens: 0, total_tokens: 5 },
+      credentials: '[redacted]',
+    });
+  });
   it('uses paged Select Users with the ordinary partition and supported extras', async () => {
     const query = { ...emptyQuery(), extras: { include_deleted: true } };
     const work = api.list(recordDefinitions['users'], query);

@@ -1,4 +1,7 @@
-import { scheduleErrors } from '../domain/schedule-validation';
+import {
+  scheduleErrors,
+  scheduleUpdateErrors,
+} from '../domain/schedule-validation';
 import { fieldLabel } from '../../../shared/domain/field-label';
 import {
   fieldErrors,
@@ -9,11 +12,12 @@ import {
   RecordRow,
   redactRecord,
 } from '../domain/records';
-import { ResourceState } from './resource-state';
+import { ResourceRecovery } from './resource-recovery';
 
-export abstract class ResourceRowActions extends ResourceState {
+export abstract class ResourceRowActions extends ResourceRecovery {
   abstract history(): void;
   edit(): void {
+    this.clearRecovery();
     if (
       !this.allowed() ||
       !this.definition.operations.update ||
@@ -76,11 +80,13 @@ export abstract class ResourceRowActions extends ResourceState {
     this.password = '';
     this.formDirty.set(false);
     this.notice.set('Changes saved.');
-    if (result && recordReference(result)) {
+    if (mode !== 'create' && result && recordReference(result)) {
       this.detail.set(result);
+      await this.syncSelectionUrl(recordReference(result), true);
     }
     if (mode === 'create') {
       this.detail.set(null);
+      await this.syncSelectionUrl(null, true);
     }
     await this.load();
     if (mode === 'password') {
@@ -110,8 +116,13 @@ export abstract class ResourceRowActions extends ResourceState {
     }
   }
   protected validSchedule(body: RecordRow, mode: string): boolean {
-    if (mode === 'create' && this.definition.key === 'task-schedules') {
-      Object.assign(this.fieldErrors, scheduleErrors(body));
+    if (this.definition.key === 'task-schedules') {
+      Object.assign(
+        this.fieldErrors,
+        mode === 'create'
+          ? scheduleErrors(body)
+          : scheduleUpdateErrors(body, this.detail() ?? {}),
+      );
       if (Object.keys(this.fieldErrors).length) {
         this.modalError.set('Complete the required fields with valid values.');
         return false;

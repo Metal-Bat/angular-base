@@ -1,0 +1,54 @@
+:host {
+  display: block;
+}
+.preview-heading {
+  display: grid;
+  gap: 0.25rem;
+}
+.preview-heading h2 {
+  margin: 0;
+}
+.preview-freshness {
+  min-block-size: 1.5rem;
+  line-height: 1.5rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-size: 0.875rem;
+  color: var(--console-muted);
+}
+.preview-options {
+  margin-block: 0.75rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+.preview-options > summary {
+  font-size: 0.875rem;
+}
+.preview-device-frame {
+  min-inline-size: 0;
+  inline-size: 100%;
+  margin-inline: auto;
+}
+.preview-device-frame.phone-frame {
+  inline-size: 22.5rem;
+  max-inline-size: 100%;
+}
+.preview-device-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-block: 0.5rem;
+}
+.preview-device-controls button {
+  position: relative;
+  margin: 0;
+}
+
+.preview-settings {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+}

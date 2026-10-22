@@ -1,4 +1,5 @@
 import { CaseList } from '../case-list/case-list';
+import { TaskListQuery } from '../task-list-query/task-list-query';
 import { SavedViews } from '../../../../shared/ui/saved-views/saved-views';
 import { JsonObject } from '../../../forms/domain/runtime-document';
 import { NotificationPreview } from '../../../../core/notifications/notification-preview';
@@ -33,6 +34,7 @@ import { WORKSPACE_PAGES, WORKSPACE_PAGES_FACTORY } from '../../bindings';
 
   imports: [
     CaseList,
+    TaskListQuery,
     SavedViews,
     ControlField,
     SelectControl,
@@ -44,6 +46,7 @@ import { WORKSPACE_PAGES, WORKSPACE_PAGES_FACTORY } from '../../bindings';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TaskInbox {
+  readonly queryEditing = signal(false);
   private readonly savedViews = viewChild(SavedViews);
   async canLeave(): Promise<boolean> {
     return this.savedViews()?.canLeave() ?? true;
@@ -59,6 +62,9 @@ export class TaskInbox {
   readonly polling = inject(BoundedPolling);
   readonly pages = inject(WORKSPACE_PAGES);
   readonly kinds = cartables;
+  applyQuery(query: JsonObject): void {
+    void this.pages.load('task', 1, this.cartable(), undefined, query);
+  }
   readonly cartable = linkedSignal<Cartable>(() => {
     const cartable = this.pages.appliedQuery()?.['cartable'];
     return typeof cartable === 'string' &&
@@ -75,7 +81,7 @@ export class TaskInbox {
     let applied = notifications.revision();
     effect(() => {
       const revision = notifications.revision();
-      const idle = this.pages.state() !== 'loading';
+      const idle = this.pages.state() !== 'loading' && !this.queryEditing();
       if (revision !== applied && idle) {
         applied = revision;
         untracked(
@@ -88,11 +94,19 @@ export class TaskInbox {
     this.polling.start(
       (abort) =>
         this.pages.load('task', this.pages.page(), this.cartable(), abort),
-      () => this.pages.state() !== 'loading',
+      () => this.pages.state() !== 'loading' && !this.queryEditing(),
     );
   }
-  select(kind: Cartable): void {
+  async select(kind: Cartable): Promise<void> {
     this.cartable.set(kind);
-    void this.pages.load('task', 1, kind);
+    await this.pages.load('task', 1, kind);
+    if (this.pages.state() === 'error') {
+      const confirmed = this.pages.appliedQuery()?.['cartable'];
+      this.cartable.set(
+        cartables.includes(confirmed as Cartable)
+          ? (confirmed as Cartable)
+          : 'available',
+      );
+    }
   }
 }

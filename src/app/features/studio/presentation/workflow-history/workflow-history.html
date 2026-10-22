@@ -1,0 +1,57 @@
+<button
+  pButton
+  severity="secondary"
+  type="button"
+  [attr.aria-label]="'Workspace history' | localize"
+  [attr.title]="'Workspace history' | localize"
+  [disabled]="disabled() || busy() || !version()"
+  [outlined]="true"
+  (click)="show()"
+>
+  <i aria-hidden="true" class="pi pi-history"></i
+  ><span class="sr-only">{{ "Workspace history" | localize }}</span>
+</button>
+<p-dialog
+  appendTo="body"
+  [closable]="true"
+  [closeAriaLabel]="'Close' | localize"
+  [draggable]="false"
+  [header]="'Workspace history' | localize"
+  [modal]="true"
+  [resizable]="false"
+  [style]="{ width: '60rem', maxWidth: 'calc(100vw - 2rem)' }"
+  [visible]="open()"
+  (visibleChange)="!$event && close()"
+>
+  <p>
+    {{
+      "Saved workspace history is separate from local Undo and published versions."
+        | localize
+    }}
+  </p>
+  @if (error()) {
+    <p role="alert">{{ error() | localize }}</p>
+    <button pButton severity="secondary" type="button" (click)="load(page())">
+      {{ "Retry" | localize }}
+    </button>
+  }
+  <app-record-table
+    [busy]="busy()"
+    [columns]="columns"
+    [page]="page()"
+    [pages]="pages()"
+    [query]="query()"
+    [rows]="rows()"
+    (opened)="selected.set($event)"
+    (pageChanged)="load($event)"
+    (queried)="load(1, $event.size)"
+  />
+  @if (selected(); as record) {
+    <app-record-summary
+      caption="History"
+      icon="pi pi-history"
+      [record]="record"
+      [title]="'Workspace history' | localize"
+    />
+  }
+</p-dialog>

@@ -1,51 +1,89 @@
 <section [attr.aria-label]="'Calendar' | localize">
-  <div
-    class="flex flex-wrap gap-2 my-4"
-    role="group"
-    [attr.aria-label]="'Calendar view' | localize"
-  >
-    @for (mode of views; track mode) {
-      <button
-        pButton
-        severity="secondary"
-        type="button"
-        [attr.aria-pressed]="view() === mode"
-        [outlined]="true"
-        (click)="view.set(mode)"
-      >
-        {{ labels[mode] | localize }}
-      </button>
-    }
-  </div>
-  <p>
+  <app-calendar-toolbar
+    [title]="periodTitle()"
+    [view]="view()"
+    (periodMoved)="navigate($event)"
+    (todayRequested)="goToday()"
+    (viewChanged)="view.set($event)"
+  />
+  <p class="calendar-zone">
     {{ "Timezone" | localize }}: <bdi>{{ timezone() }}</bdi>
   </p>
-  @switch (state()) {
-    @case ("loading") {
-      <p role="status">{{ "Loading…" | localize }}</p>
-    }
-    @case ("failed") {
-      <p role="alert">{{ "Calendar is unavailable." | localize }}</p>
-    }
-    @case ("ready") {
-      @if (projection().stale) {
-        <p role="status">
-          {{
-            "Results may be out of date. Recheck before continuing." | localize
-          }}
-        </p>
+  <div class="calendar-workspace">
+    <app-calendar-rail
+      [anchor]="anchor()"
+      [timezone]="timezone()"
+      [(personal)]="personal"
+      [(workflow)]="workflow"
+      (dateSelected)="periodChanged.emit($event)"
+      ><ng-content
+    /></app-calendar-rail>
+    <div class="calendar-period">
+      @switch (state()) {
+        @case ("loading") {
+          <p role="status">{{ "Loading…" | localize }}</p>
+        }
+        @case ("failed") {
+          <p role="alert">{{ "Calendar is unavailable." | localize }}</p>
+        }
+        @case ("ready") {
+          <ng-container [ngTemplateOutlet]="calendarContent" />
+        }
+        @case ("partial") {
+          <p role="alert">
+            {{
+              "Only some events are shown. Refresh to load the complete period."
+                | localize
+            }}
+          </p>
+          <button
+            pButton
+            severity="secondary"
+            type="button"
+            (click)="refreshRequested.emit()"
+          >
+            {{ "Refresh" | localize }}
+          </button>
+          <ng-container [ngTemplateOutlet]="calendarContent" />
+        }
       }
-      @if (!events().length) {
-        <p role="status">{{ "No events in this range." | localize }}</p>
-      }
-      <div class="grid gap-3" [class.md:grid-cols-7]="view() !== 'agenda'">
-        @for (day of days(); track day) {
+    </div>
+  </div>
+  <ng-template #calendarContent>
+    @if (projection().stale) {
+      <p role="status">
+        {{
+          "Results may be out of date. Recheck before continuing." | localize
+        }}
+      </p>
+    }
+    @if (state() === "ready" && !events().length) {
+      <p role="status">
+        {{
+          (personal() && workflow()
+            ? "No events in this range."
+            : "No events from visible sources in this range."
+          ) | localize
+        }}
+      </p>
+    }
+    @if (view() !== "agenda") {
+      <app-calendar-grid
+        [anchor]="anchor()"
+        [events]="events()"
+        [timezone]="timezone()"
+        [view]="view()"
+        [window]="window()"
+        (activated)="open($event.event, $event.trigger)"
+        (agendaRequested)="showAgenda($event)"
+        (draftRequested)="draftRequested.emit($event)"
+      />
+    } @else {
+      <div class="calendar-agenda">
+        @for (day of agendaDays(); track day) {
           <section
             class="rounded-lg border border-console-border p-3 min-w-0"
             [attr.aria-label]="dateLabel(day)"
-            [style.grid-column-start]="
-              view() === 'month' && $first ? firstColumn() : null
-            "
           >
             <h3>
               <time [attr.datetime]="day">{{ dateLabel(day) }}</time>
@@ -54,12 +92,13 @@
               @for (event of onDay(day); track event.key) {
                 <li>
                   <button
+                    #eventTrigger
                     class="text-start"
                     pButton
                     severity="secondary"
                     type="button"
                     [text]="true"
-                    (click)="open(event)"
+                    (click)="open(event, eventTrigger)"
                   >
                     <bdi>{{ event.title }}</bdi>
                   </button>
@@ -77,5 +116,5 @@
         }
       </div>
     }
-  }
+  </ng-template>
 </section>

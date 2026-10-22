@@ -1,0 +1,32 @@
+@if (outputs().length) {
+  <h3>{{ "Child outputs" | localize }}</h3>
+  <ul>
+    @for (port of outputs(); track port["name"]) {
+      <li>
+        <bdi>{{ port["name"] }}</bdi> ·
+        {{ summary($any(port["value_schema"])) }}
+      </li>
+    }
+  </ul>
+}
+@if (outcomes().length) {
+  <h3>{{ "Child outcomes" | localize }}</h3>
+  <ul>
+    @for (outcome of outcomes(); track outcome) {
+      <li>
+        <bdi>{{ outcome }}</bdi>
+      </li>
+    }
+    <li>{{ "Technical failure" | localize }}</li>
+  </ul>
+}
+@if (capabilities().length) {
+  <h3>{{ "Required capabilities" | localize }}</h3>
+  <ul>
+    @for (capability of capabilities(); track capability) {
+      <li>
+        <bdi>{{ capability }}</bdi>
+      </li>
+    }
+  </ul>
+}

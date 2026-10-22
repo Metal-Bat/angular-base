@@ -6,6 +6,7 @@ import { ProfileSettings } from '../../profile-settings';
 import { Feedback } from '../../../feedback/feedback';
 import { ApiFailure } from '../../../transport/api-failure';
 import { ProfileEditor } from './profile-editor';
+import { HttpResponse } from '@angular/common/http';
 const original = {
   ref_id: 'current',
   first_name: 'Original',
@@ -41,6 +42,68 @@ describe('Profile input and revision recovery', () => {
         },
       ],
     });
+  });
+  it('reuses avatar bytes after an uncertain link and current read, keeping name drafts', async () => {
+    TestBed.overrideComponent(ProfileEditor, { set: { template: '' } });
+    const fixture = TestBed.createComponent(ProfileEditor);
+    await fixture.whenStable();
+    const vm = fixture.componentInstance;
+    const upload = vi.spyOn(vm.transfer, 'run').mockResolvedValue(
+      new HttpResponse({
+        body: new Blob([
+          '{"success":true,"data":{"ref_id":"uploaded-avatar"}}',
+        ]),
+      }),
+    );
+    save.mockRejectedValueOnce(new ApiFailure(0, null, null, [], true));
+    vm.firstName = 'Independent draft';
+    const input = document.createElement('input');
+    Object.defineProperty(input, 'files', {
+      value: [new File(['image'], 'avatar.png', { type: 'image/png' })],
+    });
+    await vm.avatar({ target: input } as unknown as Event);
+    expect(vm.pendingAvatar()).toBe('uploaded-avatar');
+    expect(vm.reconcileRequired()).toBe(true);
+    await vm.save(vm.pendingAvatar()!);
+    expect(save).toHaveBeenCalledTimes(1);
+    read.mockImplementationOnce(async () => {
+      const current = { ...original, ref_id: 'read-current' };
+      value.set(current);
+      return current;
+    });
+    await vm.checkAvatar();
+    expect(vm.firstName).toBe('Independent draft');
+    expect(vm.reconcileRequired()).toBe(false);
+    expect(vm.pendingAvatar()).toBe('uploaded-avatar');
+    save.mockResolvedValueOnce({
+      ...original,
+      avatar_ref_id: 'uploaded-avatar',
+    });
+    await vm.save(vm.pendingAvatar()!);
+    expect(upload).toHaveBeenCalledOnce();
+    expect(save.mock.calls[1][0]).toEqual({
+      ref_id: 'read-current',
+      avatar_ref_id: 'uploaded-avatar',
+    });
+    expect(vm.pendingAvatar()).toBeNull();
+    expect(vm.candidateAvatar()).toBeNull();
+    expect(vm.firstName).toBe('Independent draft');
+  });
+  it('reconciles an already-applied avatar link without resending upload or association', async () => {
+    TestBed.overrideComponent(ProfileEditor, { set: { template: '' } });
+    const fixture = TestBed.createComponent(ProfileEditor);
+    await fixture.whenStable();
+    const vm = fixture.componentInstance;
+    vm.pendingAvatar.set('already-linked');
+    vm.reconcileRequired.set(true);
+    read.mockResolvedValueOnce({
+      ...original,
+      avatar_ref_id: 'already-linked',
+    });
+    await vm.checkAvatar();
+    expect(vm.pendingAvatar()).toBeNull();
+    expect(vm.reconcileRequired()).toBe(false);
+    expect(save).not.toHaveBeenCalled();
   });
   it.each(['firstName', 'lastName'] as const)(
     'rejects over-limit %s without sending and links its field error',

@@ -12,6 +12,7 @@ import {
   graphSteps,
   WorkspaceHistory,
 } from './workflow-authoring';
+import type { JsonObject } from '../../forms/domain/runtime-document';
 const nameField: FieldSpec = {
   key: 'name',
   title: 'Name',
@@ -109,6 +110,66 @@ const nodes: CanvasNode[] = [
   },
 ];
 describe('Nonexecuting workflow workspace', () => {
+  it('starts scalar input ordinals at zero even when other ports already have bindings', () => {
+    const initial = emptyWorkspace();
+    initial.graph = {
+      ...initial.graph,
+      bindings: [{ step: 'unrelated', target_port: 'value', ordinal: 0 }],
+    };
+    const result = connectWorkspace(
+      initial,
+      'data:one:out:value',
+      'data:two:in:value',
+      '',
+      nodes,
+    );
+    expect(
+      (result.graph['bindings'] as { ordinal: number }[]).at(-1)?.ordinal,
+    ).toBe(0);
+    expect(() =>
+      connectWorkspace(
+        result,
+        'data:one:out:value',
+        'data:two:in:value',
+        '',
+        nodes,
+      ),
+    ).toThrow('Remove the existing mapping');
+  });
+  it('appends LIST bindings within their input port rather than the whole graph', () => {
+    const listNodes = nodes.map((node) => ({
+      ...node,
+      ports: node.ports.map((port) => ({
+        ...port,
+        schema: { type: 'array', items: { type: 'string' } },
+        cardinality: 'LIST',
+      })),
+    }));
+    const first = connectWorkspace(
+      emptyWorkspace(),
+      'data:one:out:value',
+      'data:two:in:value',
+      '',
+      listNodes,
+    );
+    first.graph = {
+      ...first.graph,
+      bindings: [
+        ...(first.graph['bindings'] as JsonObject[]),
+        { step: 'unrelated', target_port: 'value', ordinal: 0 },
+      ],
+    };
+    const second = connectWorkspace(
+      first,
+      'data:one:out:value',
+      'data:two:in:value',
+      '',
+      listNodes,
+    );
+    expect(
+      (second.graph['bindings'] as { ordinal: number }[]).at(-1)?.ordinal,
+    ).toBe(1);
+  });
   it('keeps control transitions separate from typed data bindings', () => {
     const initial = emptyWorkspace();
     const control = connectWorkspace(

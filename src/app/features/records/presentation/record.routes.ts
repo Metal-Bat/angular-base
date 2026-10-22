@@ -1,4 +1,6 @@
 import { ADMIN_API } from '../../administration/bindings';
+import { AGENT_METADATA } from '../bindings';
+import { AgentMetadataApi } from '../infrastructure/agent-metadata-api';
 import { AdminApi } from '../../administration/infrastructure/admin-api';
 import { Route } from '@angular/router';
 import {
@@ -14,8 +16,10 @@ export function recordRoute(key: string, path = key): Route {
   const definition = recordDefinitions[key];
   return {
     path,
+    runGuardsAndResolvers: 'paramsOrQueryParamsChange',
     title: definition.title + ' | Workflow workspace',
     providers: [
+      { provide: AGENT_METADATA, useExisting: AgentMetadataApi },
       { provide: ADMIN_API, useExisting: AdminApi },
       { provide: RECORDS, useExisting: RecordsApi },
       { provide: HISTORY_DEFINITION, useValue: recordDefinitions['history'] },
@@ -25,6 +29,7 @@ export function recordRoute(key: string, path = key): Route {
     canActivate: [routeAccessGuard],
     data: {
       access: 'authenticated',
+      ...(path === 'users' ? { breadcrumbArea: 'administration' } : {}),
       requiredPermissions: definition.permission ? [definition.permission] : [],
     },
     canDeactivate: [

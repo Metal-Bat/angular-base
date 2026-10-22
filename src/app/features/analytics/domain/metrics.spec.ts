@@ -1,4 +1,4 @@
-import { metricWindow, readMetric } from './metrics';
+import { metricWindow, MetricWindowError, readMetric } from './metrics';
 const response = {
   metric_key: 'submitted_requests',
   version: 1,
@@ -80,4 +80,22 @@ describe('Frozen metric presentation adapter', () => {
     expect(() => metricWindow('2026-10-08', '2026-10-08', 'UTC')).toThrow();
     expect(() => metricWindow('2026-10-08', '2026-10-09', 'invalid')).toThrow();
   });
+});
+
+it('rejects skipped midnight boundaries/buckets and allows an ambiguous midnight', () => {
+  expect(() =>
+    metricWindow('2011-12-30', '2011-12-31', 'Pacific/Apia'),
+  ).toThrow(MetricWindowError);
+  expect(() =>
+    metricWindow('2011-12-29', '2011-12-30', 'Pacific/Apia'),
+  ).toThrow(MetricWindowError);
+  expect(() =>
+    metricWindow('2011-12-29', '2012-01-02', 'Pacific/Apia'),
+  ).toThrow(MetricWindowError);
+  expect(() =>
+    metricWindow('2011-12-31', '2012-01-02', 'Pacific/Apia'),
+  ).not.toThrow();
+  expect(() =>
+    metricWindow('2026-11-01', '2026-11-02', 'America/Havana'),
+  ).not.toThrow();
 });

@@ -1,0 +1,68 @@
+:host {
+  display: contents;
+}
+.account-avatar {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  font-size: 0.85rem;
+}
+.account-menu {
+  position: relative;
+  font-size: 0.875rem;
+  summary {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0;
+  }
+  button {
+    position: absolute;
+    inset-block-start: 3rem;
+    inset-inline-end: 0;
+    background: var(--console-surface);
+    box-shadow: var(--console-shadow);
+    white-space: nowrap;
+  }
+}
+
+.account-avatar {
+  display: grid;
+  place-items: center;
+  background: var(--console-accent-soft);
+  color: var(--console-accent);
+  text-decoration: none;
+}
+.account-icon {
+  display: none;
+}
+@media (max-width: 48rem) {
+  .account-menu summary > span {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .account-icon {
+    display: block;
+  }
+  .account-menu {
+    margin: 0;
+  }
+  .account-menu summary {
+    min-inline-size: 2.75rem;
+    min-block-size: 2.75rem;
+    justify-content: center;
+  }
+  .account-avatar {
+    inline-size: 2.75rem;
+    block-size: 2.75rem;
+  }
+  button {
+    margin: 0;
+    min-inline-size: 2.75rem;
+    min-block-size: 2.75rem;
+  }
+}

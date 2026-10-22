@@ -6,12 +6,17 @@ import { Locale } from '../../localization/locale';
 import { ProfileAppearance } from './profile-appearance';
 
 describe('Profile display controls', () => {
+  beforeEach(() => localStorage.removeItem('workspace.public-theme'));
+  afterEach(() => {
+    localStorage.removeItem('workspace.public-theme');
+    document.documentElement.classList.remove('app-dark');
+  });
   beforeEach(() =>
     TestBed.configureTestingModule({
       providers: [provideHttpClient(), provideRouter([])],
     }),
   );
-  it('applies named appearance and language without persistence and resets on actor change', async () => {
+  it('applies named appearance and language and keeps only the public theme on actor change', async () => {
     const fixture = TestBed.createComponent(ProfileAppearance);
     const component = fixture.componentInstance;
     component.theme('violet-dark');
@@ -23,7 +28,7 @@ describe('Profile display controls', () => {
       'تغییرات به‌طور خودکار',
     );
     TestBed.inject(ActorState).reset();
-    expect(component.scheme.selected()).toBe('blue-light');
+    expect(component.scheme.selected()).toBe('violet-dark');
     expect(component.locale.language()).toBe('en');
     expect(document.documentElement.dir).toBe('ltr');
   });

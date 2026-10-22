@@ -69,7 +69,9 @@ function formIssuePath(
     return (
       pointer.startsWith(location + '/') ||
       pointer === location ||
-      (item.scope !== null && pointer.endsWith(item.scope))
+      (item.scope !== null &&
+        (pointer === '/data_schema' + item.scope ||
+          pointer.startsWith('/data_schema' + item.scope + '/')))
     );
   });
   return matched?.path ?? null;

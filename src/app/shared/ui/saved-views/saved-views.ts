@@ -1,15 +1,24 @@
+import { savedViewBody } from './saved-view-body';
+import { savedViewMenu } from './saved-view-menu';
 import { JsonObject, jsonObject } from '../../domain/json-value';
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   DestroyRef,
   effect,
+  ElementRef,
   inject,
   input,
   output,
   signal,
   untracked,
+  viewChild,
 } from '@angular/core';
+import { MenuModule } from 'primeng/menu';
+import { PopoverModule } from 'primeng/popover';
+import { DialogModule } from 'primeng/dialog';
+import { Locale } from '../../../core/localization/locale';
 import { FormsModule } from '@angular/forms';
 import { ButtonDirective } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
@@ -31,6 +40,9 @@ type Query = JsonObject;
 @Component({
   selector: 'app-saved-views',
   imports: [
+    MenuModule,
+    PopoverModule,
+    DialogModule,
     SavedViewRepair,
     FormsModule,
     ButtonDirective,
@@ -52,6 +64,53 @@ export class SavedViews {
   readonly busy = signal(false);
   readonly error = signal('');
   readonly selected = signal('');
+  readonly editor = signal<'save' | 'rename' | null>(null);
+  private readonly locale = inject(Locale);
+  readonly menuItems = computed(() => {
+    this.locale.language();
+    const blocked = this.busy() || this.uncertain() || this.reconcileRequired();
+    return savedViewMenu(
+      {
+        busy: this.busy(),
+        blocked,
+        selected: !!this.selected(),
+        query: !!this.query(),
+      },
+      (label) => this.locale.text(label),
+      (action) => {
+        if (action === 'save' || action === 'rename') {
+          this.openEditor(action);
+        } else if (action === 'reload') {
+          void this.load();
+        } else {
+          void this.run(action);
+        }
+      },
+    );
+  });
+  private openEditor(action: 'save' | 'rename'): void {
+    this.name = this.originalName =
+      action === 'save' ? '' : (this.original()?.name ?? '');
+    this.editor.set(action);
+  }
+
+  async closeEditor(): Promise<void> {
+    if (
+      this.busy() ||
+      this.uncertain() ||
+      this.reconcileRequired() ||
+      !(await this.canLeave())
+    ) {
+      return;
+    }
+    this.name = this.originalName = this.original()?.name ?? '';
+    this.editor.set(null);
+  }
+  private readonly viewActions =
+    viewChild<ElementRef<HTMLButtonElement>>('viewActions');
+  restoreFocus(): void {
+    this.viewActions()?.nativeElement.focus();
+  }
   name = '';
   private readonly api = inject(PersonalCollections);
   private readonly actor = inject(ActorState);
@@ -79,6 +138,7 @@ export class SavedViews {
     const release = this.actor.register(() => {
       this.generation++;
       this.repairOpen.set(false);
+      this.editor.set(null);
       this.pendingWrite = null;
       this.pending = null;
       this.uncertain.set(false);
@@ -144,7 +204,7 @@ export class SavedViews {
     }
   }
   async run(
-    action: 'save' | 'update' | 'apply' | 'remove' | 'default',
+    action: 'save' | 'rename' | 'update' | 'apply' | 'remove' | 'default',
     repairApproved = false,
   ): Promise<void> {
     if (this.busy() || this.reconcileRequired()) {
@@ -171,7 +231,7 @@ export class SavedViews {
     if (generation !== this.generation) {
       return;
     }
-    if (this.pending && action !== 'save' && action !== 'update') {
+    if (this.pending && !['save', 'update', 'rename'].includes(action)) {
       return;
     }
     this.pendingWrite = generation;
@@ -208,12 +268,12 @@ export class SavedViews {
     );
   }
   private async execute(
-    action: 'save' | 'update' | 'apply' | 'remove' | 'default',
+    action: 'save' | 'rename' | 'update' | 'apply' | 'remove' | 'default',
     ref: string,
     query: Query | null,
     generation: number,
   ): Promise<void> {
-    if (action === 'save' || action === 'update') {
+    if (action === 'save' || action === 'update' || action === 'rename') {
       await this.store(action, ref, query, generation);
       return;
     }
@@ -248,34 +308,29 @@ export class SavedViews {
     }
   }
   private async store(
-    action: 'save' | 'update',
+    action: 'save' | 'update' | 'rename',
     ref: string,
     query: Query | null,
     generation: number,
   ): Promise<void> {
     if (
       !this.pending &&
-      (!query || !this.name.trim() || (action === 'update' && !ref))
+      (!(action === 'rename' ? this.original()?.query : query) ||
+        !this.name.trim() ||
+        (action !== 'save' && !ref))
     ) {
       throw Error('Missing saved-view input');
     }
     if (!this.pending) {
-      const current = query!;
       this.pending = {
-        body: {
-          schema_version: 1,
-          resource_kind: this.kind(),
-          name: this.name.trim(),
-          query: Object.fromEntries(
-            Object.entries(current).filter(
-              ([key]) => key !== 'page' && key !== 'size',
-            ),
-          ),
-          column_keys: [...this.columns()],
-          page_size: typeof current['size'] === 'number' ? current['size'] : 20,
-          command_key: crypto.randomUUID(),
-        },
-        ref: action === 'update' ? ref : undefined,
+        body: savedViewBody(
+          this.kind(),
+          this.name,
+          query!,
+          this.columns(),
+          action === 'rename' ? this.original() : null,
+        ),
+        ref: action !== 'save' ? ref : undefined,
       };
     }
     this.uncertain.set(true);
@@ -286,6 +341,7 @@ export class SavedViews {
       this.selected.set(value.ref_id);
       this.name = value.name;
       this.originalName = value.name;
+      this.editor.set(null);
     }
   }
   selectColumns(value: unknown): void {

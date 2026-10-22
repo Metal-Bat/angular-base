@@ -1,0 +1,26 @@
+:host {
+  display: block;
+}
+.inspection-preview {
+  display: grid;
+  gap: 0.5rem;
+  max-inline-size: 44rem;
+  margin-block-end: 1rem;
+}
+h2,
+p {
+  margin-block: 0 0.5rem;
+}
+input {
+  inline-size: 100%;
+  min-inline-size: 0;
+}
+button {
+  min-block-size: 2.75rem;
+  justify-self: start;
+  white-space: normal;
+}
+ul {
+  max-block-size: 16rem;
+  overflow: auto;
+}

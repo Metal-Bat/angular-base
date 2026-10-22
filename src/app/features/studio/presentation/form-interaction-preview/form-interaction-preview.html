@@ -1,0 +1,93 @@
+@let vm = view();
+<section
+  class="inspection-preview"
+  [attr.aria-label]="'Options and navigation preview' | localize"
+>
+  <h2>{{ "Options and navigation preview" | localize }}</h2>
+  <p>
+    {{ "Selected component" | localize }}: <bdi>{{ vm.selectedLabel() }}</bdi>
+  </p>
+  <p>
+    {{
+      "Uses the current preview answers. No navigation or external action is executed."
+        | localize
+    }}
+  </p>
+  @if (inspectionError()) {
+    <p role="alert">{{ inspectionError() | localize }}</p>
+  }
+  @if (optionField()) {
+    <label for="inspect-option-search">{{ "Search options" | localize }}</label>
+    <input
+      id="inspect-option-search"
+      maxlength="100"
+      pInputText
+      [ngModel]="search()"
+      (ngModelChange)="search.set($event); page.set('1')"
+    />
+    <label for="inspect-option-page">{{ "Page" | localize }}</label>
+    <input
+      id="inspect-option-page"
+      inputmode="numeric"
+      pInputText
+      [ngModel]="page()"
+      (ngModelChange)="page.set($event)"
+    />
+    @for (position of positions(); track $index) {
+      <label [for]="'inspect-option-row-' + $index"
+        >{{ "Row position" | localize }} {{ locale.number($index + 1) }}</label
+      >
+      <input
+        inputmode="numeric"
+        pInputText
+        [id]="'inspect-option-row-' + $index"
+        [ngModel]="position"
+        (ngModelChange)="setPosition($index, $event)"
+      />
+    }
+    <button
+      pButton
+      type="button"
+      [disabled]="vm.busy() || vm.pending().length > 0"
+      (click)="preview('options')"
+    >
+      {{ "Preview options" | localize }}
+    </button>
+  }
+  @if (navigationField()) {
+    <button
+      pButton
+      type="button"
+      [disabled]="vm.busy() || vm.pending().length > 0"
+      (click)="preview('navigation')"
+    >
+      {{ "Preview navigation" | localize }}
+    </button>
+  }
+  @if (!optionField() && !navigationField()) {
+    <p>
+      {{
+        "Select a choice, user, group or navigation field in Design to inspect it."
+          | localize
+      }}
+    </p>
+  }
+  @if (optionResult(); as result) {
+    <p role="status">{{ result.message | localize }}</p>
+    <ul>
+      @for (item of result.items; track $index) {
+        <li>
+          <bdi>{{ item }}</bdi>
+        </li>
+      }
+    </ul>
+    <p>{{ "Page" | localize }} {{ locale.number(result.page) }}</p>
+  }
+  @if (navigationResult()) {
+    <p role="status">
+      {{
+        "Navigation preview is available. No destination was opened." | localize
+      }}
+    </p>
+  }
+</section>

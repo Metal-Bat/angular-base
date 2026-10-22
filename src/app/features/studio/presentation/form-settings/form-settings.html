@@ -1,148 +1,192 @@
+@if (blocked()) {
+  <p role="status">
+    {{
+      "Apply or discard field properties before editing Settings or Languages."
+        | localize
+    }}
+  </p>
+}
+@if (pagePending()) {
+  <p role="status">
+    {{ "Apply or discard page edits in Settings first." | localize }}
+  </p>
+}
 @if (error()) {
   <p role="alert">{{ error() | localize }}</p>
 }
-<h2>{{ "Translations" | localize }}</h2>
-@if (messages().length) {
-  <table>
-    <thead>
-      <tr>
-        <th scope="col">{{ "Message key" | localize }}</th>
-        <th scope="col">English</th>
-        <th scope="col">فارسی</th>
-        <th scope="col">العربية</th>
-        <th scope="col">{{ "Action" | localize }}</th>
-      </tr>
-    </thead>
-    <tbody>
-      @for (message of messages(); track message.key) {
-        <tr>
-          <td>
-            <bdi>{{ message.key }}</bdi>
-          </td>
-          <td>{{ message.en }}</td>
-          <td dir="rtl" lang="fa">{{ message.fa }}</td>
-          <td dir="rtl" lang="ar">{{ message.ar }}</td>
-          <td>
-            <button
-              pButton
-              type="button"
-              [disabled]="disabled() || busy()"
-              (click)="editMessage(message.key)"
-            >
-              {{ "Edit" | localize }}
-            </button>
-          </td>
-        </tr>
-      }
-    </tbody>
-  </table>
-} @else {
-  <p>{{ "No translations" | localize }}</p>
-}
-
-<label for="message-key">{{ "Message key" | localize }}</label
-><input
-  id="message-key"
-  maxlength="128"
-  pInputText
-  [disabled]="disabled() || busy()"
-  [(ngModel)]="key"
-  (ngModelChange)="changed.emit()"
-/>
-<label for="message-en">English</label
-><textarea
-  dir="ltr"
-  id="message-en"
-  lang="en"
-  maxlength="2048"
-  [disabled]="disabled() || busy()"
-  [(ngModel)]="en"
-  (ngModelChange)="changed.emit()"
-></textarea>
-<label for="message-fa">فارسی</label
-><textarea
-  dir="rtl"
-  id="message-fa"
-  lang="fa"
-  maxlength="2048"
-  [disabled]="disabled() || busy()"
-  [(ngModel)]="fa"
-  (ngModelChange)="changed.emit()"
-></textarea>
-<label for="message-ar">العربية</label
-><textarea
-  dir="rtl"
-  id="message-ar"
-  lang="ar"
-  maxlength="2048"
-  [disabled]="disabled() || busy()"
-  [(ngModel)]="ar"
-  (ngModelChange)="changed.emit()"
-></textarea>
-<button
-  pButton
-  type="button"
-  [disabled]="disabled() || busy()"
-  (click)="applyTranslation()"
+<section
+  aria-labelledby="form-translations-title"
+  [hidden]="mode() !== 'languages'"
 >
-  {{ "Apply translation" | localize }}
-</button>
-@if (pageAuthoring()) {
-  <h2>{{ "Pages" | localize }}</h2>
-  <ul>
-    @for (page of pages(); track page["key"]) {
-      <li>
-        <bdi>{{ page["key"] }}</bdi> · {{ page["title"] }}
-      </li>
-    }
-  </ul>
-  <label for="page-key">{{ "Page key" | localize }}</label
+  <h2 id="form-translations-title" tabindex="-1">
+    {{ "Translations" | localize }}
+  </h2>
+  <p role="status" [hidden]="!outcome">
+    {{
+      "Apply or discard outcome edits in Settings before applying translations."
+        | localize
+    }}
+  </p>
+  @if (messages().length) {
+    <app-form-message-catalog
+      [disabled]="disabled() || blocked() || busy()"
+      [messages]="messages()"
+      (messageSelected)="editMessage($event)"
+    />
+  } @else {
+    <p>{{ "No translations" | localize }}</p>
+  }
+
+  <label for="message-key">{{ "Message key" | localize }}</label
   ><input
-    id="page-key"
-    maxlength="64"
+    id="message-key"
+    maxlength="128"
     pInputText
-    [disabled]="disabled() || busy()"
-    [(ngModel)]="pageKey"
+    [disabled]="disabled() || blocked() || busy()"
+    [(ngModel)]="key"
     (ngModelChange)="changed.emit()"
   />
-  <label for="page-title">{{ "Page title" | localize }}</label
-  ><input
-    id="page-title"
-    maxlength="255"
-    pInputText
-    [disabled]="disabled() || busy()"
-    [(ngModel)]="pageTitle"
+  <label for="message-en">English</label
+  ><textarea
+    dir="ltr"
+    id="message-en"
+    lang="en"
+    maxlength="2048"
+    [disabled]="disabled() || blocked() || busy()"
+    [(ngModel)]="en"
     (ngModelChange)="changed.emit()"
-  />
-  <fieldset>
-    <legend>{{ "Page fields" | localize }}</legend>
-    @for (field of fields(); track field.scope) {
-      <label
-        ><input
-          type="checkbox"
-          [disabled]="disabled() || busy()"
-          [ngModel]="selectedScopes.includes(field.scope!)"
-          (ngModelChange)="toggle(field.scope!, $event)"
-        />{{ field.label }}</label
-      >
-    }
-  </fieldset>
+  ></textarea>
+  <label for="message-fa">فارسی</label
+  ><textarea
+    dir="rtl"
+    id="message-fa"
+    lang="fa"
+    maxlength="2048"
+    [disabled]="disabled() || blocked() || busy()"
+    [(ngModel)]="fa"
+    (ngModelChange)="changed.emit()"
+  ></textarea>
+  <label for="message-ar">العربية</label
+  ><textarea
+    dir="rtl"
+    id="message-ar"
+    lang="ar"
+    maxlength="2048"
+    [disabled]="disabled() || blocked() || busy()"
+    [(ngModel)]="ar"
+    (ngModelChange)="changed.emit()"
+  ></textarea>
   <button
     pButton
     type="button"
-    [disabled]="disabled() || busy()"
-    (click)="addPage()"
+    [disabled]="disabled() || blocked() || busy() || !!outcome || pagePending()"
+    (click)="applyTranslation()"
   >
-    {{ "Add page" | localize }}
+    {{ "Apply translation" | localize }}
   </button>
-}
-<h2>{{ "Synthetic sample values" | localize }}</h2>
-<p>
-  {{ "Simulated values do not upload files or execute workflows." | localize }}
-</p>
-<app-schema-input
-  controlId="synthetic-values"
-  [schema]="schema()"
-  [value]="synthetic()"
-  (valueChange)="setSample($event)"
-/>
+  @if (translationPending()) {
+    <button
+      pButton
+      severity="secondary"
+      type="button"
+      [disabled]="disabled() || blocked() || busy()"
+      [outlined]="true"
+      (click)="discardTranslation()"
+    >
+      {{ "Discard translation edits" | localize }}
+    </button>
+  }
+</section>
+<section aria-labelledby="form-settings-title" [hidden]="mode() !== 'settings'">
+  <h2 id="form-settings-title" tabindex="-1">{{ "Settings" | localize }}</h2>
+  <h3>{{ "Declared outcomes" | localize }}</h3>
+  @if (translationPending()) {
+    <p role="status">
+      {{
+        "Apply or discard translation edits in Languages before changing outcomes."
+          | localize
+      }}
+    </p>
+  }
+  <p>
+    {{
+      "Outcomes label form actions. Workflow transitions are configured in the workflow editor."
+        | localize
+    }}
+  </p>
+  <ul>
+    @for (outcome of outcomes(); track $index) {
+      <li>
+        <bdi>{{ outcome }}</bdi>
+        <button
+          pButton
+          severity="secondary"
+          type="button"
+          [disabled]="
+            disabled() ||
+            blocked() ||
+            busy() ||
+            translationPending() ||
+            pagePending() ||
+            !!this.outcome
+          "
+          [outlined]="true"
+          (click)="applyOutcome(outcome, true)"
+        >
+          {{ "Remove" | localize }}
+        </button>
+      </li>
+    } @empty {
+      <li>{{ "No declared outcomes" | localize }}</li>
+    }
+  </ul>
+  <label for="form-outcome">{{ "New outcome" | localize }}</label>
+  <input
+    id="form-outcome"
+    maxlength="64"
+    pInputText
+    [disabled]="disabled() || blocked() || busy()"
+    [(ngModel)]="outcome"
+    (ngModelChange)="changed.emit()"
+  />
+  <button
+    pButton
+    type="button"
+    [disabled]="
+      disabled() ||
+      blocked() ||
+      busy() ||
+      translationPending() ||
+      pagePending() ||
+      !outcome.trim()
+    "
+    (click)="applyOutcome()"
+  >
+    {{ "Add outcome" | localize }}
+  </button>
+  @if (outcome) {
+    <button
+      pButton
+      severity="secondary"
+      type="button"
+      [disabled]="disabled() || blocked() || busy()"
+      [outlined]="true"
+      (click)="discardOutcome()"
+    >
+      {{ "Discard outcome edits" | localize }}
+    </button>
+  }
+  @if (pageAuthoring()) {
+    <app-form-pages
+      [blocked]="translationPending() || !!outcome"
+      [context]="context()"
+      [disabled]="disabled() || blocked() || busy()"
+      [documents]="documents()"
+      [fields]="fields()"
+      (applied)="applied.emit($event)"
+      (changed)="changed.emit()"
+      (discarded)="discardPages()"
+      (pendingChange)="pagePending.set($event)"
+    />
+  }
+</section>

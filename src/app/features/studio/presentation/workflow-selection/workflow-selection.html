@@ -1,0 +1,138 @@
+@let vm = view();
+<details>
+  <summary>{{ "Selection and connections" | localize }}</summary>
+  <fieldset>
+    <legend>{{ "Select steps" | localize }}</legend>
+    @for (node of vm.nodes(); track node.key) {
+      <label
+        ><input
+          type="checkbox"
+          [disabled]="vm.pending().length > 0"
+          [ngModel]="vm.selectionKeys().includes(node.key)"
+          (ngModelChange)="vm.toggleSelection(node.key, $event)"
+        />{{ node.title }}</label
+      >
+    }
+  </fieldset>
+  <button
+    pButton
+    severity="secondary"
+    type="button"
+    [disabled]="vm.readonly() || vm.pending().length > 0 || !canAddNext()"
+    (click)="vm.beginNext(vm.selected())"
+  >
+    {{ "Add next" | localize }}
+  </button>
+  <div class="selection-commands">
+    <button
+      pButton
+      severity="secondary"
+      type="button"
+      [disabled]="vm.pending().length > 0 || !vm.nodes().length"
+      (click)="vm.selectMany(vm.nodes().map(nodeKey))"
+    >
+      {{ "Select all steps" | localize }}
+    </button>
+    <button
+      pButton
+      severity="secondary"
+      type="button"
+      [disabled]="
+        vm.readonly() || vm.pending().length > 0 || !vm.selectionKeys().length
+      "
+      (click)="vm.duplicate()"
+    >
+      {{ "Duplicate selection" | localize }}
+    </button>
+    <button
+      pButton
+      severity="secondary"
+      type="button"
+      [disabled]="
+        vm.readonly() ||
+        vm.pending().length > 0 ||
+        vm.selectionKeys().length < 2
+      "
+      (click)="vm.align('x')"
+    >
+      {{ "Align left" | localize }}
+    </button>
+    <button
+      pButton
+      severity="secondary"
+      type="button"
+      [disabled]="
+        vm.readonly() ||
+        vm.pending().length > 0 ||
+        vm.selectionKeys().length < 2
+      "
+      (click)="vm.align('y')"
+    >
+      {{ "Align top" | localize }}
+    </button>
+    <button
+      pButton
+      severity="danger"
+      type="button"
+      [disabled]="
+        vm.readonly() || vm.pending().length > 0 || !vm.selectionKeys().length
+      "
+      (click)="vm.removeSelection()"
+    >
+      {{ "Remove selected steps" | localize }}
+    </button>
+  </div>
+  <label for="connection-select">{{ "Connection" | localize }}</label>
+  <app-select-control
+    inputId="connection-select"
+    [ngModel]="vm.connectionId"
+    (ngModelChange)="vm.connectionId = $event; vm.inspectConnection($event)"
+  >
+    <option value="">{{ "Choose" | localize }}</option>
+    @for (edge of vm.connections(); track edge.id) {
+      <option [value]="edge.id">{{ edge.kind }} · {{ edgeName(edge) }}</option>
+    }
+  </app-select-control>
+  <button
+    pButton
+    severity="secondary"
+    type="button"
+    [disabled]="vm.readonly() || vm.pending().length > 0 || !canInsert()"
+    (click)="vm.beginInsert(vm.connectionId)"
+  >
+    {{ "Insert step" | localize }}
+  </button>
+  <div class="selection-commands">
+    <button
+      pButton
+      severity="secondary"
+      type="button"
+      [disabled]="vm.readonly() || vm.pending().length > 0 || !vm.connectionId"
+      (click)="vm.removeConnection()"
+    >
+      {{ "Remove connection" | localize }}
+    </button>
+    <button
+      pButton
+      severity="secondary"
+      type="button"
+      [disabled]="vm.readonly() || vm.pending().length > 0 || !vm.connectionId"
+      (click)="vm.routeEdge(vm.connectionId, [])"
+    >
+      {{ "Reset connection route" | localize }}
+    </button>
+  </div>
+</details>
+<details>
+  <summary>{{ "Step display" | localize }}</summary>
+  @for (node of vm.nodes(); track node.key) {
+    <label
+      ><input
+        type="checkbox"
+        [disabled]="vm.readonly() || vm.pending().length > 0"
+        [ngModel]="vm.document().collapsed.includes(node.key)"
+        (ngModelChange)="vm.collapseStep(node.key, $event)"
+      />{{ "Compact step" | localize }} · {{ node.title }}</label
+    >
+  }
+</details>

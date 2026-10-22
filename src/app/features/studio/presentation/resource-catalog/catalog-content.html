@@ -38,6 +38,7 @@
     <ng-template #overview>
       <app-record-summary
         [caption]="vm.spec.title"
+        [groups]="businessSections(vm.key)"
         [icon]="
           vm.key.startsWith('workflow')
             ? 'pi pi-sitemap'
@@ -45,10 +46,15 @@
               ? 'pi pi-file-edit'
               : 'pi pi-box'
         "
-        [record]="row"
+        [includeRemaining]="true"
+        [record]="businessRecord(vm.key, row)"
+        [showIdentity]="false"
         [title]="vm.label(row)"
       />
     </ng-template>
+    @if (["clients", "client-releases", "request-types"].includes(vm.key)) {
+      <app-catalog-relations [record]="row" />
+    }
     @if (
       vm.key === "workflows" ||
       vm.key === "workflow-versions" ||

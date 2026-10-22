@@ -1,14 +1,67 @@
 @let vm = view();
 <header class="console-page-header">
   <div>
-    <span class="console-eyebrow">{{ "Studio catalogs" | localize }}</span>
-    <h1 tabindex="-1">{{ vm.spec.title | localize }}</h1>
-    <p class="console-description">
-      {{ "Manage definitions, versions and their lifecycle." | localize }}
-    </p>
+    <span class="console-eyebrow">{{
+      (versionArea === "/administration" ? "Administration" : "Studio catalogs")
+        | localize
+    }}</span>
+    <h1 tabindex="-1">{{ objectTitle() }}</h1>
+    <p class="console-description">{{ subtitle() }}</p>
   </div>
-  <div class="flex flex-wrap gap-2 items-center">
+  <div class="flex flex-wrap gap-2 items-center" [hidden]="vm.formOpen()">
+    <ng-content />
     @if (vm.selected()) {
+      @if (vm.key === "forms" || vm.key === "workflows") {
+        <app-favorite-action
+          [disabled]="vm.busy() || vm.dirty()"
+          [kind]="vm.key"
+          [reference]="vm.reference()"
+        />
+      }
+      @if (vm.versionCatalog) {
+        <a
+          class="p-button p-button-outlined"
+          [queryParams]="{ parent: vm.reference() }"
+          [routerLink]="[versionArea, vm.versionCatalog]"
+          >{{ "Versions" | localize }}</a
+        >
+      }
+      @if (vm.key === "forms") {
+        <a
+          class="p-button"
+          routerLink="/studio/form-versions"
+          [queryParams]="{ parent: vm.reference(), create: '1' }"
+          >{{ "Create draft" | localize }}</a
+        >
+      }
+      @if (vm.spec.editor) {
+        <a
+          class="p-button p-button-outlined"
+          [routerLink]="['/studio', vm.key, vm.reference(), 'edit']"
+          >{{ "Open designer" | localize }}</a
+        >
+      }
+      @if (actionItems().length) {
+        <button
+          aria-haspopup="menu"
+          pButton
+          severity="secondary"
+          type="button"
+          [attr.aria-expanded]="actions.visible"
+          [disabled]="vm.busy() || vm.dirty() || vm.reconcileRequired()"
+          (click)="actions.toggle($event)"
+        >
+          {{ "Actions" | localize }}
+          <i aria-hidden="true" class="pi pi-angle-down"></i>
+        </button>
+        <p-menu
+          #actions
+          appendTo="body"
+          [model]="actionItems()"
+          [popup]="true"
+        />
+      }
+
       @if (vm.spec.actions.includes("update") && !vm.immutable()) {
         <button
           pButton

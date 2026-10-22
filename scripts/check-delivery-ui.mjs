@@ -43,22 +43,74 @@ export async function checkDeliveryUi(root = ".") {
     };
     visit(ast);
   }
+  for (const name of [
+    "agent-messages",
+    "workspace-repair-messages",
+    "form-authoring-messages",
+    "workflow-authoring-messages",
+  ]) {
+    const messages = JSON.parse(
+      await read(`src/app/core/localization/${name}.json`),
+    );
+    for (const [key, value] of Object.entries(messages)) {
+      if (typeof value !== "string" || !value.trim())
+        throw Error(`Empty translation: ${key}`);
+      keys.add(key);
+    }
+  }
+  const arabicMessages = JSON.parse(
+    await read("src/app/core/localization/arabic-messages.json"),
+  );
+  const arabicKeys = new Set();
+  for (const [key, value] of Object.entries(arabicMessages)) {
+    if (typeof value !== "string" || !value.trim())
+      throw Error(`Empty Arabic translation: ${key}`);
+    arabicKeys.add(key);
+  }
   const fields = JSON.parse(
     await read("src/app/shared/domain/field-labels.json"),
   );
   for (const value of Object.values(fields)) {
     if (!value.fa?.trim())
       throw Error(`Missing field translation: ${value.label}`);
+    if (!value.ar?.trim())
+      throw Error(`Missing Arabic field translation: ${value.label}`);
     keys.add(value.label);
+    arabicKeys.add(value.label);
   }
   const templates = (
     await Promise.all([
       walk(`${root}/src/app/shared/ui`),
+      walk(`${root}/src/app/core/layout/workspace-preferences`),
       walk(`${root}/src/app/core/auth/profile`),
       walk(`${root}/src/app/features/support`),
+      walk(
+        `${root}/src/app/features/administration/presentation/process-controls`,
+      ),
       walk(`${root}/src/app/features/readiness`),
       walk(`${root}/src/app/features/records/presentation/favorites`),
+      ...[
+        "agent-fields",
+        "agent-detail",
+        "agent-decision",
+        "agent-decision-summary",
+        "agent-policy",
+        "agent-capabilities",
+      ].map((dir) =>
+        walk(`${root}/src/app/features/records/presentation/${dir}`),
+      ),
       walk(`${root}/src/app/features/operations/presentation/case-list`),
+      ...[
+        "case-detail",
+        "case-page-header",
+        "case-summary",
+        "case-history",
+        "request-actions",
+        "task-controls",
+        "process-entry",
+      ].map((dir) =>
+        walk(`${root}/src/app/features/operations/presentation/${dir}`),
+      ),
       walk(`${root}/src/app/features/help`),
       walk(`${root}/src/app/features/calendar`),
       walk(`${root}/src/app/features/analytics`),
@@ -70,6 +122,8 @@ export async function checkDeliveryUi(root = ".") {
         "form-builder",
         "form-inspector",
         "form-behavior",
+        "form-choice-rows",
+        "form-live-preview",
         "form-settings",
         "workflow-board",
         "node-inspector",
@@ -88,6 +142,7 @@ export async function checkDeliveryUi(root = ".") {
     .flat()
     .filter((p) => p.endsWith(".html"));
   let total = 0;
+  const missing = new Set();
   for (const path of templates) {
     const text = await readFile(path, "utf8");
     for (const match of text.matchAll(
@@ -95,9 +150,46 @@ export async function checkDeliveryUi(root = ".") {
     )) {
       total++;
       if (!keys.has(match[2]))
-        throw Error(`Missing translation: ${match[2]} in ${path}`);
+        missing.add(`Missing Persian translation: ${match[2]} in ${path}`);
+      if (!arabicKeys.has(match[2]))
+        missing.add(`Missing Arabic translation: ${match[2]} in ${path}`);
     }
   }
+  for (const path of [
+    "src/app/core/layout/app-shell.ts",
+    "src/app/features/operations/presentation/operations-home.ts",
+    "src/app/features/studio/presentation/studio-home.ts",
+    "src/app/features/administration/presentation/administration-home.ts",
+  ]) {
+    const ast = ts.createSourceFile(
+      path,
+      await read(path),
+      ts.ScriptTarget.Latest,
+      true,
+    );
+    const visit = (node) => {
+      if (
+        ts.isPropertyAssignment(node) &&
+        ts.isIdentifier(node.name) &&
+        ["label", "title", "description"].includes(node.name.text) &&
+        ts.isStringLiteral(node.initializer)
+      ) {
+        const text = node.initializer.text;
+        total++;
+        if (!keys.has(text))
+          missing.add(
+            `Missing Persian navigation translation: ${text} in ${path}`,
+          );
+        if (!arabicKeys.has(text))
+          missing.add(
+            `Missing Arabic navigation translation: ${text} in ${path}`,
+          );
+      }
+      ts.forEachChild(node, visit);
+    };
+    visit(ast);
+  }
+  if (missing.size) throw Error([...missing].join("\n"));
   const preview = await read(
     "src/app/core/development/preview-routes.production.ts",
   );

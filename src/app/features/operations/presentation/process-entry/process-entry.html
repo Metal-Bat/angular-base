@@ -1,6 +1,25 @@
 <header class="console-page-header">
-  <h1 tabindex="-1">{{ "Process tracking" | localize }}</h1>
+  <div>
+    <h1 tabindex="-1">{{ "Process tracking" | localize }}</h1>
+    @if (status()) {
+      <span class="console-record-status">{{ status() | localize }}</span>
+    }
+  </div>
   <a routerLink="/operations/requests">{{ "My requests" | localize }}</a>
+  <button
+    class="reload-control"
+    pButton
+    severity="secondary"
+    type="button"
+    [attr.aria-label]="'Refresh' | localize"
+    [attr.title]="'Refresh' | localize"
+    [disabled]="busy()"
+    [text]="true"
+    (click)="load()"
+  >
+    <i aria-hidden="true" class="pi pi-refresh"></i
+    ><span class="sr-only">{{ "Refresh" | localize }}</span>
+  </button>
 </header>
 @if (busy()) {
   <p role="status">{{ "Loading…" | localize }}</p>
@@ -8,27 +27,13 @@
 @if (error()) {
   <p role="alert">{{ error() | localize }}</p>
 }
-@if (status()) {
-  <p>{{ "Status" | localize }}: {{ status() | localize }}</p>
-}
-<button
-  class="reload-control"
-  pButton
-  severity="secondary"
-  type="button"
-  [attr.aria-label]="'Refresh' | localize"
-  [attr.title]="'Refresh' | localize"
-  [disabled]="busy()"
-  [text]="true"
-  (click)="load()"
->
-  <i aria-hidden="true" class="pi pi-refresh"></i
-  ><span class="sr-only">{{ "Refresh" | localize }}</span>
-</button>
 @if (snapshot(); as process) {
-  <p>
-    {{ "Pinned workflow" | localize }}: <bdi>{{ process.workflow }}</bdi>
-  </p>
+  <details>
+    <summary>{{ "Pinned definitions" | localize }}</summary>
+    <p>
+      {{ "Pinned workflow" | localize }}: <bdi>{{ process.workflow }}</bdi>
+    </p>
+  </details>
   <a [routerLink]="['/operations/requests', process.request]">{{
     "Request detail" | localize
   }}</a>
@@ -43,25 +48,38 @@
     >
   }
   <h2>{{ "Current positions" | localize }}</h2>
-  <ul>
-    @for (position of process.positions; track $index) {
-      <li>
-        <bdi>{{ position.step }}</bdi> · {{ position.status | localize }} ·
-        {{ position.wait }}
-      </li>
-    } @empty {
-      <li>{{ "No active positions" | localize }}</li>
-    }
-  </ul>
+  <p-table [value]="process.positions.slice()">
+    <ng-template #header
+      ><tr>
+        <th scope="col">{{ "Step" | localize }}</th>
+        <th scope="col">{{ "Status" | localize }}</th>
+        <th scope="col">{{ "Waiting for" | localize }}</th>
+      </tr></ng-template
+    >
+    <ng-template #body let-position
+      ><tr>
+        <td>
+          <bdi>{{ position.step }}</bdi>
+        </td>
+        <td>{{ position.status | localize }}</td>
+        <td>{{ position.wait || "None" | localize }}</td>
+      </tr></ng-template
+    >
+    <ng-template #emptymessage
+      ><tr>
+        <td colspan="3">{{ "No active positions" | localize }}</td>
+      </tr></ng-template
+    >
+  </p-table>
   <app-execution-path [process]="process" />
   <app-process-evidence [reference]="process.reference" />
   <h2>{{ "Child processes" | localize }}</h2>
   <ul>
     @for (child of process.children; track child.reference) {
       <li>
-        <a [routerLink]="['/operations/processes', child.reference]"
-          ><bdi>{{ child.reference }}</bdi></a
-        >
+        <a [routerLink]="['/operations/processes', child.reference]">{{
+          "Child process" | localize
+        }}</a>
         · {{ child.status | localize }}
       </li>
     }
@@ -69,12 +87,15 @@
   <h2>{{ "Timeline" | localize }}</h2>
   <p>
     {{ "Coverage started" | localize }}:
-    {{ process.coverage ?? ("Unavailable" | localize) }}
+    {{ process.coverage ? date(process.coverage) : ("Unavailable" | localize) }}
   </p>
   <ol>
     @for (event of process.events; track event.sequence) {
       <li>
-        <time>{{ event.occurred }}</time> · {{ event.kind | localize }}
+        <time [attr.datetime]="event.occurred" [attr.title]="event.occurred">{{
+          date(event.occurred)
+        }}</time>
+        · {{ event.kind | localize }}
         @if (event.task) {
           <a [routerLink]="['/operations/tasks', event.task]">{{
             "Task detail" | localize

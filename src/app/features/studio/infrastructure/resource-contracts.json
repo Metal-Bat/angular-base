@@ -316,7 +316,8 @@
           "key": "access_mode",
           "label": "Access Mode",
           "type": "text",
-          "nullable": false
+          "nullable": false,
+          "options": ["OPEN", "RESTRICTED"]
         },
         { "key": "code", "label": "Code", "type": "text", "nullable": false },
         {
@@ -577,7 +578,13 @@
           "type": "boolean",
           "nullable": false
         },
-        { "key": "kind", "label": "Type", "type": "text", "nullable": false },
+        {
+          "key": "kind",
+          "label": "Type",
+          "type": "text",
+          "nullable": false,
+          "options": ["ANDROID", "IOS", "DESKTOP", "WEB", "B2B", "SDK"]
+        },
         { "key": "name", "label": "Name", "type": "text", "nullable": false },
         {
           "key": "platform",
@@ -1177,7 +1184,8 @@
           "key": "status",
           "label": "Status",
           "type": "text",
-          "nullable": false
+          "nullable": false,
+          "options": ["DRAFT", "PUBLISHED", "RETIRED"]
         }
       ],
       "columns": [
@@ -1389,7 +1397,8 @@
           "key": "status",
           "label": "Status",
           "type": "text",
-          "nullable": false
+          "nullable": false,
+          "options": ["DRAFT", "PUBLISHED", "RETIRED"]
         }
       ],
       "columns": [

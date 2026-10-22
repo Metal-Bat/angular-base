@@ -1,6 +1,10 @@
 import { provideHttpClient } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
-import { ActivatedRoute, convertToParamMap } from '@angular/router';
+import {
+  ActivatedRoute,
+  convertToParamMap,
+  provideRouter,
+} from '@angular/router';
 import { ActorState } from '../../../../core/auth/actor-state';
 import { SessionContext } from '../../../../core/auth/session-context';
 import { AdminPort } from '../../application/admin-port';
@@ -16,6 +20,7 @@ describe('Authoritative process controls', () => {
     TestBed.configureTestingModule({
       providers: [
         provideHttpClient(),
+        provideRouter([]),
         {
           provide: ActivatedRoute,
           useValue: { snapshot: { queryParamMap: convertToParamMap({}) } },

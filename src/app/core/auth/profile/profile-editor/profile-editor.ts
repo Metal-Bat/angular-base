@@ -1,3 +1,5 @@
+import { FilePicker } from '../../../../shared/ui/file-picker/file-picker';
+import { TransferProgress } from '../../../../shared/ui/transfer-progress/transfer-progress';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -15,6 +17,7 @@ import { Feedback } from '../../../feedback/feedback';
 import { ActorState } from '../../actor-state';
 import { Preferences } from '../../preferences';
 import { ProfileSettings } from '../../profile-settings';
+import { PrivateAvatar } from '../private-avatar/private-avatar';
 import { LocalizePipe } from '../../../../shared/ui/localize-pipe';
 import { ControlField } from '../../../../shared/ui/control-field/control-field';
 import { BinaryTransfer } from '../../../transport/binary-transfer';
@@ -24,11 +27,14 @@ import { focusInvalidControl } from '../../../../shared/ui/focus-invalid-control
 @Component({
   selector: 'app-profile-editor',
   imports: [
+    TransferProgress,
+    FilePicker,
     FormsModule,
     ButtonDirective,
     InputTextModule,
     LocalizePipe,
     ControlField,
+    PrivateAvatar,
   ],
   providers: [BinaryTransfer],
   templateUrl: './profile-editor.html',
@@ -43,6 +49,14 @@ export class ProfileEditor {
   readonly error = signal('');
   readonly saved = signal(false);
   readonly reconcileRequired = signal(false);
+  readonly pendingAvatar = signal<string | null>(null);
+  readonly candidateAvatar = signal<File | null>(null);
+  discardAvatar(): void {
+    if (!this.busy() && !this.transfer.busy()) {
+      this.pendingAvatar.set(null);
+      this.candidateAvatar.set(null);
+    }
+  }
   private readonly form = viewChild<ElementRef<HTMLFormElement>>('profileForm');
   private readonly renderInjector = inject(Injector);
   private generation = 0;
@@ -60,7 +74,8 @@ export class ProfileEditor {
       return false;
     }
     return (
-      !this.dirty() || this.feedback.confirm('Discard unsaved profile changes?')
+      (!this.dirty() && !this.pendingAvatar()) ||
+      this.feedback.confirm('Discard unsaved profile changes?')
     );
   }
   firstName = '';
@@ -75,10 +90,14 @@ export class ProfileEditor {
       this.busy.set(false);
       this.saved.set(false);
       this.reconcileRequired.set(false);
+      this.pendingAvatar.set(null);
+      this.candidateAvatar.set(null);
     });
     inject(DestroyRef).onDestroy(() => {
       this.generation++;
       release();
+      this.pendingAvatar.set(null);
+      this.candidateAvatar.set(null);
     });
     void this.load();
   }
@@ -198,6 +217,13 @@ export class ProfileEditor {
     submittedNames: string | null,
   ): Promise<void> {
     if (epoch === this.actor.epoch && generation === this.generation) {
+      if (avatar !== undefined && saved.avatar_ref_id !== avatar) {
+        throw Error('Avatar association is unconfirmed');
+      }
+      if (avatar === this.pendingAvatar()) {
+        this.pendingAvatar.set(null);
+        this.candidateAvatar.set(null);
+      }
       if (avatar === undefined) {
         if (
           JSON.stringify([this.firstName, this.lastName]) === submittedNames
@@ -222,7 +248,17 @@ export class ProfileEditor {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
     input.value = '';
-    if (!file || this.busy() || this.reconcileRequired()) {
+    if (file) {
+      await this.uploadAvatar(file);
+    }
+  }
+  async uploadAvatar(file: File): Promise<void> {
+    if (
+      this.busy() ||
+      this.transfer.busy() ||
+      this.pendingAvatar() ||
+      this.reconcileRequired()
+    ) {
       return;
     }
     const release = this.preferences.beginProfileMutation();
@@ -245,12 +281,14 @@ export class ProfileEditor {
       const body: unknown = JSON.parse(await response.body.text());
       const ref = readData(response.clone({ body }), (raw) => {
         const value = record(raw);
-        if (typeof value['ref_id'] !== 'string') {
+        if (typeof value['ref_id'] !== 'string' || !value['ref_id']) {
           throw Error('Invalid upload');
         }
         return value['ref_id'];
       });
       if (epoch === this.actor.epoch && generation === this.generation) {
+        this.pendingAvatar.set(ref);
+        this.candidateAvatar.set(file);
         await this.save(ref, true);
       }
     } catch {
@@ -261,6 +299,47 @@ export class ProfileEditor {
       release();
       if (epoch === this.actor.epoch && generation === this.generation) {
         this.avatarWriting = false;
+      }
+    }
+  }
+  async checkAvatar(): Promise<void> {
+    if (this.busy() || this.transfer.busy()) {
+      return;
+    }
+    const epoch = this.actor.epoch;
+    const generation = this.generation;
+    const nameSnapshot = JSON.stringify([this.firstName, this.lastName]);
+    const namesWereDirty = this.dirty();
+    this.busy.set(true);
+    try {
+      const current = await this.profile.read();
+      if (epoch !== this.actor.epoch || generation !== this.generation) {
+        return;
+      }
+      if (
+        !namesWereDirty &&
+        JSON.stringify([this.firstName, this.lastName]) === nameSnapshot
+      ) {
+        this.firstName = current.first_name ?? '';
+        this.lastName = current.last_name ?? '';
+      }
+      this.baseline = JSON.stringify([
+        current.first_name ?? '',
+        current.last_name ?? '',
+      ]);
+      this.reconcileRequired.set(false);
+      this.error.set('');
+      if (current.avatar_ref_id === this.pendingAvatar()) {
+        this.pendingAvatar.set(null);
+        this.candidateAvatar.set(null);
+      }
+    } catch {
+      if (epoch === this.actor.epoch && generation === this.generation) {
+        this.error.set('This resource is unavailable.');
+      }
+    } finally {
+      if (epoch === this.actor.epoch && generation === this.generation) {
+        this.busy.set(false);
       }
     }
   }

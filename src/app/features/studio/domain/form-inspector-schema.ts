@@ -16,14 +16,22 @@ export const constraintSchema: JsonObject = {
     maxItems: { type: 'integer', minimum: 0, maximum: 256 },
   },
 };
-export const ruleValueSchema: JsonObject = {
-  anyOf: [
-    { type: 'string' },
-    { type: 'boolean' },
-    { type: 'number' },
-    { type: 'null' },
-  ],
-};
+/** Only show constraints applicable to this canonical type; preserve other keys. */
+export function constraintSchemaFor(field: JsonObject): JsonObject {
+  const types = Array.isArray(field['type']) ? field['type'] : [field['type']];
+  const keys = types.includes('string')
+    ? ['minLength', 'maxLength', 'pattern']
+    : types.some((type) => type === 'integer' || type === 'number')
+      ? ['minimum', 'maximum']
+      : types.includes('array')
+        ? ['minItems', 'maxItems']
+        : [];
+  const properties = constraintSchema['properties'] as JsonObject;
+  return {
+    ...constraintSchema,
+    properties: Object.fromEntries(keys.map((key) => [key, properties[key]])),
+  };
+}
 export const choicesSchema: JsonObject = {
   type: 'array',
   minItems: 1,

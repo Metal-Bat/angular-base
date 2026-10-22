@@ -1,5 +1,26 @@
-<details>
-  <summary>{{ "History" | localize }}</summary>
+<button
+  #historyTrigger
+  aria-haspopup="dialog"
+  pButton
+  severity="secondary"
+  type="button"
+  [attr.aria-expanded]="visible()"
+  [disabled]="!available()"
+  [outlined]="true"
+  (click)="open()"
+>
+  {{ "History" | localize }}
+</button>
+<p-dialog
+  appendTo="body"
+  [closeAriaLabel]="'Close' | localize"
+  [header]="'History' | localize"
+  [modal]="true"
+  [style]="{ width: 'min(42rem, calc(100vw - 2rem))' }"
+  [visible]="visible()"
+  (onHide)="close(historyTrigger)"
+  (visibleChange)="visible.set($event)"
+>
   <button
     pButton
     severity="secondary"
@@ -13,10 +34,17 @@
   @if (error()) {
     <p role="alert">{{ error() | localize }}</p>
   }
+  @if (busy()) {
+    <p role="status">{{ "Loading…" | localize }}</p>
+  }
+  @if (!busy() && !error() && !items().length) {
+    <p role="status">{{ "No history entries" | localize }}</p>
+  }
   <ol>
     @for (entry of items(); track $index) {
       <li>
-        {{ entry.revision }} · <time>{{ entry.date }}</time> ·
+        {{ entry.revision }} ·
+        <time>{{ entry.date | localizedDateTime }}</time> ·
         {{ entry.action }}
       </li>
     }
@@ -41,4 +69,4 @@
   >
     {{ "Next" | localize }}
   </button>
-</details>
+</p-dialog>

@@ -1,0 +1,44 @@
+:host {
+  display: block;
+  min-inline-size: 0;
+}
+.decision-settings,
+.choice-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin-block: 1rem;
+}
+.choice-row {
+  border-block-start: 1px solid var(--console-border);
+  padding-block: 1rem;
+}
+.choice-row header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+textarea {
+  inline-size: 100%;
+  min-block-size: 7rem;
+  font-size: 1rem;
+}
+@media (max-width: 48rem) {
+  .decision-settings,
+  .choice-fields {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.choice-order {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.choice-fields {
+  grid-template-columns: minmax(0, 1fr);
+}
+.translation-missing {
+  color: var(--console-muted);
+  margin: 0;
+}

@@ -1,0 +1,73 @@
+@if (!rows().length) {
+  <p>{{ "No data mappings for this step." | localize }}</p>
+}
+<ul class="mapping-list">
+  @for (binding of rows(); track binding.id) {
+    <li [class.inspected]="inspected() === binding.id">
+      <p>
+        <strong>{{ portLabel(binding.edge["target_port"]) | localize }}</strong>
+        <span aria-hidden="true">{{ arrow() }}</span>
+        {{ sourceLabel(binding.edge) | localize }}
+        <bdi
+          >{{ binding.edge["source_step"] }}
+          {{ binding.edge["source_path"] || binding.edge["source_port"] }}</bdi
+        >
+      </p>
+      <p>
+        {{ "Source type" | localize }}:
+        {{ summary(sourceSchema(binding.edge)) }}
+        · {{ "Target type" | localize }}:
+        {{ summary(schema(binding.edge["target_schema"])) }}
+      </p>
+      @if (listBinding(binding.edge)) {
+        <p>
+          {{ "Collection position" | localize }}:
+          {{ $any(binding.edge["ordinal"]) + 1 }}
+        </p>
+        <div class="mapping-actions">
+          <button
+            pButton
+            severity="secondary"
+            type="button"
+            [disabled]="disabled() || !canMove(binding.edge, -1)"
+            (click)="moved.emit({ id: binding.id, direction: -1 })"
+          >
+            {{ "Move mapping up" | localize }}
+          </button>
+          <button
+            pButton
+            severity="secondary"
+            type="button"
+            [disabled]="disabled() || !canMove(binding.edge, 1)"
+            (click)="moved.emit({ id: binding.id, direction: 1 })"
+          >
+            {{ "Move mapping down" | localize }}
+          </button>
+        </div>
+      }
+      <p [hidden]="editable(binding.edge)">
+        {{
+          "Input port unavailable. Remove this mapping or restore the step definition."
+            | localize
+        }}
+      </p>
+      <button
+        pButton
+        severity="secondary"
+        type="button"
+        [disabled]="disabled() || !editable(binding.edge)"
+        (click)="edited.emit(binding.id)"
+      >
+        {{ "Edit data mapping" | localize }}
+      </button>
+      <button
+        pButton
+        type="button"
+        [disabled]="disabled()"
+        (click)="removed.emit(binding.id)"
+      >
+        {{ "Remove data mapping" | localize }}
+      </button>
+    </li>
+  }
+</ul>

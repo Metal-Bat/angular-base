@@ -4,6 +4,7 @@ import { renderOf } from './form-editing';
 import {
   canReparent,
   duplicateLayout,
+  reorderPlacement,
   reparentPlacement,
 } from './form-placement';
 
@@ -23,6 +24,27 @@ function fixture(): JsonObject {
 }
 
 describe('Layout placement operations', () => {
+  it('reorders document and selected path together without changing bindings or adjacent state', () => {
+    const initial = fixture();
+    const snapshot = structuredClone(initial);
+    const result = reorderPlacement(initial, [0], 1)!;
+    expect(result.selection).toEqual([1]);
+    expect(authoredNode(renderOf(result.documents), result.selection)).toEqual(
+      authoredNode(renderOf(initial), [0]),
+    );
+    for (const key of [
+      'data_schema',
+      'localization',
+      'reuse_instances',
+      'variants',
+    ]) {
+      expect(result.documents[key]).toEqual(initial[key]);
+    }
+    expect(reorderPlacement(initial, [0], -1)).toBeNull();
+    expect(reorderPlacement(initial, [], 1)).toBeNull();
+    expect(initial).toEqual(snapshot);
+  });
+
   it('moves across parents atomically, preserving all canonical documents and bindings', () => {
     const initial = fixture();
     const before = structuredClone(initial);

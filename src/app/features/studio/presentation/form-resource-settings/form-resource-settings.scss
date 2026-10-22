@@ -1,0 +1,25 @@
+:host {
+  display: block;
+}
+.resource-settings {
+  display: grid;
+  gap: 0.5rem;
+  min-inline-size: 0;
+}
+p {
+  margin-block: 0 0.5rem;
+}
+input,
+textarea {
+  inline-size: 100%;
+  min-inline-size: 0;
+  max-inline-size: 100%;
+}
+small {
+  color: var(--console-muted);
+  overflow-wrap: anywhere;
+}
+
+input {
+  min-block-size: 2.75rem;
+}

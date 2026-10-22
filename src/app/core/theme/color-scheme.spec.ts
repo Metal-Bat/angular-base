@@ -1,14 +1,27 @@
 import { TestBed } from '@angular/core/testing';
-import { ColorScheme, themePalettes } from './color-scheme';
+import { ColorScheme, themePalettes, themeStorageKey } from './color-scheme';
 import { ActorState } from '../auth/actor-state';
 describe('Named workspace themes', () => {
-  it('restores the application default on actor change instead of carrying another user appearance', () => {
+  beforeEach(() => localStorage.removeItem(themeStorageKey));
+  it('retains only the selected public theme across actor cleanup', () => {
     const scheme = TestBed.inject(ColorScheme);
     scheme.select('rose-dark');
     TestBed.inject(ActorState).reset();
-    expect(scheme.selected()).toBe('blue-light');
-    expect(scheme.mode()).toBe('light');
-    expect(document.documentElement.classList.contains('app-dark')).toBe(false);
+    expect(scheme.selected()).toBe('rose-dark');
+    expect(scheme.mode()).toBe('dark');
+    expect(document.documentElement.classList.contains('app-dark')).toBe(true);
+    expect(localStorage.getItem(themeStorageKey)).toBe('rose-dark');
+  });
+  it('restores a validated browser theme before login and ignores private or malformed cache fields', () => {
+    localStorage.setItem(themeStorageKey, 'teal-dark');
+    expect(TestBed.inject(ColorScheme).selected()).toBe('teal-dark');
+    TestBed.resetTestingModule();
+    document.documentElement.classList.remove('app-dark');
+    localStorage.setItem(
+      themeStorageKey,
+      JSON.stringify({ palette: 'rose', mode: 'dark', actor: 'private' }),
+    );
+    expect(TestBed.inject(ColorScheme).selected()).toBe('blue-light');
   });
   it('tracks system changes only in system mode and releases the media listener', () => {
     const original = Object.getOwnPropertyDescriptor(window, 'matchMedia');
@@ -43,6 +56,7 @@ describe('Named workspace themes', () => {
     }
   });
   afterEach(() => {
+    localStorage.removeItem(themeStorageKey);
     document.documentElement.classList.remove('app-dark');
     delete document.documentElement.dataset['palette'];
   });
@@ -60,12 +74,12 @@ describe('Named workspace themes', () => {
       }
     }
   });
-  it('ignores unknown options and preserves the palette when toggling modes', () => {
+  it('ignores unknown options and preserves the palette when changing modes', () => {
     const scheme = TestBed.inject(ColorScheme);
     scheme.select('teal-dark');
     scheme.select('invalid-light');
     expect(scheme.selected()).toBe('teal-dark');
-    scheme.toggle();
+    scheme.setMode('light');
     expect(scheme.selected()).toBe('teal-light');
     expect(document.documentElement.dataset['palette']).toBe('teal');
   });

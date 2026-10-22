@@ -1,0 +1,93 @@
+@if (supported()) {
+  <div class="resource-settings">
+    <p>
+      {{
+        (validation()
+          ? "Row operations follow these validation limits."
+          : "Leave an optional limit empty to use the service default."
+        ) | localize
+      }}
+    </p>
+    @for (field of numbers(); track field.key) {
+      <label [for]="controlId() + '-' + field.key">{{
+        field.label | localize
+      }}</label>
+      <input
+        inputmode="numeric"
+        pInputText
+        [attr.aria-invalid]="
+          draft().errors.includes(field.label) ? 'true' : null
+        "
+        [disabled]="disabled()"
+        [id]="controlId() + '-' + field.key"
+        [ngModel]="numberText(field.key)"
+        (ngModelChange)="number(field.key, $event)"
+      />
+      <small
+        >{{ "Allowed range" | localize }}: {{ locale.number(field.minimum) }}–{{
+          locale.number(field.maximum)
+        }}</small
+      >
+    }
+    @for (field of flags(); track field.key) {
+      <label [for]="controlId() + '-' + field.key">{{
+        field.label | localize
+      }}</label>
+      <app-select-control
+        [disabled]="disabled()"
+        [inputId]="controlId() + '-' + field.key"
+        [ngModel]="flagValue(field.key)"
+        (ngModelChange)="flag(field.key, $event)"
+      >
+        <option value="default">{{ "Use service default" | localize }}</option>
+        <option value="true">{{ "Yes" | localize }}</option>
+        <option value="false">{{ "No" | localize }}</option>
+      </app-select-control>
+    }
+    @if (!validation() && kind() === "attachment_collection") {
+      <label [for]="controlId() + '-kinds'">{{
+        "Allowed file categories" | localize
+      }}</label>
+      <app-select-control
+        [disabled]="disabled()"
+        [inputId]="controlId() + '-kinds'"
+        [ngModel]="kinds()"
+        (ngModelChange)="category($event)"
+      >
+        <option value="default">{{ "Use service default" | localize }}</option>
+        <option value="file">{{ "Files" | localize }}</option>
+        <option value="image">{{ "Images" | localize }}</option>
+        <option value="both">{{ "Files and images" | localize }}</option>
+      </app-select-control>
+      <label [for]="controlId() + '-mime'">{{
+        "Accepted MIME types" | localize
+      }}</label>
+      <textarea
+        pTextarea
+        rows="4"
+        [disabled]="disabled()"
+        [id]="controlId() + '-mime'"
+        [ngModel]="mimeText()"
+        (ngModelChange)="changeMime($event)"
+      ></textarea>
+      <small>{{
+        "Enter at most 32 exact MIME types, one per line." | localize
+      }}</small>
+      <small>{{
+        "Images are saved as WebP. Size rules are checked on the saved image."
+          | localize
+      }}</small>
+    }
+    @for (error of draft().errors; track $index) {
+      <p role="alert">{{ error | localize }}</p>
+    }
+  </div>
+} @else {
+  <app-schema-input
+    [controlId]="controlId()"
+    [disabled]="disabled()"
+    [schema]="schema()"
+    [value]="value()"
+    (valueChange)="valueChanged.emit($event)"
+  />
+}

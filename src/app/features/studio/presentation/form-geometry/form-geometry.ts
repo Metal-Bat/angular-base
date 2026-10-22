@@ -4,7 +4,7 @@ import {
   input,
   output,
 } from '@angular/core';
-import { SchemaInput } from '../../../administration/presentation/schema-input/schema-input';
+import { SchemaInput } from '../../../../shared/ui/schema-input/schema-input';
 import { LocalizePipe } from '../../../../shared/ui/localize-pipe';
 import { JsonObject, JsonValue } from '../../../forms/domain/runtime-document';
 @Component({

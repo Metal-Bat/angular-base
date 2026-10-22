@@ -1,93 +1,39 @@
 @if (state()["visible"] !== false) {
   @if (collection()) {
-    <fieldset>
-      <legend>{{ node().label }}</legend>
-      @if (!validRows()) {
-        <p role="alert">{{ "Row identities are incompatible" | localize }}</p>
-      }
-      @for (key of rowKeys(); track key; let index = $index) {
-        <fieldset [attr.data-row-key]="key">
-          <legend>{{ "Row" | localize }} {{ index + 1 }}</legend>
-          @for (child of node().children; track $index) {
-            <app-runtime-node
-              [busy]="busy()"
-              [data]="data()"
-              [document]="document()"
-              [indices]="childIndices(index)"
-              [issues]="issues()"
-              [node]="child"
-              [path]="path() + '/children/' + $index"
-              [renderRoot]="renderRoot()"
-              (edit)="edit.emit($event)"
-            />
-          }
-          @if (writable() && resources) {
-            <button
-              pButton
-              severity="secondary"
-              type="button"
-              [outlined]="true"
-              (click)="rowCommand('remove', key)"
-            >
-              {{ "Remove row" | localize }}
-            </button>
-            <button
-              pButton
-              severity="secondary"
-              type="button"
-              [outlined]="true"
-              (click)="rowCommand('duplicate', key)"
-            >
-              {{ "Duplicate row" | localize }}
-            </button>
-            <button
-              pButton
-              severity="secondary"
-              type="button"
-              [disabled]="index === 0"
-              [outlined]="true"
-              (click)="rowCommand('reorder', key, index - 1)"
-            >
-              {{ "Move up" | localize }}
-            </button>
-            <button
-              pButton
-              severity="secondary"
-              type="button"
-              [disabled]="index + 1 >= rows().length"
-              [outlined]="true"
-              (click)="rowCommand('reorder', key, index + 1)"
-            >
-              {{ "Move down" | localize }}
-            </button>
-          }
-        </fieldset>
-      }
-      @if (writable() && resources) {
-        <button
-          pButton
-          severity="secondary"
-          type="button"
-          [disabled]="!validRows() || rows().length >= 256"
-          [outlined]="true"
-          (click)="rowCommand('add')"
-        >
-          {{ "Add row" | localize }}
-        </button>
-      }
-    </fieldset>
+    <ng-template
+      #collectionChild
+      let-child
+      let-childIndex="childIndex"
+      let-index="index"
+    >
+      <app-runtime-node
+        [busy]="busy()"
+        [data]="data()"
+        [document]="document()"
+        [indices]="childIndices(index)"
+        [issues]="issues()"
+        [node]="child"
+        [path]="path() + '/children/' + childIndex"
+        [renderRoot]="renderRoot()"
+        (edit)="edit.emit($event)"
+      />
+    </ng-template>
+    <app-runtime-collection [childTemplate]="collectionChild" [view]="this" />
   } @else if (attachmentsControl()) {
     <app-attachment-control
       [busy]="busy()"
       [document]="document()"
+      [instance]="instance()"
       [node]="node()"
       [path]="pointer()"
-      [writable]="writable()"
+      [rows]="attachmentRows()"
+      [writable]="canWrite()"
     />
   } @else if (layout()) {
     <section
       class="runtime-layout"
-      [attr.aria-label]="node().label"
+      [attr.aria-label]="accessibleLabel()"
+      [class.compact-layout]="node().renderer === 'compact'"
       [style.--form-layout-columns]="columns()"
     >
       @for (child of node().children; track $index) {

@@ -1,0 +1,37 @@
+<label [for]="controlId() + '-index'">{{
+  "Collection item index (leave empty for the whole collection)" | localize
+}}</label>
+<input
+  min="0"
+  pInputText
+  step="1"
+  type="number"
+  [attr.aria-describedby]="invalidIndex() ? controlId() + '-error' : null"
+  [attr.aria-invalid]="invalidIndex() ? 'true' : null"
+  [disabled]="disabled()"
+  [id]="controlId() + '-index'"
+  [ngModel]="index()"
+  (ngModelChange)="index.set($event)"
+/>
+@if (invalidIndex()) {
+  <p role="alert" [id]="controlId() + '-error'">
+    {{ "Choose a valid collection item index." | localize }}
+  </p>
+}
+@if (index() !== null && fields().length) {
+  <label [for]="controlId() + '-field'">{{
+    "Collection item field" | localize
+  }}</label>
+  <app-select-control
+    [ariaLabel]="'Collection item field' | localize"
+    [disabled]="disabled()"
+    [inputId]="controlId() + '-field'"
+    [ngModel]="field()"
+    (ngModelChange)="field.set($event)"
+  >
+    <option value="">{{ "Whole item" | localize }}</option>
+    @for (item of fields(); track item.path) {
+      <option [value]="item.path">{{ item.label }}</option>
+    }
+  </app-select-control>
+}

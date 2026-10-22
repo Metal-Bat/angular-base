@@ -2,14 +2,29 @@
   pButton
   severity="secondary"
   type="button"
-  [disabled]="disabled() || busy()"
-  (click)="add()"
+  [attr.aria-label]="
+    (saved() ? 'Remove from favorites' : 'Add to favorites') | localize
+  "
+  [attr.aria-pressed]="ready() ? saved() : null"
+  [disabled]="disabled() || busy() || !ready()"
+  [text]="true"
+  [title]="(saved() ? 'Remove from favorites' : 'Add to favorites') | localize"
+  (click)="toggle()"
 >
-  {{ "Add to favorites" | localize }}
+  <i
+    aria-hidden="true"
+    [class]="saved() ? 'pi pi-star-fill' : 'pi pi-star'"
+  ></i>
 </button>
-@if (saved()) {
-  <span role="status">{{ "Saved" | localize }}</span>
-}
 @if (error()) {
   <p role="alert">{{ error() | localize }}</p>
+  <button
+    pButton
+    severity="secondary"
+    type="button"
+    [disabled]="busy()"
+    (click)="refresh()"
+  >
+    {{ "Reload" | localize }}
+  </button>
 }

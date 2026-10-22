@@ -1,12 +1,16 @@
+import { workspaceGraphEdit } from '../../domain/workspace-graph-edit';
 import { JsonObject } from '../../../forms/domain/runtime-document';
-import { graphSteps } from '../../domain/workflow-authoring';
+import { canvasEdges, graphSteps } from '../../domain/workflow-authoring';
 import {
+  afterNextRender,
   computed,
   DestroyRef,
   Directive,
+  effect,
+  ElementRef,
   inject,
+  Injector,
   signal,
-  Signal,
 } from '@angular/core';
 import { ActorState } from '../../../../core/auth/actor-state';
 import {
@@ -14,12 +18,121 @@ import {
   moveSelection,
   reconnect,
   removeConnection,
+  removeSteps,
 } from '../../domain/canvas-editing';
-import { canvasEdges, CanvasNode } from '../../domain/workflow-authoring';
-import { Point, Workspace } from '../../domain/authoring';
-import { WorkflowBoardState } from './workflow-board-state';
+import { Point } from '../../domain/authoring';
+import { AuthorIssue } from '../../domain/authoring-diagnostics';
+import { focusWorkflowIssue } from './workflow-issue-focus';
+import { WorkflowStepActions } from './workflow-step-actions';
 @Directive()
-export abstract class WorkflowInteractions extends WorkflowBoardState {
+export abstract class WorkflowInteractions extends WorkflowStepActions {
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
+  private readonly injector = inject(Injector);
+  selectIssue(issue: AuthorIssue): void {
+    if (!issue.node) {
+      return;
+    }
+    this.select(issue.node);
+    this.dockTab.set('properties');
+    this.dockOpen.set(true);
+    afterNextRender(
+      () => {
+        if (this.selected() === issue.node) {
+          focusWorkflowIssue(this.host.nativeElement, issue.pointer);
+        }
+      },
+      { injector: this.injector },
+    );
+  }
+  readonly paletteDrag = signal<{ key: string; token: string } | null>(null);
+  openPalette(): void {
+    this.dockTab.set('steps');
+    this.dockOpen.set(true);
+    this.focusControl('#palette-search');
+  }
+  protected focusControl(selector: string): void {
+    const generation = this.generation;
+    afterNextRender(
+      () => {
+        if (generation === this.generation) {
+          this.host.nativeElement
+            .querySelector<HTMLElement>(selector)
+            ?.focus({ preventScroll: true });
+        }
+      },
+      { injector: this.injector },
+    );
+  }
+  cancelPlacement(): void {
+    this.paletteSelection.set('');
+    this.paletteDrag.set(null);
+  }
+  dragType(event: DragEvent, key: string): void {
+    if (
+      this.readonly() ||
+      this.pending().length ||
+      !event.dataTransfer ||
+      !this.catalogEntries().some((row) => row['key'] === key)
+    ) {
+      event.preventDefault();
+      return;
+    }
+    const token = crypto.randomUUID();
+    this.paletteDrag.set({ key, token });
+    event.dataTransfer.setData('application/x-studio-step', token);
+    event.dataTransfer.effectAllowed = 'copy';
+  }
+  protected revealStep(): void {
+    afterNextRender(
+      () => {
+        this.host.nativeElement
+          .querySelector('p-tabpanels')
+          ?.scrollTo({ top: 0 });
+      },
+      { injector: this.injector },
+    );
+  }
+  readonly canUndo = computed(() => {
+    this.document();
+    return this.history.canUndo;
+  });
+  readonly canRedo = computed(() => {
+    this.document();
+    return this.history.canRedo;
+  });
+  readonly dockTab = signal('steps');
+  async removeSelection(
+    keys = this.selectionKeys().length
+      ? this.selectionKeys()
+      : [this.selected()],
+  ): Promise<void> {
+    if (this.readonly() || this.pending().length || !keys[0]) {
+      return;
+    }
+    const owner = this.document();
+    const selected = this.selected();
+    const group = this.selectionKeys();
+    const epoch = this.generation;
+    if (
+      !(await this.feedback.confirm(
+        'Remove the selected steps and their connections? Neighbouring steps will not be connected.',
+      )) ||
+      epoch !== this.generation ||
+      this.document() !== owner ||
+      this.selected() !== selected ||
+      this.selectionKeys() !== group ||
+      this.readonly() ||
+      this.pending().length
+    ) {
+      return;
+    }
+    try {
+      this.change(removeSteps(owner, keys, this.nodes()));
+      this.selectMany([]);
+    } catch {
+      this.error.set('Selected step no longer exists');
+    }
+  }
   markPending(key: string): void {
     if (['typed', 'connections'].includes(key)) {
       this.pendingStep.set(this.selected());
@@ -77,7 +190,13 @@ export abstract class WorkflowInteractions extends WorkflowBoardState {
     this.pending.set([]);
     this.pendingStep.set('');
     try {
-      this.change({ ...this.document(), graph });
+      const next = workspaceGraphEdit(this.document(), graph);
+      this.change(next.workspace);
+      const identity = next.identities[this.inspectedConnection()];
+      if (identity) {
+        this.connectionId = identity;
+        this.inspectedConnection.set(identity);
+      }
     } catch {
       this.pending.set(pending);
       this.pendingStep.set(pendingStep);
@@ -85,12 +204,15 @@ export abstract class WorkflowInteractions extends WorkflowBoardState {
     }
   }
 
-  abstract readonly nodes: Signal<CanvasNode[]>;
-  abstract select(key: string): void;
-  protected abstract change(next: Workspace): void;
   constructor() {
     super();
+    effect(() => {
+      if (this.selected() || this.inspectedConnection()) {
+        this.dockTab.set('properties');
+      }
+    });
     const release = inject(ActorState).register(() => {
+      this.cancelPlacement();
       this.selectionKeys.set([]);
       this.connectionId = '';
       this.inspectedConnection.set('');
@@ -99,6 +221,8 @@ export abstract class WorkflowInteractions extends WorkflowBoardState {
   }
   protected override clear(): void {
     super.clear();
+    this.focusRequest.set(null);
+    this.cancelPlacement();
     this.selectionKeys.set([]);
     this.connectionId = '';
     this.inspectedConnection.set('');
@@ -106,6 +230,7 @@ export abstract class WorkflowInteractions extends WorkflowBoardState {
   override async load(): Promise<void> {
     await super.load();
     if (!this.dirty()) {
+      this.cancelPlacement();
       this.selectionKeys.set([]);
       this.connectionId = '';
       this.inspectedConnection.set('');
@@ -139,10 +264,33 @@ export abstract class WorkflowInteractions extends WorkflowBoardState {
   readonly inspectedConnection = signal('');
   connectionId = '';
   inspectConnection(id: string): void {
-    if (this.connections().some((edge) => edge.id === id)) {
-      this.connectionId = id;
-      this.inspectedConnection.set(id);
+    const edge = this.connections().find((item) => item.id === id);
+    if (!edge) {
+      return;
     }
+    if (this.pending().length) {
+      this.error.set('Apply or discard pending inspector edits before saving.');
+      return;
+    }
+    this.select(edge.source.split(':')[1]);
+    this.connectionId = id;
+    this.inspectedConnection.set(id);
+    this.dockOpen.set(true);
+    const epoch = this.generation;
+    afterNextRender(
+      () => {
+        if (epoch !== this.generation || this.inspectedConnection() !== id) {
+          return;
+        }
+        const host = this.host.nativeElement;
+        const control = host.querySelector<HTMLElement>(
+          edge.kind === 'control' ? '#transition-selection' : '#keyboard-edge',
+        );
+        control?.focus({ preventScroll: true });
+        control?.scrollIntoView({ block: 'nearest' });
+      },
+      { injector: this.injector },
+    );
   }
   selectMany(keys: readonly string[]): void {
     if (this.pending().length) {
@@ -156,7 +304,6 @@ export abstract class WorkflowInteractions extends WorkflowBoardState {
       this.selectionKeys.set(selection);
     }
   }
-
   toggleSelection(key: string, checked: boolean): void {
     this.selectMany(
       checked
@@ -189,7 +336,8 @@ export abstract class WorkflowInteractions extends WorkflowBoardState {
       return;
     }
     try {
-      this.change(removeConnection(this.document(), this.connectionId));
+      const current = this.document();
+      this.change(removeConnection(current, this.connectionId, this.nodes()));
       this.connectionId = '';
       this.inspectedConnection.set('');
     } catch (error) {
@@ -203,7 +351,18 @@ export abstract class WorkflowInteractions extends WorkflowBoardState {
       return;
     }
     try {
+      const previous = this.connections().find((edge) => edge.id === id);
       this.change(reconnect(this.document(), id, source, target, this.nodes()));
+      const next = this.connections().find(
+        (edge) =>
+          edge.kind === previous?.kind &&
+          edge.source === source &&
+          edge.target === target &&
+          edge.label === previous?.label,
+      );
+      if (next) {
+        this.inspectConnection(next.id);
+      }
     } catch (error) {
       this.error.set(
         error instanceof Error ? error.message : 'Invalid connection',
@@ -215,13 +374,21 @@ export abstract class WorkflowInteractions extends WorkflowBoardState {
       return;
     }
     const old = this.nodes().find((node) => node.key === key)?.position;
-    if (!old) {
+    if (!old || (old.x === point.x && old.y === point.y)) {
       return;
     }
     try {
       this.change(
         moveSelection(
-          this.document(),
+          {
+            ...this.document(),
+            positions: {
+              ...Object.fromEntries(
+                this.nodes().map((node) => [node.key, node.position]),
+              ),
+              ...this.document().positions,
+            },
+          },
           this.selectionKeys().includes(key) ? this.selectionKeys() : [key],
           { x: point.x - old.x, y: point.y - old.y },
         ),

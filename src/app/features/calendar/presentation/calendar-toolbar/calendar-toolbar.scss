@@ -1,0 +1,36 @@
+:host {
+  display: block;
+  min-inline-size: 0;
+}
+.period-title {
+  flex: 1;
+  min-inline-size: min(100%, 14rem);
+  font-size: 1.125rem;
+}
+.view-selector {
+  display: none;
+}
+.view-mode[aria-pressed="true"] {
+  background: var(--console-accent);
+  border-color: var(--console-accent);
+  color: var(--console-on-accent);
+}
+@media (max-width: 48rem) {
+  .view-mode {
+    display: none;
+  }
+  .view-selector {
+    display: block;
+    inline-size: 9rem;
+    max-inline-size: 100%;
+  }
+  .view-selector app-select-control {
+    inline-size: 100%;
+  }
+  .calendar-toolbar .period-title {
+    order: -1;
+    flex-basis: 100%;
+    min-inline-size: 0;
+    font-size: 1rem;
+  }
+}

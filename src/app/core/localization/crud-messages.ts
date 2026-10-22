@@ -2,6 +2,19 @@ import { temporalMessages } from './temporal-messages';
 import { authoringMessages } from './authoring-messages';
 import { fieldTranslations } from '../../shared/domain/field-label';
 export const crudMessages: Readonly<Record<string, string>> = {
+  'Next page': 'صفحه بعد',
+  'Previous page': 'صفحه قبل',
+  'Complete the required fields on this page':
+    'فیلدهای الزامی این صفحه را تکمیل کنید',
+  'The correction field or row is unavailable. Choose another field or remove this correction.':
+    'فیلد یا ردیف اصلاح در دسترس نیست. فیلد دیگری انتخاب کنید یا این اصلاح را حذف کنید.',
+  'Corrections to request': 'اصلاحات درخواستی',
+  'Choose a field and describe each required correction.':
+    'فیلد را انتخاب کنید و هر اصلاح لازم را توضیح دهید.',
+  'Field to correct': 'فیلد نیازمند اصلاح',
+  'Correction instructions': 'راهنمای اصلاح',
+  'Remove correction': 'حذف اصلاح',
+  'Add correction': 'افزودن اصلاح',
   ...temporalMessages,
   'This resource changed. Reload it before making another change.':
     'این منبع تغییر کرده است. پیش از تغییر دوباره، آن را بارگذاری کنید.',

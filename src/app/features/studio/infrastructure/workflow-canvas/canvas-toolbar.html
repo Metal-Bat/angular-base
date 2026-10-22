@@ -1,6 +1,7 @@
 @let vm = view();
 <header
   class="canvas-toolbar flex flex-wrap items-center justify-between gap-3"
+  [class.find-open]="findOpen()"
 >
   <div class="canvas-summary">
     <strong>{{ "Workflow canvas" | localize }}</strong
@@ -10,21 +11,48 @@
     >
   </div>
   <div class="canvas-tools flex flex-wrap items-center gap-1">
-    <label for="canvas-find">{{ "Find step" | localize }}</label>
-    <app-select-control
-      inputId="canvas-find"
+    @if (vm.arrange()) {
+      <app-menu-button
+        label="Arrange"
+        [disabled]="vm.readOnly() || vm.disabled() || !vm.rendered()"
+        [items]="arrangements()"
+      />
+    }
+    <app-menu-button
+      class="view-menu"
+      label="View"
       [disabled]="!vm.rendered()"
-      [ngModel]="''"
-      (ngModelChange)="vm.find($event)"
-    >
-      <option value="">{{ "Choose" | localize }}</option>
-      @for (node of vm.nodes(); track node.key) {
-        <option [value]="node.key">{{ node.key }} · {{ node.title }}</option>
-      }
-    </app-select-control>
+      [items]="viewActions()"
+    />
     <button
+      class="find-toggle"
+      type="button"
+      [attr.aria-expanded]="findOpen()"
+      [attr.aria-label]="'Find step' | localize"
+      [attr.title]="'Find step' | localize"
+      (click)="findOpen.set(!findOpen())"
+    >
+      <i aria-hidden="true" class="pi pi-search"></i>
+    </button>
+    <div class="canvas-find">
+      <label for="canvas-find">{{ "Find step" | localize }}</label>
+      <app-select-control
+        inputId="canvas-find"
+        [disabled]="!vm.rendered()"
+        [ngModel]="''"
+        (ngModelChange)="vm.find($event)"
+      >
+        <option value="">{{ "Choose" | localize }}</option>
+        @for (node of vm.nodes(); track node.key) {
+          <option [value]="node.key">{{ node.title }} · {{ node.key }}</option>
+        }
+      </app-select-control>
+    </div>
+    <button
+      class="wide-view-control"
       type="button"
       [attr.aria-label]="'Zoom out' | localize"
+      [attr.title]="'Zoom out' | localize"
       [disabled]="!vm.rendered() || vm.viewport().zoom <= 0.1"
       (click)="vm.zoom(-0.1)"
     >
@@ -32,8 +60,10 @@
     </button>
     <span class="zoom-value">{{ vm.zoomPercent() }}%</span>
     <button
+      class="wide-view-control"
       type="button"
       [attr.aria-label]="'Zoom in' | localize"
+      [attr.title]="'Zoom in' | localize"
       [disabled]="!vm.rendered() || vm.viewport().zoom >= 4"
       (click)="vm.zoom(0.1)"
     >
@@ -41,14 +71,24 @@
     </button>
     <button
       type="button"
+      [attr.aria-label]="'Fit to view' | localize"
+      [attr.title]="'Fit to view' | localize"
       [disabled]="!vm.rendered() || !vm.nodes().length"
       (click)="vm.fit()"
     >
       <i aria-hidden="true" class="pi pi-expand"></i
-      ><span>{{ "Fit to view" | localize }}</span>
+      ><span class="view-label">{{ "Fit to view" | localize }}</span>
     </button>
-    <button type="button" [disabled]="!vm.rendered()" (click)="vm.reset()">
-      <span>{{ "Reset view" | localize }}</span>
+    <button
+      class="wide-view-control"
+      type="button"
+      [attr.aria-label]="'Reset view' | localize"
+      [attr.title]="'Reset view' | localize"
+      [disabled]="!vm.rendered()"
+      (click)="vm.reset()"
+    >
+      <i aria-hidden="true" class="pi pi-refresh"></i>
+      <span class="view-label">{{ "Reset view" | localize }}</span>
     </button>
   </div>
 </header>

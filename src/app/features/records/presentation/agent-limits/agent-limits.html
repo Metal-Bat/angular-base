@@ -1,0 +1,71 @@
+<p>
+  {{
+    "The server pins the tighter user and administrator limits at publication. A spend guarantee also requires a supported provider and configured price."
+      | localize
+  }}
+</p>
+<div class="limit-fields">
+  @for (field of fields; track field.key) {
+    @if (readonly()) {
+      <dl>
+        <dt>{{ field.label | localize }}</dt>
+        <dd>
+          <bdi>{{ value()[field.key] ?? ("Unknown" | localize) }}</bdi>
+        </dd>
+      </dl>
+    } @else {
+      <app-control-field
+        [attr.data-field-path]="'spec.user_limits.' + field.key"
+        [controlId]="'agent-limit-' + field.key"
+        [error]="
+          errors()['spec.user_limits.' + field.key] ||
+          (invalid(field.key)
+            ? ('Enter a value within the allowed range.' | localize)
+            : '')
+        "
+        [label]="field.label"
+        [required]="true"
+      >
+        <input
+          dir="ltr"
+          inputmode="decimal"
+          pInputText
+          [attr.aria-invalid]="invalid(field.key) ? 'true' : null"
+          [disabled]="disabled()"
+          [id]="'agent-limit-' + field.key"
+          [ngModel]="text(field.key)"
+          (ngModelChange)="number(field.key, $event)"
+        />
+        <small fieldHint
+          >{{ "Allowed range" | localize }}:
+          <bdi>{{ field.minimum }}–{{ field.maximum }}</bdi></small
+        >
+      </app-control-field>
+    }
+  }
+</div>
+@if (readonly()) {
+  <p>
+    {{ "Require strict spend bound" | localize }}:
+    {{ (value()["strict_spend"] === false ? "No" : "Yes") | localize }}
+  </p>
+} @else {
+  <div class="strict-spend">
+    <p-checkbox
+      inputId="agent-strict-spend"
+      [binary]="true"
+      [disabled]="disabled()"
+      [ngModel]="value()['strict_spend'] !== false"
+      (ngModelChange)="strict($event)"
+    />
+    <label for="agent-strict-spend">{{
+      "Require strict spend bound" | localize
+    }}</label>
+  </div>
+}
+<p>
+  {{
+    "A configured spend limit is not proof of provider billing enforcement."
+      | localize
+  }}
+</p>

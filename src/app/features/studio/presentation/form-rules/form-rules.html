@@ -1,0 +1,111 @@
+<p class="rule-guidance">
+  {{ "Rules affect this field when their conditions match." | localize }}
+</p>
+<ol class="rule-list">
+  @for (rule of rules(); track $index) {
+    <li>
+      <p>
+        {{ "When" | localize }}
+        <strong>{{ fieldLabel(rule["scope"]) | localize }}</strong>
+        {{ operatorLabel(rule["operator"]) | localize }}
+        @if (rule["operator"] !== "present") {
+          @if (resourceFor(rule["scope"]); as source) {
+            <app-form-rule-resource
+              [data]="data()"
+              [documents]="documents()"
+              [field]="source"
+              [locale]="locale()"
+              [summaryOnly]="true"
+              [summaryValue]="rule['value']"
+            />
+          } @else {
+            <bdi>{{ comparisonText(rule) | localize }}</bdi>
+          }
+        }
+        · {{ effectLabel(rule["effect"]) | localize }}
+        <strong>{{ targetLabel() }}</strong>
+      </p>
+      <button
+        pButton
+        severity="secondary"
+        type="button"
+        [disabled]="disabled()"
+        [outlined]="true"
+        (click)="remove($index)"
+      >
+        {{ "Remove rule" | localize }} {{ $index + 1 }}
+      </button>
+    </li>
+  } @empty {
+    <li>{{ "No behavior rules for this field." | localize }}</li>
+  }
+</ol>
+<fieldset [disabled]="disabled()">
+  <legend>{{ "New rule" | localize }}</legend>
+  <label for="rule-scope">{{ "When field" | localize }}</label>
+  <app-select-control
+    inputId="rule-scope"
+    [disabled]="disabled()"
+    [ngModel]="draft().scope"
+    (ngModelChange)="update('scope', $event)"
+  >
+    <option value="">{{ "Choose" | localize }}</option>
+    @for (field of fields(); track field.scope) {
+      <option [value]="field.scope">{{ field.label }}</option>
+    }
+  </app-select-control>
+  <label for="rule-operator">{{ "Operator" | localize }}</label>
+  <app-select-control
+    inputId="rule-operator"
+    [disabled]="disabled() || !field()"
+    [ngModel]="draft().operator"
+    (ngModelChange)="update('operator', $event)"
+  >
+    @for (operator of operators; track operator[0]) {
+      <option
+        [disabled]="presenceOnly() && operator[0] !== 'present'"
+        [value]="operator[0]"
+      >
+        {{ operator[1] | localize }}
+      </option>
+    }
+  </app-select-control>
+  @if (presenceOnly()) {
+    <p>
+      {{ "Use presence checks for resource and collection fields." | localize }}
+    </p>
+  }
+  <app-form-rule-value [view]="this" />
+  <label for="rule-effect">{{ "Then" | localize }}</label>
+  <app-select-control
+    inputId="rule-effect"
+    [disabled]="disabled()"
+    [ngModel]="draft().effect"
+    (ngModelChange)="update('effect', $event)"
+  >
+    @for (effect of effects; track effect[0]) {
+      <option [value]="effect[0]">{{ effect[1] | localize }}</option>
+    }
+  </app-select-control>
+  <p>{{ targetLabel() }}</p>
+  @if (pending()) {
+    <p role="status">
+      {{ "Add or discard this rule before applying properties." | localize }}
+    </p>
+  }
+  <div class="rule-actions">
+    <button pButton type="button" [disabled]="!canAdd()" (click)="add()">
+      {{ "Add rule" | localize }}
+    </button>
+    <button
+      pButton
+      severity="secondary"
+      type="button"
+      [disabled]="disabled() || !pending()"
+      [outlined]="true"
+      (click)="discard()"
+    >
+      {{ "Discard rule" | localize }}
+    </button>
+  </div>
+</fieldset>

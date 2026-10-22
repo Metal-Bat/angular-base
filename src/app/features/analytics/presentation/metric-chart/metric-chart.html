@@ -1,0 +1,110 @@
+@if (metric().series.length) {
+  <div
+    class="chart-scroll"
+    role="region"
+    tabindex="0"
+    [attr.aria-label]="title() | localize"
+  >
+    <svg
+      role="img"
+      viewBox="0 0 900 280"
+      [attr.aria-describedby]="chartId + '-note'"
+      [attr.aria-labelledby]="chartId"
+    >
+      <title [id]="chartId">
+        {{ title() | localize }} · {{ metric().unit | localize }}
+      </title>
+      @for (tick of ticks(); track tick) {
+        <line
+          class="grid-line"
+          x1="70"
+          x2="840"
+          [attr.y1]="y(tick)"
+          [attr.y2]="y(tick)"
+        />
+        <text
+          class="axis-label"
+          text-anchor="end"
+          x="60"
+          [attr.y]="y(tick) + 5"
+        >
+          {{ locale.number(tick) }}
+        </text>
+      }
+      <line class="axis" x1="70" x2="840" y1="230" y2="230" />
+      @for (date of dates(); track date) {
+        <text
+          class="axis-label"
+          text-anchor="middle"
+          y="254"
+          [attr.x]="x(date)"
+        >
+          {{ dateLabel(date) }}
+        </text>
+      }
+      <text class="axis-label" text-anchor="middle" x="455" y="278">
+        {{ "Date" | localize }}
+      </text>
+      <text
+        class="axis-label"
+        text-anchor="middle"
+        transform="rotate(-90 15 135)"
+        x="15"
+        y="135"
+      >
+        {{ metric().unit | localize }}
+      </text>
+      @for (series of series(); track series.key) {
+        <path
+          class="series-line"
+          [attr.d]="series.path"
+          [attr.stroke-dasharray]="series.dash"
+        />
+        @for (bucket of series.buckets; track bucket.date) {
+          @if (bucket.value !== null) {
+            <circle
+              class="point"
+              r="4"
+              tabindex="0"
+              [attr.cx]="x(bucket.date)"
+              [attr.cy]="y(bucket.value)"
+            >
+              <title>
+                {{ series.key | localize }} · {{ dateLabel(bucket.date) }} ·
+                {{ valueLabel(bucket.value) }} {{ metric().unit | localize }}
+              </title>
+            </circle>
+          }
+        }
+      }
+    </svg>
+  </div>
+  <ul class="chart-legend" [attr.aria-label]="'Series' | localize">
+    @for (series of series(); track series.key) {
+      <li>
+        <svg aria-hidden="true" height="12" width="30">
+          <line
+            class="series-line"
+            x1="0"
+            x2="30"
+            y1="6"
+            y2="6"
+            [attr.stroke-dasharray]="series.dash"
+          /></svg
+        >{{
+          series.key === "total"
+            ? ("Total" | localize)
+            : (series.key | localize)
+        }}
+      </li>
+    }
+  </ul>
+  <p class="chart-note" [id]="chartId + '-note'">
+    {{
+      "Unknown observations leave gaps. Exact values are available in the data table."
+        | localize
+    }}
+  </p>
+} @else {
+  <p>{{ "No metric buckets" | localize }}</p>
+}

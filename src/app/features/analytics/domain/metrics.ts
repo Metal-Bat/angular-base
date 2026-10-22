@@ -1,3 +1,4 @@
+import { localTimeCandidates } from '../../../shared/domain/wall-time';
 import { JsonObject } from '../../forms/domain/runtime-document';
 import {
   dateMillis,
@@ -48,6 +49,7 @@ function numeric(value: unknown, count = false): number | null {
   }
   return value;
 }
+export class MetricWindowError extends Error {}
 export function metricWindow(
   start: string,
   end: string,
@@ -57,6 +59,15 @@ export function metricWindow(
   const days = (dateMillis(end) - dateMillis(start)) / 86400000;
   if (days < 1 || days > 366) {
     throw Error('Metric range must be between one and 366 days');
+  }
+  // The producer rejects nonexistent midnight boundaries and buckets, including
+  // a skipped day inside an otherwise valid interval. Ambiguous midnights remain valid.
+  const first = dateMillis(start);
+  for (let offset = 0; offset <= days; offset++) {
+    const day = new Date(first + offset * 86400000).toISOString().slice(0, 10);
+    if (!localTimeCandidates(day + 'T00:00', timezone).length) {
+      throw new MetricWindowError('A local midnight does not exist');
+    }
   }
 }
 /** Projects only frozen C10 fields; no SQL, arbitrary href or computed page totals. */
@@ -160,7 +171,7 @@ export function metricTitle(key: string): string {
     available_work: 'Available work',
     claimed_work: 'Claimed work',
     overdue_work: 'Overdue work',
-    terminal_duration: 'Time to completion',
+    terminal_duration: 'Average time to closure',
     correction_frequency: 'Correction count',
     integration_outcomes: 'Integration outcomes',
     business_outcomes: 'Business outcomes',

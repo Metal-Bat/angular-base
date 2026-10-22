@@ -1,16 +1,22 @@
 @let vm = view();
 <app-field-wrapper
   #field
+  [compact]="vm.node().renderer === 'compact'"
   [errors]="vm.errors()"
   [hint]="vm.description()"
   [instance]="vm.instance()"
   [label]="vm.accessibleLabel()"
   [pointer]="vm.pointer()"
+  [required]="required()"
 >
   @if (!vm.writable()) {
     <output tabindex="0" [id]="field.id()"
-      ><bdi>{{ vm.value() | valueText }}</bdi></output
-    >
+      ><app-form-value
+        [kinds]="kinds()"
+        [labels]="labels()"
+        [scope]="vm.node().scope ?? ''"
+        [value]="vm.value()"
+    /></output>
   } @else if (vm.choice()) {
     <app-choice-control
       [controlId]="field.id()"
@@ -21,6 +27,7 @@
       [invalid]="vm.errors().length > 0"
       [node]="vm.node()"
       [path]="vm.path()"
+      [required]="required()"
       (edit)="vm.edit.emit($event)"
     />
   } @else if (vm.node().component === "boolean") {
@@ -28,6 +35,7 @@
       [describedBy]="field.describedBy()"
       [inputId]="field.id()"
       [invalid]="vm.errors().length > 0"
+      [required]="required()"
       [value]="vm.text()"
       (selectionChanged)="vm.bool($any($event.target).value)"
     >
@@ -39,7 +47,10 @@
     <textarea
       [attr.aria-describedby]="field.describedBy()"
       [attr.aria-invalid]="vm.errors().length > 0"
+      [attr.aria-required]="required()"
       [id]="field.id()"
+      [placeholder]="placeholder()"
+      [rows]="rows()"
       [value]="vm.text()"
       (input)="vm.inputValue($any($event.target).value)"
     ></textarea>
@@ -52,38 +63,44 @@
       [describedBy]="field.describedBy()"
       [invalid]="vm.errors().length > 0"
       [kind]="vm.node().component"
+      [required]="required()"
       [value]="vm.text()"
       (valueChange)="vm.inputValue($event)"
     />
   } @else {
     <input
+      pInputText
       [attr.aria-describedby]="field.describedBy()"
       [attr.aria-invalid]="vm.errors().length > 0"
+      [attr.aria-required]="required()"
+      [attr.inputmode]="
+        vm.node().component === 'integer'
+          ? 'numeric'
+          : vm.node().component === 'number'
+            ? 'decimal'
+            : null
+      "
       [id]="field.id()"
+      [placeholder]="placeholder()"
       [value]="vm.text()"
       (input)="vm.inputValue($any($event.target).value)"
     />
   }
-  @if (vm.writable() && vm.nullable()) {
-    <button
-      pButton
-      severity="secondary"
-      type="button"
-      [outlined]="true"
-      (click)="vm.set(null)"
-    >
-      {{ "Set null" | localize }}
-    </button>
-  }
-  @if (vm.writable()) {
-    <button
-      pButton
-      severity="secondary"
-      type="button"
-      [outlined]="true"
-      (click)="vm.clear()"
-    >
-      {{ "Remove value" | localize }}
-    </button>
+  @if (actions().length) {
+    <div class="field-actions">
+      <button
+        aria-haspopup="menu"
+        pButton
+        severity="secondary"
+        type="button"
+        [attr.aria-expanded]="fieldMenu.visible"
+        [attr.aria-label]="('Actions' | localize) + ': ' + vm.accessibleLabel()"
+        [text]="true"
+        (click)="fieldMenu.toggle($event)"
+      >
+        <i aria-hidden="true" class="pi pi-ellipsis-h"></i>
+      </button>
+      <p-menu #fieldMenu appendTo="body" [model]="actions()" [popup]="true" />
+    </div>
   }
 </app-field-wrapper>

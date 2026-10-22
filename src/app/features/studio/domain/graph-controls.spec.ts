@@ -85,8 +85,9 @@ it('maps only authorized scalar predecessors and executable context paths', () =
   ];
   const sources = mappingSources(rows, graph, 'review');
   expect(sources.map((item) => item.key)).toEqual([
-    'request.amount',
+    '/amount',
     'steps.first.outputs.total',
+    '/list',
   ]);
   const mapped = addMapping(
     graph,
@@ -286,9 +287,13 @@ it('maps authorized whole object outputs without creating constants or changing 
     source_schema: schema,
   });
   expect(mapped['transitions']).toBe(graph['transitions']);
-  expect(() =>
-    addMapping(graph, 'review', 'data', objectNodes, null, {}),
-  ).toThrow('Invalid');
+  expect(
+    (
+      addMapping(graph, 'review', 'data', objectNodes, null, {})[
+        'bindings'
+      ] as JsonObject[]
+    )[0]['constant_value'],
+  ).toEqual({});
   const changed = objectNodes.map((node) =>
     node.key === 'first' ? { ...node, ports: [] } : node,
   );

@@ -23,10 +23,7 @@
       class="connection-choice flex flex-wrap items-center gap-3 p-4"
       [attr.aria-label]="'Control outcome' | localize"
     >
-      <bdi
-        >{{ connection.source.split(":")[1] }} →
-        {{ connection.target.split(":")[1] }}</bdi
-      >
+      <bdi>{{ connectionCaption() }}</bdi>
       <label for="direct-outcome">{{ "Control outcome" | localize }}</label>
       @if (connectionOutcomes().length) {
         <app-select-control
@@ -63,9 +60,12 @@
     role="region"
     tabindex="0"
     [attr.aria-label]="'Workflow canvas' | localize"
-    [class.placing-step]="!!paletteKey() && !disabled() && !readOnly()"
+    [class.placing-step]="
+      (!!paletteKey() || dropReady()) && !disabled() && !readOnly()
+    "
     (click)="place($event)"
     (contextmenu)="openMenu($event)"
+    (dragleave)="dropReady.set(false)"
     (dragover)="dragOver($event)"
     (drop)="drop($event)"
     (keydown.enter)="placeWithKeyboard($event)"
@@ -74,9 +74,19 @@
     <f-flow
       fDraggable
       [fDraggableDisabled]="false"
+      [fMultiSelectTrigger]="multiSelectTrigger"
+      [style.--canvas-hit-scale]="0.6 / viewport().zoom"
+      [style.--canvas-port-size.px]="25 / viewport().zoom"
+      (fConnectionWaypointsChanged)="
+        routePoints($event.connectionId, $event.waypoints)
+      "
       (fCreateConnection)="created($event)"
+      (fDragEnded)="dragEnded()"
+      (fDragStarted)="dragStarted($event)"
+      (fMoveNodes)="moved($event)"
       (fNodesRendered)="nodesRendered()"
       (fReassignConnection)="reassigned($event)"
+      (fSelectionChange)="selectionChanged($event)"
     >
       <f-canvas
         fZoom
@@ -89,6 +99,7 @@
         /></f-connection-for-create>
         @for (edge of edges(); track edge.id) {
           <f-connection
+            fType="adaptive-curve"
             role="button"
             tabindex="0"
             [attr.aria-label]="
@@ -101,10 +112,12 @@
             [class.data-edge]="edge.kind === 'data'"
             [fConnectionId]="edge.id"
             [fReassignDisabled]="disabled() || readOnly()"
+            [fReassignableStart]="true"
             [fSourceId]="edge.source"
             [fTargetId]="edge.target"
             (click)="selectEdge($event, edge.id)"
             (contextmenu)="openEdgeMenu($event, edge.id)"
+            (keydown)="edgeKey($event, edge.id)"
             (keydown.enter)="selectEdge($event, edge.id)"
             (keydown.space)="selectEdge($event, edge.id)"
             ><f-connection-marker-arrow />
@@ -114,14 +127,14 @@
               }}</span>
             }
             <f-connection-waypoints
-              [visibility]="!readOnly()"
-              [waypoints]="routing()[edge.id] || []"
-              (waypointsChange)="
-                !disabled() && !readOnly() && routeEdge()(edge.id, $event)
+              [radius]="12 / viewport().zoom"
+              [visibility]="
+                !readOnly() && !disabled() && !automaticRouting()[edge.id]
               "
+              [waypoints]="viewRouting()[edge.id] || []"
           /></f-connection>
         }
-        @for (node of nodes(); track node.key) {
+        @for (node of viewNodes(); track node.key) {
           <div
             class="board-node"
             fDragHandle
@@ -129,6 +142,7 @@
             tabindex="0"
             [attr.aria-invalid]="invalidNodes().includes(node.key)"
             [attr.aria-label]="node.title"
+            [attr.data-node-key]="node.key"
             [class.collapsed]="collapsed().includes(node.key)"
             [class.connection-source]="linkSource() === node.key"
             [class.cursor-grab]="!readOnly() && !disabled()"
@@ -142,9 +156,6 @@
             [fNodePosition]="node.position"
             (click)="select($event, node.key)"
             (contextmenu)="openMenu($event, node.key)"
-            (fNodePositionChange)="
-              !disabled() && !readOnly() && moveNode()(node.key, $event)
-            "
             (keydown)="keyMove($event, node)"
           >
             <button
@@ -156,14 +167,16 @@
               [style.cursor]="
                 readOnly() ? 'pointer' : disabled() ? 'default' : 'grab'
               "
-              [style.padding-inline-end.rem]="readOnly() ? 0.5 : 2.5"
+              [style.padding-inline-end.rem]="readOnly() ? 0.5 : 3.25"
             >
               <span aria-hidden="true" class="node-icon"
                 ><i class="pi pi-sitemap"></i
               ></span>
               <span class="node-title"
                 ><strong>{{ node.title }}</strong
-                ><small>{{ node.key }}</small></span
+                ><small>{{
+                  node.typeTitle ?? node.key | localize
+                }}</small></span
               >
             </button>
             @if (!readOnly()) {
@@ -234,6 +247,7 @@
           </div>
         }
       </f-canvas>
+      <f-selection-area [fTrigger]="selectionTrigger" />
     </f-flow>
 
     @if (!nodes().length) {
@@ -259,27 +273,5 @@
       </div>
     }
   </div>
-  <footer
-    class="canvas-footer flex flex-wrap items-center justify-between gap-3"
-  >
-    <span>{{
-      (readOnly()
-        ? "Read-only diagram. Pan, zoom and select steps to inspect the flow."
-        : "Drag steps to arrange them. Use arrow keys to move a focused step."
-      ) | localize
-    }}</span>
-    <span [hidden]="readOnly()">{{
-      "Use step actions to connect, or drag from an output port to an input port."
-        | localize
-    }}</span>
-    <div class="edge-legend">
-      <span
-        ><i aria-hidden="true" class="control-line"></i
-        >{{ "Control flow" | localize }}</span
-      ><span
-        ><i aria-hidden="true" class="data-line"></i
-        >{{ "Data binding" | localize }}</span
-      >
-    </div>
-  </footer>
+  <app-canvas-guidance [readOnly]="readOnly()" />
 </section>

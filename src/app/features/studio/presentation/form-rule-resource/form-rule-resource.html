@@ -1,0 +1,86 @@
+@if (summaryOnly()) {
+  <bdi>{{ summary() | localize }}</bdi>
+} @else {
+  <div class="resource-choice">
+    <label [for]="controlId() + '-search'">{{
+      "Search options" | localize
+    }}</label>
+    <input
+      maxlength="100"
+      pInputText
+      type="search"
+      [disabled]="disabled()"
+      [id]="controlId() + '-search'"
+      [ngModel]="search()"
+      (ngModelChange)="searchFor($event)"
+    />
+    @for (position of positions(); track $index) {
+      <label [for]="controlId() + '-row-' + $index"
+        >{{ "Row position" | localize }}
+        {{ uiLocale.number($index + 1) }}</label
+      >
+      <input
+        inputmode="numeric"
+        pInputText
+        [disabled]="disabled()"
+        [id]="controlId() + '-row-' + $index"
+        [ngModel]="position"
+        (ngModelChange)="this.position($index, $event)"
+      />
+    }
+    <label [for]="controlId()">{{ "Value" | localize }}</label>
+    <app-select-control
+      [disabled]="
+        disabled() || busy() || (!nullable() && result()?.state !== 'READY')
+      "
+      [inputId]="controlId()"
+      [ngModel]="selected()"
+      (ngModelChange)="choose($event)"
+    >
+      <option disabled value="">{{ "Choose a value" | localize }}</option>
+      @if (nullable()) {
+        <option value="no-value">{{ "No value" | localize }}</option>
+      }
+      @for (item of result()?.items ?? []; track item.key) {
+        <option [value]="item.key">{{ item.value }}</option>
+      }
+    </app-select-control>
+    @if (status()) {
+      <p role="status">{{ status() | localize }}</p>
+    }
+    <div class="resource-pages">
+      <button
+        pButton
+        severity="secondary"
+        type="button"
+        [disabled]="disabled() || busy() || page() <= 1"
+        [outlined]="true"
+        (click)="load(page() - 1)"
+      >
+        {{ "Previous" | localize }}
+      </button>
+      <button
+        pButton
+        severity="secondary"
+        type="button"
+        [disabled]="
+          disabled() || busy() || page() >= (result()?.totalPages ?? 0)
+        "
+        [outlined]="true"
+        (click)="load(page() + 1)"
+      >
+        {{ "Next" | localize }}
+      </button>
+      <button
+        pButton
+        severity="secondary"
+        type="button"
+        [disabled]="disabled() || busy()"
+        [outlined]="true"
+        (click)="load(1, true)"
+      >
+        {{ "Reload options" | localize }}
+      </button>
+    </div>
+  </div>
+}

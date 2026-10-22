@@ -155,3 +155,9 @@ function recordContext(row: JsonObject): JsonObject {
       : {}),
   };
 }
+
+export function actionTargetTitle(row: JsonObject): string {
+  return String(
+    row['name'] || row['task_name'] || row['code'] || 'Current record',
+  );
+}

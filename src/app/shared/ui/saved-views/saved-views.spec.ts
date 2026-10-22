@@ -48,6 +48,55 @@ describe('Applied saved views and authoritative revisions', () => {
     await fixture.whenStable();
     return fixture.componentInstance;
   }
+  it('renames the persisted view without replacing its restrictive query with the current list', async () => {
+    const stored = {
+      ...original,
+      query: {
+        filters: [
+          { field_name: 'status', operation: 'equal', value: 'PENDING' },
+        ],
+        sort_orders: [],
+      },
+      column_keys: ['status'],
+      page_size: 10,
+    };
+    views.mockResolvedValue({ items: [stored], totalPages: 1 });
+    save.mockResolvedValue({
+      ...stored,
+      ref_id: 'renamed-current',
+      name: 'Renamed',
+    });
+    const vm = await setup();
+    vm.choose(stored.ref_id);
+    vm.name = 'Renamed';
+    await vm.run('rename');
+    expect(save.mock.calls[0][0]).toMatchObject({
+      query: stored.query,
+      column_keys: ['status'],
+      page_size: 10,
+      name: 'Renamed',
+    });
+    expect(save.mock.calls[0][1]).toBe(stored.ref_id);
+  });
+  it('keeps name controls out of the list toolbar and opens a focused naming action', async () => {
+    const fixture = TestBed.createComponent(SavedViews);
+    fixture.componentRef.setInput('kind', 'business_requests');
+    fixture.componentRef.setInput('query', {
+      size: 20,
+      filters: [],
+      sort_orders: [],
+    });
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('#saved-view-name')).toBeNull();
+    fixture.componentInstance
+      .menuItems()
+      .find((item) => item.label === 'Save current view')!.command!({});
+    fixture.detectChanges();
+    expect(
+      fixture.nativeElement.querySelector('#saved-view-name'),
+    ).not.toBeNull();
+  });
   it('keeps an uncertain command unchanged without saving a page offset or partially edited replacement', async () => {
     save
       .mockRejectedValueOnce(Error('Connection lost'))

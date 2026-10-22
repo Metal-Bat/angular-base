@@ -18,9 +18,19 @@ export function publicTokenCount(key: string, value: unknown): boolean {
     (value === null || (Number.isSafeInteger(value) && Number(value) >= 0))
   );
 }
+/** Exact public ConnectionDTO field; its descendants still pass secret filtering. */
+export function publicConfiguration(key: string, value: unknown): boolean {
+  return (
+    key === 'non_secret_config' &&
+    value !== null &&
+    typeof value === 'object' &&
+    !Array.isArray(value)
+  );
+}
 export function hiddenField(key: string, value?: unknown): boolean {
   return (
-    (!publicTokenCount(key, value) &&
+    (!publicConfiguration(key, value) &&
+      !publicTokenCount(key, value) &&
       /(^|_)ref(_id)?s?$|password|secret|credential|token|authorization|api_key/i.test(
         key,
       )) ||

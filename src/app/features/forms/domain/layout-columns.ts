@@ -1,7 +1,9 @@
 import { JsonObject, RenderNode } from './runtime-document';
 
 /** C11 RenderOptions.columns is bounded to 1–12; no breakpoint fields exist. */
-export function layoutColumns(node: RenderNode): number {
+export function layoutColumns(
+  node: Pick<RenderNode, 'component' | 'display'>,
+): number {
   if (node.component === 'vertical') {
     return 1;
   }

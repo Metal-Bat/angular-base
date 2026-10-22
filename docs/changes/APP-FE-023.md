@@ -29,3 +29,21 @@ The parent remains BLOCKED; the available implementation does not constitute com
 023.1 adds authorized whole-object SCALAR sources, preserving exact pinned source schemas; object constants remain unsupported. Existing subtask IDs are reused; parent status remains BLOCKED / IMPLEMENTED. Current backend capabilities and producer/client were reconciled before use; historical results above are preserved.
 
 Delivered files, actual satisfied acceptance, all commands/results (including intermediate failures), exact source/contract identities, remaining criteria and owners are recorded in [APP-FE-021–025 continuation acceptance](../delivery/APP-FE-021-025-ACCEPTANCE.md). This slice does not establish full parent publication/execution or strict paired readiness.
+
+## Canvas binding ordinal repair — 2026-10-18
+
+[Ordered follow-up](APP-FE-038-ORDERED-FOLLOW-UP.md) records the backend-reconciled
+scalar ordinal defect in pointer wiring and cloned bindings. New scalar inputs
+use ordinal zero and refuse a second mapping. LIST ordinals are scoped to one
+step/input; source removal, partial clones and reconnection retain dense order
+and authored routes. Existing published graphs are not rewritten. This repair
+is distinct from unimplemented nested mapping/conversion/sample authoring scope.
+
+## Data mapper continuation — 2026-10-18
+
+[Data mapper implementation and evidence](APP-FE-023-DATA-MAPPING.md) supersedes the
+remaining frontend slice descriptions above for LIST controls, nested request
+and indexed-item selection, structured constants, editing/reordering, configured
+Transform v2 schemas and field-based object projections. Parent status remains
+BLOCKED for the precise producer/runtime and acceptance limits in that record.
+Historical scalar and ordinal evidence remains intact.

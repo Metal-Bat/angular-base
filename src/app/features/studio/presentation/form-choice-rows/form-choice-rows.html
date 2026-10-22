@@ -1,0 +1,171 @@
+@if (editable()) {
+  <p class="choice-note">
+    {{ "Labels can change. Values identify saved answers." | localize }}
+  </p>
+  <ol>
+    @for (row of visibleRows(); track row.id; let index = $index) {
+      <li>
+        <div class="choice-heading">
+          <strong
+            >{{ "Choice" | localize }}
+            {{ (page() - 1) * 20 + index + 1 }}</strong
+          >
+          <div class="choice-actions">
+            <button
+              pButton
+              severity="secondary"
+              type="button"
+              [attr.aria-label]="'Move choice up' | localize"
+              [attr.title]="'Move choice up' | localize"
+              [disabled]="disabled() || (page() === 1 && index === 0)"
+              [text]="true"
+              (click)="move(row.id, -1)"
+            >
+              <i aria-hidden="true" class="pi pi-arrow-up"></i>
+            </button>
+            <button
+              pButton
+              severity="secondary"
+              type="button"
+              [attr.aria-label]="'Move choice down' | localize"
+              [attr.title]="'Move choice down' | localize"
+              [disabled]="
+                disabled() || (page() - 1) * 20 + index === rows().length - 1
+              "
+              [text]="true"
+              (click)="move(row.id, 1)"
+            >
+              <i aria-hidden="true" class="pi pi-arrow-down"></i>
+            </button>
+            <button
+              pButton
+              severity="danger"
+              type="button"
+              [attr.aria-label]="'Remove choice' | localize"
+              [attr.title]="'Remove choice' | localize"
+              [disabled]="disabled() || rows().length <= 1"
+              [text]="true"
+              (click)="remove(row.id)"
+            >
+              <i aria-hidden="true" class="pi pi-trash"></i>
+            </button>
+          </div>
+        </div>
+        <label [for]="'choice-label-' + row.id">{{ "Label" | localize }}</label>
+        <input
+          maxlength="255"
+          pInputText
+          [disabled]="disabled()"
+          [id]="'choice-label-' + row.id"
+          [ngModel]="row.label"
+          (ngModelChange)="update(row.id, 'label', $event)"
+        />
+        <label [for]="'choice-type-' + row.id">{{
+          "Value type" | localize
+        }}</label>
+        <app-select-control
+          [disabled]="disabled()"
+          [inputId]="'choice-type-' + row.id"
+          [ngModel]="row.type"
+          (ngModelChange)="update(row.id, 'type', $event)"
+        >
+          <option value="string">{{ "Text value" | localize }}</option>
+          <option value="number">{{ "Numeric value" | localize }}</option>
+          <option value="boolean">{{ "Boolean value" | localize }}</option>
+        </app-select-control>
+        <label [for]="'choice-key-' + row.id">{{
+          "Stable value" | localize
+        }}</label>
+        @if (row.type === "boolean") {
+          <app-select-control
+            [describedBy]="issue(row) ? 'choice-error-' + row.id : null"
+            [disabled]="disabled()"
+            [inputId]="'choice-key-' + row.id"
+            [invalid]="!!issue(row)"
+            [ngModel]="row.text"
+            (ngModelChange)="update(row.id, 'text', $event)"
+          >
+            <option value="true">{{ "Yes" | localize }}</option>
+            <option value="false">{{ "No" | localize }}</option>
+          </app-select-control>
+        } @else {
+          <input
+            pInputText
+            [attr.aria-describedby]="
+              issue(row) ? 'choice-error-' + row.id : null
+            "
+            [attr.aria-invalid]="issue(row) ? 'true' : null"
+            [attr.inputmode]="row.type === 'number' ? 'decimal' : 'text'"
+            [disabled]="disabled()"
+            [id]="'choice-key-' + row.id"
+            [ngModel]="row.text"
+            (ngModelChange)="update(row.id, 'text', $event)"
+          />
+        }
+        @if (issue(row); as message) {
+          <p role="alert" [id]="'choice-error-' + row.id">
+            {{ message | localize }}
+          </p>
+        }
+        @if (row.original["message"] || row.original["matches"]) {
+          <p class="choice-note">
+            {{
+              "Existing translations and dependency matches are preserved."
+                | localize
+            }}
+          </p>
+        }
+      </li>
+    }
+  </ol>
+  @if (pages() > 1) {
+    <nav class="choice-actions" [attr.aria-label]="'Choice pages' | localize">
+      <button
+        pButton
+        severity="secondary"
+        type="button"
+        [disabled]="page() === 1"
+        [outlined]="true"
+        (click)="page.set(page() - 1)"
+      >
+        {{ "Previous" | localize }}
+      </button>
+      <span>{{ page() }} / {{ pages() }}</span>
+      <button
+        pButton
+        severity="secondary"
+        type="button"
+        [disabled]="page() === pages()"
+        [outlined]="true"
+        (click)="page.set(page() + 1)"
+      >
+        {{ "Next" | localize }}
+      </button>
+    </nav>
+  }
+  @if (!valid()) {
+    <p role="alert">
+      {{
+        "Each choice needs a label and a valid typed value. Keep between 1 and 256 choices."
+          | localize
+      }}
+    </p>
+  }
+  <button
+    pButton
+    severity="secondary"
+    type="button"
+    [disabled]="disabled() || rows().length >= 256"
+    [outlined]="true"
+    (click)="add()"
+  >
+    {{ "Add choice" | localize }}
+  </button>
+} @else {
+  <p role="status">
+    {{
+      "These choices require advanced configuration. Existing settings are preserved."
+        | localize
+    }}
+  </p>
+}

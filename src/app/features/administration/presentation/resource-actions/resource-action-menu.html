@@ -1,0 +1,15 @@
+@if (items().length) {
+  <button
+    aria-haspopup="menu"
+    pButton
+    severity="secondary"
+    type="button"
+    [attr.aria-expanded]="menu.visible"
+    [disabled]="disabled()"
+    (click)="menu.toggle($event)"
+  >
+    {{ (tools() ? "Additional tools" : "Actions") | localize }}
+    <i aria-hidden="true" class="pi pi-angle-down"></i>
+  </button>
+  <p-menu #menu appendTo="body" [model]="items()" [popup]="true" />
+}

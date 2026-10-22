@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { focusRecordActions } from './record-action-focus';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  inject,
+  input,
+} from '@angular/core';
 import type { ResourcePage } from './resource-page';
 import { ButtonDirective } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
@@ -22,6 +29,10 @@ import { LocalizePipe } from '../../../shared/ui/localize-pipe';
   changeDetection: ChangeDetectionStrategy.Default,
 })
 export class RecordRoleDialog {
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
+  restoreActions(): void {
+    focusRecordActions(this.host.nativeElement);
+  }
   readonly view =
     input.required<
       Pick<

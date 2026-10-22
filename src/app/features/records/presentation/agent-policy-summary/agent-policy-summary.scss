@@ -1,0 +1,22 @@
+:host {
+  display: block;
+  min-inline-size: 0;
+}
+.policy-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+  gap: 1rem;
+}
+.policy-summary dt {
+  font-weight: 600;
+}
+.policy-summary dd {
+  margin: 0.25rem 0 0;
+  color: var(--console-muted);
+}
+.policy-note {
+  color: var(--console-muted);
+}
+bdi {
+  overflow-wrap: anywhere;
+}

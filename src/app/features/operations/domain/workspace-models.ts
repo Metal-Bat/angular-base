@@ -22,6 +22,9 @@ export type CaseRecord = {
   readonly summary?: Readonly<Record<string, string | number | null>>;
   readonly status: string;
   readonly kind: 'HUMAN_TASK' | 'AI_APPROVAL' | 'UNSUPPORTED';
+  readonly personal?: Partial<
+    Record<'read' | 'pin' | 'watch' | 'archive', boolean>
+  >;
   readonly claimant: string | null;
   readonly process: string | null;
   readonly form: string | null;

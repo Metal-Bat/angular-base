@@ -1,3 +1,5 @@
+import { AgentDetail } from './agent-detail/agent-detail';
+import { recordDetailSections } from './record-detail-sections';
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import type { ResourcePage } from './resource-page';
 import { CopyField } from '../../../shared/ui/copy-field/copy-field';
@@ -7,7 +9,13 @@ import { LocalizePipe } from '../../../shared/ui/localize-pipe';
 
 @Component({
   selector: 'app-record-detail',
-  imports: [CopyField, RecordSummary, ButtonDirective, LocalizePipe],
+  imports: [
+    AgentDetail,
+    CopyField,
+    RecordSummary,
+    ButtonDirective,
+    LocalizePipe,
+  ],
   templateUrl: './record-detail.html',
   styleUrl: './resource-page.scss',
   host: { style: 'display: contents' },
@@ -15,10 +23,12 @@ import { LocalizePipe } from '../../../shared/ui/localize-pipe';
   changeDetection: ChangeDetectionStrategy.Default,
 })
 export class RecordDetail {
+  readonly sections = recordDetailSections;
   readonly view =
     input.required<
       Pick<
         ResourcePage,
+        | 'backToList'
         | 'actionBusy'
         | 'allowed'
         | 'assignRole'

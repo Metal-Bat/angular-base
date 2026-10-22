@@ -54,7 +54,8 @@
               }
               @if (execution.task.due) {
                 <p>
-                  {{ "Due" | localize }}: <time>{{ execution.task.due }}</time>
+                  {{ "Due" | localize }}:
+                  <time>{{ execution.task.due | localizedDateTime }}</time>
                 </p>
               }
             }
@@ -63,9 +64,9 @@
               @for (attempt of execution.attempts; track attempt.number) {
                 <li>
                   {{ attempt.number }} · {{ attempt.status | localize }} ·
-                  <time>{{ attempt.started }}</time>
+                  <time>{{ attempt.started | localizedDateTime }}</time>
                   <span [hidden]="!attempt.ended">
-                    — <time>{{ attempt.ended }}</time></span
+                    — <time>{{ attempt.ended | localizedDateTime }}</time></span
                   >
                   @if (attempt.error) {
                     <span>

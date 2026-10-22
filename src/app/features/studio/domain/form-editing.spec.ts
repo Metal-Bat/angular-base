@@ -21,6 +21,49 @@ const empty: JsonObject = {
   reuse_instances: { preserved: true },
 };
 describe('Visual form edits', () => {
+  it('changes only an action to a declared outcome and rejects fabricated or non-action outcomes atomically', () => {
+    const source: JsonObject = {
+      ...empty,
+      render_schema: {
+        root: {
+          component: 'vertical',
+          children: [
+            {
+              component: 'action',
+              node_key: 'continue',
+              label: 'Continue',
+              outcome: 'next',
+              options: {},
+            },
+            {
+              component: 'text',
+              node_key: 'name',
+              scope: '/properties/name',
+              label: 'Name',
+            },
+          ],
+        },
+        outcomes: ['next', 'return_for_changes'],
+      },
+    };
+    const before = structuredClone(source);
+    const next = patchNode(source, [0], { outcome: 'return_for_changes' });
+    expect(authoredNode(renderOf(next), [0])).toMatchObject({
+      node_key: 'continue',
+      label: 'Continue',
+      outcome: 'return_for_changes',
+      options: {},
+    });
+    expect(renderOf(next)['outcomes']).toEqual(['next', 'return_for_changes']);
+    expect(next['data_schema']).toEqual(source['data_schema']);
+    expect(() =>
+      patchNode(source, [0], { outcome: 'approve_everything' }),
+    ).toThrow('Choose a declared outcome');
+    expect(() => patchNode(source, [1], { outcome: 'next' })).toThrow(
+      'Choose a declared outcome',
+    );
+    expect(source).toEqual(before);
+  });
   it('gives all twenty primitive placements stable keys and preserves identity on reorder', () => {
     let documents = empty;
     for (const kind of [

@@ -3,24 +3,18 @@ import { RecordPageHeader } from './record-page-header';
 import { RecordHistoryDialog } from './record-history-dialog';
 import { RecordRoleDialog } from './record-role-dialog';
 import { RecordDetail } from './record-detail';
-import { focusInvalidControl } from '../../../shared/ui/focus-invalid-control';
-import { RecordFields } from './record-fields/record-fields';
+import { RecordEditor } from './record-editor';
 import { ResourceActions } from '../../administration/presentation/resource-actions/resource-actions';
 import { ApiFailure } from '../../../core/transport/api-failure';
-import { ControlField } from '../../../shared/ui/control-field/control-field';
 import {
   ChangeDetectionStrategy,
   Component,
-  ElementRef,
-  inject,
-  Injector,
   viewChild,
   viewChildren,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { ButtonDirective } from 'primeng/button';
-import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { BoundedPolling } from '../../../core/transport/bounded-polling';
 import { BinaryTransfer } from '../../../core/transport/binary-transfer';
@@ -41,17 +35,15 @@ import { ResourceRowActions } from './resource-row-actions';
   host: { class: 'console-page', '[attr.data-resource]': 'definition.key' },
   imports: [
     RepairReturn,
+    RecordEditor,
     RecordPageHeader,
     RecordHistoryDialog,
     RecordRoleDialog,
     RecordDetail,
-    RecordFields,
     ResourceActions,
-    ControlField,
     FormsModule,
     RouterLink,
     ButtonDirective,
-    DialogModule,
     InputTextModule,
     ListQueryEditor,
     RecordTable,
@@ -63,17 +55,10 @@ import { ResourceRowActions } from './resource-row-actions';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ResourcePage extends ResourceRowActions {
-  private readonly renderInjector = inject(Injector);
-  private readonly recordEditor =
-    viewChild<ElementRef<HTMLFormElement>>('recordEditor');
+  readonly Object = Object;
+  private readonly editor = viewChild(RecordEditor);
   private focusFormError(): void {
-    const mode = this.mode();
-    const epoch = this.actor.epoch;
-    focusInvalidControl(
-      () => this.recordEditor()?.nativeElement,
-      () => this.mode() === mode && this.actor.epoch === epoch,
-      this.renderInjector,
-    );
+    this.editor()?.focusError();
   }
 
   readonly actionDialogs = viewChildren(ResourceActions);
@@ -239,6 +224,7 @@ export class ResourcePage extends ResourceRowActions {
     );
     if (result !== undefined) {
       this.detail.set(null);
+      await this.syncSelectionUrl(null, true);
       this.notice.set('Record deleted.');
       await this.load();
     }
@@ -257,6 +243,10 @@ export class ResourcePage extends ResourceRowActions {
     );
     if (result !== undefined) {
       this.detail.set(result && recordReference(result) ? result : null);
+      await this.syncSelectionUrl(
+        result && recordReference(result) ? recordReference(result) : null,
+        true,
+      );
       this.notice.set('User restored.');
       await this.load();
     }

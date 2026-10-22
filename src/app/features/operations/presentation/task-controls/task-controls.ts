@@ -1,3 +1,6 @@
+import { Textarea } from 'primeng/textarea';
+import { CorrectionFeedbackEditor } from '../correction-feedback-editor/correction-feedback-editor';
+import { validCorrectionFeedback } from '../../domain/correction-feedback';
 import { ButtonDirective } from 'primeng/button';
 import {
   ChangeDetectionStrategy,
@@ -11,13 +14,33 @@ import { LocalizePipe } from '../../../../shared/ui/localize-pipe';
 @Component({
   host: { class: 'console-fragment' },
   selector: 'app-task-controls',
-  imports: [ButtonDirective, FormsModule, LocalizePipe],
+  imports: [
+    ButtonDirective,
+    FormsModule,
+    LocalizePipe,
+    CorrectionFeedbackEditor,
+    Textarea,
+  ],
   templateUrl: './task-controls.html',
+  styleUrl: './task-controls.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TaskControls {
   readonly editor = input.required<EditorPort>();
+  readonly disabled = input(false);
   readonly kind = 'task';
+  readonly hasReturn = computed(() =>
+    this.editor()
+      .document()
+      ?.actions.some((action) => action.kind === 'return'),
+  );
+  readonly validCorrections = computed(() => {
+    const document = this.editor().document();
+    return (
+      !!document &&
+      validCorrectionFeedback(document, this.editor().corrections())
+    );
+  });
   readonly guidance = computed(() => {
     const editor = this.editor();
     if (editor.blocked()) {

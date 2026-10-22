@@ -1,8 +1,9 @@
 import { inject, Injectable } from '@angular/core';
-import { firstValueFrom } from 'rxjs';
+import { catchError, firstValueFrom, fromEvent, takeUntil } from 'rxjs';
 import { ActorState } from '../../../core/auth/actor-state';
 import { ApiClient } from '../../../core/transport/api-client';
-import { record } from '../../../core/transport/api-failure';
+import { ApiFailure, record } from '../../../core/transport/api-failure';
+import { CalendarSearchDenied } from '../application/calendar-port';
 import {
   Page,
   readData,
@@ -26,6 +27,14 @@ export function calendarEvent(raw: unknown): {
     !['manual', 'work_item'].includes(String(row['source_kind']))
   ) {
     throw Error('Invalid calendar item');
+  }
+  const manual = row['source_kind'] === 'manual';
+  if (
+    row['route_key'] !== (manual ? 'calendar_events' : 'work_items') ||
+    (schedule['kind'] === 'deadline') === manual ||
+    (!manual && row['editable'])
+  ) {
+    throw Error('Invalid calendar source authority');
   }
   const base = {
     key: row['ref_id'],
@@ -94,16 +103,28 @@ export class CalendarApi {
   private readonly actor = inject(ActorState);
   async search(
     body: CalendarQuery,
+    signal?: AbortSignal,
   ): Promise<Page<{ item: CalendarItem; event: CalendarEvent }>> {
+    signal?.throwIfAborted();
     const epoch = this.actor.epoch;
+    const request = this.api
+      .call('search_api_v1_calendar_events_search_post', { body })
+      .pipe(
+        catchError((error: unknown) => {
+          throw error instanceof ApiFailure &&
+            [401, 403].includes(error.httpStatus)
+            ? new CalendarSearchDenied()
+            : error;
+        }),
+      );
     const value = readResultPage(
       await firstValueFrom(
-        this.api.call('search_api_v1_calendar_events_search_post', { body }),
+        signal ? request.pipe(takeUntil(fromEvent(signal, 'abort'))) : request,
       ),
       calendarEvent,
     );
     if (epoch !== this.actor.epoch) {
-      throw Error('Access changed');
+      throw new CalendarSearchDenied();
     }
     return value;
   }

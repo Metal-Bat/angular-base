@@ -1,43 +1,31 @@
-<fieldset
-  [disabled]="editor().busy() || editor().blocked() || resources.transferBusy()"
+<app-menu-button label="Actions" [disabled]="disabled()" [items]="commands()" />
+<p-dialog
+  appendTo="body"
+  [closeAriaLabel]="'Close' | localize"
+  [header]="'Request report' | localize"
+  [modal]="true"
+  [style]="{ width: 'min(42rem, calc(100vw - 2rem))' }"
+  [visible]="reportVisible()"
+  (onHide)="closeReport()"
+  (visibleChange)="reportVisible.set($event)"
 >
-  @if (editor().item()?.status === "DRAFT") {
-    <button
-      pButton
-      severity="secondary"
-      type="button"
-      [outlined]="true"
-      (click)="resources.cancelRequest()"
-    >
-      {{ "Cancel draft" | localize }}
-    </button>
-    <button
-      pButton
-      severity="secondary"
-      type="button"
-      [outlined]="true"
-      (click)="resources.resume()"
-    >
-      {{ "Resume presentation" | localize }}
-    </button>
+  @if (reportBusy()) {
+    <p role="status">{{ "Loading…" | localize }}</p>
   }
-  <button
-    pButton
-    severity="secondary"
-    type="button"
-    [outlined]="true"
-    (click)="report()"
-  >
-    {{ "Request report" | localize }}
-  </button>
-</fieldset>
-<ul>
-  @for (entry of reports(); track entry.reference) {
-    <li>
-      <a [routerLink]="['/operations/requests', entry.reference]">{{
-        "Request detail" | localize
-      }}</a>
-      · {{ entry.status | localize }}
-    </li>
+  @if (editor().error()) {
+    <p role="alert">{{ editor().error() | localize }}</p>
   }
-</ul>
+  <ul>
+    @for (entry of reports(); track entry.reference) {
+      <li>
+        <a [routerLink]="['/operations/requests', entry.reference]">{{
+          "Request detail" | localize
+        }}</a>
+        · {{ entry.status | localize }}
+      </li>
+    }
+  </ul>
+  @if (!reportBusy() && !editor().error() && !reports().length) {
+    <p role="status">{{ "No items" | localize }}</p>
+  }
+</p-dialog>

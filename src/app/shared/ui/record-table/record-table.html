@@ -11,15 +11,17 @@
     ><tr>
       @for (column of columns(); track column.key) {
         <td>
-          @if (column.key === "status" && row[column.key]) {
+          @if (column.key === primaryKey() && rowHref()(row)) {
+            <a [href]="rowHref()(row)" (click)="follow($event, row)"
+              ><bdi>{{ value(row[column.key], column.key) }}</bdi></a
+            >
+          } @else if (column.key === "status" && row[column.key]) {
             <span
               class="rounded-md bg-console-accent-soft text-console-accent px-2 py-1 text-xs font-semibold"
-              ><bdi>{{
-                value(row[column.key], column.key) | localize
-              }}</bdi></span
+              ><bdi>{{ value(row[column.key], column.key) }}</bdi></span
             >
           } @else {
-            <bdi>{{ value(row[column.key], column.key) | localize }}</bdi>
+            <bdi>{{ value(row[column.key], column.key) }}</bdi>
           }
         </td>
       }
@@ -170,6 +172,7 @@
               [inline]="true"
             >
               <p-select
+                appSelectEscape
                 appendTo="body"
                 [ariaLabelledBy]="filterValueId + '-size-label'"
                 [checkmark]="true"
@@ -177,7 +180,7 @@
                 [inputId]="filterValueId + '-size'"
                 [ngModel]="query().size"
                 [ngModelOptions]="{ standalone: true }"
-                [options]="[10, 20, 50, 100]"
+                [options]="pageSizes()"
                 (ngModelChange)="resize($event)"
               />
             </app-control-field>

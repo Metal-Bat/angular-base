@@ -1,11 +1,13 @@
 <section class="my-4 grid gap-3 rounded-lg border border-console-border p-4">
-  <h2>{{ "Work reminders" | localize }}</h2>
+  <h2 tabindex="-1">{{ "Work reminders" | localize }}</h2>
   <p>{{ "Workflow deadlines are read-only." | localize }}</p>
   @if (error()) {
     <p role="alert">{{ error() | localize }}</p>
   }
   @if (work(); as source) {
-    <time [attr.datetime]="source.due_at">{{ source.due_at }}</time
+    <time [attr.datetime]="source.due_at">{{
+      source.due_at | localizedDateTime
+    }}</time
     ><a [routerLink]="['/operations/tasks', source.ref_id]">{{
       "Open task" | localize
     }}</a>
@@ -51,7 +53,10 @@
   <ul>
     @for (reminder of rows(); track reminder.ref_id) {
       <li>
-        <time [attr.datetime]="reminder.due_at">{{ reminder.due_at }}</time> —
+        <time [attr.datetime]="reminder.due_at">{{
+          reminder.due_at | localizedDateTime
+        }}</time>
+        —
         {{ reminder.status | localize }}
       </li>
     }

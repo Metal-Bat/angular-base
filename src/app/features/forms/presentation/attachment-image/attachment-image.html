@@ -1,0 +1,24 @@
+<figure>
+  @if (source()) {
+    <p-image
+      [alt]="attachment().caption || ('Attachment image' | localize)"
+      [imageStyle]="{
+        'max-inline-size': '100%',
+        'max-block-size': '18rem',
+        'object-fit': 'contain',
+      }"
+      [src]="source()"
+      (onImageError)="failed()"
+    />
+  }
+  <figcaption>
+    @if (state() === "loading") {
+      <span role="status">{{ "Loading…" | localize }}</span>
+    }
+    @if (state() === "failed") {
+      <span role="status">{{
+        "Image preview is unavailable." | localize
+      }}</span>
+    }
+  </figcaption>
+</figure>

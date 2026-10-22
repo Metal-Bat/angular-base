@@ -33,7 +33,7 @@ html {
   // variables at https://material.angular.dev/guide/system-variables
   background-color: var(--mat-sys-surface);
   color: var(--mat-sys-on-surface);
-  font: var(--mat-sys-body-medium);
+  font-family: var(--workspace-font-family);
 } /* You can add global styles to this file, and also import other style files */
 
 html,
@@ -42,7 +42,6 @@ body {
 }
 body {
   margin: 0;
-  font-family: var(--workspace-font-family);
 }
 
 // Shared dark-mode selector for Material, PrimeNG, Ant Design, and Tailwind.
@@ -51,9 +50,8 @@ html.app-dark {
 }
 
 :root {
-  --workspace-space: 0.25rem;
+  --workspace-control-height: 2.5rem;
   --workspace-radius: 0.5rem;
-  --workspace-overlay: 1000;
 }
 @layer components {
   :where(summary) {
@@ -88,9 +86,6 @@ html.app-dark {
     opacity: 0.6;
     cursor: default;
   }
-  :where(input)[aria-invalid="true"] {
-    border-color: var(--mat-sys-error);
-  }
   dialog {
     position: fixed;
     inset: 0;
@@ -124,31 +119,27 @@ html.app-dark {
 // Shared presentation tokens keep the shell and feature pages consistent.
 :root {
   --console-canvas: #f5f7fb;
+  --console-navigation: #f0f3f8;
   --console-surface: #ffffff;
   --console-text: #18243b;
   --console-muted: #586980;
   --console-border: #e2e8f0;
-  --console-accent: #2563eb;
   --console-on-accent: #ffffff;
-  --console-accent-hover: #1d4ed8;
   --console-input-border: #7c8ba1;
-  --console-accent-soft: #edf3ff;
   --console-shadow: 0 12px 36px rgb(15 23 42 / 8%);
 }
 html.app-dark {
   --console-canvas: #0d1525;
+  --console-navigation: #111c2e;
   --console-surface: #162237;
   --console-text: #e5edf8;
   --console-muted: #a1b1c9;
   --console-border: #2b3b53;
-  --console-accent: #93b8ff;
   --console-on-accent: #0d1525;
-  --console-accent-hover: #b0ccff;
   --console-input-border: #64748b;
-  --console-accent-soft: #20355b;
 }
 body {
-  line-height: 1.6;
+  line-height: 1.5;
 }
 
 // Named palettes from PrimeNG Aura / Tailwind: https://primeng.org/theming/styled
@@ -264,8 +255,24 @@ html.app-dark {
 }
 
 html[data-density="compact"] {
-  --p-button-padding-y: 0.375rem;
-  --p-inputtext-padding-y: 0.375rem;
-  --p-select-padding-y: 0.375rem;
+  --workspace-control-height: 2.25rem;
   --p-datatable-body-cell-padding: 0.5rem 0.75rem;
+}
+
+// Touch targets take precedence over desktop density on narrow screens.
+@media (max-width: 48rem) {
+  html[data-density] {
+    --workspace-control-height: 2.875rem;
+  }
+}
+
+::selection {
+  background: var(--console-accent);
+  color: var(--console-on-accent);
+}
+:where(input, textarea) {
+  caret-color: var(--console-accent);
+}
+:where(table, time, .console-record-status) {
+  font-variant-numeric: tabular-nums;
 }

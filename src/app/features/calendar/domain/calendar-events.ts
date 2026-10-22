@@ -1,4 +1,5 @@
 import {
+  calendarDays,
   dateMillis,
   DateWindow,
   exclusiveEndDate,
@@ -18,7 +19,7 @@ export type CalendarEvent = {
   | { kind: 'deadline'; start: string; timezone: string }
 );
 export type CalendarProjection = {
-  status: 'loading' | 'ready' | 'failed';
+  status: 'loading' | 'ready' | 'partial' | 'failed';
   stale: boolean;
   events: readonly CalendarEvent[];
 };
@@ -83,4 +84,35 @@ export function eventsInWindow(
           : exclusiveEndDate(event.end, zone);
     return first < window.end && last >= window.start;
   });
+}
+
+/** Index a bounded visible window once, rather than re-parsing every event in every cell. */
+export function calendarEventsByDay(
+  events: readonly CalendarEvent[],
+  window: DateWindow,
+  zone: string,
+): ReadonlyMap<string, readonly CalendarEvent[]> {
+  validateWindow(window);
+  validateZone(zone);
+  const days = calendarDays(window);
+  const result = new Map(days.map((day) => [day, [] as CalendarEvent[]]));
+  for (const event of events) {
+    if (!eventValid(event)) {
+      throw Error('Invalid calendar event');
+    }
+    const first =
+      event.kind === 'all_day' ? event.start : zonedDate(event.start, zone);
+    const last =
+      event.kind === 'all_day'
+        ? shiftDate(event.end, -1)
+        : event.kind === 'deadline'
+          ? first
+          : exclusiveEndDate(event.end, zone);
+    for (const day of days) {
+      if (first <= day && day <= last) {
+        result.get(day)!.push(event);
+      }
+    }
+  }
+  return result;
 }

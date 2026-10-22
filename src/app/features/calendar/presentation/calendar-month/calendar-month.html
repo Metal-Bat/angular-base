@@ -1,0 +1,103 @@
+@let vm = view();
+<p class="calendar-scroll-hint" [hidden]="!horizontalOverflow()">
+  {{ "Scroll horizontally to see other days." | localize }}
+</p>
+<div
+  #monthScroll
+  class="month-scroll"
+  role="region"
+  tabindex="0"
+  [attr.aria-label]="'Calendar month grid' | localize"
+>
+  <table class="month-grid">
+    <thead>
+      <tr>
+        @for (day of vm.weekdays(); track $index) {
+          <th scope="col">{{ day }}</th>
+        }
+      </tr>
+    </thead>
+    <tbody>
+      @for (week of vm.weeks(); track week[0]) {
+        <tr>
+          @for (day of week; track day) {
+            <td
+              [attr.aria-label]="vm.format(day, { dateStyle: 'full' })"
+              [attr.data-calendar-day]="day"
+              [class.adjacent]="
+                day < vm.window().start || day >= vm.window().end
+              "
+              [class.selected-day]="day === vm.anchor()"
+              [class.today]="day === vm.today()"
+            >
+              <button
+                class="day-create"
+                pButton
+                severity="secondary"
+                type="button"
+                [attr.aria-label]="
+                  ('Create event' | localize) +
+                  ' · ' +
+                  vm.format(day, { dateStyle: 'full' })
+                "
+                [text]="true"
+                (click)="draftRequested.emit(calendarDraft(day, vm.timezone()))"
+              >
+                <time
+                  [attr.aria-current]="day === vm.today() ? 'date' : null"
+                  [attr.aria-label]="
+                    day === vm.anchor()
+                      ? vm.format(day, { dateStyle: 'full' }) +
+                        ' · ' +
+                        ('Selected date' | localize)
+                      : null
+                  "
+                  [attr.datetime]="day"
+                  >{{ vm.format(day, { day: "numeric" }) }}</time
+                >
+              </button>
+              <div class="day-events" [id]="'calendar-day-' + day">
+                @for (event of visible(day); track event.key) {
+                  <button
+                    #eventTrigger
+                    pButton
+                    severity="secondary"
+                    type="button"
+                    [text]="true"
+                    (click)="
+                      selected.emit(event);
+                      activated.emit({ event, trigger: eventTrigger })
+                    "
+                  >
+                    <span>{{ event.title }}</span
+                    ><small>{{ vm.timeLabel(event) }}</small>
+                  </button>
+                }
+              </div>
+              @if (vm.onDay(day).length > 3) {
+                <button
+                  class="more-events"
+                  pButton
+                  severity="secondary"
+                  type="button"
+                  [attr.aria-controls]="'calendar-day-' + day"
+                  [attr.aria-expanded]="expandedDays().has(day)"
+                  [text]="true"
+                  (click)="toggle(day)"
+                >
+                  @if (expandedDays().has(day)) {
+                    {{ "Show less" | localize }}
+                  } @else {
+                    {{ "More events" | localize }} ({{
+                      locale.number(vm.onDay(day).length - 3)
+                    }})
+                  }
+                </button>
+              }
+            </td>
+          }
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

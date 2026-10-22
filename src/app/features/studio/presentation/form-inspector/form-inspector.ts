@@ -1,3 +1,13 @@
+import { isItemScope } from '../../../forms/domain/row-values';
+import { inspectorProperties } from './form-inspector-edit';
+import {
+  calculationResult,
+  calculationScope,
+  setExpression,
+  setFunction,
+} from './form-calculations';
+import { FormRules } from '../form-rules/form-rules';
+import { presentationOutline } from '../form-selection-label';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -11,61 +21,94 @@ import {
   signal,
 } from '@angular/core';
 import { FormGeometry } from '../form-geometry/form-geometry';
+import { FormLabelEditor } from '../form-label-editor/form-label-editor';
+import { FormActionSettings } from '../form-action-settings/form-action-settings';
+import { focusInspector } from './focus-inspector';
 import { ActorState } from '../../../../core/auth/actor-state';
 import { FormBehavior } from '../form-behavior/form-behavior';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
-import { SchemaInput } from '../../../administration/presentation/schema-input/schema-input';
+import { CheckboxModule } from 'primeng/checkbox';
+import { AccordionModule } from 'primeng/accordion';
+import { FormResourceSettings } from '../form-resource-settings/form-resource-settings';
 import { LocalizePipe } from '../../../../shared/ui/localize-pipe';
 import { SelectControl } from '../../../../shared/ui/select-control/select-control';
-import { JsonObject, JsonValue } from '../../../forms/domain/runtime-document';
-import { authoredNode, outline } from '../../domain/form-authoring';
 import {
-  fieldRequired,
-  patchConstraints,
-  patchNode,
-  renderOf,
-  schemaAt,
-} from '../../domain/form-editing';
+  JsonObject,
+  JsonValue,
+  RenderNode,
+} from '../../../forms/domain/runtime-document';
+import { authoredNode } from '../../domain/form-authoring';
+import { fieldRequired, renderOf, schemaAt } from '../../domain/form-editing';
 import {
-  choicesSchema,
-  constraintSchema,
+  constraintSchemaFor,
   formOptions,
-  ruleValueSchema,
 } from '../../domain/form-inspector-schema';
 @Component({
   selector: 'app-form-inspector',
   imports: [
+    AccordionModule,
+    CheckboxModule,
+    FormRules,
     FormGeometry,
+    FormLabelEditor,
+    FormActionSettings,
     FormBehavior,
     FormsModule,
     ButtonModule,
     InputTextModule,
-    SchemaInput,
+    FormResourceSettings,
     LocalizePipe,
     SelectControl,
   ],
   templateUrl: './form-inspector.html',
+  styleUrl: './form-inspector.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FormInspector {
   readonly documents = input.required<JsonObject>();
+  readonly sampleData = input<JsonObject>({});
+  readonly previewLocale = input('en');
   readonly path = input.required<readonly number[]>();
   readonly disabled = input(false);
+  readonly pendingEdits = input(false);
+  readonly rulesOnly = input(false);
+  readonly resolvedLabel = input('');
+  readonly translationRequested = output<string>();
   readonly changed = output<void>();
   readonly applied = output<JsonObject>();
   readonly node = computed(() =>
     authoredNode(renderOf(this.documents()), this.path()),
   );
   readonly draft = linkedSignal<JsonObject>(() => structuredClone(this.node()));
+  readonly expressionAvailable = computed(
+    () => !this.scope() || !isItemScope(this.scope()!),
+  );
+  readonly calculationRequired = computed(
+    () =>
+      this.node()['component'] === 'calculated' && !this.draft()['calculation'],
+  );
+  readonly resolvedRender = input<RenderNode | null>(null);
   readonly fields = computed(() => [
     ...new Map(
-      outline(renderOf(this.documents()))
-        .filter((item) => item.scope)
-        .map((item) => [item.scope, item]),
+      presentationOutline(renderOf(this.documents()), this.resolvedRender())
+        .filter((field) => field.scope)
+        .map((field) => [field.scope, field]),
     ).values(),
   ]);
+  readonly rulePending = signal(false);
+  readonly resourceValid = linkedSignal(() => {
+    this.path();
+    return true;
+  });
+  readonly validationValid = linkedSignal(() => {
+    this.path();
+    return true;
+  });
+  readonly labelPending = computed(
+    () => JSON.stringify(this.draft()) !== JSON.stringify(this.node()),
+  );
   readonly scope = computed(() =>
     typeof this.node()['scope'] === 'string'
       ? (this.node()['scope'] as string)
@@ -81,11 +124,37 @@ export class FormInspector {
   readonly optionsSchema = computed(
     () => formOptions[String(this.node()['component'])] ?? null,
   );
-  readonly constraintSchema = constraintSchema;
-  readonly valueSchema = ruleValueSchema;
-  readonly choicesSchema = choicesSchema;
+  readonly section = linkedSignal<
+    { identity: string; rulesOnly: boolean; calculationRequired: boolean },
+    string
+  >({
+    source: () => ({
+      identity: String(this.node()['node_key']) + ':' + this.path().join('/'),
+      rulesOnly: this.rulesOnly(),
+      calculationRequired:
+        this.node()['component'] === 'calculated' &&
+        !this.node()['calculation'],
+    }),
+    computation: (selection, previous) => {
+      if (selection.rulesOnly || selection.calculationRequired) {
+        return 'behavior';
+      }
+      return previous?.source.identity === selection.identity &&
+        previous.source.rulesOnly === selection.rulesOnly
+        ? previous.value
+        : 'general';
+    },
+  });
+  readonly constraintSchema = computed(() =>
+    constraintSchemaFor(this.constraints()),
+  );
+  readonly choiceValid = linkedSignal(() => {
+    this.path();
+    return true;
+  });
   readonly error = signal('');
   constructor() {
+    focusInspector(this.path, this.disabled, this.rulesOnly);
     effect(() => {
       const calculation = (this.node()['calculation'] ?? {}) as JsonObject;
       this.calculationFunction = String(calculation['function'] ?? 'sum');
@@ -93,8 +162,6 @@ export class FormInspector {
       this.expression = String(calculation['expression'] ?? '');
     });
     const release = inject(ActorState).register(() => {
-      this.ruleScope = '';
-      this.ruleValue = '';
       this.expression = '';
       this.calculationFunction = 'sum';
       this.calculationScopes = [];
@@ -102,8 +169,7 @@ export class FormInspector {
       this.messageRole = 'label';
       this.dependencyName = '';
       this.dependencyScope = '';
-      this.ruleOperator = 'eq';
-      this.ruleEffect = 'show';
+      this.rulePending.set(false);
       this.error.set('');
     });
     inject(DestroyRef).onDestroy(release);
@@ -148,10 +214,6 @@ export class FormInspector {
       [this.messageRole]: { key: this.messageKey, arguments: {} },
     });
   }
-  ruleScope = '';
-  ruleOperator = 'eq';
-  ruleEffect = 'show';
-  ruleValue: JsonValue = '';
   expression = '';
   calculationFunction = 'sum';
   calculationScopes: string[] = [];
@@ -211,34 +273,6 @@ export class FormInspector {
       this.required.set(value);
       this.changed.emit();
     }
-  }
-  addRule(): void {
-    if (
-      !['eq', 'ne', 'present'].includes(this.ruleOperator) ||
-      !['show', 'hide', 'enable', 'disable', 'require'].includes(
-        this.ruleEffect,
-      ) ||
-      this.disabled() ||
-      this.rules().length >= 16 ||
-      !this.fields().some((item) => item.scope === this.ruleScope)
-    ) {
-      return;
-    }
-    this.patch('rules', [
-      ...this.rules(),
-      {
-        scope: this.ruleScope,
-        operator: this.ruleOperator,
-        effect: this.ruleEffect,
-        value: this.ruleValue,
-      },
-    ]);
-  }
-  removeRule(index: number): void {
-    this.patch(
-      'rules',
-      this.rules().filter((_, position) => position !== index),
-    );
   }
   sourceKind(kind: string): void {
     if (
@@ -305,66 +339,47 @@ export class FormInspector {
     this.sourcePatch('dependencies', dependencies);
   }
   calculationScope(scope: string, checked: boolean): void {
-    if (
-      this.disabled() ||
-      !this.fields().some((field) => field.scope === scope)
-    ) {
-      return;
-    }
-    this.calculationScopes = checked
-      ? [...new Set([...this.calculationScopes, scope])].slice(0, 16)
-      : this.calculationScopes.filter((item) => item !== scope);
+    calculationScope(this, scope, checked);
   }
   setFunction(): void {
-    if (
-      this.disabled() ||
-      !['sum', 'concat', 'count'].includes(this.calculationFunction) ||
-      !this.calculationScopes.length ||
-      this.calculationScopes.some(
-        (scope) => !this.fields().some((field) => field.scope === scope),
-      )
-    ) {
-      return;
-    }
-    const calculation = {
-      ...((this.draft()['calculation'] ?? {}) as JsonObject),
-      function: this.calculationFunction,
-      scopes: [...this.calculationScopes],
-    } as Record<string, JsonValue>;
-    delete calculation['expression'];
-    this.patch('calculation', calculation);
+    setFunction(this);
   }
   setExpression(): void {
-    if (!this.expression.trim() || this.expression.length > 1024) {
-      this.error.set('Invalid expression');
+    setExpression(this);
+  }
+  calculationResult(): string {
+    return calculationResult(this);
+  }
+  readonly applyBlocked = computed(
+    () =>
+      this.disabled() ||
+      !this.resourceValid() ||
+      !this.validationValid() ||
+      this.calculationRequired() ||
+      this.rulePending() ||
+      (!this.choiceValid() && this.source()['kind'] === 'custom'),
+  );
+  apply(): void {
+    if (this.calculationRequired()) {
       return;
     }
-    const calculation = {
-      ...((this.draft()['calculation'] ?? {}) as JsonObject),
-      expression: this.expression,
-    } as Record<string, JsonValue>;
-    delete calculation['function'];
-    delete calculation['scopes'];
-    this.patch('calculation', calculation);
-  }
-  apply(): void {
+    if (!this.resourceValid() || !this.validationValid()) {
+      this.error.set('Correct the invalid limit before applying properties.');
+      return;
+    }
+    if (this.rulePending()) {
+      this.error.set('Add or discard this rule before applying properties.');
+      return;
+    }
+    if (!this.choiceValid() && this.source()['kind'] === 'custom') {
+      this.error.set('Correct the invalid choice before applying properties.');
+      return;
+    }
     if (this.disabled()) {
       return;
     }
     try {
-      const patch = { ...this.draft() } as Record<string, JsonValue>;
-      for (const key of ['node_key', 'component', 'scope', 'children']) {
-        delete patch[key];
-      }
-      let result = patchNode(this.documents(), this.path(), patch);
-      if (this.scope()) {
-        result = patchConstraints(
-          result,
-          this.scope()!,
-          this.constraints(),
-          this.required(),
-        );
-      }
+      const result = inspectorProperties(this);
       this.error.set('');
       this.applied.emit(result);
     } catch (error) {

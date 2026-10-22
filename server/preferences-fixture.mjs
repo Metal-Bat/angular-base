@@ -1,9 +1,9 @@
 // Disposable self-only preferences fixture. No real user or backend writes.
-export function createPreferencesFixture() {
+export function createPreferencesFixture({ density = "compact" } = {}) {
   let version = 0;
   const settings = {
     schema_version: 1,
-    appearance: { theme_key: "blue", theme_mode: "light", density: "compact" },
+    appearance: { theme_key: "blue", theme_mode: "light", density },
     locale: {
       language: "en",
       timezone: "Asia/Tehran",

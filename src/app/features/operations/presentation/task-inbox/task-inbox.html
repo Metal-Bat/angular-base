@@ -9,6 +9,7 @@
   >
     <app-select-control
       inputId="inbox-view"
+      [disabled]="pages.state() === 'loading'"
       [ngModel]="cartable()"
       (ngModelChange)="select($event)"
     >
@@ -38,23 +39,51 @@
 @if (pages.state() === "error") {
   <p role="alert">{{ pages.error() | localize }}</p>
 }
-@if (pages.state() === "ready") {
-  <app-case-list kind="task" [columns]="columns()" [items]="pages.cases()" />
+@if (pages.state() !== "ready" && pages.cases().length) {
+  <p role="status">{{ "Showing the last confirmed results." | localize }}</p>
+}
+<app-saved-views
+  kind="work_items"
+  [columnOptions]="columnOptions"
+  [columns]="columns()"
+  [query]="pages.appliedQuery()"
+  (applied)="applyView($event)"
+  (columnsChanged)="columns.set($event)"
+/>
+<app-task-list-query
+  [busy]="pages.state() === 'loading'"
+  [query]="pages.appliedQuery()"
+  (applied)="applyQuery($event)"
+  (editing)="queryEditing.set($event)"
+/>
+@if (pages.state() === "ready" || pages.cases().length) {
+  <app-case-list
+    kind="task"
+    [columns]="columns()"
+    [items]="pages.cases()"
+    [query]="pages.appliedQuery()"
+  />
   <button
     pButton
     severity="secondary"
     type="button"
-    [disabled]="pages.page() <= 1"
+    [disabled]="pages.state() === 'loading' || pages.page() <= 1"
     [outlined]="true"
     (click)="pages.load('task', pages.page() - 1, cartable())"
   >
     {{ "Previous" | localize }}
   </button>
+  <span class="list-page-count"
+    >{{ "Page" | localize }} {{ pages.page() }} {{ "of" | localize }}
+    {{ pages.totalPages() || 1 }}</span
+  >
   <button
     pButton
     severity="secondary"
     type="button"
-    [disabled]="pages.page() >= pages.totalPages()"
+    [disabled]="
+      pages.state() === 'loading' || pages.page() >= pages.totalPages()
+    "
     [outlined]="true"
     (click)="pages.load('task', pages.page() + 1, cartable())"
   >
@@ -65,12 +94,3 @@
 @if (polling.paused()) {
   <p role="status">{{ "Updates paused while offline or hidden" | localize }}</p>
 }
-
-<app-saved-views
-  kind="work_items"
-  [columnOptions]="columnOptions"
-  [columns]="columns()"
-  [query]="pages.appliedQuery()"
-  (applied)="applyView($event)"
-  (columnsChanged)="columns.set($event)"
-/>

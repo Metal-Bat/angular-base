@@ -1,7 +1,11 @@
+import { RuntimeCollection } from '../runtime-collection/runtime-collection';
 import { RuntimeField } from './runtime-field';
-import { ButtonDirective } from 'primeng/button';
+import { parseNumberText } from '../../../../shared/domain/number-text';
+import { nodeDescription } from '../../domain/node-description';
+import { nodeLabel } from '../../domain/node-label';
 import { AttachmentControl } from '../attachment-control/attachment-control';
-import { FORM_RESOURCES } from '../../bindings';
+import { FORM_COLLECTIONS, FORM_RESOURCES } from '../../bindings';
+import type { FormCollectionEditor } from '../../application/form-resources';
 import {
   fieldSchema,
   keysAt,
@@ -18,7 +22,6 @@ import {
   input,
   output,
 } from '@angular/core';
-import { LocalizePipe } from '../../../../shared/ui/localize-pipe';
 import { Locale } from '../../../../core/localization/locale';
 import {
   JsonObject,
@@ -36,13 +39,16 @@ import { placementInstance } from '../../domain/placement-instance';
 import { gridPlacement } from '../../domain/grid-placement';
 import { layoutColumns } from '../../domain/layout-columns';
 @Component({
-  host: { class: 'console-fragment' },
+  host: {
+    class: 'console-fragment',
+    '[attr.data-field-pointer]': 'node().scope ? pointer() : null',
+    '[style.display]': 'state()["visible"] === false ? "none" : null',
+  },
   selector: 'app-runtime-node',
   imports: [
     RuntimeField,
-    ButtonDirective,
+    RuntimeCollection,
     forwardRef(() => RuntimeNode),
-    LocalizePipe,
     AttachmentControl,
   ],
   templateUrl: './runtime-node.html',
@@ -64,6 +70,16 @@ export class RuntimeNode {
   );
   readonly indices = input<readonly number[]>([]);
   readonly resources = inject(FORM_RESOURCES, { optional: true });
+  readonly collections: FormCollectionEditor | null =
+    inject(FORM_COLLECTIONS, { optional: true }) ??
+    (this.resources
+      ? {
+          collection: (
+            ...args: Parameters<FormCollectionEditor['collection']>
+          ) => this.resources!.collection(...args),
+        }
+      : null);
+  readonly collectionBusy = computed(() => this.collections?.busy?.() === true);
   readonly fieldControl = computed(
     () => this.node().component !== 'action' && !!this.node().scope,
   );
@@ -89,6 +105,36 @@ export class RuntimeNode {
       this.rows().length === this.rowKeys().length &&
       new Set(this.rowKeys()).size === this.rowKeys().length,
   );
+  readonly minimumRows = computed(() =>
+    typeof this.schema()['minItems'] === 'number'
+      ? (this.schema()['minItems'] as number)
+      : 0,
+  );
+  readonly maximumRows = computed(() =>
+    typeof this.schema()['maxItems'] === 'number'
+      ? Math.min(256, this.schema()['maxItems'] as number)
+      : 256,
+  );
+  readonly canAddRow = computed(
+    () =>
+      !this.collectionBusy() &&
+      this.validRows() &&
+      this.rows().length < this.maximumRows(),
+  );
+  readonly canRemoveRow = computed(
+    () =>
+      !this.collectionBusy() &&
+      this.validRows() &&
+      this.rows().length > this.minimumRows(),
+  );
+  readonly tableRows = computed(() => [...this.rowKeys()]);
+  childVisible(child: RenderNode): boolean {
+    return (
+      (child.display['runtime_state'] as JsonObject | undefined)?.[
+        'visible'
+      ] !== false
+    );
+  }
   childIndices(index: number): readonly number[] {
     return [...this.indices(), index];
   }
@@ -111,8 +157,13 @@ export class RuntimeNode {
     ) {
       return;
     }
-    if (this.writable() && this.validRows() && this.node().scope) {
-      await this.resources?.collection(
+    if (
+      this.writable() &&
+      !this.collectionBusy() &&
+      this.validRows() &&
+      this.node().scope
+    ) {
+      await this.collections?.collection(
         this.node().scope!,
         this.pointer(),
         operation,
@@ -121,6 +172,11 @@ export class RuntimeNode {
       );
     }
   }
+  readonly attachmentRows = computed(() =>
+    this.node().scope
+      ? keysAt(this.document(), this.node().scope!, this.indices())
+      : [],
+  );
   readonly busy = input(false);
   readonly issues = input<readonly { pointer: string; message: string }[]>([]);
   readonly edit = output<FieldEdit>();
@@ -135,16 +191,11 @@ export class RuntimeNode {
   readonly accessibility = computed(
     () => (this.node().display['accessibility'] ?? {}) as JsonObject,
   );
-  readonly accessibleLabel = computed(() =>
-    typeof this.accessibility()['label'] === 'string'
-      ? (this.accessibility()['label'] as string)
-      : (this.node().label ?? this.node().scope ?? ''),
-  );
-  readonly description = computed(() =>
-    typeof this.accessibility()['description'] === 'string'
-      ? (this.accessibility()['description'] as string)
-      : '',
-  );
+  readonly accessibleLabel = computed(() => nodeLabel(this.node()));
+  childLabel(child: RenderNode): string {
+    return nodeLabel(child);
+  }
+  readonly description = computed(() => nodeDescription(this.node()));
   readonly choice = computed(() =>
     ['choice', 'user', 'group'].includes(this.node().component),
   );
@@ -167,9 +218,9 @@ export class RuntimeNode {
   readonly state = computed(
     () => (this.node().display['runtime_state'] ?? {}) as JsonObject,
   );
-  readonly writable = computed(
+  readonly writable = computed(() => !this.busy() && this.canWrite());
+  readonly canWrite = computed(
     () =>
-      !this.busy() &&
       ['edit', 'correction'].includes(this.document().purpose) &&
       writableScope(
         this.document(),
@@ -223,10 +274,9 @@ export class RuntimeNode {
     }
 
     if (['integer', 'number'].includes(this.node().component)) {
-      const value = Number(raw);
+      const value = parseNumberText(raw);
       const valid =
-        /^-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?$/.test(raw) &&
-        Number.isFinite(value) &&
+        value !== undefined &&
         (this.node().component !== 'integer' || Number.isSafeInteger(value));
       this.set(
         valid

@@ -1,0 +1,24 @@
+<label for="field-outcome">{{ "Outcome" | localize }}</label>
+<app-select-control
+  inputId="field-outcome"
+  [disabled]="disabled()"
+  [ngModel]="node()['outcome'] ?? ''"
+  (ngModelChange)="choose($event)"
+>
+  @if (unavailable()) {
+    <option disabled [value]="node()['outcome'] ?? ''">
+      {{ "Choose a declared outcome" | localize }}
+    </option>
+  }
+  @for (outcome of outcomes(); track outcome) {
+    <option [value]="outcome">{{ fieldLabel(outcome) | localize }}</option>
+  }
+</app-select-control>
+@if (!outcomes().length) {
+  <p role="status">
+    {{
+      "This form has no declared outcomes. Its outcome contract must be configured before this action can be used."
+        | localize
+    }}
+  </p>
+}

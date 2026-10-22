@@ -24,13 +24,25 @@
 
 <header class="console-page-header">
   <div>
-    <span class="console-eyebrow">{{ "Workspace records" | localize }}</span>
-    <h1 tabindex="-1">{{ vm.definition.title | localize }}</h1>
-    <p class="console-description">
-      {{ vm.definition.description | localize }}
-    </p>
+    <h1 tabindex="-1">{{ objectTitle() }}</h1>
+    @if (vm.detail()) {
+      <p class="console-description">
+        {{ vm.definition.title | localize }}
+        @if (status()) {
+          · <span class="console-record-status">{{ status() | localize }}</span>
+        }
+      </p>
+    }
+    @if (!vm.detail()) {
+      <p class="console-description">
+        {{ vm.definition.description | localize }}
+      </p>
+    }
   </div>
-  <div class="flex flex-wrap items-center gap-2">
+  <div
+    class="flex flex-wrap items-center gap-2"
+    [hidden]="vm.mode() === 'create' || vm.mode() === 'edit'"
+  >
     @if (vm.definition.operations.report && !vm.detail()) {
       <button
         pButton
@@ -70,6 +82,19 @@
       </button>
     }
     @if (
+      vm.definition.key === "reports" && vm.detail()?.["status"] === "READY"
+    ) {
+      <button
+        pButton
+        type="button"
+        [disabled]="vm.transfer.busy()"
+        (click)="vm.download()"
+      >
+        <i aria-hidden="true" class="pi pi-download"></i
+        >{{ "Download" | localize }}
+      </button>
+    }
+    @if (
       vm.detail() &&
       vm.definition.operations.update &&
       vm.canEditRow(vm.detail()!)
@@ -96,5 +121,26 @@
         >{{ (vm.user ? "User History" : "History") | localize }}
       </button>
     }
+    @if (vm.detail() && !vm.definition.adminGroup && extraActions().length) {
+      <button
+        aria-haspopup="menu"
+        pButton
+        severity="secondary"
+        type="button"
+        [attr.aria-expanded]="actions.visible"
+        [disabled]="vm.actionBusy()"
+        (click)="actions.toggle($event)"
+      >
+        {{ "Actions" | localize }}
+        <i aria-hidden="true" class="pi pi-angle-down"></i>
+      </button>
+      <p-menu
+        #actions
+        appendTo="body"
+        [model]="extraActions()"
+        [popup]="true"
+      />
+    }
+    <ng-content />
   </div>
 </header>

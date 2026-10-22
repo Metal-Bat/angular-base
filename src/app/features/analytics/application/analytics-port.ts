@@ -28,5 +28,5 @@ export type MetricDefinition = {
 };
 export type AnalyticsPort = {
   catalog(): Promise<MetricDefinition[]>;
-  query(body: MetricQuery): Promise<MetricProjection>;
+  query(body: MetricQuery, signal?: AbortSignal): Promise<MetricProjection>;
 };

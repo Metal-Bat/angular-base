@@ -1,0 +1,56 @@
+.metric-total {
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+.metric-total bdi {
+  font-size: 2rem;
+  font-variant-numeric: tabular-nums;
+}
+.metric-data {
+  margin-block: 1rem;
+}
+
+.metric-panel {
+  margin-block: 1.5rem;
+  padding: 1.25rem;
+  border: 1px solid var(--console-border);
+  border-radius: 0.75rem;
+  background: var(--console-surface);
+}
+.metric-panel h2 {
+  margin-block: 0 0.5rem;
+}
+.metric-period,
+.metric-asof,
+.metric-unknown {
+  margin-block: 0.5rem;
+  font-size: 0.8125rem;
+  color: var(--console-muted);
+}
+.metric-total {
+  margin-block: 0.75rem 0.5rem;
+}
+
+.metric-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+}
+.metric-heading h2 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin: 0;
+}
+.metric-heading .metric-total {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin: 0;
+}
+.metric-total span {
+  font-size: 0.875rem;
+  font-weight: 400;
+}

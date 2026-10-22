@@ -16,7 +16,9 @@
         <button
           class="column-sort"
           type="button"
-          [attr.aria-label]="'Sort ' + column.label | localize"
+          [attr.aria-label]="
+            ('Sort' | localize) + ' ' + (column.label | localize)
+          "
           [disabled]="vm.busy()"
           (click)="vm.sort(column.key)"
         >
@@ -37,7 +39,9 @@
           pButton
           severity="secondary"
           type="button"
-          [attr.aria-label]="'Filter ' + column.label | localize"
+          [attr.aria-label]="
+            ('Filter' | localize) + ' ' + (column.label | localize)
+          "
           [class.filter-active]="vm.filtered(column.key)"
           [disabled]="vm.busy()"
           [rounded]="true"
@@ -49,7 +53,8 @@
         <p-popover
           #filter
           appendTo="body"
-          [ariaLabel]="'Filter ' + column.label | localize"
+          [ariaLabel]="('Filter' | localize) + ' ' + (column.label | localize)"
+          (onHide)="filterClosed.set(true)"
           (onShow)="condition.focus()"
         >
           <form
@@ -57,7 +62,7 @@
             (keydown.escape)="filterTrigger.focus()"
             (ngSubmit)="
               vm.applyFilter() && filter.hide();
-              !vm.error && filterTrigger.focus()
+              !vm.error && restoreFocus(filterTrigger)
             "
           >
             <strong>{{ column.label | localize }}</strong>
@@ -67,6 +72,7 @@
               ><app-select-control
                 #condition
                 name="operation"
+                [ariaLabel]="'Condition' | localize"
                 [inputId]="vm.filterValueId + '-' + column.key + '-condition'"
                 [(ngModel)]="vm.draft.operation"
               >
@@ -87,6 +93,25 @@
                 [error]="vm.error"
               >
                 @if (
+                  field.options?.length &&
+                  ["equal", "notEqual", "in", "nin"].includes(
+                    vm.draft.operation
+                  )
+                ) {
+                  <app-query-choice
+                    [controlId]="vm.filterValueId"
+                    [describedBy]="
+                      vm.error ? vm.filterValueId + '-error' : null
+                    "
+                    [disabled]="vm.busy()"
+                    [multiple]="
+                      vm.draft.operation === 'in' ||
+                      vm.draft.operation === 'nin'
+                    "
+                    [options]="field.options!"
+                    [(value)]="vm.draft.value"
+                  />
+                } @else if (
                   vm.draft.operation === "in" || vm.draft.operation === "nin"
                 ) {
                   <app-list-values
@@ -98,6 +123,7 @@
                 } @else if (field.type === "boolean") {
                   <app-select-control
                     name="value"
+                    [ariaLabel]="'Value' | localize"
                     [inputId]="vm.filterValueId"
                     [(ngModel)]="vm.draft.value"
                   >
@@ -158,7 +184,9 @@
                 type="button"
                 [text]="true"
                 (click)="
-                  vm.applyFilter(true); filter.hide(); filterTrigger.focus()
+                  vm.applyFilter(true);
+                  filter.hide();
+                  restoreFocus(filterTrigger)
                 "
               >
                 {{ "Clear" | localize }}</button

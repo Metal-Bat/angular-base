@@ -1,0 +1,23 @@
+.timed-event {
+  position: absolute;
+  overflow: hidden;
+  border: 1px solid var(--console-accent);
+  border-radius: 0.375rem;
+  background: var(--console-accent-soft);
+  color: var(--console-text);
+  padding: 0.25rem;
+  text-align: start;
+  font-size: 0.875rem;
+  line-height: 1.2;
+  z-index: 2;
+}
+.timed-event strong,
+.timed-event small {
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.timed-event small {
+  font-size: 0.8125rem;
+}

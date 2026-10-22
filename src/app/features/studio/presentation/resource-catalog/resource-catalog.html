@@ -1,5 +1,17 @@
 <app-repair-return />
-<app-catalog-header [view]="this" />
+<app-catalog-header [view]="this"
+  ><app-catalog-actions [view]="this"
+/></app-catalog-header>
+@if ((key === "forms" || key === "workflows") && !selected() && !formOpen()) {
+  <app-saved-views
+    [columnOptions]="columnOptions()"
+    [columns]="savedColumns()"
+    [kind]="key"
+    [query]="appliedQuery()"
+    (applied)="applySaved($event)"
+    (columnsChanged)="savedColumns.set($event)"
+  />
+}
 @if (error()) {
   <p role="alert">{{ error() | localize }}</p>
 }
@@ -11,31 +23,32 @@
 @if (busy()) {
   <p role="status">{{ "Loading…" | localize }}</p>
 }
-<app-catalog-content [view]="this" />
-<app-catalog-actions [view]="this" />
-@if (secret()) {
-  <aside>
-    <p>
-      {{
-        "One-time confidential client secret. Transfer it to the server operator; never put it in browser configuration."
-          | localize
-      }}
-    </p>
-    <details>
-      <summary>{{ "Reveal secret" | localize }}</summary>
-      <code>{{ secret() }}</code>
-    </details>
-    <button
-      pButton
-      severity="secondary"
-      type="button"
-      [outlined]="true"
-      (click)="secret.set('')"
-    >
-      {{ "Dismiss secret" | localize }}
-    </button>
-  </aside>
-}
+<div [hidden]="formOpen()">
+  <app-catalog-content [view]="this" />
+  @if (secret()) {
+    <aside>
+      <p>
+        {{
+          "One-time confidential client secret. Transfer it to the server operator; never put it in browser configuration."
+            | localize
+        }}
+      </p>
+      <details>
+        <summary>{{ "Reveal secret" | localize }}</summary>
+        <code>{{ secret() }}</code>
+      </details>
+      <button
+        pButton
+        severity="secondary"
+        type="button"
+        [outlined]="true"
+        (click)="secret.set('')"
+      >
+        {{ "Dismiss secret" | localize }}
+      </button>
+    </aside>
+  }
+</div>
 <app-catalog-editor [view]="this" />
 <p-dialog
   appendTo="body"
@@ -75,6 +88,7 @@
   appendTo="body"
   position="center"
   [closable]="!parentBusy()"
+  [closeAriaLabel]="'Close' | localize"
   [draggable]="false"
   [header]="'Choose parent' | localize"
   [modal]="true"

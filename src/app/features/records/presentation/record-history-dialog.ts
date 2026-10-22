@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  input,
+  viewChild,
+} from '@angular/core';
 import type { ResourcePage } from './resource-page';
 import { RecordSummary } from '../../../shared/ui/record-summary/record-summary';
 import { DialogModule } from 'primeng/dialog';
@@ -22,6 +28,22 @@ import { LocalizePipe } from '../../../shared/ui/localize-pipe';
   changeDetection: ChangeDetectionStrategy.Default,
 })
 export class RecordHistoryDialog {
+  private readonly content = viewChild<ElementRef<HTMLElement>>('historyBody');
+  focusContents(): void {
+    const content = this.content()?.nativeElement;
+    if (
+      content &&
+      !content
+        .closest('[role="dialog"]')
+        ?.contains(content.ownerDocument.activeElement)
+    ) {
+      content
+        .querySelector<HTMLElement>(
+          'button:not(:disabled), [tabindex="0"], input:not(:disabled)',
+        )
+        ?.focus();
+    }
+  }
   readonly view =
     input.required<
       Pick<

@@ -1,0 +1,58 @@
+:host {
+  display: block;
+  min-inline-size: 0;
+}
+.chart-scroll {
+  overflow-x: auto;
+}
+.chart-scroll > svg {
+  display: block;
+  inline-size: 100%;
+  min-inline-size: 38rem;
+  max-block-size: 24rem;
+  direction: ltr;
+}
+.grid-line {
+  stroke: var(--console-border);
+  stroke-width: 1;
+}
+.axis {
+  stroke: var(--console-muted);
+}
+.axis-label {
+  fill: var(--console-muted);
+  font: 0.875rem var(--workspace-font-family);
+}
+.series-line {
+  fill: none;
+  stroke: var(--console-accent);
+  stroke-width: 2.5;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.point {
+  fill: var(--console-surface);
+  stroke: var(--console-accent);
+  stroke-width: 2;
+}
+.point:focus {
+  outline: 2px solid var(--console-accent);
+  outline-offset: 3px;
+}
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.5rem;
+  list-style: none;
+  padding: 0;
+}
+.chart-legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+}
+.chart-note {
+  font-size: 0.8125rem;
+  color: var(--console-muted);
+}

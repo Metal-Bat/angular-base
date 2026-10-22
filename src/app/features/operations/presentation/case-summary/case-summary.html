@@ -1,24 +1,25 @@
 @if (item().summary; as summary) {
   <app-record-summary [record]="summary" [title]="'Case activity' | localize" />
 }
-<dl class="grid gap-2">
-  <dt>{{ "Status" | localize }}</dt>
-  <dd>{{ item().status | localize }}</dd>
-  <dt>{{ "Pinned form" | localize }}</dt>
-  <dd>
-    @if (item().form) {
-      <bdi>{{ item().form }}</bdi>
-    } @else {
-      {{ "No form is attached to this task." | localize }}
-    }
-  </dd>
-  @if (item().workflow) {
-    <dt>{{ "Pinned workflow" | localize }}</dt>
+<details>
+  <summary>{{ "Pinned definitions" | localize }}</summary>
+  <dl>
+    <dt>{{ "Pinned form" | localize }}</dt>
     <dd>
-      <bdi>{{ item().workflow }}</bdi>
+      @if (item().form) {
+        <bdi>{{ item().form }}</bdi>
+      } @else {
+        {{ "No form is attached to this task." | localize }}
+      }
     </dd>
-  }
-</dl>
+    @if (item().workflow) {
+      <dt>{{ "Pinned workflow" | localize }}</dt>
+      <dd>
+        <bdi>{{ item().workflow }}</bdi>
+      </dd>
+    }
+  </dl>
+</details>
 @if (kind() === "task" && item().request) {
   <button
     pButton
@@ -45,12 +46,13 @@
   </p>
 }
 @if (item().process) {
-  <p>
-    {{ "Process tracking reference" | localize }}:
-    <a [routerLink]="['/operations/processes', item().process]"
-      ><bdi>{{ item().process }}</bdi></a
-    >
-  </p>
+  <a
+    pButton
+    severity="secondary"
+    [outlined]="true"
+    [routerLink]="['/operations/processes', item().process]"
+    >{{ "Open process tracking" | localize }}</a
+  >
 }
 
 @if (kind() === "request" && item().status !== "DRAFT") {

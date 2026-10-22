@@ -12,8 +12,8 @@ import {
 import { ButtonDirective } from 'primeng/button';
 import { ActorState } from '../../../../core/auth/actor-state';
 import { LocalizePipe } from '../../../../shared/ui/localize-pipe';
-import { SchemaInput } from '../../../administration/presentation/schema-input/schema-input';
-import { schemaErrors } from '../../../administration/domain/schema-form';
+import { SchemaInput } from '../../../../shared/ui/schema-input/schema-input';
+import { schemaErrors } from '../../../../shared/domain/schema-form';
 import { JsonObject, JsonValue } from '../../../forms/domain/runtime-document';
 import {
   applyConfiguration,
@@ -27,11 +27,15 @@ import {
 import { NodeDetails } from '../node-details/node-details';
 import { SubprocessPin } from '../subprocess-pin/subprocess-pin';
 import { StudioChoice } from '../studio-choice/studio-choice';
+import { TransformProjection } from '../transform-projection/transform-projection';
+import { transformErrors } from '../../domain/transform-contract';
+import { boundInputSchema } from '../../domain/mapping-fields';
 import { OperationChoice } from '../operation-choice/operation-choice';
 @Component({
   selector: 'app-node-inspector',
   imports: [
     OperationChoice,
+    TransformProjection,
     ButtonDirective,
     LocalizePipe,
     SchemaInput,
@@ -45,6 +49,11 @@ import { OperationChoice } from '../operation-choice/operation-choice';
 export class NodeInspector {
   readonly step = input.required<JsonObject>();
   readonly catalog = input.required<readonly JsonObject[]>();
+  readonly graph = input<JsonObject>({});
+  readonly projectionSchema = computed(() =>
+    boundInputSchema(this.graph(), String(this.step()['key']), 'value'),
+  );
+  readonly version = input('');
   readonly children = input<readonly JsonObject[]>([]);
   readonly child = linkedSignal(() =>
     structuredClone(this.step()['subprocess'] as JsonObject | undefined),
@@ -73,6 +82,7 @@ export class NodeInspector {
     this.step();
     return true;
   });
+  readonly projectionValid = signal(true);
   readonly errors = signal<Readonly<Record<string, string>>>({});
   readonly taskSchema = taskSchema;
   readonly flowSchema = flowSchema;
@@ -153,6 +163,12 @@ export class NodeInspector {
     if (this.disabled() || !inspector) {
       return;
     }
+    if (!this.projectionValid()) {
+      this.errors.set({
+        projection: 'Add or discard the pending projected field.',
+      });
+      return;
+    }
     if (!this.childValid()) {
       this.errors.set({ child: 'Invalid value' });
       return;
@@ -162,6 +178,10 @@ export class NodeInspector {
     ) as JsonObject;
     const errors = {
       ...schemaErrors(inspector.config_schema, owned),
+      ...(inspector.handler_key === 'transform' &&
+      inspector.handler_version === '2'
+        ? transformErrors(this.draft())
+        : {}),
       ...(this.task() ? schemaErrors(taskSchema, this.task(), 'task') : {}),
       ...(this.flow() ? schemaErrors(flowSchema, this.flow(), 'flow') : {}),
     };

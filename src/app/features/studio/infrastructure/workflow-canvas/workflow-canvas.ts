@@ -1,4 +1,7 @@
-import { CanvasNavigation } from './canvas-navigation';
+import { automaticConnectionRoutes } from './canvas-routing';
+import { canvasContextActions } from './canvas-context-actions';
+import { CanvasGuidance } from './canvas-guidance/canvas-guidance';
+import { CanvasGestures } from './canvas-gestures';
 import { FormsModule } from '@angular/forms';
 import { SelectControl } from '../../../../shared/ui/select-control/select-control';
 import { CanvasToolbar } from './canvas-toolbar';
@@ -22,13 +25,11 @@ import { CanvasEdge, CanvasNode } from '../../domain/workflow-authoring';
 import { Point } from '../../domain/authoring';
 import { LocalizePipe } from '../../../../shared/ui/localize-pipe';
 import { Locale } from '../../../../core/localization/locale';
-import {
-  ContextAction,
-  ContextMenuControl,
-} from '../../../../shared/ui/context-menu-control/context-menu-control';
+import { ContextMenuControl } from '../../../../shared/ui/context-menu-control/context-menu-control';
 @Component({
   selector: 'app-workflow-canvas',
   imports: [
+    CanvasGuidance,
     FormsModule,
     SelectControl,
     CanvasToolbar,
@@ -41,7 +42,7 @@ import {
   styleUrl: './workflow-canvas.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class WorkflowCanvas extends CanvasNavigation {
+export class WorkflowCanvas extends CanvasGestures {
   private readonly locale = inject(Locale);
   private readonly menu = viewChild(ContextMenuControl);
   readonly menuNode = signal('');
@@ -53,6 +54,14 @@ export class WorkflowCanvas extends CanvasNavigation {
     source: string;
     target: string;
   } | null>(null);
+  readonly connectionCaption = computed(() => {
+    const connection = this.pendingConnection();
+    const title = (port: string): string =>
+      this.nodes().find((node) => node.key === port.split(':')[1])?.title ?? '';
+    return connection
+      ? title(connection.source) + ' → ' + title(connection.target)
+      : '';
+  });
   readonly connectionOutcome = signal('');
   readonly connectionOutcomes = computed(
     () =>
@@ -87,75 +96,14 @@ export class WorkflowCanvas extends CanvasNavigation {
     this.connect()(connection.source, connection.target, outcome);
     this.pendingConnection.set(null);
   }
+  readonly addNext = input<((key: string) => void) | null>(null);
+  readonly insertStep = input<((id: string) => void) | null>(null);
+  readonly removeNode = input<((key: string) => void) | null>(null);
   readonly duplicateNode = input<((key: string) => void) | null>(null);
-  readonly menuItems = computed<ContextAction[]>(() => {
-    const key = this.menuNode();
-    const edge = this.menuEdge();
-    const blocked = this.disabled() || this.readOnly();
-    if (edge) {
-      return [
-        {
-          label: this.locale.text('Inspect connection'),
-          icon: 'pi pi-search',
-          command: (): void => this.inspectEdge()?.(edge),
-        },
-        {
-          label: this.locale.text('Remove connection'),
-          icon: 'pi pi-trash',
-          disabled: blocked || !this.deleteEdge(),
-          command: (): void => {
-            if (
-              !this.disabled() &&
-              !this.readOnly() &&
-              this.edges().some((item) => item.id === edge)
-            ) {
-              this.deleteEdge()?.(edge);
-            }
-          },
-        },
-      ];
-    }
-    return key
-      ? [
-          {
-            label: this.locale.text('Inspect step'),
-            icon: 'pi pi-search',
-            command: (): void => this.selectNode()(key),
-          },
-          {
-            label: this.locale.text('Connect to another step'),
-            icon: 'pi pi-link',
-            disabled: blocked,
-            command: (): void => this.beginLink(key),
-          },
-          {
-            label: this.locale.text('Duplicate step'),
-            icon: 'pi pi-copy',
-            disabled: blocked || !this.duplicateNode(),
-            command: (): void => {
-              if (
-                !this.disabled() &&
-                !this.readOnly() &&
-                this.nodes().some((node) => node.key === key)
-              ) {
-                this.duplicateNode()?.(key);
-              }
-            },
-          },
-        ]
-      : [
-          {
-            label: this.locale.text('Fit to view'),
-            icon: 'pi pi-expand',
-            command: (): void => this.fit(),
-          },
-          {
-            label: this.locale.text('Reset view'),
-            icon: 'pi pi-refresh',
-            command: (): void => this.reset(),
-          },
-        ];
-  });
+  readonly groupAction = input<((action: string) => void) | null>(null);
+  readonly menuItems = computed(() =>
+    canvasContextActions(this, (label) => this.locale.text(label)),
+  );
   constructor() {
     super();
     effect(() => {
@@ -200,7 +148,13 @@ export class WorkflowCanvas extends CanvasNavigation {
     this.menuEdge.set('');
     this.menuNode.set(key);
     if (key) {
-      this.selectNode()(key);
+      this.selectNode()(key, true);
+      if (
+        this.selectionKeys().includes(key) &&
+        this.selectionKeys().length > 1
+      ) {
+        this.flow()?.select([...this.selectionKeys()], [], false);
+      }
     }
     this.menu()?.show(event);
   }
@@ -213,8 +167,17 @@ export class WorkflowCanvas extends CanvasNavigation {
     this.menu()?.show(event);
   }
   selectEdge(event: Event, id: string): void {
+    event.preventDefault();
     event.stopPropagation();
     this.inspectEdge()?.(id);
+  }
+  edgeKey(event: KeyboardEvent, id: string): void {
+    if (
+      event.key === 'ContextMenu' ||
+      (event.shiftKey && event.key === 'F10')
+    ) {
+      this.openEdgeMenu(event as unknown as MouseEvent, id);
+    }
   }
   beginLink(key: string): void {
     if (
@@ -226,87 +189,6 @@ export class WorkflowCanvas extends CanvasNavigation {
     }
   }
   readonly edges = input.required<readonly CanvasEdge[]>();
-  readonly disabled = input(false);
-  readonly addStep = input<(key: string, point: Point) => void>(
-    () => undefined,
-  );
-  readonly invalidNodes = input<readonly string[]>([]);
-  dragOver(event: DragEvent): void {
-    if (
-      !this.disabled() &&
-      !this.readOnly() &&
-      event.dataTransfer?.types.includes('application/x-studio-step')
-    ) {
-      event.preventDefault();
-      event.dataTransfer.dropEffect = 'copy';
-    }
-  }
-  drop(event: DragEvent): void {
-    if (this.disabled() || this.readOnly()) {
-      return;
-    }
-    const key = event.dataTransfer?.getData('application/x-studio-step');
-    if (!key) {
-      return;
-    }
-    event.preventDefault();
-    const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
-    const viewport = this.viewport();
-    this.addStep()(key, {
-      x: (event.clientX - rect.left - viewport.x) / viewport.zoom,
-      y: (event.clientY - rect.top - viewport.y) / viewport.zoom,
-    });
-  }
-  readonly paletteKey = input('');
-  place(event: MouseEvent): void {
-    if (
-      !(event.target as HTMLElement).closest('.board-node, f-connection') &&
-      !this.paletteKey()
-    ) {
-      this.selectNode()('');
-    }
-    if (
-      !this.paletteKey() ||
-      this.disabled() ||
-      this.readOnly() ||
-      (event.target as HTMLElement).closest('.board-node, f-connection')
-    ) {
-      return;
-    }
-    this.placeAt(
-      event.currentTarget as HTMLElement,
-      event.clientX,
-      event.clientY,
-    );
-  }
-  placeWithKeyboard(event: Event): void {
-    if (
-      event.target !== event.currentTarget ||
-      !this.paletteKey() ||
-      this.disabled() ||
-      this.readOnly()
-    ) {
-      return;
-    }
-    event.preventDefault();
-    const stage = event.currentTarget as HTMLElement;
-    const rect = stage.getBoundingClientRect();
-    this.placeAt(stage, rect.left + rect.width / 2, rect.top + rect.height / 2);
-  }
-  private placeAt(stage: HTMLElement, clientX: number, clientY: number): void {
-    const rect = stage.getBoundingClientRect();
-    const viewport = this.viewport();
-    this.addStep()(this.paletteKey(), {
-      x: (clientX - rect.left - viewport.x) / viewport.zoom,
-      y: (clientY - rect.top - viewport.y) / viewport.zoom,
-    });
-  }
-  readonly selected = input('');
-  readonly selectionKeys = input<readonly string[]>([]);
-  readonly selectNodes = input<((keys: string[]) => void) | null>(null);
-  readonly keyboardMove = input<((key: string, point: Point) => void) | null>(
-    null,
-  );
   readonly reconnect = input<
     ((id: string, source: string, target: string) => void) | null
   >(null);
@@ -320,6 +202,17 @@ export class WorkflowCanvas extends CanvasNavigation {
         );
         this.linkSource.set('');
       }
+      return;
+    }
+    if (
+      event.type === 'click' &&
+      event.isTrusted &&
+      this.pointerSelectionHandled
+    ) {
+      return;
+    }
+    if (event.shiftKey && this.toggleNode()) {
+      this.toggleNode()!(key);
       return;
     }
     if (event.shiftKey && this.selectNodes()) {
@@ -342,37 +235,71 @@ export class WorkflowCanvas extends CanvasNavigation {
       return;
     }
     this.selectNode()(key);
-    this.canvas()?.centerGroupOrNode(key, false, true);
+    this.centerNode(key);
   }
   reassigned(event: FReassignConnectionEvent): void {
+    const source =
+      event.endpoint === 'source' ? event.nextSourceId : event.previousSourceId;
+    const target =
+      event.endpoint === 'target' ? event.nextTargetId : event.previousTargetId;
     if (
       !this.disabled() &&
       !this.readOnly() &&
-      event.nextSourceId &&
-      event.nextTargetId
+      !this.gestureCancelled() &&
+      source &&
+      target
     ) {
-      this.reconnect()?.(
-        event.connectionId,
-        event.nextSourceId,
-        event.nextTargetId,
-      );
+      this.reconnect()?.(event.connectionId, source, target);
     }
   }
   readonly collapsed = input<readonly string[]>([]);
   readonly routing = input<Record<string, Point[]>>({});
+  readonly automaticRouting = computed(() =>
+    automaticConnectionRoutes(this.nodes(), this.edges(), this.routing()),
+  );
+  editRoute(id: string): void {
+    const points = this.automaticRouting()[id];
+    if (points && !this.disabled() && !this.readOnly()) {
+      this.routeEdge()(id, structuredClone(points));
+    }
+  }
+  readonly viewRouting = computed(() => {
+    this.gestureRevision();
+    return structuredClone({ ...this.routing(), ...this.automaticRouting() });
+  });
+  routePoints(id: string, points: Point[]): void {
+    if (!this.disabled() && !this.readOnly() && !this.gestureCancelled()) {
+      this.routeEdge()(id, points);
+    }
+  }
+  override cancelGesture(): void {
+    super.cancelGesture();
+    this.linkSource.set('');
+    this.pendingConnection.set(null);
+  }
   readonly routeEdge = input.required<(key: string, points: Point[]) => void>();
-  readonly selectNode = input.required<(key: string) => void>();
-  readonly moveNode = input.required<(key: string, point: Point) => void>();
   readonly connect =
     input.required<
       (source: string, target: string, outcome?: string) => void
     >();
   created(event: FCreateConnectionEvent): void {
-    if (!this.disabled() && !this.readOnly() && event.targetId) {
+    if (
+      !this.disabled() &&
+      !this.readOnly() &&
+      !this.gestureCancelled() &&
+      event.targetId
+    ) {
       this.requestConnection(event.sourceId, event.targetId);
     }
   }
   keyMove(event: KeyboardEvent, node: CanvasNode): void {
+    if (
+      event.key === 'ContextMenu' ||
+      (event.shiftKey && event.key === 'F10')
+    ) {
+      this.openMenu(event as unknown as MouseEvent, node.key);
+      return;
+    }
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
       event.stopPropagation();

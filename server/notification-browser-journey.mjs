@@ -1,3 +1,4 @@
+import { publicBrowserStorageCheck } from "./browser-storage-policy.mjs";
 export function notificationBrowserJourney(credentials) {
   return `
 (async()=>{
@@ -8,7 +9,9 @@ export function notificationBrowserJourney(credentials) {
  const click=async(label,root=document)=>{await wait(()=>button(label,root),label);button(label,root).click();};
  const fill=(id,value)=>{const input=document.getElementById(id);check(input,'Missing '+id);input.value=value;input.dispatchEvent(new Event('input',{bubbles:true}));};
  const login=async(actor)=>{await wait(()=>document.querySelector('#username'),'login');fill('username',accounts.users[actor]);fill('password',accounts.password);document.querySelector('form').dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}));await wait(()=>document.querySelector('a[href="/operations/tasks"]'),'signed in');};
+ const displaySettings=()=>{const details=document.querySelector('app-workspace-preferences details');if(details&&!details.open)details.querySelector('summary').click();};
  const language=async(value)=>{
+  displaySettings();
   const picker=document.querySelector('[data-language-picker]'),control=picker.querySelector('[role="combobox"]');
   const option=[...picker.querySelector('select').options].find(row=>row.value===value);
   control.focus();control.click();await wait(()=>control.getAttribute('aria-expanded')==='true','language choices');
@@ -18,6 +21,7 @@ export function notificationBrowserJourney(credentials) {
   await wait(()=>document.documentElement.lang===value&&control.getAttribute('aria-expanded')==='false','language applied');
  };
  const dark=async()=>{
+  displaySettings();
   const control=document.querySelector('[data-theme-picker] [role="combobox"]');control.click();
   const popup=()=>document.getElementById(control.getAttribute('aria-controls'));
   await wait(()=>popup()?.querySelector('[data-theme-option="blue-dark"]'),'theme options');
@@ -58,7 +62,7 @@ export function notificationBrowserJourney(credentials) {
   await wait(()=>button('Claim'),'unclaimed task destination loaded');
   await click('Sign out');await wait(()=>document.querySelector('#username'),'logout');check(alerts().length===0&&!document.querySelector('[data-notification-count]'),'Old actor UI retained');
   await login(0);await wait(()=>window.liveEvidence.connections>=3,'second actor stream');await new Promise(r=>setTimeout(r,700));check(alerts().length===0,'New actor replayed history');
-  check(localStorage.length===0&&sessionStorage.length===0,'Browser storage contains private state');
+  check(${publicBrowserStorageCheck},'Browser storage contains private state');
   await click('Sign out');await action('cleanup');
   await fetch('/__result',{method:'POST',body:JSON.stringify({ok:true,diagnostics:window.fixtureDiagnostics,live:window.liveEvidence})});
  }catch(error){await fetch('/__result',{method:'POST',body:JSON.stringify({ok:false,error:error.message,diagnostics:window.fixtureDiagnostics,live:window.liveEvidence})});}

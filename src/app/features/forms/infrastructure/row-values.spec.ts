@@ -116,17 +116,53 @@ describe('Stable nested collection values', () => {
         ],
       },
     });
-    expect(pages).toHaveLength(1);
-    expect(
-      pageRender(doc.render, pages[0].scopes).children.every(
-        (child) => child.scope === pageScope,
-      ),
-    ).toBe(true);
+    expect(pages).toEqual([
+      { key: 'first', title: 'Page', scopes: [pageScope] },
+    ]);
+    const original = structuredClone(doc.render);
+    const projected = pageRender(doc.render, pages[0].scopes);
+    expect(projected.children).toHaveLength(doc.render.children.length);
+    expect(projected.children.map((child) => [child.key, child.scope])).toEqual(
+      doc.render.children.map((child) => [child.key, child.scope]),
+    );
+    const visible = projected.children.filter(
+      (child) =>
+        (child.display['runtime_state'] as { visible?: boolean } | undefined)
+          ?.visible !== false,
+    );
+    expect(visible.map((child) => child.scope)).toEqual([pageScope]);
+    expect(doc.render).toEqual(original);
   });
 });
 
 import { correctionValue } from '../domain/correction-values';
 describe('Correction feedback identity', () => {
+  it('reads literal items properties as ordinary values and validates their fields', () => {
+    const scope = '/properties/items_total';
+    expect(
+      correctionValue({ items: 'supplied' }, '/properties/items', null, null),
+    ).toBe('supplied');
+    const document: RuntimeDocument = {
+      ...base(),
+      fields: [
+        {
+          scope,
+          schema: { type: 'integer', minimum: 1 },
+          writable: true,
+          required: true,
+        },
+      ],
+      policy: { readable: [scope], writable: [scope], required: [scope] },
+    };
+    expect(
+      validateRuntime(document, { items_total: 0 }).map(
+        (issue) => issue.pointer,
+      ),
+    ).toEqual(['/items_total']);
+    expect(validateRuntime(document, {}).map((issue) => issue.pointer)).toEqual(
+      ['/items_total'],
+    );
+  });
   it('binds prior/current values by stable row key after reorder', () => {
     const scope = '/properties/rows/items/properties/note';
     expect(

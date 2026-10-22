@@ -1,0 +1,49 @@
+:host,
+details {
+  display: contents;
+}
+summary {
+  display: none;
+}
+.preference-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  min-inline-size: 0;
+}
+@media (max-width: 48rem) {
+  :host {
+    display: block;
+  }
+  details {
+    display: block;
+    position: relative;
+  }
+  summary {
+    display: grid;
+    place-items: center;
+    inline-size: 2.75rem;
+    block-size: 2.75rem;
+    padding: 0;
+    cursor: pointer;
+    list-style: none;
+  }
+  summary::-webkit-details-marker {
+    display: none;
+  }
+  .preference-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    position: absolute;
+    inset-block-start: 3rem;
+    inset-inline-end: -3rem;
+    padding: 1rem;
+    background: var(--console-surface);
+    border: 1px solid var(--console-border);
+    border-radius: 0.75rem;
+    box-shadow: var(--console-shadow);
+    z-index: 20;
+  }
+}

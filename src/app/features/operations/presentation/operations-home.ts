@@ -43,12 +43,6 @@ export class OperationsHome {
       path: '/operations/notifications',
     },
     {
-      label: 'Private uploads',
-      description: 'Manage files for your requests and tasks.',
-      icon: 'pi pi-folder',
-      path: '/operations/media',
-    },
-    {
       label: 'Account and sessions',
       description: 'Review your profile and active sessions.',
       icon: 'pi pi-user',

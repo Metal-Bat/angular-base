@@ -1,5 +1,14 @@
-<div class="grid gap-2 mb-4">
-  <label [for]="id()">{{ label() }}</label>
+<div
+  class="grid gap-2 mb-4"
+  [style.gap]="compact() ? '0.25rem' : null"
+  [style.margin-block-end]="compact() ? '0.5rem' : null"
+>
+  <label [for]="id()"
+    >{{ label() }}
+    @if (required()) {
+      <span aria-hidden="true"> *</span>
+    }
+  </label>
   <ng-content />
   @if (hint()) {
     <p [id]="id() + '-hint'">{{ hint() }}</p>

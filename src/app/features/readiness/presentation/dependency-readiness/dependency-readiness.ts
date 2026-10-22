@@ -1,3 +1,4 @@
+import { LocalizedDateTimePipe } from '../../../../shared/ui/localized-datetime-pipe';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -43,7 +44,7 @@ const repairs: Record<string, { route: string; permission: string }> = {
 };
 @Component({
   selector: 'app-dependency-readiness',
-  imports: [RouterLink, ButtonDirective, LocalizePipe],
+  imports: [LocalizedDateTimePipe, RouterLink, ButtonDirective, LocalizePipe],
   templateUrl: './dependency-readiness.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

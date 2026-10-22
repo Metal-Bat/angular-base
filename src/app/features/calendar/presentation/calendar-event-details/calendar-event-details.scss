@@ -1,0 +1,18 @@
+h2 {
+  font-size: 1.125rem;
+  overflow-wrap: anywhere;
+  margin-block: 0 0.5rem;
+}
+p {
+  margin-block: 0.5rem;
+}
+.detail-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  margin-block-start: 1rem;
+}
+button {
+  margin: 0;
+}

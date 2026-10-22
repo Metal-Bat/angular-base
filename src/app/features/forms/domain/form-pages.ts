@@ -1,5 +1,20 @@
-import { RenderNode, RuntimeDocument } from './runtime-document';
+import { JsonObject, RenderNode, RuntimeDocument } from './runtime-document';
 import { behaviorNodes } from './resolved-behavior';
+export function visibleScopes(root: RenderNode): readonly string[] {
+  if (
+    (root.display['runtime_state'] as JsonObject | undefined)?.['visible'] ===
+    false
+  ) {
+    return [];
+  }
+  return [
+    ...(root.scope ? [root.scope] : []),
+    ...root.children.flatMap(visibleScopes),
+  ];
+}
+export function hasVisibleScope(root: RenderNode, scope: string): boolean {
+  return visibleScopes(root).includes(scope);
+}
 export type FormPage = {
   key: string;
   title: string;
@@ -38,29 +53,39 @@ export function formPages(document: RuntimeDocument): readonly FormPage[] {
     return [{ key, title, scopes }];
   });
 }
+/** Shared page membership for runtime rendering and the authoring surface. */
+export function pageIncludesScope(
+  scope: string,
+  scopes: readonly string[],
+): boolean {
+  return scopes.some(
+    (allowed) =>
+      scope === allowed ||
+      scope.startsWith(allowed + '/') ||
+      allowed.startsWith(scope + '/'),
+  );
+}
 export function pageRender(
   root: RenderNode,
   scopes: readonly string[],
 ): RenderNode {
-  const visit = (node: RenderNode): RenderNode | null => {
-    if (
-      node.scope &&
-      !scopes.some(
-        (scope) =>
-          node.scope === scope ||
-          node.scope!.startsWith(scope + '/') ||
-          scope.startsWith(node.scope! + '/'),
-      )
-    ) {
-      return null;
-    }
-    return {
-      ...node,
-      children: node.children.flatMap((child) => {
-        const projected = visit(child);
-        return projected ? [projected] : [];
-      }),
-    };
-  };
-  return visit(root) ?? { ...root, scope: null, children: [] };
+  const visit = (node: RenderNode): RenderNode => ({
+    ...node,
+    // Keep original child positions: option/navigation APIs use document pointers.
+    display:
+      node.scope && !pageIncludesScope(node.scope, scopes)
+        ? {
+            ...node.display,
+            runtime_state: {
+              ...((node.display['runtime_state'] ?? {}) as Record<
+                string,
+                unknown
+              >),
+              visible: false,
+            },
+          }
+        : node.display,
+    children: node.children.map(visit),
+  });
+  return visit(root);
 }

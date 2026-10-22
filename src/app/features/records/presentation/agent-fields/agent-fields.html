@@ -1,0 +1,146 @@
+<div class="agent-workspace">
+  <div class="agent-main">
+    <p-tabs [value]="tab()" (valueChange)="tab.set($any($event))">
+      <p-tablist
+        ><p-tab value="identity">{{ "Overview" | localize }}</p-tab>
+        @for (section of sections(); track section.key) {
+          <p-tab [value]="section.key">{{ section.title | localize }}</p-tab>
+        }
+        <p-tab value="checks">{{ "Configuration checks" | localize }}</p-tab>
+      </p-tablist>
+      <p-tabpanels>
+        <p-tabpanel value="identity"
+          ><app-record-fields
+            [disabled]="disabled()"
+            [errors]="errors()"
+            [fields]="identity()"
+            [values]="values()"
+            (valuesChange)="valuesChange.emit($event)"
+        /></p-tabpanel>
+        @for (section of sections(); track section.key) {
+          <p-tabpanel [value]="section.key">
+            @if (section.key === "data") {
+              <p>
+                {{
+                  "These are the named inputs and classifications permitted for this agent. Agent list filters do not change this policy."
+                    | localize
+                }}
+              </p>
+            }
+            @if (section.key === "limits") {
+              <p>
+                {{
+                  "The server pins the tighter user and administrator limits at publication. A spend guarantee also requires a supported provider and configured price."
+                    | localize
+                }}
+              </p>
+            }
+            @if (section.key === "connection" && spec(); as config) {
+              <app-agent-capabilities [config]="config" />
+            }
+            @if (section.key === "instructions") {
+              <app-agent-instructions
+                [disabled]="disabled()"
+                [errors]="errors()"
+                [value]="spec() ?? {}"
+                (fieldChange)="setSpec($event.key, $event.value)"
+              />
+              <app-agent-decision
+                [disabled]="disabled()"
+                [errors]="errors()"
+                [inputKeys]="permittedInputs()"
+                [value]="$any(spec()?.['decision'] ?? {})"
+                (changed)="unfinishedChange()"
+                (valueChange)="setSpec('decision', $event)"
+              />
+            }
+            @if (section.key === "data") {
+              <app-agent-policy
+                [classifications]="
+                  $any(spec()?.['field_classifications'] ?? {})
+                "
+                [disabled]="disabled()"
+                [errors]="errors()"
+                [value]="$any(spec()?.['data_policy'] ?? {})"
+                (classificationsChange)="
+                  setSpec('field_classifications', $event)
+                "
+                (policyChange)="setPolicy($event)"
+                (valueChange)="setSpec('data_policy', $event)"
+              />
+            } @else if (section.key === "limits") {
+              <app-agent-limits
+                [disabled]="disabled()"
+                [errors]="errors()"
+                [value]="$any(spec()?.['user_limits'] ?? {})"
+                (changed)="unfinishedChange()"
+                (valueChange)="setSpec('user_limits', $event)"
+              />
+            } @else if (section.key === "connection") {
+              <app-record-fields
+                [controlPrefix]="'agent-' + section.key"
+                [disabled]="disabled()"
+                [errors]="errors()"
+                [fields]="section.fields"
+                [values]="values()"
+                (valuesChange)="valuesChange.emit($event)"
+              />
+            }
+          </p-tabpanel>
+        }
+        <p-tabpanel value="checks">
+          <h3>{{ "Configuration checks" | localize }}</h3>
+          <p>
+            {{
+              "Check required fields and draft structure locally. Publication checks current authorization, prices and provider policy on the server."
+                | localize
+            }}
+          </p>
+          <button
+            pButton
+            type="button"
+            [disabled]="disabled()"
+            (click)="checkConfiguration()"
+          >
+            {{ "Check configuration" | localize }}
+          </button>
+          @if (check()) {
+            @if (!checkCurrent()) {
+              <p role="status">
+                {{
+                  "The configuration has changed or has unfinished input. Check it again after correcting the fields."
+                    | localize
+                }}
+              </p>
+            } @else if (!checkIssues().length) {
+              <p role="status">
+                {{
+                  "Local configuration checks passed. No provider or tool was executed."
+                    | localize
+                }}
+              </p>
+            }
+            <ul>
+              @for (issue of checkIssues(); track issue[0]) {
+                <li>
+                  <button
+                    pButton
+                    type="button"
+                    [text]="true"
+                    (click)="reveal(issue[0])"
+                  >
+                    {{ issueLabel(issue[0]) | localize }}:
+                    {{ issue[1] | localize }}
+                  </button>
+                </li>
+              }
+            </ul>
+          }
+        </p-tabpanel>
+      </p-tabpanels>
+    </p-tabs>
+  </div>
+  <aside>
+    <app-agent-overview [config]="spec() ?? {}" [record]="record()" />
+  </aside>
+</div>

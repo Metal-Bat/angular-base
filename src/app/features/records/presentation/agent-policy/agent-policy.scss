@@ -1,0 +1,52 @@
+:host {
+  display: block;
+  min-inline-size: 0;
+}
+.policy-set,
+.input-classifications {
+  margin-block: 1.5rem;
+}
+.input-add {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.75rem;
+}
+.input-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  list-style: none;
+  padding: 0;
+}
+.input-tags li {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--console-border);
+  border-radius: 0.5rem;
+}
+.input-classifications {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+.input-classifications h3 {
+  grid-column: 1/-1;
+}
+.tool-permission {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.policy-note {
+  color: var(--console-muted);
+  font-size: 0.875rem;
+}
+@media (max-width: 48rem) {
+  .input-classifications,
+  .input-add {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

@@ -67,10 +67,43 @@ export function caseRecord(value: unknown): CaseRecord {
         }
       : {}),
     kind: (kind ?? 'HUMAN_TASK') as CaseRecord['kind'],
+    ...(kind !== undefined
+      ? {
+          personal: Object.fromEntries(
+            [
+              ['read', 'read_at'],
+              ['pin', 'pinned_at'],
+              ['watch', 'watching_at'],
+              ['archive', 'archived_at'],
+            ]
+              .filter(([, key]) => Object.hasOwn(item, key))
+              .map(([action, key]) => [
+                action,
+                nullableString(item[key]) !== null,
+              ]),
+          ),
+        }
+      : {}),
     claimant: nullableString(item['claimant_ref_id']),
     process: nullableString(item['process_ref_id']),
     form: nullableString(item['form_version_ref_id']),
     workflow: nullableString(item['workflow_version_ref_id']),
     runtime: item['runtime_state'] ?? null,
   };
+}
+
+/** A DTO's own ref_id wins over its parent request_ref_id. Mutation wrappers
+ * instead expose an explicit owner reference alongside nested attachment data. */
+export function mutationReference(value: unknown): string {
+  const row = record(value);
+  const reference =
+    row['resource_ref_id'] ??
+    row['work_item_ref_id'] ??
+    row['work_item_ref'] ??
+    row['ref_id'] ??
+    row['request_ref_id'];
+  if (typeof reference !== 'string' || !reference.trim()) {
+    throw Error('Invalid mutation reference');
+  }
+  return reference;
 }

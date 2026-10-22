@@ -2107,3 +2107,140 @@ Consulted 2026-10-08; live documentation can describe versions newer than the lo
 - **[O07]** [Native lint warning thresholds, including max-warnings; verify builder forwarding in installed version.](https://eslint.org/docs/latest/use/command-line-interface)
 - **[O08]** [Mise task behavior; the repository task configuration remains the command authority.](https://mise.jdx.dev/tasks/)
 - **[O09]** [Locked dependency synchronization and lock freshness.](https://docs.astral.sh/uv/concepts/projects/sync/)
+
+## Master revision 4 visual repair milestone — 2026-10-14
+
+[Page/editor repair continuation](../changes/APP-FE-007.UX02.md) records the scoped implementation under existing APP-FE-002/004/007/014/016/019 ownership. Ordinary page editing, Studio header actions, contextual scalar actions, the three-area form workspace and anchored date grid are implemented in this milestone. Whole-card acceptance remains open; the final unchanged-source gate and distinct paired evidence govern verification. V01/V02/V03/V04/V06/V23/V34/V37 are partial to their full master scope; all other revision 4 cards remain outstanding. Existing parent status/history is unchanged. Do not promote this milestone to full demo/release or user acceptance.
+
+## Personal collection visual repair continuation — 2026-10-14
+
+[APP-FE-008.UX02](../changes/APP-FE-008.UX02.md) records the compact list-view toolbar, authoritative header favorite star and quieter favorite rows under the master's existing APP-FE-008.UX01 / APP-FE-007.UX01 ownership. Functional APP-FE-009 history remains intact. V07/V08 are scoped implementation continuations; V09 remains partial. The complete master and manual visual/user acceptance remain open. Actual service/browser results and the final unchanged-source repository gate are separate evidence levels in that record.
+
+## Master revision 5 continuation — 2026-10-14
+
+[APP-FE-004.UX01](../changes/APP-FE-004.UX01.md) records shared frame/typography, durable record navigation, bounded editors, nested form layout, calendar/chart presentation and typed agent repair under the original owners. The [migration continuation](FRONTEND-REVISION-5-MIGRATION.md) explicitly retains unresolved route families. This is partial implementation; the complete master, final unchanged-source check, required current paired journeys and responsive/locale/zoom acceptance remain open. No parent readiness or historical exception has been promoted.
+
+[APP-FE-036.UX01](../changes/APP-FE-036.UX01.md) records the revision 5 inline avatar preview/association recovery, shared measured/indeterminate progress, and removal of Private uploads from ordinary navigation. Existing case attachment services and the direct utility route remain. The scoped native progress exception has retained failing/passing evidence; complete current verification and actual service acceptance remain separate gates.
+
+[APP-FE-032.UX01](../changes/APP-FE-032.UX01.md) records contextual process entry, the technical-reference fallback, readonly positions, case header/history/report repair and visible human task actions under the original V32/V33 owners. The frozen discovery/identity gaps and unchanged reviewer authorization are explicit. Focused tests are scoped; complete current checks and actual paired acceptance remain open.
+
+## Agent editor and reopened form-display audit — 2026-10-16
+
+User-authorized V28–V30 work is IN_PROGRESS under [APP-FE-030.UX01](../changes/APP-FE-030.UX01.md), reusing the existing APP-FE-025/030 owners. Form display and missing-feature reports reopen scoped APP-FE-016–019 acceptance; prior full gate 657 remains an unchanged-source local pass, not user acceptance. New work requires its own complete gate and actual acceptance.
+
+The supported editor implementation and reopened form repairs are now recorded in [agent capabilities](AGENT-EDITOR-CAPABILITIES.md) and [current form acceptance](FORM-DESIGNER-ACCEPTANCE.md). These reuse their existing owners and current producer. Actual acceptance requires all five datasets in artifacts/frontend-revision-5/agent-form-services-700.json (26 scenarios, including the twenty-kind loop); only complete fresh exit-0 receipts count. The complete unchanged-source final local gate, configured WebKit and genuine Firefox 200% evidence remain separate. General retrieval/source/sample contracts and saved off-page connection naming remain precise blocked producer capabilities, not an excuse to omit supported UI or a full V29/V30 readiness claim. Parent/master/deployment/user acceptance is unchanged.
+
+2026-10-16 explicit user-example continuation remains with APP-FE-016–019 and APP-FE-025/030.UX01. [Current form acceptance](FORM-DESIGNER-ACCEPTANCE.md#user-reported-panel-json-and-dragging-defects--reopened-again) records native palette drops, simultaneous narrow tools/canvas, removed form JSON surfaces, typed prior/policy controls and the real WebKit row click repair. Actual datasets 721 require 27 scenarios across five owned service runs, including the twenty-kind loop; current WebKit/zoom/full-check receipts are independently required. Earlier 657/700 are not user acceptance of these examples. The user's next item is queued after this current verification; no existing parent, producer dependency or master status is silently promoted.
+
+Final visual review also finds a tool-tab overflow navigator covering Edit in Persian despite 733's passing outer-pane tests. The [scoped repair](FORM-DESIGNER-ACCEPTANCE.md#final-visual-review-correction--equal-width-tool-tabs) keeps three equal-width tabs with actual English/Persian desktop/phone hit-target/click checks. Build 742 and all six focused browser cases 743 pass; refreshed actual service 744–748 passes all 27 scenarios on unchanged source. Native zoom 749, complete configured WebKit 752, graph 754 and full gate/closure 760 govern final local verification; planned 740 is never run. The queued next master item is V31 inline file/image transfers, after this current verification. Existing backend/parent/user acceptance boundaries are unchanged.
+
+Current form/agent candidate supersession: complete WebKit 752 fails one controlled page-navigation scenario (37/38); planned final gate 760 is not run. The follow-up removes preview-status layout movement and serialized readonly/prior value displays, preserving exact values, canonical scopes, row identities and command contracts. Forms' readonly FormValue presentation seam is reused by the existing advanced-task feedback surface; it adds no application/domain dependency. Focused unit 761 passes 34 cases, build/lint are clean, and all eight strengthened WebKit cases pass. See FORM-DESIGNER-ACCEPTANCE.md for the retained red/instrumentation/fixture evidence and precise scope. Fresh current-source requirements are actual datasets 762–766, genuine native zoom 767, configured WebKit 770, graph 772 and final gate/closing receipt 780; none is preclaimed. The existing four producer handoffs and runtime/deployment/manual boundaries remain unchanged. Queued V31 follows this current closure.
+
+Property-action follow-up: WebKit 770 is retained as 37/38, with one native Apply click lost during accordion closure. Apply now occupies a stable sticky position before the accordion; the strengthened test holds a real mouse press through finite property animations and checks the exact committed caption. Pending/invalid fences and command payloads are unchanged. Build 774 and 19 existing unit cases 776 pass. Planned gate 780 is not started; current requirements are focused 777, actual 784–788 plus case compatibility 790, native zoom 789, configured WebKit 792, graph 794 and full gate/closing receipt 820. See FORM-DESIGNER-ACCEPTANCE.md for retained diagnosis and source-qualified boundaries.
+
+Visual closure remains open: 784–790 pass 44 actual-service scenarios, 789 passes native zoom and 792 passes all 38 WebKit cases, but phone screenshot review finds Apply beneath sticky tool tabs. Full check 820 is intentionally interrupted with partial unchanged-source evidence retained; its interrupted unit native zero has no completed summary and is not unit acceptance. Red phone hit-test 821 reproduces the overlap. The existing Tabs host now keeps its strip above a separately scrolling TabPanels body; Apply remains sticky within that body and rules focus resets that scroller. Actual reachability, trusted click and committed hint are checked in English/Persian desktop/phone. Current required closure is 844–848, 850, 849, 852, 854 and full gate/receipt 870, with no preclaimed success. See FORM-DESIGNER-ACCEPTANCE.md for exact evidence and scope.
+
+Current designer/agent verification candidate: clean build 859, all 24 inspector/builder/canvas unit cases 860 and eight focused WebKit cases 861 pass. Phone acceptance now uses 390×844 and checks native Apply/Tab interaction, a fully visible label/input/focus outline, real hit targets, English/Persian tab reachability, palette drops and preserved canvas access. Reviewed captures confirm the corrected scroll boundary and compact canvas Pages header. Historical 820 is intentionally partial; 821/833/837/839/841/857 retain the actual hit/focus/caption failures. Current source is frozen for required actual 844–848 plus compatibility 850, native zoom 849, configured WebKit 852, graph 854 and full gate/closing receipt 870. Pending results are not readiness. FORM-DESIGNER-ACCEPTANCE.md owns the detailed evidence; precise producer/unsupported/runtime/deployment/manual boundaries and queued V31 remain unchanged.
+
+Current application source passes 44 scoped actual-service scenarios (844–848 plus 850), five native zoom activities (849), and all 38 configured WebKit cases (852), with unchanged source and no diagnostics. Full check 870 retains a browser-helper type-import ordering failure. The corrected import emits identical JavaScript and leaves src/server/scripts byte-identical (878); no runtime/assertion/timeout change is made. Fresh complete gate/closing receipt 880 and AST refresh 881 supersede planned 870 closure; current service/WebKit results remain source-qualified evidence. No complete readiness is preclaimed. See FORM-DESIGNER-ACCEPTANCE.md and import-order-878-* for exact evidence and unchanged producer/runtime/manual boundaries.
+
+Lint reconciliation: browser-test lint 878 passes; source preflight finds callback complexity 22/20 and one brace violation. A private native-label helper extraction preserves the exact cases/behavior, and full source lint 901 passes without warnings or threshold changes. This changes application source, so 844–852 remain historical source-qualified evidence and planned gate 880 is not started. Required fresh closure is owning 904–908, compatibility 910, native zoom 909, configured WebKit 912, graph 914 and full gate/receipt 930. No current result is preclaimed. FORM-DESIGNER-ACCEPTANCE.md retains failed check 870, lint diagnostics, the distinct type-only emitted-JavaScript proof and all actual evidence boundaries.
+
+Complete check 930 retains 840/840 unit passes in 183 files and passes build/boundary/deployment/diagnostics, then fails an obsolete workspace assertion requiring serialized false. The current UI displays readable No. The corrected fixture requires exact No in readonly OUTPUT plus exact canonical false in existing HTTP runtime responses; original filtered-write guards remain. Unsupported-debug-hook attempt 937 is retained; full workspace 938 passes without diagnostics. Production src is unchanged. Conservative current-source closure requirements are fresh 944–948, 950, 949, 952, 954 and complete gate/receipt 970, with no preclaimed final result or relaxed check. FORM-DESIGNER-ACCEPTANCE.md owns source-qualified scopes, partial report provenance and unchanged producer/runtime/manual boundaries.
+
+Complete check 970 retains 840/840 unit passes in 183 files and nine passing quality scopes, then fails an old agent limit selector. The administration fixture now waits for the typed canonical control and requires exact editable zero, retaining picker/accessibility/cancel/publication and all command checks. Full administration 976 and runtime 978 preflights pass with no diagnostics; runtime covers all fifteen mount/edit/teardown cycles and zero retained nodes/requests. Production src is unchanged. Required conservative current-source closure is 984–988, 990, 989, 992, 994 and complete gate/receipt 1010. No final readiness is preclaimed or test threshold weakened. FORM-DESIGNER-ACCEPTANCE.md retains precise source-qualified results and remaining producer/runtime/manual boundaries.
+
+Check 1010 passes 840 units/183 files and all eleven quality scopes, then retains 190/196 primary passes with six failures (three setup issues in both engines). Phone refresh was measured before its offscreen button scrolled into view; medium-width Studio tests assumed preview visibility after reload despite the explicit Preview mode. Correct setup preserves strict geometry, trusted click/held response, exact answers, omission and save/reopen, adding a saved-canvas-label check. All twelve affected cases pass in Chromium/Firefox/WebKit (1014), with clean browser types/lint and byte-identical src/server/scripts. Current actual 984/990 and native 989 remain source-qualified acceptance. Fresh configured WebKit 1022, graph 1021 and complete gate/receipt 1040 are required; no final result is preclaimed. FORM-DESIGNER-ACCEPTANCE.md retains the complete failure and unchanged evidence boundaries.
+
+Current supported agent/form closure: complete unchanged-source `mise run check` 1040 passes all fifteen required stages with zero emitted diagnostics: 840 unit tests in 183 files, all eleven Firefox quality scopes, 196 Chromium/Firefox cases with zero skips/flaky/unexpected, and release evidence at 499996 initial bytes under the unchanged 500kB budget. Configured WebKit 1022 passes all 38 cases. Actual service 984–988 (27 scenarios covering all twenty kinds), separate case compatibility 990 (17 scenarios), genuine native Firefox 200% 989 (five activities) and AST graph 1021 remain exactly application-source qualified. Complete logs/reports/source comparisons are archived in `artifacts/frontend-revision-5/full-check-1040/`; `agent-form-completion-1040.json` records the precise scope. Four agent producer handoffs, preserved unsupported form configurations, scalar media/private-transfer continuation, backend D07, deployment and manual/user acceptance remain separate. This closes the supported editor and explicitly reopened form repairs, not whole-master or full V29/V30 readiness. The queued V31 continuation starts after this archived closure.
+
+Queued V31 has started after archived supported agent/form closure 1040. APP-FE-017.UX05, APP-FE-028.UX03 and APP-FE-036.UX01 own the supported inline attachment/avatar continuation. [INLINE-TRANSFER-CAPABILITIES.md](INLINE-TRANSFER-CAPABILITIES.md) separates implemented frontend mappings and controls from exact producer handoffs; current acceptance and the fresh final gate remain pending.
+
+Supported V31 actual service acceptance 1077 passes nine scenarios on unchanged application/harness source, with exact producer match, zero browser diagnostics, real 256 KiB download equality and requester/reviewer/outsider authorization. [INLINE-TRANSFER-CAPABILITIES.md](INLINE-TRANSFER-CAPABILITIES.md) owns the precise normalization/recovery evidence, retained failures and four producer handoffs. Native 1079, full configured WebKit 1081, graph 1082 and final unchanged-source gate 1100 are pending. Full V31 remains open for its unavailable producer capabilities; previous agent/form closure 1040 is preserved separately.
+
+V31 native 200% 1079 passes all three activities with zero diagnostics/overflow and unchanged source. Final scoped status/counts are owned by `artifacts/frontend-revision-5/v31-completion-1130.json` and the complete archived gate manifest; those records must exist and pass before local completion is asserted. The four precise producer handoffs remain open and do not become full V31/demo/user readiness.
+
+V31 candidate 1100 is not complete: WebKit 1081 passes 48 cases, then the full gate fails its first formatting stage. Test-only formatting 1084 preserves identical emitted JavaScript and production behavior. Exact current-source receipts are refreshed as actual 1086/native 1087/WebKit 1088/graph 1089 and full gate 1110; `v31-completion-1110.json` governs final scoped results. Failed/partial evidence and all producer boundaries remain.
+
+V31 1086 stops in reviewer upload and prevents planned gate 1110 from running. Red 1090 and green 1091 repair the late-poll transfer/pending/actor/owner guards without altering attachment payloads or idle refresh. Exact final records are refreshed at actual 1094/native 1092+keyboard 1093/WebKit 1096/graph 1097/full gate 1120. The closing record is `v31-completion-1120.json`; no pending result is readiness.
+
+Current V31 actual 1094/native 1092+1093/WebKit 1096 all pass on unchanged application/harness source. Gate 1120 fails only generated inventory drift after formatting/API checks. Regeneration/check 1121 passes with 379 operations, 184 templates, 37 registered JSON matches, eleven routes and 909 translation uses. Generated documentation changes only; current application/harness identity is preserved. Final gate and closing receipt are 1130. All historical failures and producer/deployment/user boundaries remain separate.
+
+2026-10-17 APP-FE-020/021 workflow feature continuation: supported master V15–V22 authoring repairs, current native/isolated-service acceptance and the required complete zero-warning gate are recorded in [WORKFLOW-AUTHORING-ACCEPTANCE.md](WORKFLOW-AUTHORING-ACCEPTANCE.md). This supersedes older implementation gaps for native group movement/marquee/deletion, branch-preserving insertion, dock geometry and contextual workspace history. Existing parent/manual/deployed/unsupported capability statuses remain unchanged; no new APP IDs or execution engine are introduced.
+
+2026-10-17 shared-page/list continuation: [SHARED-PAGES-LISTS-ACCEPTANCE.md](SHARED-PAGES-LISTS-ACCEPTANCE.md) records name-first columns, feature-owned public detail sections, retained operational rows/query drafts, typed request/cartable filters, deliberate record revision recovery, named Favorites links, guarded Studio history navigation and typed scoped Access. Existing header/page-editor/saved-view/star owners are reused. Forty actual isolated-service scenarios pass before the final singular-caption localization correction; the current closing receipts and complete unchanged-source gate must requalify final file bytes. Library grant-list/selector authority and richer operational identity remain explicit producer gaps. Whole-master, other route-family owners, broader APP parents, deployment and human acceptance remain open; historical results are retained.
+
+Current shared-page/list qualification: browser matrix 43 passes all 39 cases in three engines; native 200% 44 and responsive 45 pass; actual foundations 42 passes 40 scenarios and collection 41 passes eight scenarios on identical final runtime source, exact producer match and unchanged peer. Retained collection failures 38/40 concern old-row and same-route page assumptions in the journey; all original privacy/current-ref/deadline assertions remain. SHARED-PAGES-LISTS-ACCEPTANCE.md and existing-owner records APP-FE-007.UX01 / APP-FE-031.UX01 record the exact scope and producer handoff. Full unchanged-source gate 50 and completion-50.json govern closing local verification; broader card/APP/master/manual/deployment boundaries remain open.
+
+## Process, task and Calendar continuation — 2026-10-17
+
+Existing APP-FE-032.UX01 / APP-FE-028.UX04 / APP-FE-029.UX02–04 / APP-FE-014.UX01 own [the current process/task/Calendar repair](PROCESS-TASK-CALENDAR-ACCEPTANCE.md). It repairs contextual commands, process route/read recovery, named forwarding, structured AI parameters and Calendar date/event selection. Current closing receipts govern supported verification; original parent IDs/status/history remain intact. Forwarding-context recipient discovery, existing process identity/discovery, Calendar reminder/team projections and manual/deployed/user acceptance remain explicit gaps rather than broadened permissions or invented APIs.
+
+### Administration details and typed-filter continuation — 2026-10-17
+
+APP-FE-031.UX01 / APP-FE-032.UX01 continue under their existing IDs in [Administration details acceptance](ADMINISTRATION-DETAILS-ACCEPTANCE.md). Scope: clients/releases/request-type detail and field controls, registered definitions/schedule variants, command-specific settings and functioning calendar/multiple-option filters in both query surfaces. No API/schema, backend seed, parent status or historical verification is rewritten. Current scoped acceptance requires the linked closing receipt with actual disposable-service persistence, native browsers/RTL/zoom and the complete unchanged-source zero-diagnostic check. Whole-master and producer/manual/deployment gaps remain separate.
+
+### APP-FE-023 data mapper continuation (2026-10-18)
+
+[Current implementation, actual evidence and producer handoff](../changes/APP-FE-023-DATA-MAPPING.md)
+records supported LIST/structured/nested-request/indexed-item controls, mapping
+editing/order, configured Transform v2 schemas and field-based projections.
+APP-FE-023 retains its existing parent status; the precise nested-output runtime,
+cross-source object assembly and private sample-preview limits are not closed by
+frontend controls or fixture browser results.
+
+### APP-FE-024.3 subprocess continuation — 2026-10-18
+
+[Current scoped subprocess implementation and evidence](../changes/APP-FE-024-SUBPROCESS.md)
+continues existing child pinning with structured inputs, explicit authorized sources,
+repair controls and interface inspection. The parent status remains unchanged;
+actual execution, strict final checks and remaining owner boundaries are recorded
+separately from historical implementation.
+
+### APP-FE-024 interface and wait continuation — 2026-10-19
+
+[Child interface authoring and actual wait lifecycle](../changes/APP-FE-024-INTERFACE.md)
+extends the existing .3/.2 owners with named interface input/output/outcome controls,
+exact registered schemas, pending/discard/history behavior and three-language
+control-containment checks. The guarded actual-service journey additionally covers
+UI-authored child publication/execution and parallel timer/event/join behavior.
+Final observed status and evidence belong to the scoped completion receipt linked
+in that record; this continuation does not change the parent status or imply
+manual/deployed acceptance.
+
+The Oct 19 continuation additionally covers isolated declared-input mapping,
+indexed child source fields, current pinned business outcomes, asynchronous child
+settlement and supported bounded-loop/else lifecycle acceptance. APP-FE-032 shares
+the public active-child command restriction guard. REQUEST expression schema
+reconstruction and legacy transform validation retain explicit backend handoffs;
+parent readiness is not broadened by a passing supported slice.
+
+### Ordered remaining-work execution — 2026-10-19
+
+The user requested [this execution order and reuse crosswalk](ORDERED-REMAINING-WORK.md).
+It maps verification/repair/backend dependencies to existing APP owners without
+creating a second status backlog. [APP-FE-038 ordered execution](../changes/APP-FE-038-ORDERED-EXECUTION.md)
+records actual results; parent statuses and historical receipts remain intact.
+
+### Literal-scope repair — 2026-10-19
+
+Existing APP-FE-016/029/024 owners continue in [the literal-scope record](../changes/APP-FE-016-LITERAL-SCOPES.md): exact property traversal, invalid draft/page ownership, prior values and named stable-row corrections. Its actual source-qualified receipt governs final checks. No parent status, historical receipt or backend dependency is changed.
+
+### APP-FE-029.UX03 linked corrections — 2026-10-19
+
+[The existing-owner continuation](../changes/APP-FE-029-LINKED-CORRECTIONS.md)
+links feedback to current scalar/row controls across declared pages, preserving
+unsaved input, authorization and read-only presentation. Actual disposable-service
+and three-language/browser results remain distinct from the complete local gate;
+the linked completion receipt governs final evidence. Parent readiness and
+existing producer/manual/deployment boundaries are unchanged.
+
+### First capability group and saved user timezone — 2026-10-19
+
+Existing APP-FE-023 / APP-BE-019 owners continue in
+[the nested-output repair](../changes/APP-FE-023-NESTED-OUTPUT.md). Existing
+APP-FE-008/014/015 now use [one persisted user timezone](../changes/APP-FE-008-TIMEZONE.md)
+instead of repeated Calendar/event/Dashboard selectors. Final gates and actual
+owned-service scenarios are qualified by the completion receipt linked in those
+records. [The current peer handoff](../changes/APP-FE-023-PEER-HANDOFF.md) retains the
+other producer-dependent capabilities; parent/master statuses remain unchanged.

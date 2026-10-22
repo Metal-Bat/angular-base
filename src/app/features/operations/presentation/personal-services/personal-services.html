@@ -94,7 +94,7 @@
       }
       @if (item.createdAt) {
         <time class="ms-3" [attr.datetime]="item.createdAt">{{
-          item.createdAt
+          item.createdAt | localizedDateTime
         }}</time>
       }
       · {{ item.status | localize }}
@@ -125,9 +125,7 @@
 </button>
 <app-personal-service-detail [view]="this" />
 @if (transfer.busy()) {
-  <p role="status">
-    {{ "Transfer in progress" | localize }} {{ transfer.progress() }}%
-  </p>
+  <app-transfer-progress [value]="transfer.progress()" />
   <button
     pButton
     severity="secondary"

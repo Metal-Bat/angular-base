@@ -37,6 +37,7 @@ describe('Server-owned display preferences', () => {
   let http: HttpTestingController;
   const profile = signal<{ ref: string; username: string } | null>(null);
   beforeEach(() => {
+    localStorage.removeItem('workspace.public-theme');
     profile.set({ ref: 'actor-a', username: 'a' });
     TestBed.configureTestingModule({
       providers: [
@@ -54,6 +55,7 @@ describe('Server-owned display preferences', () => {
     TestBed.tick();
   });
   afterEach(() => {
+    localStorage.removeItem('workspace.public-theme');
     http.verify();
     document.documentElement.classList.remove('app-dark');
     delete document.documentElement.dataset['palette'];
@@ -64,6 +66,17 @@ describe('Server-owned display preferences', () => {
     http.expectOne(endpoint).flush(data());
     await vi.waitFor(() => expect(preferences.status()).toBe('saved'));
   }
+  it('shares the initial saved-default read across route readiness and automatic bootstrap', async () => {
+    const first = preferences.ready();
+    expect(preferences.ready()).toBe(first);
+    expect(preferences.load()).toBe(first);
+    http.expectOne(endpoint).flush(data());
+    await first;
+    expect(preferences.locale.timezone()).toBe('Asia/Tehran');
+    expect(preferences.locale.numbering()).toBe('latn');
+    await preferences.ready();
+    http.expectNone(endpoint);
+  });
   it('restores saved palette and locale after actor bootstrap', async () => {
     http.expectOne(endpoint).flush(data('current-2', 'violet', 'dark', 'fa'));
     await vi.waitFor(() => expect(preferences.status()).toBe('saved'));

@@ -1,9 +1,19 @@
+import { reconcileChoiceAnswers } from '../form-preview-sample';
+import { FormPalette } from '../form-palette/form-palette';
+import { formPreviewProviders } from '../form-preview-providers';
+import { authoredPages } from '../../domain/form-pages';
+import { FormRuleOverview } from '../form-rule-overview/form-rule-overview';
+import { fieldLabel } from '../../../../shared/domain/field-label';
+import { selectionLabel } from '../form-selection-label';
+import { formDraftStatus } from '../form-draft-status';
+import { FormDiagnostics } from '../form-diagnostics/form-diagnostics';
+import { EditorViewport } from '../../../../shared/ui/editor-viewport';
+import { TabsModule } from 'primeng/tabs';
 import { FormFieldPlacement } from '../form-field-placement/form-field-placement';
 import { FormCanvas } from '../form-canvas/form-canvas';
 import { addQuickField } from '../../domain/quick-fields';
 import { Locale } from '../../../../core/localization/locale';
-import { componentCategory, componentLabels } from './form-palette';
-import { SelectControl } from '../../../../shared/ui/select-control/select-control';
+import { filterFormPalette, paletteCategories } from './form-palette';
 import { ButtonDirective } from 'primeng/button';
 import {
   ChangeDetectionStrategy,
@@ -11,23 +21,17 @@ import {
   computed,
   DestroyRef,
   inject,
-  signal,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { LocalizePipe } from '../../../../shared/ui/localize-pipe';
-import { RUNTIME_OPTIONS } from '../../../forms/bindings';
-import { RuntimeOptionsPort } from '../../../forms/application/runtime-options-port';
 import { JsonObject } from '../../../forms/domain/runtime-document';
-import { RuntimeForm } from '../../../forms/presentation/runtime-form/runtime-form';
-import { parseDocument } from '../../domain/authoring';
+import { FormLivePreview } from '../form-live-preview/form-live-preview';
 import {
   addPrimitive,
   authoredNode,
   outline,
   palette,
-  reorderAuthored,
-  replaceAuthored,
 } from '../../domain/form-authoring';
 import { ActorState } from '../../../../core/auth/actor-state';
 import { FormInspector } from '../form-inspector/form-inspector';
@@ -41,41 +45,29 @@ import { FormBuilderCommands } from './form-builder-commands';
 import { FormPlacementControls } from '../form-placement-controls/form-placement-controls';
 import {
   duplicateLayout,
+  reorderPlacement,
   reparentPlacement,
 } from '../../domain/form-placement';
 import { FormEditState } from '../../domain/form-editing';
 @Component({
   host: { class: 'console-page' },
+  hostDirectives: [EditorViewport],
   selector: 'app-form-builder',
-  providers: [
-    {
-      provide: RUNTIME_OPTIONS,
-      useFactory: (): RuntimeOptionsPort => {
-        const editor = inject(FormBuilder);
-        return {
-          query: (_document, pointer, input, generation, abortSignal) =>
-            editor.api.options(
-              editor.documents(),
-              pointer,
-              input,
-              generation,
-              abortSignal,
-            ),
-        };
-      },
-    },
-  ],
+  providers: formPreviewProviders(() => inject(FormBuilder)),
   imports: [
+    FormPalette,
+    FormDiagnostics,
+    FormRuleOverview,
+    TabsModule,
     FormFieldPlacement,
     FormCanvas,
     FormPlacementControls,
     FormInspector,
     FormSettings,
-    SelectControl,
     ButtonDirective,
     FormsModule,
     RouterLink,
-    RuntimeForm,
+    FormLivePreview,
     LocalizePipe,
   ],
   templateUrl: './form-builder.html',
@@ -83,6 +75,13 @@ import { FormEditState } from '../../domain/form-editing';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FormBuilder extends FormBuilderCommands {
+  readonly pageList = computed(() => authoredPages(this.documents()) ?? []);
+  readonly settingsBlocked = computed(() =>
+    this.pending().some((key) => key !== 'settings-ui'),
+  );
+  readonly selectedLabel = computed(() => selectionLabel(this));
+  readonly draftStatus = computed(() => formDraftStatus(this));
+  readonly fieldLabel = fieldLabel;
   constructor() {
     super();
     this.initialize();
@@ -101,54 +100,57 @@ export class FormBuilder extends FormBuilderCommands {
     inject(DestroyRef).onDestroy(release);
   }
   private readonly history = new FormHistory();
-  readonly JSON = JSON;
+  readonly canUndo = computed(() => {
+    this.documents();
+    return this.history.canUndo;
+  });
+  readonly canRedo = computed(() => {
+    this.documents();
+    return this.history.canRedo;
+  });
   readonly palette = palette;
-  readonly paletteSearch = signal('');
-  componentLabel = '';
   protected override resetEditorHistory(): void {
     this.history.clear();
     this.cancelDrag();
   }
   private readonly translation = inject(Locale);
-  readonly componentLabels = componentLabels;
-  readonly categories = [
-    'Layouts',
-    'Fields',
-    'Collections and files',
-    'Display and behavior',
-  ];
-  readonly paletteCategory = signal('');
+  readonly categories = paletteCategories;
   readonly filteredPalette = computed(() => {
-    const search = this.paletteSearch().trim().toLowerCase();
-    return palette.filter(
-      (kind) =>
-        (!this.paletteCategory() ||
-          componentCategory(kind) === this.paletteCategory()) &&
-        (
-          kind +
-          ' ' +
-          componentLabels[kind] +
-          ' ' +
-          this.translation.text(componentLabels[kind])
-        )
-          .toLowerCase()
-          .includes(search),
+    return filterFormPalette(
+      this.paletteSearch(),
+      this.paletteCategory(),
+      (key) => this.translation.text(key),
     );
   });
+  private dragKind: (typeof palette)[number] | null = null;
   private dragPath: readonly number[] | null = null;
   private dragDocuments: JsonObject | null = null;
   cancelDrag(): void {
+    this.dragging.set(false);
     this.dragPath = null;
+    this.dragKind = null;
     this.dragDocuments = null;
   }
   drag(event: DragEvent, path: readonly number[]): void {
+    this.cancelDrag();
     if (this.readonly() || this.pending().length) {
       event.preventDefault();
       return;
     }
+    this.dragging.set(true);
     this.dragPath = [...path];
     this.dragDocuments = this.documents();
     event.dataTransfer?.setData('application/x-form-placement', 'placement');
+  }
+  dragPalette(event: DragEvent, kind: (typeof palette)[number]): void {
+    this.drag(event, []);
+    if (this.dragging()) {
+      this.dragKind = kind;
+      if (event.dataTransfer) {
+        event.dataTransfer.effectAllowed = 'copy';
+        event.dataTransfer.setData('application/x-form-palette', kind);
+      }
+    }
   }
   drop(
     event: DragEvent,
@@ -157,11 +159,18 @@ export class FormBuilder extends FormBuilderCommands {
   ): void {
     event.preventDefault();
     const path = this.dragPath;
-    this.dragPath = null;
-    if (this.dragDocuments !== this.documents()) {
+    const kind = this.dragKind;
+    const documents = this.dragDocuments;
+    this.cancelDrag();
+    if (documents !== this.documents()) {
       return;
     }
-    if (!path || !path.length || this.readonly() || this.pending().length) {
+    if (
+      !path ||
+      (!kind && !path.length) ||
+      this.readonly() ||
+      this.pending().length
+    ) {
       return;
     }
     const destination = position === 'inside' ? target : target.slice(0, -1);
@@ -169,9 +178,24 @@ export class FormBuilder extends FormBuilderCommands {
       position === 'inside'
         ? undefined
         : target.at(-1)! + (position === 'after' ? 1 : 0);
-    this.placementEdit(() =>
-      reparentPlacement(this.documents(), path, destination, index),
-    );
+    this.placementEdit(() => {
+      const added = kind
+        ? addQuickField(
+            this.documents(),
+            destination,
+            kind,
+            this.translation.text(this.componentLabels[kind]),
+          )
+        : null;
+      return reparentPlacement(
+        added?.documents ?? this.documents(),
+        added?.selection ?? path,
+        destination,
+        index,
+      );
+    });
+    this.select(this.selected());
+    this.requireCalculation();
   }
 
   reparent(destination: readonly number[]): void {
@@ -197,12 +221,18 @@ export class FormBuilder extends FormBuilderCommands {
     );
   }
   applyProperties(documents: JsonObject, panel = 'inspector'): void {
+    const previous = this.documents();
     this.editDocument(() => documents, panel);
+    if (this.documents() === documents) {
+      reconcileChoiceAnswers(this, previous);
+    }
   }
+
   undo(redo = false): void {
     if (this.readonly() || this.pending().length) {
       return;
     }
+    const previous = this.documents();
     const next = this.history.take(
       { documents: this.documents(), selection: this.selected() },
       redo,
@@ -210,18 +240,10 @@ export class FormBuilder extends FormBuilderCommands {
     if (next) {
       this.documents.set(next.documents);
       this.selected.set(next.selection);
-      this.refreshBuffers();
-      this.dirty.set(true);
-      this.preview.set(null);
+      this.reconcileDirty();
+      this.requireCalculation();
+      reconcileChoiceAnswers(this, previous);
     }
-  }
-  private refreshBuffers(): void {
-    this.schemaJson = JSON.stringify(this.documents()['data_schema'], null, 2);
-    this.selectedJson = JSON.stringify(
-      authoredNode(renderOf(this.documents()), this.selected()),
-      null,
-      2,
-    );
   }
   async removePlacement(): Promise<void> {
     if (this.readonly() || !this.selected().length || this.pending().length) {
@@ -243,7 +265,7 @@ export class FormBuilder extends FormBuilderCommands {
     }
   }
 
-  select(path: readonly number[]): void {
+  select(path: readonly number[]): boolean {
     if (
       this.pending().some((key) =>
         ['node', 'inspector', 'settings-ui'].includes(key),
@@ -252,14 +274,13 @@ export class FormBuilder extends FormBuilderCommands {
       this.error.set(
         'Apply or reload component edits before selecting another component',
       );
-      return;
+      return false;
     }
-    this.selected.set(path);
-    this.selectedJson = JSON.stringify(
-      authoredNode(this.documents()['render_schema'] as JsonObject, path),
-      null,
-      2,
-    );
+    const editing = this.workspaceTab() === 'rules' || path.length > 0;
+    this.toolsTab.set(editing ? 'properties' : 'components');
+    this.toolsOpen.set(editing);
+    this.selected.set([...path]);
+    return true;
   }
   add(): void {
     this.editDocument(() => {
@@ -283,78 +304,58 @@ export class FormBuilder extends FormBuilderCommands {
     });
   }
   quickAdd(kind: (typeof palette)[number]): void {
+    const previous = this.documents();
     this.placementEdit(() =>
       addQuickField(
         this.documents(),
         this.selected(),
         kind,
-        this.translation.text(componentLabels[kind]),
+        this.translation.text(this.componentLabels[kind]),
       ),
     );
+    if (this.documents() !== previous) {
+      this.select(this.selected());
+      this.requireCalculation();
+    }
+  }
+  private requireCalculation(): void {
+    const node = authoredNode(renderOf(this.documents()), this.selected());
+    if (node['component'] === 'calculated' && !node['calculation']) {
+      this.markPending('inspector');
+    }
+  }
+  readonly calculationPending = computed(() => {
+    const node = authoredNode(renderOf(this.documents()), this.selected());
+    return (
+      this.pending().includes('inspector') &&
+      node['component'] === 'calculated' &&
+      !node['calculation']
+    );
+  });
+  cancelCalculation(): void {
+    if (this.calculationPending()) {
+      this.pending.update((keys) => keys.filter((key) => key !== 'inspector'));
+      this.undo();
+    }
   }
   move(offset: number): void {
     if (this.readonly() || this.pending().length || !this.selected().length) {
       return;
     }
-    const parent = authoredNode(
-      renderOf(this.documents()),
-      this.selected().slice(0, -1),
-    );
-    const target = this.selected().at(-1)! + offset;
-    if (target < 0 || target >= (parent['children'] as JsonObject[]).length) {
-      return;
-    }
-    this.editDocument(() => ({
-      ...this.documents(),
-      render_schema: reorderAuthored(
-        this.documents()['render_schema'] as JsonObject,
-        this.selected(),
-        offset,
-      ),
-    }));
-    const path = [...this.selected()];
-    if (path.length) {
-      path[path.length - 1] = Math.max(0, path[path.length - 1] + offset);
-    }
-    try {
-      this.select(path);
-    } catch {
-      this.select([]);
+    const next = reorderPlacement(this.documents(), this.selected(), offset);
+    if (next) {
+      this.editDocument(
+        () => next.documents,
+        undefined,
+        () => next.selection,
+      );
+      this.select(next.selection);
     }
   }
-  applyNode(): void {
-    this.editDocument(
-      () => ({
-        ...this.documents(),
-        render_schema: replaceAuthored(
-          this.documents()['render_schema'] as JsonObject,
-          this.selected(),
-          parseDocument(this.selectedJson),
-        ),
-      }),
-      'node',
-    );
-  }
-  applySchema(): void {
-    this.editDocument(
-      () => ({
-        ...this.documents(),
-        data_schema: parseDocument(this.schemaJson),
-      }),
-      'schema',
-    );
-    this.diagnostics.set(
-      'Schema changed. Validate affected bindings before saving.',
-    );
-  }
-  applyBehavior(): void {
-    this.editDocument(
-      () => ({
-        ...this.documents(),
-        ...parseDocument(this.behaviorJson),
-      }),
-      'settings',
-    );
+
+  discardSettings(): void {
+    this.pending.update((keys) => keys.filter((key) => key !== 'settings-ui'));
+    this.reconcileDirty();
   }
   private editDocument(
     change: () => JsonObject,
@@ -362,7 +363,7 @@ export class FormBuilder extends FormBuilderCommands {
     selection?: () => readonly number[],
   ): void {
     if (this.pending().some((key) => key !== applied)) {
-      this.error.set('Apply pending JSON editors first');
+      this.error.set('Apply pending field edits first');
       return;
     }
     if (this.readonly()) {
@@ -384,12 +385,9 @@ export class FormBuilder extends FormBuilderCommands {
       } catch {
         this.selected.set(this.selected().slice(0, -1));
       }
-      this.refreshBuffers();
       this.pending.update((keys) => keys.filter((key) => key !== applied));
-      this.dirty.set(true);
-      this.preview.set(null);
+      this.reconcileDirty();
       this.error.set('');
-      this.schemaJson = JSON.stringify(next['data_schema'], null, 2);
     } catch (error) {
       this.error.set(error instanceof Error ? error.message : 'Invalid layout');
     }

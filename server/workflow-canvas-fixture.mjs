@@ -1,3 +1,5 @@
+import { subprocessMappingFixture } from "./subprocess-mapping-fixture.mjs";
+import { dataMappingFixture } from "./data-mapping-fixture.mjs";
 import { readFileSync } from "node:fs";
 const inspector = JSON.parse(
   readFileSync(
@@ -18,7 +20,12 @@ const subprocess = inspector.handlers.find(
   (handler) => handler.handler_key === "subprocess",
 );
 // Disposable UI fixture; no real accounts, authored documents, or backend writes.
-export function createCanvasFixture() {
+export function createCanvasFixture({
+  conditional = false,
+  collapsed = false,
+  dataMapping = false,
+  subprocessMapping = false,
+} = {}) {
   let document = {
     dialect: "bpms.workspace/1",
     graph: {
@@ -49,9 +56,20 @@ export function createCanvasFixture() {
     },
     positions: { prepare: { x: 50, y: 70 }, review: { x: 350, y: 200 } },
     viewport: { x: 0, y: 0, zoom: 1 },
-    collapsed: [],
+    collapsed: collapsed ? ["prepare", "review"] : [],
     routing: {},
   };
+  if (conditional)
+    Object.assign(document.graph.transitions[0], {
+      condition: "request.flag",
+      priority: 4,
+      is_default: false,
+    });
+  const childMapping = subprocessMapping ? subprocessMappingFixture() : null;
+  const mapping = dataMapping
+    ? dataMappingFixture(inspector.handlers)
+    : childMapping;
+  if (mapping) document = mapping.document;
   let published = false;
   const state = () => ({
     workspace_ref_id: "fixture-workspace",
@@ -61,11 +79,52 @@ export function createCanvasFixture() {
   });
   return {
     handle(method, path, body) {
+      if (
+        childMapping &&
+        path.endsWith("/workflow-versions/fixture-child/workspace")
+      )
+        return {
+          success: true,
+          data: {
+            workflow_version_ref_id: "fixture-child",
+            workspace_ref_id: null,
+            document: childMapping.childDocument,
+            promoted_graph_checksum: null,
+          },
+        };
+      if (childMapping && path.endsWith("/workflow-versions/fixture-child"))
+        return {
+          success: true,
+          data: { ref_id: "fixture-child", status: "PUBLISHED" },
+        };
+      if (mapping && path.endsWith("/resource-links/selected")) {
+        const query = JSON.parse(body);
+        if (query.resources?.every((item) => item.kind === "users"))
+          return {
+            success: true,
+            data: query.resources.map((item) => {
+              const user = mapping.users.result.items.find(
+                (row) => row.key === item.ref_id,
+              );
+              return {
+                kind: item.kind,
+                ref_id: item.ref_id,
+                label: user?.value ?? "Unavailable user",
+                available: !!user,
+              };
+            }),
+          };
+      }
+      if (mapping && path.endsWith("/designer/selectors/users"))
+        return mapping.users;
+      if (mapping && path.endsWith("/designer/completion"))
+        return mapping.completion;
       if (path.endsWith("/designer/catalog"))
         return {
           success: true,
           result: {
             items: [
+              ...(mapping?.catalog ?? []),
               {
                 key: "transform",
                 title: "Transform",
@@ -76,6 +135,7 @@ export function createCanvasFixture() {
                   handler_version: "1",
                   runtime_available: true,
                   code: "TRANSFORM",
+                  number: 1,
                   ref_id: "fixture-type",
                   ports: [
                     {
@@ -100,6 +160,7 @@ export function createCanvasFixture() {
                 type_schema: timer.config_schema,
                 metadata: {
                   code: "TIMER",
+                  number: 1,
                   ref_id: "fixture-timer",
                   handler_key: "timer",
                   handler_version: "1",
@@ -114,6 +175,7 @@ export function createCanvasFixture() {
                 type_schema: subprocess.config_schema,
                 metadata: {
                   code: "SUBPROCESS",
+                  number: 1,
                   ref_id: "fixture-subprocess",
                   handler_key: "subprocess",
                   handler_version: "1",
@@ -130,7 +192,7 @@ export function createCanvasFixture() {
                   workflow_version_ref: "fixture-child",
                   runtime_available: true,
                   call_step_type: "SUBPROCESS",
-                  interface: {
+                  interface: childMapping?.interface ?? {
                     inputs: [
                       {
                         name: "flag",
@@ -180,8 +242,12 @@ export function createCanvasFixture() {
 }
 
 export const canvasBrowserScript = `
- const canvasNode = key => [...document.querySelectorAll('.board-node')].find(item => item.querySelector('.node-title small')?.textContent.trim()===key);
+ const canvasNode = key => [...document.querySelectorAll('.board-node')].find(item => item.dataset.nodeKey===key);
+ const focusCanvas=async enabled=>{const control=document.querySelector('app-workspace-breadcrumbs button');check(control,'Public Focus mode control');if(control.getAttribute('aria-pressed')!==String(enabled)){control.click();await wait(()=>control.getAttribute('aria-pressed')===String(enabled),'Requested Focus mode');await new Promise(requestAnimationFrame);}};
  const dragPort = async (from, to) => {
+   await focusCanvas(true);
+   const canvasMode=button('Canvas');if(canvasMode?.getClientRects().length)await click('Canvas');
+   await wait(()=>from.getBoundingClientRect().width>0&&to.getBoundingClientRect().width>0,'Canvas mode exposes both ports');
    await click('Fit to view');
    document.querySelector('.canvas-stage').scrollIntoView({block:'center',behavior:'instant'});
    await new Promise(requestAnimationFrame);
@@ -190,7 +256,7 @@ export const canvasBrowserScript = `
    const start={clientX:a.left+a.width/2,clientY:a.top+a.height/2};
    const end={clientX:b.left+b.width/2,clientY:b.top+b.height/2};
    check(document.elementFromPoint(start.clientX,start.clientY)===from,'output port is reachable '+JSON.stringify({x:start.clientX,y:start.clientY,hit:document.elementFromPoint(start.clientX,start.clientY)?.outerHTML.slice(0,250)}));
-   check(document.elementFromPoint(end.clientX,end.clientY)===to,'input port is reachable '+JSON.stringify({x:end.clientX,y:end.clientY,hit:document.elementFromPoint(end.clientX,end.clientY)?.outerHTML.slice(0,250)}));
+   check(document.elementFromPoint(end.clientX,end.clientY)===to,'input port is reachable '+JSON.stringify({x:end.clientX,y:end.clientY,hit:document.elementFromPoint(end.clientX,end.clientY)?.outerHTML.slice(0,250),stage:document.querySelector('.canvas-stage').getBoundingClientRect().toJSON(),nodes:[...document.querySelectorAll('.board-node')].map(n=>({key:n.dataset.nodeKey,rect:n.getBoundingClientRect().toJSON(),transform:n.style.transform}))}));
    from.dispatchEvent(new MouseEvent('mousedown',{...start,button:0,buttons:1,bubbles:true,cancelable:true}));
    document.dispatchEvent(new MouseEvent('mousemove',{clientX:start.clientX+10,clientY:start.clientY,buttons:1,bubbles:true,cancelable:true}));
    await new Promise(r=>setTimeout(r,50));
@@ -198,8 +264,8 @@ export const canvasBrowserScript = `
    await new Promise(r=>setTimeout(r,50));
    to.dispatchEvent(new PointerEvent('pointerup',{...end,button:0,buttons:0,bubbles:true,cancelable:true}));
  };
- const button = label => [...document.querySelectorAll('main button')].find(el=>el.textContent.trim()===label);
- const click = async label => { const el=button(label);check(el&&!el.disabled,'enabled '+label);el.click();await new Promise(r=>setTimeout(r,100));if(label==='Reload'){await wait(()=>!button('Reload').disabled&&!document.querySelector('.board-node.selected'),'reload response clears selection');}if(label==='Save workspace'){await wait(()=>!button('Save workspace').disabled,'save response completed');} };
+ const button = (label,root=document.querySelector('main')) => [...root.querySelectorAll('button')].find(el=>el.textContent.trim()===label);
+ const click = async (label,root) => { const el=button(label,root);check(el&&!el.disabled,'enabled '+label);el.click();await new Promise(r=>setTimeout(r,100));if(label==='Reload'){await wait(()=>!button('Reload').disabled&&!document.querySelector('.board-node.selected'),'reload response clears selection');}if(label==='Save workspace'){await wait(()=>!button('Save workspace').disabled,'save response completed');} };
  window.fixtureStage='canvas-ready';
  await wait(()=>document.querySelectorAll('.board-node').length===2 && document.querySelector('.data-port'),'canvas nodes and typed ports');
  check(document.querySelector('.data-edge'),'data edge');
@@ -207,7 +273,7 @@ export const canvasBrowserScript = `
  const node = canvasNode('prepare');
  node.querySelector('button').click();
  await wait(()=>node.classList.contains('selected') && node.querySelector('button').getAttribute('aria-pressed')==='true','selected node and inspector');
- check(document.querySelector('.step-inspector h2').textContent.includes('prepare'),'selected inspector key');
+ check(node.dataset.nodeKey==='prepare'&&JSON.parse(document.querySelector('#step-json').value).key==='prepare'&&document.querySelector('.step-inspector h2 bdi').textContent.trim()===node.querySelector('strong').textContent.trim(),'selected canonical node and readable inspector label');
  const original=node.style.transform;
  node.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowRight',bubbles:true,cancelable:true}));
  await wait(()=>node.style.transform!==original,'keyboard movement');
@@ -248,11 +314,11 @@ export const canvasBrowserScript = `
  const pendingBuffer=editor.value;const pendingGraph=document.getElementById('graph-json').value;
  document.querySelector('button[aria-label="Zoom in"]').click();await wait(()=>document.querySelector('.zoom-value').textContent.trim()==='110%','zoom while an expert buffer is pending');
  check(editor.value===pendingBuffer&&document.getElementById('graph-json').value===pendingGraph,'navigation preserves pending input and semantic graph');
- check(button('Save workspace').disabled&&button('Add step').disabled,'pending JSON still fences mutation');
+ check(button('Save workspace').disabled&&button('Add step').disabled&&button('Add step',document.getElementById('step-key').closest('details')).disabled,'pending JSON still fences mutation');
  await click('Apply step');await click('Save workspace');
  window.fixtureStage='canvas-add-undo';
  const keyInput=document.querySelector('#step-key');keyInput.value='added';keyInput.dispatchEvent(new Event('input',{bubbles:true}));
- await click('Add step');await wait(()=>document.querySelectorAll('.board-node').length===3,'add step');
+ await click('Add step',document.getElementById('step-key').closest('details'));await wait(()=>document.querySelectorAll('.board-node').length===3,'add step');
  await click('Undo');await wait(()=>document.querySelectorAll('.board-node').length===2,'undo step');
  check(!document.querySelector('.board-node.selected') && document.querySelector('#step-json').disabled,'undo clears removed selection');
  await click('Redo');await wait(()=>document.querySelectorAll('.board-node').length===3,'redo step');
@@ -261,7 +327,10 @@ export const canvasBrowserScript = `
  const palette=document.querySelector('.palette-item');check(palette,'Palette entry');
  const before=document.querySelectorAll('.board-node').length;
  const transfer=new DataTransfer();palette.dispatchEvent(new DragEvent('dragstart',{dataTransfer:transfer,bubbles:true}));
- const stage=document.querySelector('.canvas-stage');const bounds=stage.getBoundingClientRect();
+ const stage=document.querySelector('.canvas-stage');
+ check(transfer.getData('application/x-studio-step'),'Current palette drag payload');
+ await wait(()=>{stage.dispatchEvent(new DragEvent('dragover',{dataTransfer:transfer,bubbles:true,cancelable:true}));return stage.classList.contains('placing-step')&&stage.getBoundingClientRect().height>0;},'Current drag accepted on the visible canvas');
+ const bounds=stage.getBoundingClientRect();
  stage.dispatchEvent(new DragEvent('drop',{dataTransfer:transfer,clientX:bounds.left+150,clientY:bounds.top+150,bubbles:true,cancelable:true}));
  await wait(()=>document.querySelectorAll('.board-node').length===before+1,'Palette drop adds step');
  await click('Undo');await wait(()=>document.querySelectorAll('.board-node').length===before,'Undo dropped step');
@@ -271,9 +340,10 @@ export const canvasBrowserScript = `
  window.fixtureStage='canvas-selection-duplicate';
  const selectionPanel=[...document.querySelectorAll('details')].find(item=>item.querySelector('summary')?.textContent.trim()==='Selection and connections');selectionPanel.open=true;
  const selections=[...selectionPanel.querySelectorAll('input[type="checkbox"]')];selections[0].click();selections[1].click();
- const originalPositions=[...document.querySelectorAll('.board-node')].map(item=>item.style.transform);
+ await wait(()=>document.querySelectorAll('.board-node.selected').length===2,'Exact group selection rendered');
+ const originalPositions=Object.fromEntries([...document.querySelectorAll('.board-node')].map(item=>[item.dataset.nodeKey,item.style.transform]));
  canvasNode('prepare').dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowRight',bubbles:true,cancelable:true}));
- await wait(()=>[...document.querySelectorAll('.board-node')].every((item,index)=>item.style.transform!==originalPositions[index]),'atomic selected group keyboard movement');
+ await wait(()=>[...document.querySelectorAll('.board-node')].every(item=>item.style.transform!==originalPositions[item.dataset.nodeKey]),'atomic selected group keyboard movement');
  await click('Undo');await click('Duplicate selection');await wait(()=>document.querySelectorAll('.board-node').length===3,'single selection duplicate after undo');
  await click('Undo');await wait(()=>document.querySelectorAll('.board-node').length===2,'undo duplicated node');
  document.getElementById('connection-select').click();await wait(()=>[...document.querySelectorAll('[role="option"]')].some(option=>option.textContent.includes('control')),'connection options');
@@ -295,11 +365,12 @@ export const canvasBrowserScript = `
  canvasNode('review').querySelector('.node-handle').click();await chooseDirectOutcome();await wait(()=>document.querySelector('f-connection:not(.data-edge)'),'Click creates deliberately chosen control connection');
  check(!document.querySelector('.connection-source'),'Completed connection clears source');await click('Undo');await wait(()=>!document.querySelector('f-connection:not(.data-edge)'),'Undo click connection');
  window.fixtureStage='canvas-drag-control-connection';
+ await click('Fit to view');await new Promise(requestAnimationFrame);
  await dragPort(canvasNode('prepare').querySelector('.control-port.output-port .port-socket'),canvasNode('review').querySelector('.control-port .input-socket'));
  await chooseDirectOutcome();await wait(()=>document.querySelector('f-connection:not(.data-edge)'),'drag creates deliberately chosen control connection');
  await click('Save workspace');await click('Reload');await wait(()=>document.querySelector('f-connection:not(.data-edge)'),'dragged control connection saved and reloaded');
  document.getElementById('canvas-find').click();await wait(()=>[...document.querySelectorAll('[role="option"]')].some(option=>option.textContent.includes('review')),'find review');
- [...document.querySelectorAll('[role="option"]')].find(option=>option.textContent.includes('review')).click();await wait(()=>document.querySelector('.step-inspector h2').textContent.includes('review'),'find selected review');
+ [...document.querySelectorAll('[role="option"]')].find(option=>option.textContent.includes('review')).click();await wait(()=>canvasNode('review').classList.contains('selected')&&JSON.parse(document.querySelector('#step-json').value).key==='review'&&document.querySelector('.step-inspector h2 bdi').textContent.trim()===canvasNode('review').querySelector('strong').textContent.trim(),'find selects exact review with readable inspector label');
  selectionPanel.open=false;await click('Save workspace');
  window.fixtureStage='typed-mapping-roundtrip';
  selectionPanel.open=true;document.getElementById('connection-select').click();await wait(()=>[...document.querySelectorAll('[role="option"]')].some(option=>option.textContent.includes('data')),'data mapping options');
@@ -320,24 +391,24 @@ export const canvasBrowserScript = `
  [...document.querySelectorAll('.palette-card')].find(card=>card.textContent.includes('Timer')).querySelector('.palette-add').click();
  await wait(()=>document.getElementById('node-delay_seconds'),'typed timer inspector');const delay=document.getElementById('node-delay_seconds');delay.value='0';delay.dispatchEvent(new Event('input',{bubbles:true}));await click('Apply typed configuration');
  check(document.querySelector('app-node-inspector [role="alert"]'),'invalid timer inline error');check(button('Save workspace').disabled,'invalid timer draft fences save');
- delay.value='12';delay.dispatchEvent(new Event('input',{bubbles:true}));await click('Apply typed configuration');await click('Save workspace');await click('Reload');
- [...document.querySelectorAll('.board-node')].find(node=>node.textContent.includes('TIMER')).querySelector('button').click();await wait(()=>document.getElementById('node-delay_seconds')?.value==='12','typed timer save/reopen');
+ const timerKey=JSON.parse(document.getElementById('step-json').value).key;delay.value='12';delay.dispatchEvent(new Event('input',{bubbles:true}));await click('Apply typed configuration');await click('Save workspace');await click('Reload');
+ canvasNode(timerKey).querySelector('.node-handle').click();await wait(()=>document.getElementById('node-delay_seconds')?.value==='12','typed timer save/reopen');
  check(JSON.parse(document.getElementById('step-json').value).type_version_ref==='fixture-timer','timer type version pin preserved');
  window.fixtureStage='typed-subprocess-roundtrip';
  [...document.querySelectorAll('.palette-card')].find(card=>card.textContent.includes('Subprocess')).querySelector('.palette-add').click();
  await wait(()=>document.getElementById('subprocess-version'),'child version picker');document.getElementById('subprocess-version').click();await wait(()=>[...document.querySelectorAll('[role="option"]')].some(option=>option.textContent.includes('Child flow')),'approved child version');
  [...document.querySelectorAll('[role="option"]')].find(option=>option.textContent.includes('Child flow')).click();await wait(()=>document.getElementById('child-flag')&&document.getElementById('child-amount'),'typed child inputs');
  document.getElementById('child-flag').click();document.getElementById('child-flag').click();const amount=document.getElementById('child-amount');amount.value='-1';amount.dispatchEvent(new Event('input',{bubbles:true}));await click('Apply typed configuration');check(button('Save workspace').disabled,'invalid child input fences save');
- amount.value='0';amount.dispatchEvent(new Event('input',{bubbles:true}));await click('Apply typed configuration');await click('Save workspace');await click('Reload');
- [...document.querySelectorAll('.board-node')].find(node=>node.textContent.includes('SUBPROCESS')).querySelector('button').click();await wait(()=>document.getElementById('child-amount')?.value==='0','child inputs saved and reopened');
+ const subprocessKey=JSON.parse(document.getElementById('step-json').value).key;amount.value='0';amount.dispatchEvent(new Event('input',{bubbles:true}));await click('Apply typed configuration');await click('Save workspace');await click('Reload');
+ canvasNode(subprocessKey).querySelector('.node-handle').click();await wait(()=>document.getElementById('child-amount')?.value==='0','child inputs saved and reopened');
  const child=JSON.parse(document.getElementById('step-json').value).subprocess;check(child.workflow_version_ref==='fixture-child','exact child version pinned');check(child.inputs.find(input=>input.name==='flag').constant_value===false && child.inputs.find(input=>input.name==='amount').constant_value===0,'canonical child false and zero');check(document.getElementById('subprocess-version').getAttribute('aria-disabled')==='true' || document.getElementById('subprocess-version').classList.contains('p-disabled'),'mapped child version cannot silently change');
  window.fixtureStage='canvas-accessibility';
  await auditAccessibility('workflow-canvas-light');
  check(document.documentElement.scrollWidth<=innerWidth+1,'canvas responsive overflow');
- await toggleTheme();await wait(()=>document.documentElement.classList.contains('app-dark'),'dark canvas');
- await auditAccessibility('workflow-canvas-dark');
- {document.querySelector('[data-language-picker] [role="combobox"]').click();await wait(()=>[...document.querySelectorAll('[role="option"]')].some(option=>option.textContent.includes('فارسی')),'Language options');[...document.querySelectorAll('[role="option"]')].find(option=>option.textContent.includes('فارسی')).click();}await wait(()=>document.documentElement.dir==='rtl','canvas Persian RTL');
- check(document.documentElement.scrollWidth<=innerWidth+1,'RTL canvas responsive overflow');
+ await focusCanvas(false);await toggleTheme();await wait(()=>document.documentElement.classList.contains('app-dark'),'dark canvas');
+ await focusCanvas(true);await auditAccessibility('workflow-canvas-dark');
+ await focusCanvas(false);await chooseLanguage('fa');await wait(()=>document.documentElement.dir==='rtl','canvas Persian RTL');
+ await focusCanvas(true);check(document.documentElement.scrollWidth<=innerWidth+1,'RTL canvas responsive overflow');
  await auditAccessibility('workflow-canvas-persian-dark');
  await fetch('/test-result',{method:'POST',body:JSON.stringify({ok:true,accessibility})});
 `;

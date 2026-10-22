@@ -1,0 +1,70 @@
+<h4>{{ "Object field projection" | localize }}</h4>
+<p>
+  {{
+    "Choose fields from the mapped input and name their destination fields."
+      | localize
+  }}
+</p>
+@for (row of rows(); track row.key) {
+  <div class="projection-row">
+    <p>
+      <strong>{{ row.key }}</strong> ← {{ label(row.path) }}
+    </p>
+    @if (!row.known) {
+      <p role="status">
+        {{
+          "Saved projection is preserved. Map a declared object input to review its source fields."
+            | localize
+        }}
+      </p>
+    }
+    <button
+      pButton
+      severity="secondary"
+      type="button"
+      [disabled]="disabled()"
+      (click)="remove(row.key)"
+    >
+      {{ "Remove projected field" | localize }}: {{ row.key }}
+    </button>
+  </div>
+}
+@if (fields().length) {
+  <label for="projection-source">{{ "Source field" | localize }}</label>
+  <app-select-control
+    inputId="projection-source"
+    [disabled]="disabled()"
+    [ngModel]="source()"
+    (ngModelChange)="changeSource($event)"
+  >
+    <option value="">{{ "Choose" | localize }}</option>
+    @for (field of fields(); track field.path) {
+      <option [value]="field.path">{{ field.label }}</option>
+    }
+  </app-select-control>
+  <label for="projection-name">{{ "Destination field name" | localize }}</label>
+  <input
+    id="projection-name"
+    pInputText
+    [disabled]="disabled()"
+    [ngModel]="name()"
+    (ngModelChange)="changeName($event)"
+  />
+  <button
+    pButton
+    type="button"
+    [disabled]="
+      disabled() || !name().trim() || !source() || rows().length >= 64
+    "
+    (click)="add()"
+  >
+    {{ "Add projected field" | localize }}
+  </button>
+} @else {
+  <p role="status">
+    {{ "Map a declared object input to choose projection fields." | localize }}
+  </p>
+}
+@if (error()) {
+  <p role="alert">{{ error() | localize }}</p>
+}

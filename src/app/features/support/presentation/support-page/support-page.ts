@@ -1,3 +1,4 @@
+import { LocalizedDateTimePipe } from '../../../../shared/ui/localized-datetime-pipe';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -15,7 +16,7 @@ import { Incident, IncidentHistory } from '../../application/support-port';
 import { SUPPORT } from '../../bindings';
 @Component({
   selector: 'app-support-page',
-  imports: [ButtonDirective, TableModule, LocalizePipe],
+  imports: [LocalizedDateTimePipe, ButtonDirective, TableModule, LocalizePipe],
   templateUrl: './support-page.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

@@ -1,19 +1,12 @@
 import { JsonObject, JsonValue, RuntimeDocument } from './runtime-document';
 import { MISSING } from './canonical-values';
-export function rowPath(
-  scope: string,
-  indices: readonly number[] = [],
-): readonly string[] {
+/** Null marks a schema item traversal; literal property names stay strings. */
+export function scopePath(scope: string): readonly (string | null)[] {
   const parts = scope.split('/').slice(1);
-  const result: string[] = [];
-  let row = 0;
+  const result: (string | null)[] = [];
   for (let index = 0; index < parts.length;) {
     if (parts[index] === 'items') {
-      const position = indices[row++];
-      if (!Number.isSafeInteger(position) || position < 0 || position > 255) {
-        throw Error('Invalid row binding');
-      }
-      result.push(String(position));
+      result.push(null);
       index++;
     } else {
       if (
@@ -35,6 +28,40 @@ export function rowPath(
     throw Error('Invalid scope');
   }
   return result;
+}
+export function isItemScope(scope: string): boolean {
+  return scopePath(scope).includes(null);
+}
+export function rowPath(
+  scope: string,
+  indices: readonly number[] = [],
+): readonly string[] {
+  let row = 0;
+  return scopePath(scope).map((part) => {
+    if (part !== null) {
+      return part;
+    }
+    const position = indices[row++];
+    if (!Number.isSafeInteger(position) || position < 0 || position > 255) {
+      throw Error('Invalid row binding');
+    }
+    return String(position);
+  });
+}
+export function scopeContainsPointer(scope: string, pointer: string): boolean {
+  const pattern = scopePath(scope);
+  const actual = pointer
+    .split('/')
+    .slice(1)
+    .map((part) => part.replace(/~1/g, '/').replace(/~0/g, '~'));
+  return (
+    pattern.length <= actual.length &&
+    pattern.every((part, index) =>
+      part === null
+        ? /^(0|[1-9][0-9]*)$/.test(actual[index])
+        : part === actual[index],
+    )
+  );
 }
 export function rowPointer(
   scope: string,

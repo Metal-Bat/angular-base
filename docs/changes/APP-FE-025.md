@@ -29,3 +29,7 @@ The parent remains BLOCKED; the available implementation does not constitute com
 025.1 consumes the registered business-operation catalog and exposes its approval/retry/reconciliation metadata without dispatching operations. Existing subtask IDs are reused; parent status remains BLOCKED / IMPLEMENTED. Current backend capabilities and producer/client were reconciled before use; historical results above are preserved.
 
 Delivered files, actual satisfied acceptance, all commands/results (including intermediate failures), exact source/contract identities, remaining criteria and owners are recorded in [APP-FE-021–025 continuation acceptance](../delivery/APP-FE-021-025-ACCEPTANCE.md). This slice does not establish full parent publication/execution or strict paired readiness.
+
+## Agent administration editor continuation — 2026-10-16
+
+[APP-FE-030.UX01](APP-FE-030.UX01.md) owns the dedicated agent detail/editor, meaningful decisions/policy/limits and current acceptance. It reuses the existing authorized selectors, model metadata, exact pins and command lifecycle. The [capability/producer handoff](../delivery/AGENT-EDITOR-CAPABILITIES.md) records exact off-page connection-name, workflow choice-shape/sample, retrieval catalog/preview and approved standalone-test gaps. Those gaps remain blocked capabilities; they do not erase supported typed filters, static/input choices or policy editing. No provider execution, backend source/migration, published payload or required human approval changes. This continuation does not close the broader APP-FE-025 parent.

@@ -16,9 +16,10 @@ import { Locale } from '../../../../core/localization/locale';
 import { LocalizePipe } from '../../../../shared/ui/localize-pipe';
 import { SelectControl } from '../../../../shared/ui/select-control/select-control';
 import { RuntimeOptionsPort } from '../../../forms/application/runtime-options-port';
-import { RUNTIME_OPTIONS } from '../../../forms/bindings';
+import { FormCollectionEditor } from '../../../forms/application/form-resources';
+import { FORM_COLLECTIONS, RUNTIME_OPTIONS } from '../../../forms/bindings';
 import { FieldEdit } from '../../../forms/domain/canonical-values';
-import { replaceRow } from '../../../forms/domain/row-values';
+import { indicesFor, replaceRow } from '../../../forms/domain/row-values';
 import {
   JsonObject,
   RuntimeDocument,
@@ -26,6 +27,7 @@ import {
 import { RuntimeForm } from '../../../forms/presentation/runtime-form/runtime-form';
 import { STUDIO_API } from '../../bindings';
 import { formDocuments } from '../../domain/form-documents';
+import { editSampleCollection } from '../../domain/sample-collections';
 
 @Component({
   selector: 'app-form-display',
@@ -38,6 +40,16 @@ import { formDocuments } from '../../domain/form-documents';
     RuntimeForm,
   ],
   providers: [
+    {
+      provide: FORM_COLLECTIONS,
+      useFactory: (): FormCollectionEditor => {
+        const view = inject(FormDisplay);
+        return {
+          busy: () => view.busy(),
+          collection: (...args) => view.editCollection(...args),
+        };
+      },
+    },
     {
       provide: RUNTIME_OPTIONS,
       useFactory: (): RuntimeOptionsPort => {
@@ -73,6 +85,7 @@ export class FormDisplay {
   readonly locale = signal(inject(Locale).language());
   readonly runtime = signal<RuntimeDocument | null>(null);
   readonly data = signal<JsonObject>({});
+  private identity: Record<string, readonly string[]> = {};
   readonly states = [
     { value: 'edit', label: 'Entry form' },
     { value: 'summary', label: 'Summary' },
@@ -101,6 +114,7 @@ export class FormDisplay {
     });
   }
   private clear(): void {
+    this.identity = {};
     this.generation++;
     this.versions.set([]);
     this.current.set(null);
@@ -113,6 +127,7 @@ export class FormDisplay {
     this.purpose.set('edit');
   }
   async loadVersions(page = 1): Promise<void> {
+    this.identity = {};
     const generation = ++this.generation;
     this.busy.set(true);
     this.error.set('');
@@ -146,6 +161,7 @@ export class FormDisplay {
     }
   }
   async show(reference: string): Promise<void> {
+    this.identity = {};
     const generation = ++this.generation;
     this.busy.set(true);
     this.error.set('');
@@ -185,6 +201,7 @@ export class FormDisplay {
     this.runtime.set(null);
     if (reset) {
       this.data.set({});
+      this.identity = {};
     }
     try {
       const result = await this.api.preview(
@@ -192,6 +209,7 @@ export class FormDisplay {
         this.data(),
         this.purpose(),
         this.locale(),
+        { item_identity: this.identity },
       );
       if (generation !== this.generation) {
         return;
@@ -199,6 +217,7 @@ export class FormDisplay {
       if (result.status === 'ready') {
         this.runtime.set(result.document);
         this.data.set(result.document.canonical);
+        this.identity = { ...result.document.rowIdentity };
       } else {
         this.error.set('Preview is incompatible');
       }
@@ -213,7 +232,12 @@ export class FormDisplay {
     }
   }
   editSample(change: FieldEdit): void {
-    if (this.busy() || !this.runtime()) {
+    const document = this.runtime();
+    if (
+      this.busy() ||
+      !document ||
+      !['edit', 'correction'].includes(document.purpose)
+    ) {
       return;
     }
     if (change.error) {
@@ -221,14 +245,42 @@ export class FormDisplay {
       return;
     }
     try {
+      const indices = change.rowKeys
+        ? indicesFor(document, change.scope, change.rowKeys)
+        : (change.indices ?? []);
+      if (indices === null) {
+        return;
+      }
       this.data.set(
-        replaceRow(
-          this.data(),
-          change.scope,
-          change.indices ?? [],
-          change.value,
-        ),
+        replaceRow(this.data(), change.scope, indices, change.value),
       );
+    } catch {
+      this.error.set('Sample change is unavailable');
+    }
+  }
+  async editCollection(
+    ...args: Parameters<FormCollectionEditor['collection']>
+  ): Promise<void> {
+    const document = this.runtime();
+    const row = this.current();
+    if (this.busy() || !document || !row) {
+      return;
+    }
+    try {
+      const result = editSampleCollection(
+        document,
+        this.data(),
+        row['data_schema'] as JsonObject,
+        ...args,
+      );
+      this.identity = result.identity;
+      this.data.set(result.data);
+      this.runtime.set({
+        ...document,
+        canonical: result.data,
+        rowIdentity: result.identity,
+      });
+      await this.refresh();
     } catch {
       this.error.set('Sample change is unavailable');
     }

@@ -1,102 +1,82 @@
-import { inject } from '@angular/core';
+import { HttpResponse } from '@angular/common/http';
+import { DestroyRef, effect, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
-import { ActorState } from '../../../core/auth/actor-state';
-import { ApiClient } from '../../../core/transport/api-client';
-import { BinaryTransfer } from '../../../core/transport/binary-transfer';
+import {
+  BinaryTransfer,
+  safeFilename,
+} from '../../../core/transport/binary-transfer';
 import { record } from '../../../core/transport/api-failure';
 import { readData } from '../../../core/transport/response-adapters';
-import { Attachment } from '../../forms/application/form-resources';
-import { MISSING } from '../../forms/domain/canonical-values';
 import {
-  fieldSchema,
-  indicesFromPath,
-  keysAt,
-  rowValue,
-} from '../../forms/domain/row-values';
-import { JsonObject } from '../../forms/domain/runtime-document';
+  Attachment,
+  PendingAttachment,
+} from '../../forms/application/form-resources';
 import { EditorPort } from '../application/workspace-ports';
+import {
+  AttachmentAssociation,
+  AttachmentCommand,
+} from './attachment-association';
+import { CaseCollections } from './case-collections';
 import { stringField } from './workspace-decoders';
-export class CaseFiles {
-  protected readonly api = inject(ApiClient);
-  protected readonly actor = inject(ActorState);
+type CaseAttachment = Attachment & { uploadRef: string };
+export class CaseFiles extends CaseCollections {
   private readonly transfer = inject(BinaryTransfer);
   readonly transferBusy = this.transfer.busy;
   readonly progress = this.transfer.progress;
-  constructor(protected readonly editor: EditorPort) {}
-  protected get task(): boolean {
-    return this.editor.caseKind() === 'task';
-  }
-  protected get reference(): string {
-    return this.editor.item()?.ref ?? '';
-  }
-  protected referenceFrom(value: unknown): string {
-    const row = record(value);
-    const reference =
-      row['resource_ref_id'] ??
-      row['work_item_ref_id'] ??
-      row['request_ref_id'] ??
-      row['ref_id'] ??
-      row['work_item_ref'];
-    if (typeof reference !== 'string') {
-      throw Error('Invalid mutation reference');
-    }
-    return reference;
-  }
-  protected async flush(): Promise<boolean> {
-    return !this.editor.dirty() || (await this.editor.save());
-  }
-  async collection(
-    scope: string,
-    path: string,
-    operation: 'add' | 'remove' | 'reorder' | 'duplicate',
-    key?: string,
-    index?: number,
-  ): Promise<void> {
-    if (!this.editor.canEdit()) {
-      return;
-    }
-    const indices = indicesFromPath(scope, path);
-    if (rowValue(this.editor.data(), scope, indices) === MISSING) {
-      this.editor.edit({
-        scope,
-        value: [],
-        indices,
-        rowKeys: keysAt(this.editor.document()!, scope, indices),
-      });
-    }
-    if (!(await this.flush())) {
-      return;
-    }
-    const schema = fieldSchema(this.editor.document()!, scope)['items'];
-    const itemValue =
-      (schema as JsonObject | undefined)?.['type'] === 'string' ? '' : {};
-    await this.editor.command(
-      {
-        path,
-        operation,
-        item_key: key ?? null,
-        target_index: index ?? null,
-        value: itemValue,
-      },
-      async (reference, body) => {
-        const response = this.task
-          ? await firstValueFrom(
-              this.api.call(
-                'edit_work_item_collection_api_v1_work_items__ref_id__collections_edit_post',
-                { path: { ref_id: reference }, body },
-              ),
-            )
-          : await firstValueFrom(
-              this.api.call(
-                'edit_request_collection_api_v1_business_requests__ref_id__collections_edit_post',
-                { path: { ref_id: reference }, body },
-              ),
-            );
-        return readData(response, (value) => this.referenceFrom(value));
-      },
+  readonly ownerKey = (): string => this.editor.contextKey();
+  private readonly association: AttachmentAssociation;
+  readonly pendingAttachment = (): PendingAttachment | null =>
+    this.association.state();
+  constructor(editor: EditorPort) {
+    super(editor);
+    this.association = new AttachmentAssociation(
+      editor,
+      this.actor,
+      () => this.readAttachments(),
+      (command) => this.sendAttachment(command),
     );
+    const release = this.actor.register(() => this.association.clear());
+    inject(DestroyRef).onDestroy(() => {
+      release();
+      this.association.clear();
+    });
+    let owner = editor.contextKey();
+    effect(() => {
+      const current = editor.contextKey();
+      if (current !== owner) {
+        owner = current;
+        this.association.clear();
+        this.transfer.cancel();
+      }
+    });
+  }
+  protected override async flush(): Promise<boolean> {
+    return !this.pendingAttachment() && (await super.flush());
+  }
+  checkPendingAttachment(): Promise<void> {
+    return this.association.check();
+  }
+  retryPendingAttachment(): Promise<void> {
+    return this.association.retry();
+  }
+  discardPendingAttachment(): void {
+    const pending = this.pendingAttachment();
+    if (pending && !['checking', 'linking'].includes(pending.phase)) {
+      this.association.clear();
+    }
   }
   async attachments(): Promise<readonly Attachment[]> {
+    return (await this.readAttachments()).map((item) => ({
+      ref: item.ref,
+      path: item.path,
+      caption: item.caption,
+      kind: item.kind,
+      contentType: item.contentType,
+      size: item.size,
+      position: item.position,
+    }));
+  }
+  private async readAttachments(): Promise<readonly CaseAttachment[]> {
     const response = this.task
       ? await firstValueFrom(
           this.api.call(
@@ -122,8 +102,12 @@ export class CaseFiles {
         ) {
           throw Error('Invalid attachment');
         }
+        const kind = item['kind'];
         return {
+          kind:
+            kind === 'file' || kind === 'image' ? kind : ('unknown' as const),
           ref: stringField(item, 'ref_id'),
+          uploadRef: stringField(item, 'upload_ref_id'),
           path: stringField(item, 'field_path'),
           caption: String(item['caption'] ?? ''),
           contentType: stringField(item, 'content_type'),
@@ -133,12 +117,17 @@ export class CaseFiles {
       });
     });
   }
-  private async uploadReference(file: File, image: boolean): Promise<string> {
+  private async uploadReference(
+    file: File,
+    image: boolean,
+    abort?: AbortSignal,
+  ): Promise<string> {
     const response = await this.transfer.run(
       image
         ? 'upload_image_api_v1_media_images_post'
         : 'upload_file_api_v1_media_files_post',
       { body: { upload: file } },
+      abort,
     );
     const body: unknown = JSON.parse(await response.body!.text());
     return readData(response.clone({ body }), (value) =>
@@ -150,19 +139,68 @@ export class CaseFiles {
     file: File,
     image: boolean,
     caption: string,
+    abort?: AbortSignal,
   ): Promise<void> {
-    if (!this.editor.canEdit() || !(await this.flush())) {
-      return;
-    }
+    await this.uploadFile(path, file, image, caption, null, abort);
+  }
+  async replaceAttachment(
+    reference: string,
+    file: File,
+    image: boolean,
+    caption: string,
+    abort?: AbortSignal,
+  ): Promise<void> {
+    const owner = this.editor.contextKey();
     const epoch = this.actor.epoch;
-    const owner = this.reference;
-    const upload = await this.uploadReference(file, image);
-    if (epoch !== this.actor.epoch || owner !== this.reference) {
-      throw Error('Access or revision changed. Upload was not linked.');
+    const items = await this.readAttachments();
+    const item = items.find((entry) => entry.ref === reference);
+    if (
+      abort?.aborted ||
+      !item ||
+      owner !== this.editor.contextKey() ||
+      epoch !== this.actor.epoch
+    ) {
+      throw Error(
+        'The original attachment changed. Check current state before choosing again.',
+      );
     }
-    await this.editor.command(
-      { field_path: path, upload_ref_id: upload, caption: caption || null },
-      async (reference, body) => {
+    await this.uploadFile(item.path, file, image, caption, reference, abort);
+  }
+  private async uploadFile(
+    path: string,
+    file: File,
+    image: boolean,
+    caption: string,
+    replacement: string | null,
+    abort?: AbortSignal,
+  ): Promise<void> {
+    const owner = this.editor.contextKey();
+    const epoch = this.actor.epoch;
+    if (
+      abort?.aborted ||
+      !this.editor.canEdit() ||
+      !(await this.flush()) ||
+      owner !== this.editor.contextKey() ||
+      epoch !== this.actor.epoch ||
+      abort?.aborted
+    ) {
+      throw Error(
+        'Check the pending attachment or save your form before choosing another file.',
+      );
+    }
+    const context = this.association.prepare(
+      path,
+      safeFilename(file.name),
+      file.size,
+      caption,
+      replacement,
+    );
+    const upload = await this.uploadReference(file, image, abort);
+    await this.association.attach(context, upload);
+  }
+  private async sendAttachment(command: AttachmentCommand): Promise<boolean> {
+    if (command.kind === 'add') {
+      return this.editor.command(command.payload, async (reference, body) => {
         const response = this.task
           ? await firstValueFrom(
               this.api.call(
@@ -177,44 +215,28 @@ export class CaseFiles {
               ),
             );
         return readData(response, (value) => this.referenceFrom(value));
-      },
-    );
-  }
-  async replaceAttachment(
-    attachment: string,
-    file: File,
-    image: boolean,
-    caption: string,
-  ): Promise<void> {
-    if (!this.editor.canEdit() || !(await this.flush())) {
-      return;
+      });
     }
-    const epoch = this.actor.epoch;
-    const owner = this.reference;
-    const upload = await this.uploadReference(file, image);
-    if (epoch !== this.actor.epoch || owner !== this.reference) {
-      throw Error('Access or revision changed. Upload was not linked.');
-    }
-    await this.editor.command(
-      { upload_ref_id: upload, caption: caption || null },
-      async (reference, body) => {
-        const path = { ref_id: reference, attachment_ref_id: attachment };
-        const response = this.task
-          ? await firstValueFrom(
-              this.api.call(
-                'replace_work_item_attachment_api_v1_work_items__ref_id__attachments__attachment_ref_id__put',
-                { path, body },
-              ),
-            )
-          : await firstValueFrom(
-              this.api.call(
-                'replace_attachment_api_v1_business_requests__ref_id__attachments__attachment_ref_id__put',
-                { path, body },
-              ),
-            );
-        return readData(response, (value) => this.referenceFrom(value));
-      },
-    );
+    return this.editor.command(command.payload, async (reference, body) => {
+      const path = {
+        ref_id: reference,
+        attachment_ref_id: command.replacement,
+      };
+      const response = this.task
+        ? await firstValueFrom(
+            this.api.call(
+              'replace_work_item_attachment_api_v1_work_items__ref_id__attachments__attachment_ref_id__put',
+              { path, body },
+            ),
+          )
+        : await firstValueFrom(
+            this.api.call(
+              'replace_attachment_api_v1_business_requests__ref_id__attachments__attachment_ref_id__put',
+              { path, body },
+            ),
+          );
+      return readData(response, (value) => this.referenceFrom(value));
+    });
   }
   async removeAttachment(attachment: string): Promise<void> {
     if (
@@ -269,16 +291,41 @@ export class CaseFiles {
       },
     );
   }
-  async downloadAttachment(attachment: string): Promise<void> {
+  private async attachmentResponse(
+    attachment: string,
+    abort?: AbortSignal,
+  ): Promise<HttpResponse<Blob>> {
+    const owner = this.editor.contextKey();
+    const epoch = this.actor.epoch;
     const path = { ref_id: this.reference, attachment_ref_id: attachment };
-    this.transfer.download(
-      await this.transfer.run(
-        this.task
-          ? 'download_work_item_attachment_api_v1_work_items__ref_id__attachments__attachment_ref_id__content_get'
-          : 'download_attachment_api_v1_business_requests__ref_id__attachments__attachment_ref_id__content_get',
-        { path },
-      ),
+    const response = await this.transfer.run(
+      this.task
+        ? 'download_work_item_attachment_api_v1_work_items__ref_id__attachments__attachment_ref_id__content_get'
+        : 'download_attachment_api_v1_business_requests__ref_id__attachments__attachment_ref_id__content_get',
+      { path },
+      abort,
     );
+    if (
+      owner !== this.editor.contextKey() ||
+      epoch !== this.actor.epoch ||
+      abort?.aborted
+    ) {
+      throw Error('Access or case changed.');
+    }
+    return response;
+  }
+  async attachmentContent(
+    reference: string,
+    abort?: AbortSignal,
+  ): Promise<Blob> {
+    const response = await this.attachmentResponse(reference, abort);
+    if (!response.body) {
+      throw Error('Empty download');
+    }
+    return response.body;
+  }
+  async downloadAttachment(attachment: string): Promise<void> {
+    this.transfer.download(await this.attachmentResponse(attachment));
   }
   cancelTransfer(): void {
     this.transfer.cancel();

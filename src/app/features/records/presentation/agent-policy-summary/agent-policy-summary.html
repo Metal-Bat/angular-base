@@ -1,0 +1,86 @@
+<h3>{{ "Permitted inputs" | localize }}</h3>
+<dl class="policy-summary">
+  @for (field of strings("allowed_fields"); track field) {
+    <div>
+      <dt>
+        <bdi>{{ field }}</bdi>
+      </dt>
+      <dd>
+        {{ $any(classifications()[field] ?? "Unknown") | localize }} ·
+        {{
+          (strings("redacted_fields").includes(field)
+            ? "Redacted"
+            : "Not redacted"
+          ) | localize
+        }}
+      </dd>
+    </div>
+  } @empty {
+    <p>{{ "No permitted input is configured." | localize }}</p>
+  }
+</dl>
+<p>
+  {{ "Permitted classifications" | localize }}:
+  @for (
+    classification of strings("allowed_classifications");
+    track classification
+  ) {
+    <span>{{ classification | localize }} </span>
+  }
+</p>
+
+<section>
+  <h3>{{ "Tools and report retrieval" | localize }}</h3>
+
+  <p>
+    {{ "Allow owned saved-report lookup" | localize }}:
+    {{
+      (strings("allowed_tools").includes("lookup_saved_report") ? "Yes" : "No")
+        | localize
+    }}
+  </p>
+
+  <p>
+    {{
+      "The model proposes an exact owned report and a limit of 1–10 rows. The eligible claimant must approve the displayed call before it runs."
+        | localize
+    }}
+  </p>
+  <p>
+    {{
+      "Saved-report lookup requires a tool-call limit of 1 and at least 2 provider requests. Publication checks provider support and administrator limits."
+        | localize
+    }}
+  </p>
+  <h4>{{ "Configured report sources" | localize }}</h4>
+  <ul>
+    @for (source of sourceKeys(); track source) {
+      <li>
+        <bdi>{{ source }}</bdi>
+      </li>
+    } @empty {
+      <li>{{ "No report source is configured." | localize }}</li>
+    }
+  </ul>
+  <p class="policy-note">
+    {{
+      "This backend exposes no general retrieval-source catalog. Existing source keys are preserved; availability and permission are rechecked by the server."
+        | localize
+    }}
+  </p>
+  @if (otherTools().length) {
+    <p>
+      {{
+        "Other saved tool keys are retained but cannot be verified against a tool catalog."
+          | localize
+      }}
+    </p>
+    <ul>
+      @for (tool of otherTools(); track tool) {
+        <li>
+          <bdi>{{ tool }}</bdi>
+        </li>
+      }
+    </ul>
+  }
+</section>

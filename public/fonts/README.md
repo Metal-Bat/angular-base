@@ -1,13 +1,18 @@
-# Yekan Bakh
+# Vazirmatn
 
-Persian UI typography prefers the actual Yekan Bakh family (local names `Yekan Bakh` and `YekanBakh`), followed by Tahoma. The repository currently contains no Yekan Bakh font files; IranYekan is a different family.
+Persian and Arabic use the bundled Vazirmatn variable font, including body text,
+headings, controls and overlays. English retains the existing system font stack.
+The app serves the font itself; it makes no third-party font requests.
 
-Download the webfont package from [Fontiran](https://fontiran.com/fonts/yekan-bakh), then paste its WOFF2 files and license information into:
+- Upstream: https://github.com/rastikerdar/vazirmatn/tree/v33.003
+- Asset: `fonts/webfonts/Vazirmatn[wght].woff2`, unchanged, stored locally as
+  `vazirmatn/Vazirmatn-Variable.woff2`.
+- SHA-256: `4e3fa217d38fdafc1fea4414ceb58ca5e662cf0ab5fa735a8c8c20e8b42cad92`.
+- License: SIL Open Font License 1.1, bundled as `vazirmatn/OFL.txt`.
 
-`/home/erfan/Project/js/async-fast-api-base-frontend/public/fonts/yekan-bakh/`
+Start and build commands run `scripts/prepare-fonts.mjs`, generating
+`src/vazirmatn-fonts.css` with weights 100–900 and `font-display: swap`.
+A missing or invalid bundled file fails preparation instead of silently shipping
+fallback typography. Run `npm run fonts:prepare` when using Angular CLI directly.
 
-Use either one variable font named `YekanBakh-Variable.woff2`, or two static fonts named `YekanBakh-Regular.woff2` and `YekanBakh-Bold.woff2`. Rename files only to match their actual family and weight.
-
-Restart `npm start` after copying the files. Start and build commands automatically generate `src/yekan-bakh-fonts.css`, registering only present files with `font-display: swap`. The variable font takes precedence. Run `npm run fonts:prepare` manually when using the Angular CLI directly.
-
-Until the font is supplied, Persian uses locally installed Yekan Bakh or Tahoma without requesting missing files. Shared typography applies to PrimeNG, Material, and Tailwind text without replacing icon fonts.
+This replaces the earlier optional Yekan Bakh setup at the user's request.

@@ -1,3 +1,5 @@
+import { By } from '@angular/platform-browser';
+import { FormPages } from '../form-pages/form-pages';
 import { TestBed } from '@angular/core/testing';
 import { ActorState } from '../../../../core/auth/actor-state';
 import { JsonObject } from '../../../forms/domain/runtime-document';
@@ -14,6 +16,72 @@ const documents: JsonObject = {
   },
 };
 describe('Form settings lifecycle', () => {
+  it('retains translation and outcome buffers across modes without clearing the other pending owner', async () => {
+    const fixture = TestBed.createComponent(FormSettings);
+    fixture.componentRef.setInput('documents', documents);
+    await fixture.whenStable();
+    const vm = fixture.componentInstance;
+    const discarded = vi.fn();
+    const applied = vi.fn();
+    vm.discarded.subscribe(discarded);
+    vm.applied.subscribe(applied);
+    vm.key = 'title';
+    vm.en = 'Title';
+    vm.fa = 'عنوان';
+    fixture.componentRef.setInput('mode', 'settings');
+    await fixture.whenStable();
+    vm.outcome = 'review';
+    vm.applyOutcome();
+    expect(applied).not.toHaveBeenCalled();
+    vm.discardTranslation();
+    expect(discarded).not.toHaveBeenCalled();
+    expect(vm.outcome).toBe('review');
+    fixture.componentRef.setInput('mode', 'languages');
+    await fixture.whenStable();
+    expect(vm.outcome).toBe('review');
+    vm.applyOutcome();
+    expect(applied.mock.lastCall?.[0]['render_schema']['outcomes']).toEqual([
+      'review',
+    ]);
+    expect(vm.outcome).toBe('');
+    vm.outcome = 'other';
+    vm.key = 'pending';
+    vm.discardOutcome();
+    expect(discarded).not.toHaveBeenCalled();
+    vm.discardTranslation();
+    expect(discarded).toHaveBeenCalledOnce();
+  });
+  it('retains unsaved translations when opening another row and requires explicit discard', async () => {
+    const fixture = TestBed.createComponent(FormSettings);
+    fixture.componentRef.setInput('documents', {
+      ...documents,
+      localization: {
+        catalogs: {
+          en: { first: { text: 'First' }, second: { text: 'Second' } },
+          fa: { first: { text: 'اول' }, second: { text: 'دوم' } },
+        },
+      },
+    });
+    await fixture.whenStable();
+    const vm = fixture.componentInstance;
+    const discarded = vi.fn();
+    vm.discarded.subscribe(discarded);
+    vm.editMessage('first');
+    expect(vm.translationPending()).toBe(false);
+    vm.fa = 'ویرایش نشده';
+    vm.editMessage('second');
+    expect(vm.key).toBe('first');
+    expect(vm.fa).toBe('ویرایش نشده');
+    expect(vm.error()).toBe(
+      'Apply or discard translation edits before opening another translation.',
+    );
+    vm.discardTranslation();
+    expect(discarded).toHaveBeenCalledOnce();
+    expect(vm.translationPending()).toBe(false);
+    vm.editMessage('second');
+    expect(vm.en).toBe('Second');
+    expect(vm.fa).toBe('دوم');
+  });
   it('retains typed samples across document edits and clears all actor-owned buffers', async () => {
     const fixture = TestBed.createComponent(FormSettings);
     fixture.componentRef.setInput('documents', documents);
@@ -30,12 +98,16 @@ describe('Form settings lifecycle', () => {
     vm.key = 'key';
     vm.en = 'English';
     vm.fa = 'فارسی';
-    vm.pageKey = 'page';
-    vm.pageTitle = 'Private';
+    const pages = fixture.debugElement.query(By.directive(FormPages))
+      .componentInstance as FormPages;
+    pages.changeTitle('Private');
+    pages.toggle('/properties/flag', true);
     vm.busy.set(true);
     TestBed.inject(ActorState).reset();
     expect(vm.synthetic()).toEqual({});
-    expect(vm.key + vm.en + vm.fa + vm.pageKey + vm.pageTitle).toBe('');
+    expect(vm.key + vm.en + vm.fa).toBe('');
+    expect(pages.title()).toBe('');
+    expect(pages.selected()).toEqual([]);
     expect(vm.busy()).toBe(false);
   });
   it('rejects invalid page selections and fences async translations after actor reset', async () => {
@@ -46,13 +118,14 @@ describe('Form settings lifecycle', () => {
     const vm = fixture.componentInstance;
     const output = vi.fn();
     vm.applied.subscribe(output);
-    vm.pageKey = 'first';
-    vm.pageTitle = 'First';
-    vm.selectedScopes = ['/properties/missing'];
-    vm.addPage();
+    const pages = fixture.debugElement.query(By.directive(FormPages))
+      .componentInstance as FormPages;
+    pages.changeTitle('First');
+    pages.selected.set(['/properties/missing']);
+    pages.apply();
     expect(output).not.toHaveBeenCalled();
-    vm.selectedScopes = ['/properties/flag'];
-    vm.addPage();
+    pages.selected.set(['/properties/flag']);
+    pages.apply();
     expect(output).toHaveBeenCalledTimes(1);
     vm.key = 'key';
     vm.en = 'English';

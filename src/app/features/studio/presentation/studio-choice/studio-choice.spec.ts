@@ -127,3 +127,20 @@ it('cancels old searches and parent context reads', async () => {
     fixture.destroy();
   }
 });
+
+it('cancels a queued search when the user explicitly finds references', async () => {
+  const { fixture, api } = await setup();
+  const vm = fixture.componentInstance;
+  vi.useFakeTimers();
+  try {
+    vm.scheduleSearch('Form');
+    await vm.load();
+    await vi.advanceTimersByTimeAsync(300);
+    expect(api.choices).toHaveBeenCalledTimes(1);
+    await vm.choose('current');
+    expect(api.choices).toHaveBeenCalledTimes(2);
+    expect(vm.error()).toBe('');
+  } finally {
+    vi.useRealTimers();
+  }
+});

@@ -76,8 +76,6 @@ export class WorkspacePages {
     const generation = ++this.generation;
     this.state.set('loading');
     this.error.set('');
-    this.catalog.set([]);
-    this.cases.set([]);
     try {
       if (kind === 'catalog') {
         const result = await this.api.catalog(page);
@@ -91,15 +89,19 @@ export class WorkspacePages {
         const effective = this.snapshot(kind, cartable, query);
         const result = await this.api.list(
           kind,
-          page,
+          this.requestPage(page, query, effective),
           cartable,
           abort,
           effective,
         );
-        if (generation === this.generation) {
+        if (generation === this.generation && !abort?.aborted) {
           this.appliedQuery.set({ ...effective, page: result.page });
         }
         if (generation !== this.generation) {
+          return;
+        }
+        if (abort?.aborted) {
+          this.state.set('ready');
           return;
         }
         this.cases.set(result.items);
@@ -113,6 +115,16 @@ export class WorkspacePages {
           this.state.set('ready');
           return;
         }
+        if (
+          error instanceof ApiFailure &&
+          [401, 403].includes(error.httpStatus)
+        ) {
+          this.catalog.set([]);
+          this.cases.set([]);
+          this.appliedQuery.set(null);
+          this.page.set(1);
+          this.totalPages.set(0);
+        }
         this.state.set('error');
         this.error.set(
           error instanceof ApiFailure
@@ -124,5 +136,16 @@ export class WorkspacePages {
         }
       }
     }
+  }
+  private requestPage(
+    page: number,
+    query: JsonObject | undefined,
+    effective: JsonObject,
+  ): number {
+    const restoring = page === 1 && !query && !this.appliedQuery();
+    const remembered = Number(effective['page']);
+    return restoring && Number.isInteger(remembered) && remembered > 0
+      ? remembered
+      : page;
   }
 }

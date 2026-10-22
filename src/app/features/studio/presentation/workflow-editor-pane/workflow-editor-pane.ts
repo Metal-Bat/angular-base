@@ -1,4 +1,5 @@
 import { NodeDetails } from '../node-details/node-details';
+import { workflowStepName } from '../../domain/workflow-labels';
 import { inspectorFor } from '../../domain/node-inspector';
 import {
   ChangeDetectionStrategy,
@@ -27,7 +28,7 @@ import type { WorkflowBoard } from '../workflow-board/workflow-board';
   styles: `
     section {
       min-inline-size: 0;
-      padding: 1.5rem;
+      padding: 0.75rem;
       border: 1px solid var(--console-border);
       border-radius: 1rem;
       background: var(--console-surface);
@@ -44,6 +45,9 @@ import type { WorkflowBoard } from '../workflow-board/workflow-board';
   changeDetection: ChangeDetectionStrategy.Default,
 })
 export class WorkflowEditorPane {
+  readonly selectedName = computed(() =>
+    workflowStepName(this.view().selected()),
+  );
   readonly String = String;
   readonly browsingPending = computed(
     () =>
@@ -62,6 +66,7 @@ export class WorkflowEditorPane {
     input.required<
       Pick<
         WorkflowBoard,
+        | 'inspectedConnection'
         | 'selected'
         | 'select'
         | 'selectedStep'

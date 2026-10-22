@@ -8,9 +8,17 @@
     {{ approval.status | localize }}
   </p>
   <p>
-    {{ "Expires" | localize }}: <time>{{ approval.expires }}</time>
+    {{ "Expires" | localize }}:
+    <time>{{ approval.expires | localizedDateTime }}</time>
   </p>
-  <pre>{{ argumentsText() }}</pre>
+  <p>
+    {{ "Tool approval does not replace a human business decision." | localize }}
+  </p>
+  @if (approval.arguments !== null) {
+    <section [attr.aria-label]="'Tool parameters' | localize">
+      <app-form-value [value]="approval.arguments" />
+    </section>
+  }
   @if (approval.status === "PENDING" && approval.arguments) {
     <button
       pButton

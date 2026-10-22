@@ -1,0 +1,21 @@
+:host {
+  display: contents;
+}
+.structured-values {
+  display: grid;
+  gap: 0.5rem;
+  min-inline-size: 0;
+}
+.value-entry {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+  gap: 0.5rem;
+  min-inline-size: 0;
+  padding-block: 0.25rem;
+}
+.value-entry > span,
+.value-entry strong,
+bdi {
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+}

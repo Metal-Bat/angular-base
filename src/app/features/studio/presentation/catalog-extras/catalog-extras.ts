@@ -7,27 +7,18 @@ import {
   inject,
   input,
   signal,
-  viewChild,
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
 import { ActorState } from '../../../../core/auth/actor-state';
 import { StudioChoice } from '../studio-choice/studio-choice';
 import { LocalizePipe } from '../../../../shared/ui/localize-pipe';
-import { FavoriteAction } from '../../../../shared/ui/favorite-action/favorite-action';
-import { SavedViews } from '../../../../shared/ui/saved-views/saved-views';
 import { DependencyReadiness } from '../../../readiness/public-api';
 import { DependencyReport } from '../../../readiness/domain/dependencies';
 import type { ResourceCatalog } from '../resource-catalog/resource-catalog';
 @Component({
   selector: 'app-catalog-extras',
-  imports: [
-    FavoriteAction,
-    SavedViews,
-    DependencyReadiness,
-    StudioChoice,
-    LocalizePipe,
-  ],
+  imports: [DependencyReadiness, StudioChoice, LocalizePipe],
   templateUrl: './catalog-extras.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -60,10 +51,6 @@ export class CatalogExtras {
       this.client.set('');
     });
     inject(DestroyRef).onDestroy(release);
-  }
-  private readonly views = viewChild(SavedViews);
-  async canLeave(): Promise<boolean> {
-    return this.views()?.canLeave() ?? true;
   }
   readonly catalog = input.required<ResourceCatalog>();
   readonly inspect =

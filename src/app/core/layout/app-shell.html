@@ -1,6 +1,8 @@
 <a class="skip-link" href="#main-content">{{ "Skip to content" | localize }}</a>
 <header
+  #workspaceHeader
   class="workspace-header flex flex-wrap items-center gap-2 px-4 py-3 lg:gap-3 lg:px-8"
+  [hidden]="navigation.focusMode()"
 >
   <a class="brand" routerLink="/operations">
     <span aria-hidden="true" class="brand-mark"
@@ -26,68 +28,15 @@
       ><span>{{ "Menu" | localize }}</span>
     </button>
   }
-  <div class="inline-flex items-center gap-2">
-    <i aria-hidden="true" class="pi pi-globe text-console-muted"></i>
-    <span class="sr-only">{{ "Language" | localize }}</span>
-    <app-select-control
-      class="w-32 max-w-full"
-      data-language-picker
-      [ariaLabel]="'Language' | localize"
-      [disabled]="locale.changing() || preferences.loading()"
-      [value]="locale.language()"
-      (selectionChanged)="setLanguage($any($event.target).value)"
-    >
-      @for (language of locale.languages; track language.code) {
-        <option [attr.lang]="language.code" [value]="language.code">
-          {{ language.name }}
-        </option>
-      }
-    </app-select-control>
-  </div>
-  <app-theme-picker class="w-52 max-w-full" />
-  @if (auth.profile(); as profile) {
-    <a
-      class="account-avatar"
-      routerLink="/account/profile"
-      [attr.aria-label]="'My information' | localize"
-      [attr.title]="'My information' | localize"
-      ><span aria-hidden="true">{{
-        profile.username.slice(0, 1).toUpperCase()
-      }}</span></a
-    >
-    <details class="account-menu">
-      <summary>
-        {{ "Account" | localize }}: <bdi>{{ profile.username }}</bdi>
-      </summary>
-      <button
-        pButton
-        severity="secondary"
-        type="button"
-        [text]="true"
-        (click)="auth.logout()"
-      >
-        {{ "Sign out" | localize }}
-      </button>
-    </details>
-    <button
-      aria-controls="notification-panel"
-      pButton
-      severity="secondary"
-      type="button"
-      [attr.aria-expanded]="notificationsOpen()"
-      [attr.aria-label]="'Notifications' | localize"
-      [text]="true"
-      (click)="toggleNotifications()"
-    >
-      <i aria-hidden="true" class="pi pi-bell"></i>
-      <bdi data-notification-count [hidden]="!notifications.unreadCount()">{{
-        notifications.unreadCount()
-      }}</bdi>
-    </button>
-  }
+  <app-workspace-preferences [view]="this" />
+  <app-workspace-account [view]="this" />
 </header>
 <app-workspace-notifications [view]="this" />
-<div class="workspace-layout" [class.guest-layout]="!signedIn()">
+<div
+  class="workspace-layout"
+  [class.editor-focused]="navigation.focusMode()"
+  [class.guest-layout]="!signedIn()"
+>
   @if (signedIn()) {
     <nav
       id="area-navigation"
@@ -148,11 +97,6 @@
         ><span>{{ "Help" | localize }}</span>
       </a>
       <div class="sidebar-footer">
-        <span aria-hidden="true" class="sidebar-symbol"
-          ><i class="pi pi-sitemap"></i
-        ></span>
-        <strong>{{ "Keep work moving." | localize }}</strong>
-        <p>{{ "One workspace. Clear next steps." | localize }}</p>
         <a
           ariaCurrentWhenActive="page"
           routerLink="/account"
@@ -165,11 +109,7 @@
   }
   <main id="main-content" tabindex="-1">
     @if (signedIn()) {
-      <nav class="breadcrumb" [attr.aria-label]="'Breadcrumb' | localize">
-        <span>{{ "Workspace" | localize }}</span
-        ><i aria-hidden="true" class="pi pi-angle-right"></i>
-        <span aria-current="page">{{ breadcrumb() | localize }}</span>
-      </nav>
+      <app-workspace-breadcrumbs />
     }
     <app-command-feedback />
     <router-outlet />

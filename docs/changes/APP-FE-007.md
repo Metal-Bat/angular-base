@@ -57,3 +57,7 @@ Latest actual acceptance: `/tmp/ordered-007-paired7.log` exited 0 with 33 browse
 ## Completion of shared-pattern scope
 
 Status: DONE. Verification: VERIFIED_INTEGRATED. `/tmp/ordered-007-final-check.log` and `/tmp/ordered-007-final-manifest.json` record complete `mise run check`, exit 0, all 12 commands with zero emitted diagnostics, 489 passing unit tests / 95 files and all ten Firefox quality scopes. Full-tree start/end SHA-256: `b03586cdd0765730a2e23231b5261d74ecccc9262b5a56b2666f6ba411501935`. Production initial size remained 497,642 bytes under the unchanged budget. The actual paired evidence above supplies representative CRUD/history/error/report/immutable acceptance. Graph refresh passed in `/tmp/ordered-007-graph3.log`. Automated accessibility violations were zero; incomplete manual reviews remain explicitly separate. This closes shared patterns and representative adoption, not specialist editors or full application coverage. The historical APP-FE-006 dependency blocker is superseded by its actual completed scope.
+
+## Filter refresh continuation — 2026-10-18
+
+The native Firefox chooser race, owner refresh repair, complete failed collection run and final scoped verification receipt are recorded in [the editor flow audit](APP-FE-016-EDITOR-FLOW-AUDIT.md). Automatic request/task refresh now waits while filter editing is open; existing explicit loading fences and unchanged payload contracts remain. This continuation does not close parent acceptance.

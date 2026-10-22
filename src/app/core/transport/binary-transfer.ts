@@ -53,7 +53,11 @@ export class BinaryTransfer {
   run<I extends ApiOperationId>(
     id: I,
     input: RequestInput<I>,
+    abort?: AbortSignal,
   ): Promise<HttpResponse<Blob>> {
+    if (abort?.aborted) {
+      return Promise.reject(Error('Transfer cancelled'));
+    }
     if (this.busy()) {
       return Promise.reject(Error('A transfer is already running'));
     }
@@ -66,14 +70,20 @@ export class BinaryTransfer {
           return false;
         }
         active = false;
+        abort?.removeEventListener('abort', cancel);
         this.busy.set(false);
         this.cancelPending = null;
         return true;
       };
-      this.cancelPending = (): void => {
-        finish();
-        reject(Error('Transfer cancelled'));
+      const cancel = (): void => {
+        if (active) {
+          this.subscription?.unsubscribe();
+          finish();
+          reject(Error('Transfer cancelled'));
+        }
       };
+      this.cancelPending = cancel;
+      abort?.addEventListener('abort', cancel, { once: true });
       this.subscription = this.api.transfer(id, input).subscribe({
         next: (event) => {
           if (!active) {

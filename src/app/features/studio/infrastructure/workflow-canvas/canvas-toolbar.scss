@@ -1,5 +1,5 @@
 .canvas-toolbar {
-  padding: 1rem 1.25rem;
+  padding: 0.5rem 0.75rem;
   border-block-end: 1px solid var(--console-border);
 }
 .canvas-summary {
@@ -10,7 +10,7 @@
   > span {
     display: block;
     color: var(--console-muted);
-    font-size: 0.7rem;
+    font-size: 0.8125rem;
     margin-block-start: 0.2rem;
   }
 }
@@ -25,7 +25,7 @@
     border-radius: 0.5rem;
     background: transparent;
     color: var(--console-text);
-    font-size: 0.75rem;
+    font-size: 0.875rem;
     min-block-size: 2.5rem;
     &:hover:not(:disabled) {
       background: var(--console-accent-soft);
@@ -36,6 +36,70 @@
   min-inline-size: 3rem;
   text-align: center;
   color: var(--console-muted);
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   font-variant-numeric: tabular-nums;
+}
+
+.canvas-find {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.canvas-tools .find-toggle {
+  display: none;
+}
+@container (max-width: 54rem) {
+  .canvas-summary,
+  .canvas-find,
+  .view-label {
+    display: none;
+  }
+  .canvas-tools .find-toggle {
+    display: inline-flex;
+  }
+  .canvas-toolbar {
+    position: relative;
+  }
+  .find-open .canvas-find {
+    display: flex;
+    position: absolute;
+    inset-block-start: 100%;
+    inset-inline: 0.5rem;
+    padding: 0.75rem;
+    background: var(--console-surface);
+    border: 1px solid var(--console-border);
+    z-index: 3;
+  }
+}
+
+.canvas-tools button {
+  margin: 0;
+}
+@container (max-width:54rem) {
+  .canvas-tools {
+    gap: 0.125rem;
+  }
+  .canvas-tools button {
+    min-inline-size: 2.5rem;
+    padding-inline: 0.25rem;
+  }
+  .zoom-value {
+    min-inline-size: 2.25rem;
+  }
+}
+
+.view-menu {
+  display: none;
+}
+@container (max-width: 54rem) {
+  .canvas-tools .wide-view-control {
+    display: none;
+  }
+  .view-menu {
+    display: inline-flex;
+  }
+  .canvas-tools button {
+    min-inline-size: 2.875rem;
+    min-block-size: 2.875rem;
+  }
 }

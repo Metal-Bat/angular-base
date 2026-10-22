@@ -1,0 +1,67 @@
+.palette-items {
+  display: grid;
+  gap: 0.5rem;
+  margin-block: 1rem;
+}
+.palette-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  text-align: start;
+}
+.palette-item span {
+  flex: 1;
+}
+.palette-item[draggable="true"] {
+  cursor: grab;
+}
+.palette-hint {
+  color: var(--console-muted);
+  font-size: 0.875rem;
+  line-height: 1.5;
+  margin: 0.5rem 0;
+}
+.palette-card {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--console-border);
+  border-radius: 0.6rem;
+  background: var(--console-surface);
+}
+.palette-card:hover,
+.palette-selected {
+  border-color: var(--console-accent);
+  background: var(--console-accent-soft);
+}
+.palette-card .palette-item {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  border: 0;
+  border-radius: 0.6rem;
+  background: transparent;
+  color: var(--console-text);
+  padding: 0.75rem;
+}
+.palette-item span {
+  overflow-wrap: anywhere;
+}
+.palette-card .pi {
+  color: var(--console-accent);
+  font-size: 1rem;
+}
+.palette-card .palette-add {
+  margin: 0 0.25rem;
+  flex-shrink: 0;
+}
+
+input {
+  inline-size: 100%;
+  min-inline-size: 0;
+}
+
+.palette-category {
+  margin: 0.75rem 0 0;
+  font-size: 0.875rem;
+  color: var(--console-muted);
+}

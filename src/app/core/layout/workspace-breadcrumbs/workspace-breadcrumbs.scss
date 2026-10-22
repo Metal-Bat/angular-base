@@ -1,0 +1,25 @@
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  font-size: 0.875rem;
+  color: var(--console-muted);
+  margin-bottom: 0.75rem;
+}
+.breadcrumb [aria-current] {
+  color: var(--console-text);
+  font-weight: 500;
+}
+.breadcrumb i {
+  font-size: 0.6rem;
+}
+.breadcrumb ol,
+.breadcrumb li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}

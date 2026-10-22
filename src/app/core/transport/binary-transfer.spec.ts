@@ -198,4 +198,56 @@ describe('Private binary transfers', () => {
     await Promise.resolve();
     expect(transfer.busy()).toBe(false);
   });
+  it('does not dispatch a byte request for an already-cancelled owner', async () => {
+    const controller = new AbortController();
+    controller.abort();
+    const transfer = TestBed.inject(BinaryTransfer);
+    await expect(
+      transfer.run(
+        'download_file_api_v1_media_files__ref_id__get',
+        {
+          path: { ref_id: 'never-sent' },
+        },
+        controller.signal,
+      ),
+    ).rejects.toThrow('cancelled');
+    expect(transfer.busy()).toBe(false);
+    http.expectNone('/api/v1/media/files/never-sent');
+  });
+  it('cancels only the owning byte request and ignores a completed owner abort', async () => {
+    const transfer = TestBed.inject(BinaryTransfer);
+    const oldOwner = new AbortController();
+    const old = transfer.run(
+      'download_file_api_v1_media_files__ref_id__get',
+      {
+        path: { ref_id: 'old-owner' },
+      },
+      oldOwner.signal,
+    );
+    const oldRequest = await vi.waitFor(() =>
+      http.expectOne('/api/v1/media/files/old-owner'),
+    );
+    oldRequest.flush(new Blob(['old']));
+    await old;
+    const currentOwner = new AbortController();
+    const current = transfer
+      .run(
+        'download_file_api_v1_media_files__ref_id__get',
+        {
+          path: { ref_id: 'current-owner' },
+        },
+        currentOwner.signal,
+      )
+      .catch((error: unknown) => error);
+    const currentRequest = await vi.waitFor(() =>
+      http.expectOne('/api/v1/media/files/current-owner'),
+    );
+    oldOwner.abort();
+    expect(transfer.busy()).toBe(true);
+    expect(currentRequest.cancelled).toBe(false);
+    currentOwner.abort();
+    expect(await current).toEqual(Error('Transfer cancelled'));
+    expect(currentRequest.cancelled).toBe(true);
+    expect(transfer.busy()).toBe(false);
+  });
 });

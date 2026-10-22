@@ -1,0 +1,29 @@
+:host {
+  display: block;
+  min-inline-size: 0;
+  margin-block: 1rem;
+}
+fieldset {
+  min-inline-size: 0;
+  padding: 1rem;
+  border: 1px solid var(--console-border);
+  border-radius: 0.75rem;
+}
+.correction-entry {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.5rem;
+  margin-block: 1rem;
+  padding-block-end: 1rem;
+  border-block-end: 1px solid var(--console-border);
+}
+textarea {
+  inline-size: 100%;
+  box-sizing: border-box;
+  min-inline-size: 0;
+}
+button {
+  justify-self: start;
+  max-inline-size: 100%;
+  white-space: normal;
+}

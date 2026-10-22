@@ -29,3 +29,24 @@ The parent remains BLOCKED; the available implementation does not constitute com
 024.1 buffers condition/default/priority edits until explicit apply or discard, using actual backend bounds. Existing subtask IDs are reused; parent status remains BLOCKED / IMPLEMENTED. Current backend capabilities and producer/client were reconciled before use; historical results above are preserved.
 
 Delivered files, actual satisfied acceptance, all commands/results (including intermediate failures), exact source/contract identities, remaining criteria and owners are recorded in [APP-FE-021–025 continuation acceptance](../delivery/APP-FE-021-025-ACCEPTANCE.md). This slice does not establish full parent publication/execution or strict paired readiness.
+
+## Pinned child input continuation — 2026-10-18
+
+[APP-FE-024.3 purpose-built subprocess inputs](APP-FE-024-SUBPROCESS.md) extends
+structured constants, explicit authorized request/context/prior-output sources,
+invalid/pending recovery, deliberate obsolete-input removal and pinned interface
+inspection. The final receipt records current actual browser/service/full-gate
+results. Parent lifecycle and acceptance boundaries remain open.
+
+## Child interface and wait continuation — 2026-10-19
+
+[Workflow-level interface controls and actual wait lifecycle](APP-FE-024-INTERFACE.md)
+extend existing .3 subprocess and .2 branch/wait ownership. Exact registered output
+schemas, named inputs/outcomes, current-reference workspace application and
+published read-only behavior reuse existing editor/domain infrastructure. The
+record links the final scoped receipt and retains failed evidence; parent status
+and broader fault/manual/deployment acceptance are unchanged.
+
+### Literal authorized request paths
+
+The [literal-scope continuation](APP-FE-016-LITERAL-SCOPES.md) retains literal `items` and `properties` keys in already authorized REQUEST instance paths. Producer schema reconstruction, transforms and other mapper handoffs remain blocked; no new expression syntax or backend capability is inferred.

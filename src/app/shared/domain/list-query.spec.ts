@@ -89,3 +89,16 @@ describe('Backend list query contract', () => {
     ]);
   });
 });
+
+it('rejects an unfinished membership row instead of silently removing part of the condition', () => {
+  expect(() =>
+    compileQuery(
+      [{ key: 'enabled', label: 'Enabled', type: 'boolean' }],
+      [{ field: 'enabled', operation: 'in', value: 'true\n', end: '' }],
+      [],
+      20,
+      {},
+      [],
+    ),
+  ).toThrow();
+});

@@ -38,13 +38,13 @@ const agent = {
       review_below: 0.8,
     },
     data_policy: {
-      allowed_fields: ["question"],
+      allowed_fields: ["question", "choices"],
       allowed_classifications: ["PUBLIC"],
       redacted_fields: [],
       allowed_tools: [],
       allowed_retrieval_sources: [],
     },
-    field_classifications: { question: "PUBLIC" },
+    field_classifications: { question: "PUBLIC", choices: "PUBLIC" },
     user_limits: {
       requests: 1,
       tool_calls: 0,
@@ -87,7 +87,16 @@ const execution = {
   ref_id: "execution-current",
   task_id: "actual-task-id",
   task_name: "jobs.sample",
-  state: "FAILURE",
+  status: "FAILURE",
+  worker: "fixture-worker",
+  args: [],
+  kwargs: {},
+  result: null,
+  traceback: null,
+  started_at: date,
+  finished_at: date,
+  updated_at: null,
+  duration_seconds: 0,
   queue: "default",
   created_at: date,
   retries: 0,
@@ -108,85 +117,115 @@ const resources = {
   "/api/v1/tasks/executions": execution,
   "/api/v1/processes": process,
 };
-export function otherCrudFixture(url, body, method) {
-  const path = new URL(url, "http://fixture.invalid").pathname;
-  const match = Object.entries(resources).find(
-    ([base]) => path === base || path.startsWith(base + "/"),
-  );
-  if (!match) {
-    return null;
-  }
-  const [base, row] = match;
-  const input = body ? JSON.parse(body) : {};
-  const data = (value) => ({ success: true, data: value });
-  const page = (items) => ({
-    success: true,
-    result: {
-      items,
-      page: input.page ?? 1,
-      size: input.size ?? 20,
-      total: items.length,
-      total_pages: items.length ? 1 : 0,
-    },
-  });
-  if (path.endsWith("/retry")) {
-    if (!path.endsWith("/actual-task-id/retry")) {
-      throw Error("Execution retry must use actual task ID");
+export function createOtherCrudFixture() {
+  const ownedResources = structuredClone(resources);
+  return (url, body, method) => {
+    const path = new URL(url, "http://fixture.invalid").pathname;
+    const match = Object.entries(ownedResources).find(
+      ([base]) => path === base || path.startsWith(base + "/"),
+    );
+    if (!match) {
+      return null;
     }
-    return data({ task_id: "queued-new-task", state: "QUEUED" });
-  }
-  if (path.endsWith("/pause")) {
-    process.status = "PAUSED";
-    return data(null);
-  }
-  if (path.endsWith("/resume")) {
-    process.status = "RUNNING";
-    return data(null);
-  }
-  if (path.endsWith("/publish")) {
-    agent.status = "PUBLISHED";
-    return data({ ...agent });
-  }
-  if (path.endsWith("/timeline")) {
-    return page([{ event: "PAUSED", created_at: date }]);
-  }
-  if (path.endsWith("/history")) {
-    return page([]);
-  }
-  if (path.endsWith("/models/select")) {
-    return page([{ key: "fixture-model", value: "Review model" }]);
-  }
-  if (path.endsWith("/select")) {
-    return page([
-      {
-        key: base.endsWith("definitions") ? row.name : row.ref_id,
-        value: row.name ?? row.code,
+    const [base, row] = match;
+    const input = body ? JSON.parse(body) : {};
+    const data = (value) => ({ success: true, data: value });
+    const page = (items) => ({
+      success: true,
+      result: {
+        items,
+        page: input.page ?? 1,
+        size: input.size ?? 20,
+        total: items.length,
+        total_pages: items.length ? 1 : 0,
       },
-    ]);
-  }
-  if (path.endsWith("/search")) {
-    return page([row]);
-  }
-  if (path === base && method === "POST") {
-    if (
-      base.endsWith("schedules") &&
-      (!Array.isArray(input.args) ||
-        typeof input.kwargs !== "object" ||
-        input.interval_seconds !== 120)
-    ) {
-      throw Error("Schedule inputs must preserve arrays, objects and numbers");
+    });
+    if (path.endsWith("/retry")) {
+      if (!path.endsWith("/actual-task-id/retry")) {
+        throw Error("Execution retry must use actual task ID");
+      }
+      return data({ task_id: "queued-new-task", state: "QUEUED" });
     }
-    return data({ ...row, ...input, ref_id: "created-record" });
-  }
-  if (method === "PUT") {
-    Object.assign(row, input);
+    if (path.endsWith("/pause")) {
+      row.status = "PAUSED";
+      return data(null);
+    }
+    if (path.endsWith("/resume")) {
+      row.status = "RUNNING";
+      return data(null);
+    }
+    if (path.endsWith("/publish")) {
+      row.status = "PUBLISHED";
+      return data({ ...row });
+    }
+    if (path.endsWith("/timeline")) {
+      return page([{ event: "PAUSED", created_at: date }]);
+    }
+    if (path.endsWith("/history")) {
+      return page([]);
+    }
+    if (path.endsWith("/providers/select"))
+      return page([{ key: "fixture", value: "Fixture provider" }]);
+    if (/\/providers\/[^/]+\/metadata$/.test(path))
+      return data({
+        key: decodeURIComponent(path.split("/")[5]),
+        available: true,
+        unavailable_reason: null,
+        supports_tools: true,
+        supports_structured_output: true,
+        strict_spend_supported: true,
+        governed_execution: true,
+      });
+    if (/\/connections\/[^/]+\/models\/[^/]+\/metadata$/.test(path))
+      return data({
+        connection_ref: decodeURIComponent(path.split("/")[5]),
+        provider: "fixture",
+        model_id: decodeURIComponent(path.split("/")[7]),
+        source: "configured",
+        can_execute: true,
+        supports_structured_output: true,
+        supports_tools: true,
+        region: "fixture-region",
+        provider_retention: "NONE",
+      });
+    if (path.endsWith("/models/select")) {
+      return page([{ key: "fixture-model", value: "Review model" }]);
+    }
+    if (path.endsWith("/select")) {
+      return page([
+        {
+          key: base.endsWith("definitions") ? row.name : row.ref_id,
+          value: row.name ?? row.code,
+        },
+      ]);
+    }
+    if (path.endsWith("/search")) {
+      return page([row]);
+    }
+    if (path === base && method === "POST") {
+      if (
+        base.endsWith("schedules") &&
+        (!Array.isArray(input.args) ||
+          typeof input.kwargs !== "object" ||
+          input.interval_seconds !== 120)
+      ) {
+        throw Error(
+          "Schedule inputs must preserve arrays, objects and numbers",
+        );
+      }
+      return data({ ...row, ...input, ref_id: "created-record" });
+    }
+    if (method === "PUT") {
+      Object.assign(row, input);
+      return data({ ...row });
+    }
+    if (method === "DELETE") {
+      return data(null);
+    }
     return data({ ...row });
-  }
-  if (method === "DELETE") {
-    return data(null);
-  }
-  return data({ ...row });
+  };
 }
+export const otherCrudFixture = createOtherCrudFixture();
 
 export const otherCrudScript = `
  const goCrud=async(path,title)=>{window.fixtureStage=title;history.pushState(null,'',path);window.dispatchEvent(new PopStateEvent('popstate'));await wait(()=>document.querySelector('h1')?.textContent.trim()===title&&document.querySelector('app-record-table button[aria-label="Open"]:not(:disabled)'),'Ready '+title);};
@@ -194,15 +233,19 @@ export const otherCrudScript = `
  const button=(scope,label)=>[...document.querySelectorAll(scope+' button')].find(item=>item.textContent.trim()===label);
  const fillCrud=(id,value)=>{const item=document.getElementById(id);check(item,'Missing '+id);item.value=value;item.dispatchEvent(new Event('input',{bubbles:true}));};
  const chooseCrud=async(id,value)=>{const host=document.getElementById(id).closest('app-select-control');const option=[...host.querySelectorAll('option')].find(item=>item.value===value);check(option,'Missing option '+value);document.getElementById(id).click();await wait(()=>[...document.querySelectorAll('[role="option"]')].some(item=>item.textContent.trim()===option.textContent.trim()),'Select '+value);[...document.querySelectorAll('[role="option"]')].find(item=>item.textContent.trim()===option.textContent.trim()).click();};
- const pickCrud=async(id,label)=>{const field=document.getElementById(id);check(field.readOnly,'Reference accepts typed keys '+id);const trigger=field.closest('.reference-control').querySelector('button');trigger.focus();trigger.click();await wait(()=>document.querySelector('app-reference-picker .p-dialog tbody button:not(:disabled)'),'Picker ready '+id);const picker=document.querySelector('app-reference-picker .p-dialog');check(picker.textContent.includes(label),'Picker label '+label);await wait(()=>picker.contains(document.activeElement),'Picker focus');await auditAccessibility('reference-picker-'+id,picker);const action=picker.querySelector('tbody button');action.focus();action.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',bubbles:true}));action.click();await wait(()=>!document.querySelector('app-reference-picker .p-dialog')&&field.value===label,'Picked '+label);await wait(()=>document.activeElement===trigger,'Picker focus restore');};
+ const pickCrud=async(id,label)=>{const field=document.getElementById(id);check(field.readOnly,'Reference accepts typed keys '+id);const trigger=field.closest('.reference-control').querySelector('button');await wait(()=>trigger.getClientRects().length&&!trigger.matches(':disabled'),'Visible reference trigger '+id);trigger.focus();await wait(()=>document.activeElement===trigger,'Reference trigger focused '+id);trigger.click();await wait(()=>document.querySelector('app-reference-picker .p-dialog tbody button:not(:disabled)'),'Picker ready '+id);const picker=document.querySelector('app-reference-picker .p-dialog');check(picker.textContent.includes(label),'Picker label '+label);await wait(()=>picker.contains(document.activeElement),'Picker focus');await auditAccessibility('reference-picker-'+id,picker);const action=picker.querySelector('tbody button');action.focus();action.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',bubbles:true}));action.click();await wait(()=>!document.querySelector('app-reference-picker .p-dialog')&&field.value===label,'Picked '+label);await wait(()=>document.activeElement===trigger,'Picker focus restore');};
  const confirmCrud=async()=>{await wait(()=>document.querySelector('dialog[open]'),'Review action');button('dialog[open]','Continue').click();};
- const submitCrud=async()=>{document.querySelector('.p-dialog form').dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}));await confirmCrud();await wait(()=>!document.querySelector('.p-dialog'),'Saved');};
+ const submitCrud=async()=>{button('.page-editor','Save').click();await confirmCrud();await wait(()=>!document.querySelector('.page-editor'),'Saved page');};
+ const openActionMenu=async()=>{await wait(()=>button('app-resource-actions','Actions')&&!button('app-resource-actions','Actions').disabled,'Contextual action menu');button('app-resource-actions','Actions').click();await wait(()=>document.querySelector('.p-menu [role=menuitem]'),'Action menu opened');};
+ const actionItem=label=>[...document.querySelectorAll('.p-menu [role=menuitem]')].find(item=>item.textContent.trim()===label);
+ const openAction=async(label)=>{await openActionMenu();check(actionItem(label),'Missing action '+label);actionItem(label).querySelector('a').click();};
+ const closeActionMenu=async()=>{document.querySelector('.p-menu [role=menuitem]').dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',code:'Escape',bubbles:true}));await wait(()=>!document.querySelector('.p-menu [role=menuitem]'),'Action menu closed');};
  const closeAction=async()=>{button('app-resource-actions .p-dialog','Cancel').click();await wait(()=>!document.querySelector('app-resource-actions .p-dialog'),'Closed action');};
  await goCrud('/administration/groups','Work groups');await openCrud();button('app-resource-page header','Edit').click();await wait(()=>document.getElementById('record-name'),'Group form');check(document.getElementById('record-is_active').checked===false,'Inactive work group cannot be edited');fillCrud('record-name','Updated reviewers');await auditAccessibility('work-group-editor');await submitCrud();check(text().includes('Updated reviewers'),'Updated group missing');
- await goCrud('/administration/integrations','Integration connections');await openCrud();button('app-resource-actions','Verify').click();await wait(()=>document.querySelector('app-resource-actions .p-dialog'),'Verify dialog');check(!document.getElementById('action-path-ref_id'),'Current connection reference should be carried automatically');await auditAccessibility('connection-action');button('app-resource-actions .p-dialog','Review command').click();await confirmCrud();await wait(()=>text().includes('Command accepted'),'Verify accepted');await closeAction();
- await goCrud('/administration/agents','AI agents');await openCrud();button('app-resource-page header','Edit').click();await wait(()=>document.getElementById('record-spec-model_id'),'Structured AI fields');check(document.getElementById('record-spec-model_id').value==='Selected resource'&&document.getElementById('record-spec-model_id').readOnly,'AI model key exposed');await pickCrud('record-spec-connection_ref','Notification service');await pickCrud('record-spec-model_id','Review model');check(document.getElementById('record-spec-user_limits-tool_calls').value==='0','AI numeric zero lost');check(!document.querySelector('app-record-fields textarea#record-spec'),'AI config uses raw JSON');await auditAccessibility('agent-editor');button('.p-dialog','Cancel').click();await confirmCrud();await wait(()=>!document.querySelector('.p-dialog'),'Closed agent editor');button('app-resource-actions','Publish').click();await wait(()=>document.querySelector('app-resource-actions .p-dialog'),'Publish dialog');button('app-resource-actions .p-dialog','Review command').click();await confirmCrud();await wait(()=>text().includes('PUBLISHED'),'Published state');await closeAction();check(!button('app-resource-page header','Edit'),'Published agent editable');
- await goCrud('/administration/tasks/schedules','Task schedules');button('app-resource-page header','Create').click();await wait(()=>document.getElementById('record-name'),'Schedule form');fillCrud('record-name','Browser schedule');await pickCrud('record-task_name','jobs.sample');await chooseCrud('record-schedule_type','interval');fillCrud('record-interval_seconds','120');const args=document.querySelector('#record-args');button('#record-args','Add value').click();await wait(()=>document.getElementById('record-args-0'),'Argument added');await chooseCrud('record-args-0-type','number');fillCrud('record-args-0','7');await auditAccessibility('schedule-editor');await submitCrud();
- await goCrud('/administration/tasks/definitions','Task definitions');await openCrud();check(button('app-resource-actions','Run Task'),'Missing run task action');
- await goCrud('/administration/tasks/executions','Task executions');await openCrud();button('app-resource-actions','Retry Execution').click();await wait(()=>document.querySelector('app-resource-actions .p-dialog'),'Retry dialog');check(!document.getElementById('action-path-task_id'),'Task ID was not carried automatically');button('app-resource-actions .p-dialog','Review command').click();await confirmCrud();await wait(()=>text().includes('QUEUED'),'Queue response');check(text().includes('Read current state'),'Queuing completion misrepresented');await closeAction();
- window.fixtureStage='Process controls';history.pushState(null,'','/administration/processes');window.dispatchEvent(new PopStateEvent('popstate'));await wait(()=>document.querySelector('app-process-controls'),'Process lookup');fillCrud('process-reference','process-current');document.querySelector('app-process-controls form').dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}));await wait(()=>text().includes('PAUSED'),'Process detail');button('app-resource-actions','Get Process Timeline').click();await wait(()=>document.querySelector('app-resource-actions .p-dialog'),'Timeline dialog');button('app-resource-actions .p-dialog','Load').click();await wait(()=>document.querySelector('app-resource-actions app-record-table tbody tr'),'Timeline results');await auditAccessibility('process-timeline');await closeAction();
+ await goCrud('/administration/integrations','Integration connections');await openCrud();await openAction('Verify');await wait(()=>document.querySelector('app-resource-actions .p-dialog'),'Verify dialog');check(!document.getElementById('action-path-ref_id'),'Current connection reference should be carried automatically');await auditAccessibility('connection-action');button('app-resource-actions .p-dialog','Review command').click();await confirmCrud();await wait(()=>text().includes('Command accepted'),'Verify accepted');await closeAction();
+ await goCrud('/administration/agents','AI agents');await openCrud();button('app-resource-page header','Edit').click();await wait(()=>[...document.querySelectorAll('app-agent-fields [role=tab]')].some(tab=>tab.textContent.trim()==='Connection and model'),'Agent sections');[...document.querySelectorAll('app-agent-fields [role=tab]')].find(tab=>tab.textContent.trim()==='Connection and model').click();await wait(()=>document.getElementById('agent-connection-spec-model_id'),'Structured AI fields');check(document.getElementById('agent-connection-spec-model_id').value==='Selected resource'&&document.getElementById('agent-connection-spec-model_id').readOnly,'AI model key exposed');await pickCrud('agent-connection-spec-connection_ref','Notification service');await pickCrud('agent-connection-spec-model_id','Review model');window.fixtureStage='agent-usage-limits';[...document.querySelectorAll('app-agent-fields [role=tab]')].find(tab=>tab.textContent.trim()==='Usage limits').click();const toolCalls=()=>document.querySelector('app-agent-limits [data-field-path="spec.user_limits.tool_calls"] input');await wait(()=>toolCalls(),'Typed usage limits');check(toolCalls().value==='0'&&!toolCalls().disabled,'AI numeric zero lost');check(!document.querySelector('app-record-fields textarea#record-spec'),'AI config uses raw JSON');await auditAccessibility('agent-editor');button('.page-editor','Cancel').click();await confirmCrud();await wait(()=>!document.querySelector('.page-editor'),'Closed agent editor');await openAction('Publish');await wait(()=>document.querySelector('app-resource-actions .p-dialog'),'Publish dialog');button('app-resource-actions .p-dialog','Review command').click();await confirmCrud();await wait(()=>text().includes('PUBLISHED'),'Published state');await closeAction();check(!button('app-resource-page header','Edit'),'Published agent editable');
+ await goCrud('/administration/tasks/schedules','Task schedules');button('app-resource-page header','Create').click();await wait(()=>document.getElementById('record-name'),'Schedule form');fillCrud('record-name','Browser schedule');await chooseCrud('record-schedule_type','interval');await pickCrud('record-task_name','jobs.sample');fillCrud('record-interval_seconds','120');const args=document.querySelector('#record-args');button('#record-args','Add value').click();await wait(()=>document.getElementById('record-args-0'),'Argument added');await chooseCrud('record-args-0-type','number');fillCrud('record-args-0','7');await auditAccessibility('schedule-editor');await submitCrud();
+ await goCrud('/administration/tasks/definitions','Task definitions');await openCrud();await openActionMenu();check(actionItem('Run Task'),'Missing run task action');await closeActionMenu();
+ await goCrud('/administration/tasks/executions','Task executions');await openCrud();await openAction('Retry Execution');await wait(()=>document.querySelector('app-resource-actions .p-dialog'),'Retry dialog');check(!document.getElementById('action-path-task_id'),'Task ID was not carried automatically');button('app-resource-actions .p-dialog','Review command').click();await confirmCrud();await wait(()=>text().includes('QUEUED'),'Queue response');check(text().includes('Read current state'),'Queuing completion misrepresented');await closeAction();
+ window.fixtureStage='Process controls';history.pushState(null,'','/administration/processes');window.dispatchEvent(new PopStateEvent('popstate'));await wait(()=>document.querySelector('app-process-controls'),'Process lookup');fillCrud('process-reference','process-current');document.querySelector('app-process-controls form').dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}));await wait(()=>text().includes('PAUSED'),'Process detail');await openAction('Get Process Timeline');await wait(()=>document.querySelector('app-resource-actions .p-dialog'),'Timeline dialog');button('app-resource-actions .p-dialog','Load').click();await wait(()=>document.querySelector('app-resource-actions app-record-table tbody tr'),'Timeline results');await auditAccessibility('process-timeline');await closeAction();
 `;

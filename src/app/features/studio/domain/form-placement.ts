@@ -1,5 +1,5 @@
 import { JsonObject, JsonValue } from '../../forms/domain/runtime-document';
-import { authoredNode, outline } from './form-authoring';
+import { authoredNode, outline, reorderAuthored } from './form-authoring';
 import { FormEditState, renderOf } from './form-editing';
 import { freshPlacement } from './fresh-placement';
 
@@ -124,4 +124,28 @@ export function duplicateLayout(
   siblings.splice(index, 0, copy);
   checkBounds(render);
   return { documents: next, selection: [...path.slice(0, -1), index] };
+}
+
+/** Reorder one placement and its selected path as one local history transaction. */
+export function reorderPlacement(
+  documents: JsonObject,
+  path: readonly number[],
+  offset: number,
+): FormEditState | null {
+  if (!path.length) {
+    return null;
+  }
+  const render = renderOf(documents);
+  const parent = authoredNode(render, path.slice(0, -1));
+  const target = path.at(-1)! + offset;
+  if (target < 0 || target >= (parent['children'] as JsonObject[]).length) {
+    return null;
+  }
+  return {
+    documents: {
+      ...documents,
+      render_schema: reorderAuthored(render, path, offset),
+    },
+    selection: [...path.slice(0, -1), target],
+  };
 }

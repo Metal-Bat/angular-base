@@ -1,0 +1,55 @@
+<div class="agent-detail-layout">
+  <div class="agent-detail-main">
+    <p-tabs [value]="tab()" (valueChange)="tab.set($any($event))">
+      <p-tablist
+        ><p-tab value="identity">{{ "Overview" | localize }}</p-tab>
+        @for (section of sections(); track section.key) {
+          <p-tab [value]="section.key">{{ section.title | localize }}</p-tab>
+        }
+      </p-tablist>
+      <p-tabpanels
+        ><p-tabpanel value="identity"
+          ><app-record-summary
+            title="Overview"
+            [record]="identity()"
+            [showIdentity]="false"
+        /></p-tabpanel>
+        @for (section of sections(); track section.key) {
+          <p-tabpanel [value]="section.key">
+            @if (section.key === "instructions") {
+              <app-agent-instructions [readonly]="true" [value]="config()" />
+              <app-agent-decision-summary
+                [value]="$any(config()['decision'] ?? {})"
+              />
+            } @else if (section.key === "data") {
+              <app-agent-policy-summary
+                [classifications]="
+                  $any(config()['field_classifications'] ?? {})
+                "
+                [value]="$any(config()['data_policy'] ?? {})"
+              />
+            } @else if (section.key === "limits") {
+              <h3>{{ "Usage limits" | localize }}</h3>
+              <app-agent-limits
+                [readonly]="true"
+                [value]="$any(config()['user_limits'] ?? {})"
+              />
+              @if (effectiveLimits(); as limits) {
+                <h3>{{ "Effective published limits" | localize }}</h3>
+                <app-agent-limits [readonly]="true" [value]="limits" />
+              }
+            } @else if (section.key === "connection") {
+              <app-record-summary
+                [record]="section.record"
+                [showIdentity]="false"
+                [title]="section.title"
+              />
+              <app-agent-capabilities [config]="config()" />
+            }
+          </p-tabpanel>
+        }
+      </p-tabpanels>
+    </p-tabs>
+  </div>
+  <aside><app-agent-overview [config]="config()" [record]="record()" /></aside>
+</div>

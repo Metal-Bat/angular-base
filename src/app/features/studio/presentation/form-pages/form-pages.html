@@ -1,0 +1,163 @@
+<section aria-labelledby="form-pages-title">
+  <h2 id="form-pages-title">{{ "Pages" | localize }}</h2>
+  <p>
+    {{
+      "Pages group existing fields. Removing a page keeps its fields and data."
+        | localize
+    }}
+  </p>
+  @if (error()) {
+    <p role="alert">{{ error() | localize }}</p>
+  }
+  @if (pages(); as pages) {
+    <h3>{{ (editing() ? "Edit page" : "New page") | localize }}</h3>
+    <label for="form-page-title">{{ "Page title" | localize }}</label>
+    <input
+      aria-describedby="form-page-title-help"
+      aria-required="true"
+      dir="auto"
+      id="form-page-title"
+      maxlength="512"
+      pInputText
+      [attr.aria-invalid]="titleLength() > 256 ? 'true' : null"
+      [disabled]="disabled() || blocked()"
+      [ngModel]="title()"
+      (ngModelChange)="changeTitle($event)"
+    />
+    <small id="form-page-title-help"
+      >{{ "Page title length" | localize }}:
+      {{ locale.number(titleLength()) }} / {{ locale.number(256) }}</small
+    >
+    @if (titleLength() > 256) {
+      <p role="alert">{{ "Page title is too long." | localize }}</p>
+    }
+    @if (assignable().length > 8) {
+      <label for="page-field-search">{{ "Search fields" | localize }}</label>
+      <input
+        id="page-field-search"
+        maxlength="100"
+        pInputText
+        type="search"
+        [ngModel]="fieldSearch()"
+        (ngModelChange)="fieldSearch.set($event)"
+      />
+    }
+    <fieldset [disabled]="disabled() || blocked()">
+      <legend>{{ "Page fields" | localize }}</legend>
+      <p>{{ "Choose at least one field for this page." | localize }}</p>
+      <p>{{ "Assign a repeated group as a whole." | localize }}</p>
+      @for (field of filteredFields(); track field.scope) {
+        <div class="page-field">
+          <p-checkbox
+            [binary]="true"
+            [disabled]="disabled() || blocked()"
+            [inputId]="'page-field-' + field.identity"
+            [ngModel]="selected().includes(field.scope!)"
+            (ngModelChange)="toggle(field.scope!, $event)"
+          />
+          <label [for]="'page-field-' + field.identity"
+            ><bdi>{{ field.label }}</bdi></label
+          >
+        </div>
+      }
+      @for (scope of unavailable(); track scope) {
+        <div class="page-field">
+          <p-checkbox
+            [binary]="true"
+            [disabled]="disabled() || blocked()"
+            [inputId]="'page-unavailable-' + $index"
+            [ngModel]="true"
+            (ngModelChange)="toggle(scope, $event)"
+          />
+          <label [for]="'page-unavailable-' + $index"
+            >{{ fieldLabel(scope) | localize }} ·
+            {{ "Existing assignment" | localize }}</label
+          >
+        </div>
+      }
+    </fieldset>
+    <div class="page-actions">
+      <button pButton type="button" [disabled]="!canApply()" (click)="apply()">
+        {{ "Apply page" | localize }}
+      </button>
+      <button
+        pButton
+        severity="secondary"
+        type="button"
+        [disabled]="disabled() || (!pending() && !editing())"
+        [outlined]="true"
+        (click)="discard()"
+      >
+        {{ "Discard page edits" | localize }}
+      </button>
+    </div>
+    <ol class="page-list">
+      @for (page of pages; track page.key; let index = $index) {
+        <li>
+          <h3>
+            <bdi>{{ page.title }}</bdi>
+          </h3>
+          <p>
+            {{ "Fields" | localize }}: {{ locale.number(page.scopes.length) }}
+          </p>
+          <div class="page-actions">
+            <button
+              pButton
+              severity="secondary"
+              type="button"
+              [disabled]="disabled() || blocked() || pending()"
+              [outlined]="true"
+              (click)="edit(page)"
+            >
+              {{ "Edit page" | localize }}
+            </button>
+            <button
+              pButton
+              severity="secondary"
+              type="button"
+              [disabled]="disabled() || blocked() || pending() || index === 0"
+              [outlined]="true"
+              (click)="move(page.key, -1)"
+            >
+              {{ "Move up" | localize }}
+            </button>
+            <button
+              pButton
+              severity="secondary"
+              type="button"
+              [disabled]="
+                disabled() ||
+                blocked() ||
+                pending() ||
+                index + 1 >= pages.length
+              "
+              [outlined]="true"
+              (click)="move(page.key, 1)"
+            >
+              {{ "Move down" | localize }}
+            </button>
+            <button
+              pButton
+              severity="danger"
+              type="button"
+              [disabled]="disabled() || blocked() || pending()"
+              [outlined]="true"
+              (click)="remove(page.key)"
+            >
+              {{ "Remove page" | localize }}
+            </button>
+          </div>
+        </li>
+      } @empty {
+        <li>{{ "No pages configured" | localize }}</li>
+      }
+    </ol>
+  } @else {
+    <p role="status">
+      {{
+        "Existing page settings need advanced inspection. They are preserved."
+          | localize
+      }}
+    </p>
+  }
+</section>

@@ -1,0 +1,33 @@
+:host {
+  display: block;
+  min-inline-size: 0;
+}
+.agent-note {
+  color: var(--console-muted);
+  font-size: 0.875rem;
+}
+.agent-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 18rem;
+  align-items: start;
+  gap: 1.5rem;
+}
+.agent-main {
+  min-inline-size: 0;
+}
+aside {
+  position: sticky;
+  inset-block-start: 1rem;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  background: transparent;
+}
+@media (max-width: 70rem) {
+  .agent-workspace {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  aside {
+    position: static;
+  }
+}

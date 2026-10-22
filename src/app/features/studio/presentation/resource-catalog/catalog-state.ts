@@ -1,4 +1,5 @@
 import { WorkspaceDefaults } from '../../../../core/resources/workspace-defaults';
+import { catalogSettingsErrors } from '../../domain/catalog-settings';
 import { computed, DestroyRef, inject, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { ActorState } from '../../../../core/auth/actor-state';
@@ -64,9 +65,6 @@ export class CatalogState {
   readonly auditQuery = signal<ListQuery>(emptyQuery());
   readonly auditPage = signal(1);
   readonly auditPages = signal(0);
-  readonly grants = signal('');
-  readonly grantPage = signal(1);
-  readonly grantPages = signal(0);
   readonly fields = computed(() =>
     (this.selected() ? this.spec.fields : this.spec.createFields).filter(
       (field) =>
@@ -80,11 +78,15 @@ export class CatalogState {
   readonly immutable = computed(() =>
     ['PUBLISHED', 'RETIRED'].includes(String(this.selected()?.['status'])),
   );
+  readonly settingsErrors = computed(() =>
+    catalogSettingsErrors(this.key, this.values()),
+  );
   readonly canSave = computed(
     () =>
       !this.busy() &&
       !this.reconcileRequired() &&
       !this.invalid().length &&
+      !Object.keys(this.settingsErrors()).length &&
       !this.immutable() &&
       (!this.selected() || this.spec.actions.includes('update')),
   );
@@ -102,8 +104,6 @@ export class CatalogState {
       } as Record<string, string>
     )[this.key] ?? null;
   readonly json = JSON.stringify;
-  grantBody = '{}';
-  grantTarget = '';
   protected generation = 0;
   constructor() {
     this.listQuery.update((query) => ({
@@ -144,9 +144,6 @@ export class CatalogState {
     this.audit.set([]);
     this.auditQuery.set(emptyQuery());
     this.secret.set('');
-    this.grants.set('');
-    this.grantBody = '{}';
-    this.grantTarget = '';
     this.dirty.set(false);
     this.invalid.set([]);
   }
@@ -162,9 +159,6 @@ export class CatalogState {
     this.audit.set([]);
     this.auditQuery.set(emptyQuery());
     this.secret.set('');
-    this.grants.set('');
-    this.grantBody = '{}';
-    this.grantTarget = '';
     this.error.set('');
     this.dirty.set(false);
     this.invalid.set([]);
@@ -330,16 +324,13 @@ export class CatalogState {
       }
     }
   }
-  async open(reference: string): Promise<void> {
-    if (!(await this.canLeave())) {
+  async open(reference: string, guard = true): Promise<void> {
+    if (guard && !(await this.canLeave())) {
       return;
     }
     const generation = ++this.generation;
     this.busy.set(true);
     this.secret.set('');
-    this.grants.set('');
-    this.grantBody = '{}';
-    this.grantTarget = '';
     this.error.set('');
     try {
       const row = await this.api.get(this.key, reference);

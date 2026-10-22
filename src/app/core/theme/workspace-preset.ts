@@ -5,6 +5,10 @@ import Aura from '@primeuix/themes/aura';
 export const workspacePreset = definePreset(Aura, {
   components: {
     button: {
+      root: {
+        paddingY:
+          'calc((var(--workspace-control-height, 2.5rem) - 1.3125rem - 2px) / 2)',
+      },
       colorScheme: {
         light: {
           outlined: {
@@ -64,6 +68,10 @@ export const workspacePreset = definePreset(Aura, {
     },
   },
   semantic: {
+    formField: {
+      paddingY:
+        'calc((var(--workspace-control-height, 2.5rem) - 1.5rem - 2px) / 2)',
+    },
     primary: Object.fromEntries(
       [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950].map((shade) => [
         shade,

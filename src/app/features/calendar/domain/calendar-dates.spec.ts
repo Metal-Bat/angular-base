@@ -10,6 +10,7 @@ import {
 } from './calendar-dates';
 import {
   CalendarEvent,
+  calendarEventsByDay,
   eventsInWindow,
   eventsOnDay,
   eventValid,
@@ -112,4 +113,44 @@ describe('Read-only calendar projections', () => {
       eventsOnDay([{ ...allDay, end: allDay.start }], '2026-10-08', 'UTC'),
     ).toThrow();
   });
+});
+
+it('indexes each visible day with the same civil/exclusive/DST meaning as single-day projection', () => {
+  const events: CalendarEvent[] = [
+    {
+      key: 'civil',
+      title: 'Civil',
+      source: 'personal',
+      kind: 'all_day',
+      start: '2026-11-01',
+      end: '2026-11-03',
+    },
+    {
+      key: 'fold',
+      title: 'Fold',
+      source: 'personal',
+      kind: 'timed',
+      start: '2026-11-01T05:30:00Z',
+      end: '2026-11-01T06:30:00Z',
+      timezone: 'America/New_York',
+    },
+    {
+      key: 'deadline',
+      title: 'Deadline',
+      source: 'workflow',
+      kind: 'deadline',
+      start: '2026-11-03T00:00:00Z',
+      timezone: 'UTC',
+    },
+  ];
+  const window = { start: '2026-10-31', end: '2026-11-04' };
+  for (const zone of ['America/New_York', 'Asia/Tehran']) {
+    const indexed = calendarEventsByDay(events, window, zone);
+    for (const day of calendarDays(window)) {
+      expect(indexed.get(day)).toEqual(eventsOnDay(events, day, zone));
+    }
+  }
+  expect(() =>
+    calendarEventsByDay([{ ...events[0], title: '' }], window, 'UTC'),
+  ).toThrow();
 });

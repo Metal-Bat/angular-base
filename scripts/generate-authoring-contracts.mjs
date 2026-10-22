@@ -73,6 +73,7 @@ function listMetadata(key) {
                 ? "number"
                 : "text",
         nullable: raw.anyOf?.some((v) => v.type === "null") ?? false,
+        ...(shape.enum?.length ? { options: shape.enum.map(String) } : {}),
       },
     ];
   });

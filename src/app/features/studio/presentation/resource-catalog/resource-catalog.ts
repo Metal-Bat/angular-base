@@ -1,3 +1,7 @@
+import { Router } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { distinctUntilChanged, map, skip } from 'rxjs';
+import { SavedViews } from '../../../../shared/ui/saved-views/saved-views';
 import { RepairReturn } from '../../../../shared/ui/repair-return/repair-return';
 import { CatalogExtras } from '../catalog-extras/catalog-extras';
 import {
@@ -24,7 +28,6 @@ import { RecordTable } from '../../../../shared/ui/record-table/record-table';
 import { ApiFailure } from '../../../../core/transport/api-failure';
 import { LocalizePipe } from '../../../../shared/ui/localize-pipe';
 import { JsonObject, JsonValue } from '../../../forms/domain/runtime-document';
-import { parseDocument } from '../../domain/authoring';
 import { resourceLabel } from './resource-values';
 import { CatalogParents } from './catalog-parents';
 @Component({
@@ -33,6 +36,7 @@ import { CatalogParents } from './catalog-parents';
   imports: [
     RepairReturn,
     CatalogExtras,
+    SavedViews,
     CatalogEditor,
     CatalogActions,
     CatalogContent,
@@ -49,10 +53,32 @@ import { CatalogParents } from './catalog-parents';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ResourceCatalog extends CatalogParents {
-  private readonly extras = viewChild(CatalogExtras);
+  private readonly views = viewChild(SavedViews);
+  private readonly access = viewChild(CatalogActions);
+  private readonly router = inject(Router);
+  override edit(): void {
+    if (this.key === 'form-versions') {
+      if (
+        this.selected() &&
+        !this.immutable() &&
+        !this.busy() &&
+        !this.reconcileRequired()
+      ) {
+        void this.router.navigate([
+          '/studio/form-versions',
+          this.reference(),
+          'edit',
+        ]);
+      }
+      return;
+    }
+    super.edit();
+  }
   override async canLeave(): Promise<boolean> {
     return (
-      (await super.canLeave()) && ((await this.extras()?.canLeave()) ?? true)
+      (await super.canLeave()) &&
+      ((await this.views()?.canLeave()) ?? true) &&
+      ((await this.access()?.canLeave()) ?? true)
     );
   }
   readonly inspectDependencies = async (
@@ -65,6 +91,30 @@ export class ResourceCatalog extends CatalogParents {
         client_release_ref_id: client || null,
       }),
     );
+  async refreshAccessOwner(): Promise<void> {
+    if (this.busy() || this.dirty() || !this.reference()) {
+      return;
+    }
+    const reference = this.reference();
+    const generation = ++this.generation;
+    this.busy.set(true);
+    this.error.set('');
+    try {
+      const current = await this.api.get(this.key, reference);
+      if (generation === this.generation) {
+        this.accept(current);
+      }
+    } catch {
+      if (generation === this.generation) {
+        this.reconcileRequired.set(true);
+        this.error.set('This definition is unavailable.');
+      }
+    } finally {
+      if (generation === this.generation) {
+        this.busy.set(false);
+      }
+    }
+  }
   constructor() {
     super();
     const selected = this.route.snapshot.queryParamMap.get('selected');
@@ -77,6 +127,29 @@ export class ResourceCatalog extends CatalogParents {
     ) {
       void this.create();
     }
+    this.route.queryParamMap
+      .pipe(
+        map((params) => params.get('selected')),
+        distinctUntilChanged(),
+        skip(1),
+        takeUntilDestroyed(),
+      )
+      .subscribe((reference) => {
+        if (
+          reference === this.reference() ||
+          (!reference && !this.selected())
+        ) {
+          return;
+        }
+        // Query navigation has already passed this route's unsaved-input guard.
+        this.formOpen.set(false);
+        this.reset();
+        if (reference) {
+          void this.open(reference, false);
+        } else {
+          this.back();
+        }
+      });
   }
   applySaved(event: { query: JsonObject; columns: string[] }): void {
     if (this.busy() || this.dirty()) {
@@ -270,59 +343,6 @@ export class ResourceCatalog extends CatalogParents {
         this.busy.set(false);
       }
     }
-  }
-  async loadGrants(page = 1): Promise<void> {
-    const generation = this.generation;
-    try {
-      const result = await this.api.action(
-        this.key,
-        this.reference(),
-        'grants',
-        { page, size: 20, filters: [], sort_orders: [] },
-      );
-      if (generation !== this.generation) {
-        return;
-      }
-      this.grants.set(JSON.stringify(result['items'], null, 2));
-      this.grantPage.set(Number(result['page']));
-      this.grantPages.set(Number(result['total_pages']));
-    } catch {
-      if (generation === this.generation) {
-        this.error.set('Grant list unavailable');
-      }
-    }
-  }
-  async grant(remove = false): Promise<void> {
-    if (this.dirty() || this.busy() || this.reconcileRequired()) {
-      return;
-    }
-    const reference = this.reference();
-    const target = this.grantTarget;
-    const epoch = this.actor.epoch;
-    let body: JsonObject | undefined;
-    try {
-      body = remove ? undefined : parseDocument(this.grantBody);
-    } catch {
-      this.error.set('Invalid grant document');
-      return;
-    }
-    if (
-      !(await this.feedback.confirm(
-        remove ? 'Revoke this exact grant?' : 'Add this access grant?',
-      )) ||
-      epoch !== this.actor.epoch
-    ) {
-      return;
-    }
-    await this.command(() =>
-      this.api.action(
-        this.key,
-        reference,
-        remove ? 'revoke' : 'grant',
-        body,
-        remove ? target : undefined,
-      ),
-    );
   }
   label(row: JsonObject): string {
     return resourceLabel(row);

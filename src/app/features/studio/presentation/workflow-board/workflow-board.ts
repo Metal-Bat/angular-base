@@ -1,3 +1,17 @@
+import { WorkflowStepActionDialog } from '../workflow-step-action-dialog/workflow-step-action-dialog';
+import {
+  appendRegisteredStep,
+  nextStepKey,
+} from '../../domain/workflow-step-actions';
+import { WorkflowInterfaceEditor } from '../workflow-interface-editor/workflow-interface-editor';
+import { WorkflowHistory } from '../workflow-history/workflow-history';
+import { StudioChoice } from '../studio-choice/studio-choice';
+import { WorkflowSelection } from '../workflow-selection/workflow-selection';
+import { fieldLabel } from '../../../../shared/domain/field-label';
+import { MenuButton } from '../../../../shared/ui/menu-button/menu-button';
+import { LayoutDirection, NodeSizes } from '../../domain/arrange-canvas';
+import { EditorViewport } from '../../../../shared/ui/editor-viewport';
+import { TabsModule } from 'primeng/tabs';
 import { CanvasConnections } from '../canvas-connections/canvas-connections';
 import { PublicationReview } from '../publication-review/publication-review';
 import { WorkflowEditorPane } from '../workflow-editor-pane/workflow-editor-pane';
@@ -6,16 +20,11 @@ import { SelectControl } from '../../../../shared/ui/select-control/select-contr
 import { ButtonDirective } from 'primeng/button';
 import { readWorkspace } from '../../domain/workspace-document';
 import { NgComponentOutlet } from '@angular/common';
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  signal,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { LocalizePipe } from '../../../../shared/ui/localize-pipe';
-import { JsonObject, JsonValue } from '../../../forms/domain/runtime-document';
+import { JsonObject } from '../../../forms/domain/runtime-document';
 import { parseDocument, Point, Workspace } from '../../domain/authoring';
 import {
   canvasEdges,
@@ -24,11 +33,22 @@ import {
 } from '../../domain/workflow-authoring';
 
 import { nodeModels } from '../../domain/node-models';
+import { readablePalette } from '../../domain/workflow-labels';
+import { WorkflowPalette } from '../workflow-palette/workflow-palette';
 import { WorkflowInteractions } from './workflow-interactions';
 @Component({
   host: { class: 'console-page' },
+  hostDirectives: [EditorViewport],
   selector: 'app-workflow-board',
   imports: [
+    WorkflowInterfaceEditor,
+    WorkflowPalette,
+    WorkflowSelection,
+    WorkflowHistory,
+    WorkflowStepActionDialog,
+    StudioChoice,
+    MenuButton,
+    TabsModule,
     CanvasConnections,
     PublicationReview,
     WorkflowDiagnostics,
@@ -45,38 +65,41 @@ import { WorkflowInteractions } from './workflow-interactions';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class WorkflowBoard extends WorkflowInteractions {
-  protected override clear(): void {
-    super.clear();
-    this.paletteSearch.set('');
-    this.paletteSelection.set('');
+  readonly isOtherInterfacePanel = (key: string): boolean =>
+    key !== 'interface';
+  applyInterface(graph: JsonObject): void {
+    if (this.readonly() || this.pending().some((key) => key !== 'interface')) {
+      return;
+    }
+    const pending = this.pending();
+    this.pending.set([]);
+    try {
+      this.change({
+        ...this.document(),
+        graph: { ...this.document().graph, interface: graph['interface'] },
+      });
+    } catch {
+      this.pending.set(pending);
+      this.error.set('Invalid workflow interface');
+    }
   }
-  readonly paletteSearch = signal('');
-  readonly paletteSelection = signal('');
+  readonly fieldLabel = fieldLabel;
   choosePalette(key: string): void {
     if (!this.readonly() && !this.pending().length) {
       this.paletteSelection.set(this.paletteSelection() === key ? '' : key);
+      if (this.paletteSelection()) {
+        this.dockOpen.set(false);
+        this.focusControl('.canvas-stage');
+      }
     }
   }
   readonly paletteItems = computed(() =>
-    this.catalogEntries().filter((row) =>
-      (String(row['title']) + ' ' + String(row['key']))
-        .toLowerCase()
-        .includes(this.paletteSearch().toLowerCase()),
-    ),
+    readablePalette(this.catalogEntries(), this.paletteSearch()),
   );
+  readonly catalogChoices = computed(() => readablePalette(this.catalog(), ''));
   readonly invalidNodes = computed(() =>
     this.issues().flatMap((issue) => (issue.node ? [issue.node] : [])),
   );
-  dragType(event: DragEvent, key: string): void {
-    if (this.readonly() || this.pending().length) {
-      event.preventDefault();
-      return;
-    }
-    event.dataTransfer?.setData('application/x-studio-step', key);
-    if (event.dataTransfer) {
-      event.dataTransfer.effectAllowed = 'copy';
-    }
-  }
   addType(key: string, point?: Point): void {
     if (this.readonly() || this.pending().length) {
       return;
@@ -85,41 +108,65 @@ export class WorkflowBoard extends WorkflowInteractions {
     if (!entry) {
       return;
     }
-    const base = String(
-      (entry['metadata'] as JsonObject | undefined)?.['code'] ?? 'step',
-    )
-      .replace(/[^A-Za-z0-9_.-]/g, '_')
-      .slice(0, 48);
-    let index = 1;
-    let stepKey = 'step_' + base + '_' + index;
-    while (this.nodes().some((node) => node.key === stepKey)) {
-      stepKey = 'step_' + base + '_' + ++index;
-    }
+    const metadata = entry['metadata'] as JsonObject | undefined;
+    const stepKey = nextStepKey(
+      this.document().graph,
+      String(metadata?.['code'] ?? 'step'),
+    );
     this.typeKey = key;
     this.stepKey = stepKey;
     const before = this.nodes().length;
     this.add(point);
     if (this.nodes().length > before) {
       this.paletteSelection.set('');
+      this.paletteDrag.set(null);
+      this.dockOpen.set(false);
+      if (!point) {
+        this.focusRequest.update((request) => ({
+          key: stepKey,
+          sequence: (request?.sequence ?? 0) + 1,
+        }));
+      }
     }
   }
   override readonly nodes = computed(() =>
-    nodeModels(this.document(), this.catalogEntries()),
+    nodeModels(this.document(), this.catalogEntries(), this.childCatalog()),
   );
   readonly inputs = computed(() => ({
+    fitRequest: this.fitRequest(),
+    focusRequest: this.focusRequest(),
+    arrange: (direction: LayoutDirection, sizes: NodeSizes): void =>
+      void this.arrange(direction, sizes),
     nodes: this.nodes(),
     invalidNodes: this.invalidNodes(),
+    addNext: (key: string): void => this.beginNext(key),
+    insertStep: (id: string): void => this.beginInsert(id),
     paletteKey: this.paletteSelection(),
+    paletteDrag: this.paletteDrag(),
+    cancelPlacement: (): void => this.cancelPlacement(),
     addStep: (key: string, point: Point): void => this.addType(key, point),
     edges: canvasEdges(this.document().graph, this.nodes()),
     viewport: this.document().viewport,
-    disabled: this.readonly() || this.pending().length > 0,
+    disabled:
+      this.readonly() || this.pending().length > 0 || !!this.stepAction(),
     readOnly: this.status() !== 'DRAFT',
     selected: this.selected(),
     selectionKeys: this.selectionKeys(),
+    toggleNode: (key: string): void =>
+      this.toggleSelection(key, !this.selectionKeys().includes(key)),
     selectNodes: (keys: string[]): void => this.selectMany(keys),
+    groupAction: (action: string): void => {
+      if (action === 'duplicate') {
+        this.duplicate();
+      } else if (action === 'remove') {
+        void this.removeSelection();
+      } else {
+        this.align(action === 'left' ? 'x' : 'y');
+      }
+    },
     keyboardMove: (key: string, point: Point): void =>
       this.keyboardMove(key, point),
+    inspectedEdge: this.inspectedConnection(),
     inspectEdge: (id: string): void => this.inspectConnection(id),
     deleteEdge: (id: string): void => {
       if (this.readonly() || this.pending().length) {
@@ -136,8 +183,15 @@ export class WorkflowBoard extends WorkflowInteractions {
     collapsed: this.document().collapsed,
     routeEdge: (key: string, points: Point[]): void =>
       this.routeEdge(key, points),
-    selectNode: (key: string): void => this.select(key),
+    selectNode: (key: string, preserveGroup = false): void => {
+      if (!preserveGroup || !this.selectionKeys().includes(key)) {
+        this.select(key);
+      }
+    },
     moveNode: (key: string, point: Point): void => this.move(key, point),
+    removeNode: (key: string): void => {
+      void this.removeSelection([key]);
+    },
     duplicateNode: (key: string): void => {
       if (this.readonly() || this.pending().length) {
         return;
@@ -151,6 +205,8 @@ export class WorkflowBoard extends WorkflowInteractions {
       this.viewport(viewport),
   }));
   override select(key: string): void {
+    this.inspectedConnection.set('');
+    this.revealStep();
     if (key === this.selected()) {
       this.selectionKeys.set(key ? [key] : []);
       return;
@@ -172,7 +228,7 @@ export class WorkflowBoard extends WorkflowInteractions {
   }
   protected override change(next: Workspace): void {
     if (this.pending().length) {
-      this.error.set('Apply or reload pending JSON edits first');
+      this.error.set('Apply or discard pending inspector edits before saving.');
       return;
     }
     if (this.readonly()) {
@@ -212,23 +268,9 @@ export class WorkflowBoard extends WorkflowInteractions {
       if (!metadata || entry?.['category'] !== 'step_type') {
         throw Error('Select a registered step type');
       }
-      const next = structuredClone(this.document());
-      const graph = next.graph as Record<string, JsonValue>;
-      graph['steps'] = [
-        ...graphSteps(graph),
-        {
-          key: this.stepKey,
-          type_code: String(metadata['code']),
-          type_version_ref: String(metadata['ref_id']),
-          config: {},
-        },
-      ];
-      const index = this.nodes().length;
-      next.positions[this.stepKey] = point ?? {
-        x: 40 + (index % 4) * 280,
-        y: 40 + Math.floor(index / 4) * 240,
-      };
-      this.change(next);
+      this.change(
+        appendRegisteredStep(this.document(), entry!, this.stepKey, point),
+      );
       this.select(this.stepKey);
     } catch (error) {
       this.error.set(error instanceof Error ? error.message : 'Invalid step');
@@ -267,51 +309,33 @@ export class WorkflowBoard extends WorkflowInteractions {
     }
   }
   remove(): void {
-    if (!this.selected()) {
-      return;
-    }
-    const key = this.selected();
-    const next = structuredClone(this.document());
-    next.graph = {
-      ...next.graph,
-      steps: graphSteps(next.graph).filter((step) => step['key'] !== key),
-      transitions: ((next.graph['transitions'] as JsonObject[]) ?? []).filter(
-        (edge) => edge['source'] !== key && edge['target'] !== key,
-      ),
-      bindings: ((next.graph['bindings'] as JsonObject[]) ?? []).filter(
-        (edge) => edge['step'] !== key && edge['source_step'] !== key,
-      ),
-      targets: ((next.graph['targets'] as JsonObject[]) ?? []).filter(
-        (target) => target['step'] !== key,
-      ),
-    };
-    delete next.positions[key];
-    this.change(next);
-    this.selected.set('');
+    void this.removeSelection([this.selected()]);
   }
   routeEdge(key: string, points: Point[]): void {
     if (
-      JSON.stringify(this.document().routing[key] ?? []) !==
+      this.readonly() ||
+      this.pending().length ||
+      !this.connections().some((edge) => edge.id === key)
+    ) {
+      return;
+    }
+    if (
+      JSON.stringify(this.document().routing[key] ?? []) ===
       JSON.stringify(points)
     ) {
+      return;
+    }
+    try {
       this.change({
         ...this.document(),
         routing: { ...this.document().routing, [key]: points },
       });
+    } catch {
+      this.error.set('Invalid layout settings');
     }
   }
   move(key: string, point: Point): void {
-    if (!Number.isFinite(point.x) || !Number.isFinite(point.y)) {
-      return;
-    }
-    const old = this.document().positions[key];
-    if (old?.x === point.x && old.y === point.y) {
-      return;
-    }
-    this.change({
-      ...this.document(),
-      positions: { ...this.document().positions, [key]: point },
-    });
+    this.keyboardMove(key, point);
   }
   connect(
     source = this.source,
@@ -344,7 +368,10 @@ export class WorkflowBoard extends WorkflowInteractions {
     if (value) {
       this.document.set({ ...value, viewport: this.document().viewport });
       this.selectionKeys.set([]);
+      this.inspectedConnection.set('');
+      this.connectionId = '';
       this.syncSelection(value);
+      this.selectionKeys.set(this.selected() ? [this.selected()] : []);
       this.graphJson = JSON.stringify(value.graph, null, 2);
       this.dirty.set(true);
     }
@@ -365,34 +392,6 @@ export class WorkflowBoard extends WorkflowInteractions {
       this.error.set(
         'Invalid graph document. Keep incomplete typed configurations in the workspace; step keys must be valid.',
       );
-    }
-  }
-  applyLayout(): void {
-    if (this.pending().some((key) => key !== 'layout')) {
-      this.error.set('Apply other edited panels first');
-      return;
-    }
-    const pending = this.pending();
-    this.pending.set([]);
-    try {
-      const value = parseDocument(
-        '{"collapsed":' +
-          this.collapsedJson +
-          ',"routing":' +
-          this.routingJson +
-          '}',
-      );
-      this.change(
-        readWorkspace({
-          ...this.document(),
-          collapsed: value['collapsed'] as string[],
-          routing: value['routing'] as unknown as Record<string, Point[]>,
-        }),
-      );
-      this.pending.set(pending.filter((key) => key !== 'layout'));
-    } catch {
-      this.pending.set(pending);
-      this.error.set('Invalid layout settings');
     }
   }
 }

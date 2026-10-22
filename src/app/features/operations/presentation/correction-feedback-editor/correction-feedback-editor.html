@@ -1,0 +1,71 @@
+<fieldset>
+  <legend>{{ "Corrections to request" | localize }}</legend>
+  <p>
+    {{ "Choose a field and describe each required correction." | localize }}
+  </p>
+  @for (entry of entries(); track $index; let index = $index) {
+    <div class="correction-entry">
+      <label [for]="'correction-field-' + index">{{
+        "Field to correct" | localize
+      }}</label>
+      <app-select-control
+        [ariaLabel]="'Field to correct' | localize"
+        [disabled]="disabled()"
+        [inputId]="'correction-field-' + index"
+        [ngModel]="entry.scope ? key(entry) : ''"
+        (ngModelChange)="select(index, $event)"
+      >
+        <option value="">{{ "Choose a value" | localize }}</option>
+        @for (target of targets(); track target.key) {
+          <option [value]="target.key">
+            {{ target.label | localize }}
+            @if (target.row) {
+              · {{ "Row" | localize }} {{ target.row }}
+            }
+          </option>
+        }
+      </app-select-control>
+      @if (entry.scope && !available(entry)) {
+        <p role="alert">
+          {{
+            "The correction field or row is unavailable. Choose another field or remove this correction."
+              | localize
+          }}
+        </p>
+      }
+      <label [for]="'correction-message-' + index">{{
+        "Correction instructions" | localize
+      }}</label>
+      <textarea
+        maxlength="4000"
+        pTextarea
+        required
+        rows="3"
+        [disabled]="disabled()"
+        [id]="'correction-message-' + index"
+        [ngModel]="entry.message"
+        (ngModelChange)="message(index, $event)"
+      ></textarea>
+      <button
+        pButton
+        severity="secondary"
+        type="button"
+        [disabled]="disabled()"
+        [outlined]="true"
+        (click)="remove(index)"
+      >
+        {{ "Remove correction" | localize }}
+      </button>
+    </div>
+  }
+  <button
+    pButton
+    severity="secondary"
+    type="button"
+    [disabled]="disabled() || entries().length >= 64 || !targets().length"
+    [outlined]="true"
+    (click)="add()"
+  >
+    {{ "Add correction" | localize }}
+  </button>
+</fieldset>

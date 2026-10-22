@@ -3,6 +3,7 @@ import {
   JsonObject,
   JsonValue,
   RuntimeAction,
+  RuntimeCompatibility,
   RuntimeDocument,
 } from '../../forms/domain/runtime-document';
 import { effectiveRequired } from '../../forms/domain/resolved-behavior';
@@ -25,6 +26,7 @@ export class CaseEditor extends CaseState {
       this.rawErrors.clear();
       this.editedScopes.clear();
       this.rowEdits.clear();
+      this.clearDecisionDraft();
     }
     this.kind = kind;
     this.reference = reference;
@@ -36,7 +38,7 @@ export class CaseEditor extends CaseState {
     );
   }
   async refresh(
-    retain = this.dirty(),
+    retain = this.dirty() || this.decisionDirty(),
     view = this.document()?.identity.view ?? '',
   ): Promise<void> {
     if (this.busy()) {
@@ -69,7 +71,7 @@ export class CaseEditor extends CaseState {
       }
       this.runtime.set(runtime);
       if (runtime.status === 'ready') {
-        this.accept(runtime.document, retain);
+        this.acceptRead(runtime.document, retain);
         this.queue ??= this.queues.forResource(
           this.kind + ':' + this.reference,
           runtime.document.identity.resource,
@@ -121,6 +123,7 @@ export class CaseEditor extends CaseState {
     );
     if (this.current(generation, epoch) && !approved) {
       this.accept(document, false);
+      this.clearDecisionDraft();
     }
   }
   private async mutate<P>(
@@ -131,6 +134,7 @@ export class CaseEditor extends CaseState {
       payload: P,
       key: string | null,
     ) => Promise<CaseRecord>,
+    leaveAfterAccepted = false,
   ): Promise<boolean> {
     if (this.busy() || this.blocked() || !this.queue) {
       return false;
@@ -155,6 +159,15 @@ export class CaseEditor extends CaseState {
       if (!this.current(generation, epoch)) {
         return false;
       }
+      if (leaveAfterAccepted) {
+        // Forwarding transfers authority. Do not read the recipient's form.
+        this.runtime.set(null);
+        this.item.set(null);
+        this.data.set({});
+        this.dirty.set(false);
+        this.clearDecisionDraft();
+        return true;
+      }
       this.item.set(item);
       if (item.kind === 'AI_APPROVAL') {
         const latest = await this.api.get('task', item.ref);
@@ -165,16 +178,7 @@ export class CaseEditor extends CaseState {
         this.queue?.reconcile(latest.ref);
         return true;
       }
-      const runtime =
-        this.kind === 'task' && item.kind === 'HUMAN_TASK'
-          ? await this.reader.task(
-              item.ref,
-              this.document()?.identity.view ?? '',
-              this.pin,
-            )
-          : this.kind === 'request'
-            ? await this.reader.request(item.ref, this.pin)
-            : null;
+      const runtime = await this.readMutationRuntime(item);
       if (!this.current(generation, epoch)) {
         return false;
       }
@@ -197,6 +201,20 @@ export class CaseEditor extends CaseState {
       }
     }
   }
+  private readMutationRuntime(
+    item: CaseRecord,
+  ): Promise<RuntimeCompatibility | null> {
+    if (this.kind === 'task' && item.kind === 'HUMAN_TASK') {
+      return this.reader.task(
+        item.ref,
+        this.document()?.identity.view ?? '',
+        this.pin,
+      );
+    }
+    return this.kind === 'request'
+      ? this.reader.request(item.ref, this.pin)
+      : Promise.resolve(null);
+  }
   async command<P>(
     payload: P,
     send: (
@@ -206,17 +224,23 @@ export class CaseEditor extends CaseState {
     ) => Promise<string>,
     replayable = false,
     presentationResume = false,
+    leaveAfterAccepted = false,
   ): Promise<boolean> {
-    return this.mutate(payload, replayable, async (reference, body, key) => ({
-      ...this.item()!,
-      ref: await (async (): Promise<string> => {
-        const current = await send(reference, body, key);
-        if (presentationResume) {
-          this.pin = undefined;
-        }
-        return current;
-      })(),
-    }));
+    return this.mutate(
+      payload,
+      replayable,
+      async (reference, body, key) => ({
+        ...this.item()!,
+        ref: await (async (): Promise<string> => {
+          const current = await send(reference, body, key);
+          if (presentationResume) {
+            this.pin = undefined;
+          }
+          return current;
+        })(),
+      }),
+      leaveAfterAccepted,
+    );
   }
   async save(): Promise<boolean> {
     if (!this.canEdit() || !this.validate()) {
@@ -287,29 +311,7 @@ export class CaseEditor extends CaseState {
   }
   async decide(action: RuntimeAction): Promise<void> {
     const document = this.document();
-    if (
-      !this.canEdit() ||
-      !this.ownTask() ||
-      !document?.actions.some(
-        (entry) =>
-          entry.key === action.key &&
-          entry.kind === action.kind &&
-          entry.outcome === action.outcome,
-      )
-    ) {
-      return;
-    }
-    if (action.requireComment && !this.comment().trim()) {
-      this.error.set('A comment is required');
-      return;
-    }
-    if (
-      !this.validate(
-        action.validation === 'complete'
-          ? effectiveRequired(document)
-          : action.requiredScopes,
-      )
-    ) {
+    if (!this.canDecide(action)) {
       return;
     }
     if (
@@ -317,18 +319,19 @@ export class CaseEditor extends CaseState {
     ) {
       return;
     }
-    if (!this.canEdit() || !this.ownTask()) {
+    if (document !== this.document() || !this.canDecide(action)) {
       return;
     }
     const payload = {
       action: action.kind,
       data: this.patch(),
-      view: document.identity.view,
+      view: document!.identity.view,
       deleted: [...this.deleted],
       outcome: action.outcome,
       comment: this.comment(),
+      feedback: action.kind === 'return' ? this.corrections() : [],
     };
-    await this.mutate(payload, true, (reference, body, key) =>
+    const accepted = await this.mutate(payload, true, (reference, body, key) =>
       this.api.decide(
         reference,
         body.action,
@@ -338,8 +341,12 @@ export class CaseEditor extends CaseState {
         body.deleted,
         body.outcome,
         body.comment,
+        body.feedback,
       ),
     );
+    if (accepted) {
+      this.clearDecisionDraft();
+    }
   }
   async override(
     scope: string,

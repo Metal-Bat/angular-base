@@ -1,0 +1,265 @@
+<section [attr.aria-label]="'Decision' | localize">
+  <h3>{{ "Decision" | localize }}</h3>
+  <app-control-field
+    controlId="agent-question"
+    data-field-path="spec.decision.question"
+    label="Question"
+    [error]="errors()['spec.decision.question'] || ''"
+    [required]="true"
+  >
+    <textarea
+      dir="auto"
+      id="agent-question"
+      maxlength="1024"
+      pTextarea
+      required
+      rows="4"
+      [attr.aria-describedby]="
+        errors()['spec.decision.question'] ? 'agent-question-error' : null
+      "
+      [attr.aria-invalid]="errors()['spec.decision.question'] ? 'true' : null"
+      [disabled]="disabled()"
+      [ngModel]="value()['question'] ?? ''"
+      (ngModelChange)="set('question', $event)"
+    ></textarea>
+  </app-control-field>
+  <div class="decision-settings">
+    <app-control-field controlId="agent-decision-mode" label="Choice source"
+      ><app-select-control
+        inputId="agent-decision-mode"
+        [disabled]="disabled()"
+        [ngModel]="mode()"
+        (ngModelChange)="changeMode($event)"
+        ><option value="static">{{ "Fixed choices" | localize }}</option>
+        <option value="input">
+          {{ "Choices supplied by the workflow" | localize }}
+        </option></app-select-control
+      ></app-control-field
+    >
+    <app-control-field
+      controlId="agent-review-below"
+      data-field-path="spec.decision.review_below"
+      hint="Confidence is between 0 and 1. This setting never grants business approval."
+      label="Human review below confidence"
+      [error]="
+        errors()['spec.decision.review_below'] ||
+        (!reviewValid() ? 'Confidence must be between 0 and 1.' : '')
+      "
+      ><input
+        id="agent-review-below"
+        inputmode="decimal"
+        pInputText
+        [attr.aria-invalid]="!reviewValid() ? 'true' : null"
+        [disabled]="disabled()"
+        [ngModel]="reviewText()"
+        (ngModelChange)="number($event)"
+    /></app-control-field>
+  </div>
+  @if (mode() === "input") {
+    <app-control-field
+      controlId="agent-options-input"
+      data-field-path="spec.decision.options_input_key"
+      hint="Map this named input in the workflow AI step. A standalone agent has no workflow input catalog."
+      label="Workflow choices input"
+      [error]="errors()['spec.decision.options_input_key'] || ''"
+      [required]="true"
+      ><app-select-control
+        inputId="agent-options-input"
+        [disabled]="disabled()"
+        [ngModel]="value()['options_input_key'] ?? ''"
+        (ngModelChange)="set('options_input_key', $event)"
+      >
+        <option value="">{{ "Choose a permitted input" | localize }}</option>
+        @for (key of inputKeys(); track key) {
+          <option [value]="key">{{ key }}</option>
+        }
+        @if (
+          value()["options_input_key"] &&
+          !inputKeys().includes($any(value()["options_input_key"]))
+        ) {
+          <option disabled [value]="value()['options_input_key']">
+            {{ "Saved input is no longer permitted" | localize }}
+          </option>
+        }
+      </app-select-control></app-control-field
+    >
+    <p>
+      {{
+        "The workflow must supply an array of choices with a stable key, translated labels and a description."
+          | localize
+      }}
+    </p>
+    @if (!valid()) {
+      <p role="status">
+        {{
+          "Choose an input from the permitted data before saving." | localize
+        }}
+      </p>
+    }
+  } @else {
+    <p-tabs [value]="locale()" (valueChange)="locale.set($any($event))">
+      <p-tablist [attr.aria-label]="'Label language' | localize">
+        @for (language of languages; track language.key) {
+          <p-tab [value]="language.key">{{ language.label }}</p-tab>
+        }
+      </p-tablist>
+      <p-tabpanels>
+        @for (language of languages; track language.key) {
+          <p-tabpanel [value]="language.key">
+            @if (locale() === language.key) {
+              <ng-container *ngTemplateOutlet="choiceEditor" />
+            }
+          </p-tabpanel>
+        }
+      </p-tabpanels>
+    </p-tabs>
+    <ng-template #choiceEditor>
+      <p>
+        {{
+          "At least one translated label is required. Other languages are optional."
+            | localize
+        }}
+      </p>
+      @for (choice of choices(); track $index; let index = $index) {
+        <section class="choice-row">
+          <header>
+            <h4>{{ "Choice" | localize }} {{ index + 1 }}</h4>
+            <button
+              pButton
+              severity="danger"
+              type="button"
+              [attr.aria-label]="
+                ('Remove choice' | localize) + ' ' + (index + 1)
+              "
+              [disabled]="disabled()"
+              [text]="true"
+              (click)="remove(index)"
+            >
+              <i aria-hidden="true" class="pi pi-trash"></i>
+            </button>
+          </header>
+          <div class="choice-order">
+            <button
+              pButton
+              severity="secondary"
+              type="button"
+              [disabled]="disabled() || index === 0"
+              [text]="true"
+              (click)="move(index, -1)"
+            >
+              {{ "Move up" | localize }}
+            </button>
+            <button
+              pButton
+              severity="secondary"
+              type="button"
+              [disabled]="disabled() || index + 1 >= choices().length"
+              [text]="true"
+              (click)="move(index, 1)"
+            >
+              {{ "Move down" | localize }}
+            </button>
+          </div>
+          <details>
+            <summary>{{ "Advanced identity" | localize }}</summary>
+            <p>
+              {{
+                "Changing a saved choice key can affect workflow mappings."
+                  | localize
+              }}
+            </p>
+            <app-control-field
+              label="Choice key"
+              [attr.data-field-path]="'spec.decision.options.' + index + '.key'"
+              [controlId]="'agent-choice-key-' + index"
+              [error]="
+                errors()['spec.decision.options.' + index + '.key'] ||
+                keyErrors()[index]
+              "
+              [required]="true"
+              ><input
+                maxlength="64"
+                pInputText
+                required
+                [attr.aria-invalid]="
+                  errors()['spec.decision.options.' + index + '.key'] ||
+                  keyErrors()[index]
+                    ? 'true'
+                    : null
+                "
+                [disabled]="disabled()"
+                [id]="'agent-choice-key-' + index"
+                [ngModel]="choice['key']"
+                (ngModelChange)="updateChoice(index, 'key', $event)"
+            /></app-control-field>
+          </details>
+          <div class="choice-fields">
+            <app-control-field
+              label="Display label"
+              [attr.data-field-path]="
+                'spec.decision.options.' + index + '.labels.' + locale()
+              "
+              [controlId]="'agent-choice-label-' + index"
+              [error]="
+                errors()[
+                  'spec.decision.options.' + index + '.labels.' + locale()
+                ] || ''
+              "
+              [required]="false"
+              ><input
+                pInputText
+                [attr.dir]="locale() === 'en' ? 'ltr' : 'rtl'"
+                [attr.lang]="locale()"
+                [disabled]="disabled()"
+                [id]="'agent-choice-label-' + index"
+                [ngModel]="choiceLabel(choice)"
+                (ngModelChange)="label(index, $event)"
+            /></app-control-field>
+            @if (!choiceLabel(choice)) {
+              <p class="translation-missing">
+                {{ "Missing translation" | localize }}
+              </p>
+            }
+          </div>
+          <app-control-field
+            label="Description"
+            [attr.data-field-path]="
+              'spec.decision.options.' + index + '.description'
+            "
+            [controlId]="'agent-choice-description-' + index"
+            [error]="
+              errors()['spec.decision.options.' + index + '.description'] || ''
+            "
+            [required]="true"
+          >
+            <textarea
+              dir="auto"
+              maxlength="512"
+              pTextarea
+              required
+              rows="3"
+              [attr.aria-invalid]="
+                errors()['spec.decision.options.' + index + '.description']
+                  ? 'true'
+                  : null
+              "
+              [disabled]="disabled()"
+              [id]="'agent-choice-description-' + index"
+              [ngModel]="choice['description']"
+              (ngModelChange)="updateChoice(index, 'description', $event)"
+            ></textarea>
+          </app-control-field>
+        </section>
+      }
+      <button
+        pButton
+        severity="secondary"
+        type="button"
+        [disabled]="disabled() || choices().length >= 254"
+        (click)="add()"
+      >
+        {{ "Add choice" | localize }}
+      </button>
+    </ng-template>
+  }
+</section>

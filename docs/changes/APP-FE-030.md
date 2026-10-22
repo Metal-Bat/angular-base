@@ -25,3 +25,7 @@ The exact common handoff and boundary operation instructions are in [END-OF-BACK
 ## Independent continuation — 2026-10-10
 
 APP-FE-030.1 extends the existing implementation. Scope, exact files, current contracts, verification and remaining acceptance are recorded in [APP-FE-026–030 acceptance](../delivery/APP-FE-026-030-ACCEPTANCE.md). Parent remains BLOCKED / IMPLEMENTED; original evidence above remains historical.
+
+## Dedicated agent editor owner — 2026-10-16
+
+The master V28–V30 administration editor is recorded under [APP-FE-030.UX01](APP-FE-030.UX01.md), with a capability-to-contract table and precise producer handoff. Existing diagnostics/budget scope and historical results above remain independent. Supported editor implementation, actual service scenarios, current browser/gate receipts and remaining backend-dependent capabilities are explicitly separated.

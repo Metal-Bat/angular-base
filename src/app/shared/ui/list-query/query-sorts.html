@@ -1,0 +1,229 @@
+@let vm = view();
+<section
+  class="query-sorts"
+  [attr.aria-labelledby]="vm.sortFieldsId + '-sorts-title'"
+>
+  <header class="sorts-heading">
+    <h3 [id]="vm.sortFieldsId + '-sorts-title'">{{ "Sorts" | localize }}</h3>
+    <button
+      data-add-sort
+      pButton
+      severity="secondary"
+      type="button"
+      [disabled]="vm.busy() || !vm.fields().length"
+      [outlined]="true"
+      (click)="addSort()"
+    >
+      <i aria-hidden="true" class="pi pi-plus"></i>{{ "Add sort" | localize }}
+    </button>
+  </header>
+  @if (!vm.sorts.length) {
+    <p class="sort-help">
+      {{ "Add a sort to choose the result order." | localize }}
+    </p>
+  } @else {
+    <p class="sort-help">
+      {{ "Sorts are applied from top to bottom." | localize }}
+    </p>
+  }
+  @for (sort of vm.sorts; track id(sort); let group = $index) {
+    <section
+      class="sort-group"
+      role="group"
+      [attr.aria-labelledby]="id(sort) + '-title'"
+      [attr.data-query-sort]="group"
+    >
+      <header class="sorts-heading">
+        <h4 [id]="id(sort) + '-title'">
+          {{ "Sort" | localize }} {{ locale.number(group + 1) }}
+        </h4>
+        <div class="sort-actions">
+          <button
+            pButton
+            severity="secondary"
+            type="button"
+            [attr.aria-label]="
+              ('Move up' | localize) +
+              ': ' +
+              ('Sort' | localize) +
+              ' ' +
+              locale.number(group + 1)
+            "
+            [disabled]="vm.busy() || group === 0"
+            [pTooltip]="'Move up' | localize"
+            [text]="true"
+            (click)="moveSort(group, -1)"
+          >
+            <i aria-hidden="true" class="pi pi-arrow-up"></i>
+          </button>
+          <button
+            pButton
+            severity="secondary"
+            type="button"
+            [attr.aria-label]="
+              ('Move down' | localize) +
+              ': ' +
+              ('Sort' | localize) +
+              ' ' +
+              locale.number(group + 1)
+            "
+            [disabled]="vm.busy() || group === vm.sorts.length - 1"
+            [pTooltip]="'Move down' | localize"
+            [text]="true"
+            (click)="moveSort(group, 1)"
+          >
+            <i aria-hidden="true" class="pi pi-arrow-down"></i>
+          </button>
+          <button
+            pButton
+            severity="secondary"
+            type="button"
+            [attr.aria-label]="
+              ('Remove sort' | localize) + ' ' + locale.number(group + 1)
+            "
+            [disabled]="vm.busy()"
+            [pTooltip]="'Remove sort' | localize"
+            [text]="true"
+            (click)="removeSort(group)"
+          >
+            <i aria-hidden="true" class="pi pi-times"></i>
+          </button>
+        </div>
+      </header>
+      <div class="sort-body">
+        <div class="sort-fields">
+          @for (entry of rows(sort); track entry.id; let index = $index) {
+            <div class="sort-field" [attr.data-sort-field-index]="index">
+              <app-control-field
+                [controlId]="entry.id"
+                [label]="('Field' | localize) + ' ' + locale.number(index + 1)"
+              >
+                <app-select-control
+                  [ariaLabel]="
+                    ('Field' | localize) + ' ' + locale.number(index + 1)
+                  "
+                  [disabled]="vm.busy()"
+                  [inputId]="entry.id"
+                  [value]="entry.key"
+                  (selectionChanged)="
+                    setField(sort, index, $event.target.value)
+                  "
+                >
+                  <option value="">{{ "Choose" | localize }}</option>
+                  @if (entry.key && !known(entry.key)) {
+                    <option disabled [value]="entry.key">
+                      {{ "Unavailable" | localize }}: {{ entry.key }}
+                    </option>
+                  }
+                  @for (field of vm.fields(); track field.key) {
+                    <option
+                      [disabled]="
+                        field.key !== entry.key &&
+                        names(sort).includes(field.key)
+                      "
+                      [value]="field.key"
+                    >
+                      {{ field.label | localize }}
+                    </option>
+                  }
+                </app-select-control>
+              </app-control-field>
+              @if (names(sort).length > 1) {
+                <div class="sort-actions field-actions">
+                  <button
+                    pButton
+                    severity="secondary"
+                    type="button"
+                    [attr.aria-label]="
+                      ('Move up' | localize) +
+                      ': ' +
+                      ('Field' | localize) +
+                      ' ' +
+                      locale.number(index + 1)
+                    "
+                    [disabled]="vm.busy() || index === 0"
+                    [pTooltip]="'Move up' | localize"
+                    [text]="true"
+                    (click)="moveField(sort, index, -1)"
+                  >
+                    <i aria-hidden="true" class="pi pi-arrow-up"></i>
+                  </button>
+                  <button
+                    pButton
+                    severity="secondary"
+                    type="button"
+                    [attr.aria-label]="
+                      ('Move down' | localize) +
+                      ': ' +
+                      ('Field' | localize) +
+                      ' ' +
+                      locale.number(index + 1)
+                    "
+                    [disabled]="vm.busy() || index === names(sort).length - 1"
+                    [pTooltip]="'Move down' | localize"
+                    [text]="true"
+                    (click)="moveField(sort, index, 1)"
+                  >
+                    <i aria-hidden="true" class="pi pi-arrow-down"></i>
+                  </button>
+                  <button
+                    pButton
+                    severity="secondary"
+                    type="button"
+                    [attr.aria-label]="
+                      ('Remove' | localize) +
+                      ': ' +
+                      ('Field' | localize) +
+                      ' ' +
+                      locale.number(index + 1)
+                    "
+                    [disabled]="vm.busy()"
+                    [pTooltip]="'Remove' | localize"
+                    [text]="true"
+                    (click)="removeField(sort, index)"
+                  >
+                    <i aria-hidden="true" class="pi pi-times"></i>
+                  </button>
+                </div>
+              }
+            </div>
+          }
+          <button
+            class="add-field"
+            pButton
+            severity="secondary"
+            type="button"
+            [disabled]="vm.busy() || !available(sort)"
+            [text]="true"
+            (click)="addField(sort)"
+          >
+            <i aria-hidden="true" class="pi pi-plus"></i
+            >{{ "Add field" | localize }}
+          </button>
+        </div>
+        <app-control-field
+          label="Direction"
+          [controlId]="id(sort) + '-direction'"
+        >
+          <app-select-control
+            [ariaLabel]="'Direction' | localize"
+            [disabled]="vm.busy()"
+            [inputId]="id(sort) + '-direction'"
+            [value]="sort.operation"
+            (selectionChanged)="setDirection(sort, $event.target.value)"
+            ><option value="asc">{{ "Ascending" | localize }}</option>
+            <option value="desc">
+              {{ "Descending" | localize }}
+            </option></app-select-control
+          >
+        </app-control-field>
+      </div>
+      @if (vm.sortErrors[group]) {
+        <p class="sort-error" role="alert">
+          {{ vm.sortErrors[group] | localize }}
+        </p>
+      }
+    </section>
+  }
+  <span class="sr-only" role="status">{{ message() | localize }}</span>
+</section>

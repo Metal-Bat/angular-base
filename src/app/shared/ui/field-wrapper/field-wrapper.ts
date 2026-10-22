@@ -14,6 +14,8 @@ export class FieldWrapper {
   readonly pointer = input.required<string>();
   readonly label = input.required<string>();
   readonly hint = input('');
+  readonly required = input(false);
+  readonly compact = input(false);
   readonly instance = input('');
   readonly errors = input<readonly string[]>([]);
   readonly id = computed(

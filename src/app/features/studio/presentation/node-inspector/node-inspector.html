@@ -1,5 +1,8 @@
 @if (inspector(); as handler) {
-  <app-node-details [handler]="handler" />
+  <details>
+    <summary>{{ "Registered step details" | localize }}</summary>
+    <app-node-details [handler]="handler" />
+  </details>
   <h3>{{ "Configuration" | localize }}</h3>
   @for (field of fields(); track field.key) {
     @if (
@@ -43,11 +46,33 @@
           "Approved selector unavailable; existing pin is preserved." | localize
         }}
       </p>
+    } @else if (
+      handler.handler_key === "transform" &&
+      handler.handler_version === "2" &&
+      field.key === "projection" &&
+      (draft()["conversion_key"] === "object" || !!draft()["projection"])
+    ) {
+      <app-transform-projection
+        [disabled]="disabled()"
+        [schema]="projectionSchema()"
+        [value]="$any(draft()['projection'])"
+        (draftChanged)="changed.emit()"
+        (validity)="projectionValid.set($event)"
+        (valueChange)="update('projection', $event)"
+      />
+    } @else if (
+      handler.handler_key === "transform" &&
+      handler.handler_version === "2" &&
+      field.key === "projection"
+    ) {
     } @else if (editable(field.key, field.schema)) {
       <app-schema-input
         [controlId]="'node-' + field.key"
         [disabled]="disabled()"
         [errors]="errors()"
+        [literalValues]="
+          handler.handler_key === 'transform' && field.key === 'default'
+        "
         [path]="field.key"
         [required]="field.required"
         [schema]="field.schema"
@@ -63,6 +88,22 @@
         }}
       </p>
     }
+  }
+  @if (
+    handler.handler_key === "timer" || handler.handler_key === "event_wait"
+  ) {
+    <p>
+      {{
+        "Timer and expiry values are elapsed seconds; the backend schedules UTC deadlines."
+          | localize
+      }}
+    </p>
+    <p [hidden]="handler.handler_key !== 'event_wait'">
+      {{
+        "Map the correlation key through the data ports to match an authorized incoming event."
+          | localize
+      }}
+    </p>
   }
   @if (extraKeys().length) {
     <p role="status">
@@ -94,6 +135,24 @@
   }
   <details>
     <summary>{{ "Branch and loop policy" | localize }}</summary>
+    <p>
+      {{
+        "ALL split starts every eligible route; at least two branches and a matching ALL join are required."
+          | localize
+      }}
+    </p>
+    <p>
+      {{
+        "ALL join waits for every branch. Cancelled branches arrive or fail according to the selected policy."
+          | localize
+      }}
+    </p>
+    <p>
+      {{
+        "Max visits bounds loop entries per step. Retry limit controls execution retries separately."
+          | localize
+      }}
+    </p>
     <app-schema-input
       controlId="node-flow"
       path="flow"
@@ -108,7 +167,11 @@
     <app-subprocess-pin
       [catalog]="children()"
       [disabled]="disabled()"
+      [graph]="graph()"
+      [step]="String(step()['key'])"
+      [types]="catalog()"
       [value]="child()"
+      [version]="version()"
       (changed)="updateSection('child', $event)"
       (draftChanged)="changed.emit()"
       (validity)="childValid.set($event)"
@@ -128,6 +191,9 @@
   }
   @if (hasErrors()) {
     <p role="alert">{{ "Complete the required fields." | localize }}</p>
+    @if (errors()["projection"]) {
+      <p role="alert">{{ errors()["projection"] | localize }}</p>
+    }
   }
   <button pButton type="button" [disabled]="disabled()" (click)="apply()">
     {{ "Apply typed configuration" | localize }}

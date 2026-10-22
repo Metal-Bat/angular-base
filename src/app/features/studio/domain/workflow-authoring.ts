@@ -1,5 +1,10 @@
+import { mappingCompatible } from './mapping-schema';
 import { JsonObject, JsonValue } from '../../forms/domain/runtime-document';
 import { Point, Workspace } from './authoring';
+export type CanvasFocusRequest = {
+  readonly key: string;
+  readonly sequence: number;
+};
 export type CanvasPort = {
   key: string;
   direction: string;
@@ -9,9 +14,11 @@ export type CanvasPort = {
 export type CanvasNode = {
   key: string;
   title: string;
+  typeTitle?: string;
   position: Point;
   ports: readonly CanvasPort[];
   outcomes?: readonly string[];
+  canContinue?: boolean;
 };
 export type CanvasEdge = {
   id: string;
@@ -93,6 +100,28 @@ export function canvasEdges(
     (edge) => ports.has(edge.source) && ports.has(edge.target),
   );
 }
+function nextInputOrdinal(
+  bindings: readonly JsonObject[],
+  step: string,
+  port: CanvasPort,
+): number {
+  const siblings = bindings.filter(
+    (binding) =>
+      binding['step'] === step && binding['target_port'] === port.key,
+  );
+  if (port.cardinality === 'LIST') {
+    return (
+      Math.max(
+        -1,
+        ...siblings.map((binding) => Number(binding['ordinal'] ?? 0)),
+      ) + 1
+    );
+  }
+  if (siblings.length) {
+    throw Error('Remove the existing mapping before replacing it.');
+  }
+  return 0;
+}
 export function connectWorkspace(
   workspace: Workspace,
   source: string,
@@ -148,11 +177,7 @@ export function connectWorkspace(
     if (!sourcePort || !targetPort) {
       throw Error('Use an output and an input port');
     }
-    if (
-      sourcePort.schema['type'] &&
-      targetPort.schema['type'] &&
-      sourcePort.schema['type'] !== targetPort.schema['type']
-    ) {
+    if (!mappingCompatible(sourcePort.schema, targetPort.schema)) {
       throw Error('Port types do not match');
     }
     const bindings = [...((graph['bindings'] as JsonObject[]) ?? [])];
@@ -164,7 +189,7 @@ export function connectWorkspace(
       source_step: from,
       source_port: output,
       source_schema: sourcePort.schema,
-      ordinal: bindings.length,
+      ordinal: nextInputOrdinal(bindings, to, targetPort),
     });
     graph['bindings'] = bindings;
   } else {
@@ -175,6 +200,12 @@ export function connectWorkspace(
 export class WorkspaceHistory {
   private undoStates: Workspace[] = [];
   private redoStates: Workspace[] = [];
+  get canUndo(): boolean {
+    return this.undoStates.length > 0;
+  }
+  get canRedo(): boolean {
+    return this.redoStates.length > 0;
+  }
   record(value: Workspace): void {
     this.undoStates.push(structuredClone(value));
     if (this.undoStates.length > 20) {

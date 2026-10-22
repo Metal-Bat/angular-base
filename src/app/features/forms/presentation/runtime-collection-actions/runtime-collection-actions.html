@@ -1,0 +1,65 @@
+@let vm = view();
+<div class="row-actions" [class.compact]="compact()">
+  @if (vm.writable() && vm.collections) {
+    <button
+      pButton
+      severity="secondary"
+      type="button"
+      [attr.aria-label]="'Remove row' | localize"
+      [disabled]="!vm.canRemoveRow()"
+      [outlined]="true"
+      [title]="'Remove row' | localize"
+      (click)="vm.rowCommand('remove', key())"
+    >
+      <i aria-hidden="true" class="pi pi-trash"></i>
+      @if (!compact()) {
+        <span>{{ "Remove row" | localize }}</span>
+      }
+    </button>
+    <button
+      pButton
+      severity="secondary"
+      type="button"
+      [attr.aria-label]="'Duplicate row' | localize"
+      [disabled]="!vm.canAddRow()"
+      [outlined]="true"
+      [title]="'Duplicate row' | localize"
+      (click)="vm.rowCommand('duplicate', key())"
+    >
+      <i aria-hidden="true" class="pi pi-copy"></i>
+      @if (!compact()) {
+        <span>{{ "Duplicate row" | localize }}</span>
+      }
+    </button>
+    <button
+      pButton
+      severity="secondary"
+      type="button"
+      [attr.aria-label]="'Move up' | localize"
+      [disabled]="vm.collectionBusy() || index() === 0"
+      [outlined]="true"
+      [title]="'Move up' | localize"
+      (click)="vm.rowCommand('reorder', key(), index() - 1)"
+    >
+      <i aria-hidden="true" class="pi pi-arrow-up"></i>
+      @if (!compact()) {
+        <span>{{ "Move up" | localize }}</span>
+      }
+    </button>
+    <button
+      pButton
+      severity="secondary"
+      type="button"
+      [attr.aria-label]="'Move down' | localize"
+      [disabled]="vm.collectionBusy() || index() + 1 >= vm.rows().length"
+      [outlined]="true"
+      [title]="'Move down' | localize"
+      (click)="vm.rowCommand('reorder', key(), index() + 1)"
+    >
+      <i aria-hidden="true" class="pi pi-arrow-down"></i>
+      @if (!compact()) {
+        <span>{{ "Move down" | localize }}</span>
+      }
+    </button>
+  }
+</div>

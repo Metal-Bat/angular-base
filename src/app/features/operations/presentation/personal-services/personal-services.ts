@@ -1,3 +1,5 @@
+import { LocalizedDateTimePipe } from '../../../../shared/ui/localized-datetime-pipe';
+import { TransferProgress } from '../../../../shared/ui/transfer-progress/transfer-progress';
 import { InboxReadControl } from '../../../../core/notifications/inbox-read-control/inbox-read-control';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AuthSession } from '../../../../core/auth/auth-session';
@@ -34,6 +36,8 @@ import { PERSONAL_SERVICES } from '../../bindings';
   selector: 'app-personal-services',
   providers: [BinaryTransfer, BoundedPolling],
   imports: [
+    LocalizedDateTimePipe,
+    TransferProgress,
     InboxReadControl,
     FormsModule,
     InputTextModule,

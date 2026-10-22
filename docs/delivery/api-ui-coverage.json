@@ -5182,11 +5182,13 @@
       "disposition": "normal",
       "delta": "EXTEND",
       "template": "src/app/features/records/presentation/resource-page.html",
-      "consumers": [],
+      "consumers": [
+        "src/app/features/records/infrastructure/agent-metadata-api.ts"
+      ],
       "metadataSources": [
         "src/app/features/administration/infrastructure/admin-contracts.json"
       ],
-      "consumerDiscovery": "CONFIGURED_ACTION_REQUIRES_UI_VERIFICATION",
+      "consumerDiscovery": "DIRECT_CODE_REFERENCE",
       "tests": [],
       "permission": "workflows.manage",
       "input": null,
@@ -5680,11 +5682,13 @@
       "disposition": "normal",
       "delta": "EXTEND",
       "template": "src/app/features/records/presentation/resource-page.html",
-      "consumers": [],
+      "consumers": [
+        "src/app/features/records/infrastructure/agent-metadata-api.ts"
+      ],
       "metadataSources": [
         "src/app/features/administration/infrastructure/admin-contracts.json"
       ],
-      "consumerDiscovery": "CONFIGURED_ACTION_REQUIRES_UI_VERIFICATION",
+      "consumerDiscovery": "DIRECT_CODE_REFERENCE",
       "tests": [],
       "permission": "workflows.manage",
       "input": null,
@@ -7257,7 +7261,9 @@
       ],
       "metadataSources": [],
       "consumerDiscovery": "DIRECT_CODE_REFERENCE",
-      "tests": [],
+      "tests": [
+        "src/app/features/analytics/infrastructure/analytics-api.spec.ts"
+      ],
       "permission": "Peer handoff required; see operation description and route guard",
       "input": {
         "application/json": {
@@ -10226,7 +10232,9 @@
       "consumers": ["src/app/features/operations/infrastructure/case-files.ts"],
       "metadataSources": [],
       "consumerDiscovery": "DIRECT_CODE_REFERENCE",
-      "tests": [],
+      "tests": [
+        "src/app/features/operations/infrastructure/case-files.spec.ts"
+      ],
       "permission": "Peer handoff required; see operation description and route guard",
       "input": null,
       "parameters": [
@@ -10463,7 +10471,9 @@
       "disposition": "normal",
       "delta": "EXTEND",
       "template": "src/app/features/operations/presentation/case-detail/case-detail.html",
-      "consumers": ["src/app/features/operations/infrastructure/case-files.ts"],
+      "consumers": [
+        "src/app/features/operations/infrastructure/case-collections.ts"
+      ],
       "metadataSources": [],
       "consumerDiscovery": "DIRECT_CODE_REFERENCE",
       "tests": [],
@@ -11526,7 +11536,9 @@
       "consumers": ["src/app/features/calendar/infrastructure/calendar-api.ts"],
       "metadataSources": [],
       "consumerDiscovery": "DIRECT_CODE_REFERENCE",
-      "tests": [],
+      "tests": [
+        "src/app/features/calendar/infrastructure/calendar-api.spec.ts"
+      ],
       "permission": "Peer handoff required; see operation description and route guard",
       "input": {
         "application/json": {
@@ -22909,7 +22921,7 @@
       "consumers": ["src/app/features/studio/infrastructure/studio-api.ts"],
       "metadataSources": [],
       "consumerDiscovery": "DIRECT_CODE_REFERENCE",
-      "tests": [],
+      "tests": ["src/app/features/studio/infrastructure/studio-api.spec.ts"],
       "permission": "Peer handoff required; see operation description and route guard",
       "input": {
         "application/json": {
@@ -29135,12 +29147,15 @@
       "delta": "EXTEND",
       "template": "src/app/features/operations/presentation/generic-media/generic-media.html",
       "consumers": [
+        "src/app/core/auth/profile/private-avatar/private-avatar.ts",
         "src/app/core/auth/profile/profile-editor/profile-editor.ts",
         "src/app/features/operations/presentation/generic-media/generic-media.ts"
       ],
       "metadataSources": [],
       "consumerDiscovery": "DIRECT_CODE_REFERENCE",
-      "tests": [],
+      "tests": [
+        "src/app/core/auth/profile/private-avatar/private-avatar.spec.ts"
+      ],
       "permission": "Peer handoff required; see operation description and route guard",
       "input": null,
       "parameters": [
@@ -38438,7 +38453,9 @@
       "consumers": ["src/app/features/operations/infrastructure/case-files.ts"],
       "metadataSources": [],
       "consumerDiscovery": "DIRECT_CODE_REFERENCE",
-      "tests": [],
+      "tests": [
+        "src/app/features/operations/infrastructure/case-files.spec.ts"
+      ],
       "permission": "Peer handoff required; see operation description and route guard",
       "input": null,
       "parameters": [
@@ -38803,7 +38820,9 @@
       "disposition": "normal",
       "delta": "EXTEND",
       "template": "src/app/features/operations/presentation/case-detail/case-detail.html",
-      "consumers": ["src/app/features/operations/infrastructure/case-files.ts"],
+      "consumers": [
+        "src/app/features/operations/infrastructure/case-collections.ts"
+      ],
       "metadataSources": [],
       "consumerDiscovery": "DIRECT_CODE_REFERENCE",
       "tests": [],
@@ -44852,6 +44871,13 @@
       "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
     },
     {
+      "path": "src/app/core/auth/profile/private-avatar/private-avatar.html",
+      "owner": "APP-FE-008",
+      "delta": "REUSE",
+      "controls": ["p-image"],
+      "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
+    },
+    {
       "path": "src/app/core/auth/profile/profile-appearance.ts",
       "owner": "APP-FE-008",
       "delta": "REUSE",
@@ -44867,7 +44893,14 @@
       "path": "src/app/core/auth/profile/profile-editor/profile-editor.html",
       "owner": "APP-FE-008",
       "delta": "REUSE",
-      "controls": ["app-control-field", "button", "input"],
+      "controls": [
+        "app-control-field",
+        "app-file-picker",
+        "app-private-avatar",
+        "app-transfer-progress",
+        "button",
+        "input"
+      ],
       "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
     },
     {
@@ -44887,7 +44920,12 @@
       "path": "src/app/core/auth/profile/workspace-settings/workspace-settings.html",
       "owner": "APP-FE-008",
       "delta": "REUSE",
-      "controls": ["app-select-control", "button", "input"],
+      "controls": [
+        "app-select-control",
+        "app-timezone-control",
+        "button",
+        "input"
+      ],
       "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
     },
     {
@@ -44903,11 +44941,26 @@
       "delta": "REUSE",
       "controls": [
         "app-command-feedback",
-        "app-select-control",
-        "app-theme-picker",
+        "app-workspace-account",
+        "app-workspace-breadcrumbs",
         "app-workspace-notifications",
+        "app-workspace-preferences",
         "button"
       ],
+      "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
+    },
+    {
+      "path": "src/app/core/layout/workspace-account/workspace-account.html",
+      "owner": "APP-FE-004",
+      "delta": "REUSE",
+      "controls": ["button"],
+      "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
+    },
+    {
+      "path": "src/app/core/layout/workspace-breadcrumbs/workspace-breadcrumbs.html",
+      "owner": "APP-FE-004",
+      "delta": "REUSE",
+      "controls": ["button"],
       "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
     },
     {
@@ -44915,6 +44968,13 @@
       "owner": "APP-FE-004",
       "delta": "REUSE",
       "controls": ["app-inbox-read-control", "button", "p-message"],
+      "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
+    },
+    {
+      "path": "src/app/core/layout/workspace-preferences/workspace-preferences.html",
+      "owner": "APP-FE-004",
+      "delta": "REUSE",
+      "controls": ["app-select-control", "app-theme-picker"],
       "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
     },
     {
@@ -44927,8 +44987,8 @@
     {
       "path": "src/app/features/administration/presentation/admin-console/admin-command-form.html",
       "owner": "APP-FE-030",
-      "delta": "EXTEND",
-      "controls": ["app-select-control", "button", "input", "textarea"],
+      "delta": "REUSE",
+      "controls": ["app-reference-picker", "app-schema-input", "button"],
       "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
     },
     {
@@ -44972,7 +45032,8 @@
         "app-record-summary",
         "app-resource-actions",
         "button",
-        "input"
+        "input",
+        "p-table"
       ],
       "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
     },
@@ -44990,6 +45051,13 @@
       "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
     },
     {
+      "path": "src/app/features/administration/presentation/resource-actions/resource-action-menu.html",
+      "owner": "APP-FE-032",
+      "delta": "REUSE",
+      "controls": ["button", "p-menu"],
+      "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
+    },
+    {
       "path": "src/app/features/administration/presentation/resource-actions/resource-actions.html",
       "owner": "APP-FE-032",
       "delta": "REUSE",
@@ -44997,6 +45065,7 @@
         "app-record-summary",
         "app-record-table",
         "app-reference-picker",
+        "app-resource-action-menu",
         "app-schema-input",
         "button",
         "p-dialog"
@@ -45004,33 +45073,10 @@
       "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
     },
     {
-      "path": "src/app/features/administration/presentation/schema-input/schema-array.html",
-      "owner": "APP-FE-007",
+      "path": "src/app/features/analytics/presentation/dashboard-overview/dashboard-overview.html",
+      "owner": "APP-FE-004",
       "delta": "REUSE",
-      "controls": ["app-schema-input", "button"],
-      "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
-    },
-    {
-      "path": "src/app/features/administration/presentation/schema-input/schema-input.html",
-      "owner": "APP-FE-007",
-      "delta": "EXTEND",
-      "controls": [
-        "app-control-field",
-        "app-schema-array",
-        "app-schema-object",
-        "app-select-control",
-        "app-temporal-control",
-        "button",
-        "input",
-        "textarea"
-      ],
-      "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
-    },
-    {
-      "path": "src/app/features/administration/presentation/schema-input/schema-object.html",
-      "owner": "APP-FE-007",
-      "delta": "REUSE",
-      "controls": ["app-control-field", "app-schema-input", "button", "input"],
+      "controls": ["button"],
       "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
     },
     {
@@ -45038,11 +45084,12 @@
       "owner": "APP-FE-004",
       "delta": "REUSE",
       "controls": [
+        "app-control-field",
+        "app-dashboard-overview",
         "app-metric-card",
         "app-select-control",
         "app-temporal-control",
-        "button",
-        "input"
+        "button"
       ],
       "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
     },
@@ -45050,7 +45097,14 @@
       "path": "src/app/features/analytics/presentation/metric-card/metric-card.html",
       "owner": "APP-FE-004",
       "delta": "REUSE",
-      "controls": ["button", "p-table"],
+      "controls": ["app-metric-chart", "button", "p-table"],
+      "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
+    },
+    {
+      "path": "src/app/features/analytics/presentation/metric-chart/metric-chart.html",
+      "owner": "APP-FE-004",
+      "delta": "REUSE",
+      "controls": [],
       "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
     },
     {
@@ -45058,11 +45112,33 @@
       "owner": "APP-FE-004",
       "delta": "REUSE",
       "controls": [
+        "app-control-field",
         "app-select-control",
         "app-temporal-control",
         "button",
         "input"
       ],
+      "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
+    },
+    {
+      "path": "src/app/features/calendar/presentation/calendar-event-details/calendar-event-details.html",
+      "owner": "APP-FE-004",
+      "delta": "REUSE",
+      "controls": ["button", "p-popover"],
+      "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
+    },
+    {
+      "path": "src/app/features/calendar/presentation/calendar-grid/calendar-grid.html",
+      "owner": "APP-FE-004",
+      "delta": "REUSE",
+      "controls": ["app-calendar-month", "app-calendar-timed-event", "button"],
+      "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
+    },
+    {
+      "path": "src/app/features/calendar/presentation/calendar-month/calendar-month.html",
+      "owner": "APP-FE-004",
+      "delta": "REUSE",
+      "controls": ["button"],
       "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
     },
     {
@@ -45071,19 +45147,46 @@
       "delta": "REUSE",
       "controls": [
         "app-calendar-editor",
+        "app-calendar-event-details",
         "app-calendar-views",
+        "app-control-field",
         "app-temporal-control",
         "app-work-reminders",
-        "button",
-        "input"
+        "button"
       ],
+      "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
+    },
+    {
+      "path": "src/app/features/calendar/presentation/calendar-rail/calendar-rail.html",
+      "owner": "APP-FE-004",
+      "delta": "REUSE",
+      "controls": ["button", "p-checkbox"],
+      "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
+    },
+    {
+      "path": "src/app/features/calendar/presentation/calendar-timed-event/calendar-timed-event.html",
+      "owner": "APP-FE-004",
+      "delta": "REUSE",
+      "controls": ["button"],
+      "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
+    },
+    {
+      "path": "src/app/features/calendar/presentation/calendar-toolbar/calendar-toolbar.html",
+      "owner": "APP-FE-004",
+      "delta": "REUSE",
+      "controls": ["app-select-control", "button"],
       "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
     },
     {
       "path": "src/app/features/calendar/presentation/calendar-views/calendar-views.html",
       "owner": "APP-FE-004",
       "delta": "REUSE",
-      "controls": ["button"],
+      "controls": [
+        "app-calendar-grid",
+        "app-calendar-rail",
+        "app-calendar-toolbar",
+        "button"
+      ],
       "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
     },
     {
@@ -45110,7 +45213,29 @@
       "path": "src/app/features/forms/presentation/attachment-control/attachment-control.html",
       "owner": "APP-FE-017",
       "delta": "REUSE",
-      "controls": ["button", "input"],
+      "controls": [
+        "app-attachment-image",
+        "app-attachment-recovery",
+        "app-file-picker",
+        "app-transfer-progress",
+        "button",
+        "input",
+        "p-select"
+      ],
+      "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
+    },
+    {
+      "path": "src/app/features/forms/presentation/attachment-image/attachment-image.html",
+      "owner": "APP-FE-017",
+      "delta": "REUSE",
+      "controls": ["p-image"],
+      "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
+    },
+    {
+      "path": "src/app/features/forms/presentation/attachment-recovery/attachment-recovery.html",
+      "owner": "APP-FE-017",
+      "delta": "REUSE",
+      "controls": ["button"],
       "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
     },
     {
@@ -45121,6 +45246,13 @@
       "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
     },
     {
+      "path": "src/app/features/forms/presentation/form-value/form-value.html",
+      "owner": "APP-FE-017",
+      "delta": "REUSE",
+      "controls": [],
+      "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
+    },
+    {
       "path": "src/app/features/forms/presentation/form-version-summary/form-version-summary.html",
       "owner": "APP-FE-017",
       "delta": "REUSE",
@@ -45128,10 +45260,24 @@
       "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
     },
     {
+      "path": "src/app/features/forms/presentation/runtime-collection-actions/runtime-collection-actions.html",
+      "owner": "APP-FE-017",
+      "delta": "REUSE",
+      "controls": ["button"],
+      "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
+    },
+    {
+      "path": "src/app/features/forms/presentation/runtime-collection/runtime-collection.html",
+      "owner": "APP-FE-017",
+      "delta": "REUSE",
+      "controls": ["app-runtime-collection-actions", "button", "p-table"],
+      "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
+    },
+    {
       "path": "src/app/features/forms/presentation/runtime-form/runtime-form.html",
       "owner": "APP-FE-017",
       "delta": "REUSE",
-      "controls": ["app-runtime-node", "button"],
+      "controls": ["app-form-value", "app-runtime-node", "button"],
       "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
     },
     {
@@ -45141,10 +45287,12 @@
       "controls": [
         "app-choice-control",
         "app-field-wrapper",
+        "app-form-value",
         "app-select-control",
         "app-temporal-control",
         "button",
         "input",
+        "p-menu",
         "textarea"
       ],
       "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
@@ -45155,9 +45303,9 @@
       "delta": "REUSE",
       "controls": [
         "app-attachment-control",
+        "app-runtime-collection",
         "app-runtime-field",
-        "app-runtime-node",
-        "button"
+        "app-runtime-node"
       ],
       "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
     },
@@ -45179,14 +45327,22 @@
       "path": "src/app/features/operations/presentation/advanced-task/advanced-task.html",
       "owner": "APP-FE-028",
       "delta": "EXTEND",
-      "controls": ["button", "input", "textarea"],
+      "controls": [
+        "app-control-field",
+        "app-menu-button",
+        "app-reference-picker",
+        "app-task-feedback",
+        "button",
+        "p-dialog",
+        "textarea"
+      ],
       "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
     },
     {
       "path": "src/app/features/operations/presentation/ai-approval/ai-approval.html",
       "owner": "APP-FE-028",
-      "delta": "EXTEND",
-      "controls": ["button"],
+      "delta": "REUSE",
+      "controls": ["app-form-value", "button"],
       "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
     },
     {
@@ -45196,10 +45352,10 @@
       "controls": [
         "app-advanced-task",
         "app-ai-approval",
-        "app-case-history",
+        "app-attachment-recovery",
         "app-case-overrides",
+        "app-case-page-header",
         "app-case-summary",
-        "app-request-actions",
         "app-runtime-form",
         "app-task-controls",
         "button"
@@ -45210,7 +45366,7 @@
       "path": "src/app/features/operations/presentation/case-history/case-history.html",
       "owner": "APP-FE-028",
       "delta": "REUSE",
-      "controls": ["button"],
+      "controls": ["button", "p-dialog"],
       "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
     },
     {
@@ -45228,10 +45384,24 @@
       "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
     },
     {
+      "path": "src/app/features/operations/presentation/case-page-header/case-page-header.html",
+      "owner": "APP-FE-028",
+      "delta": "REUSE",
+      "controls": ["app-case-history", "app-request-actions", "button"],
+      "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
+    },
+    {
       "path": "src/app/features/operations/presentation/case-summary/case-summary.html",
       "owner": "APP-FE-028",
       "delta": "REUSE",
       "controls": ["app-record-summary", "button"],
+      "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
+    },
+    {
+      "path": "src/app/features/operations/presentation/correction-feedback-editor/correction-feedback-editor.html",
+      "owner": "APP-FE-028",
+      "delta": "EXTEND",
+      "controls": ["app-select-control", "button", "textarea"],
       "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
     },
     {
@@ -45245,7 +45415,7 @@
       "path": "src/app/features/operations/presentation/generic-media/generic-media.html",
       "owner": "APP-FE-028",
       "delta": "REUSE",
-      "controls": ["button", "input"],
+      "controls": ["app-transfer-progress", "button", "input"],
       "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
     },
     {
@@ -45289,6 +45459,7 @@
         "app-inbox-read-control",
         "app-personal-service-detail",
         "app-select-control",
+        "app-transfer-progress",
         "button",
         "input"
       ],
@@ -45298,7 +45469,12 @@
       "path": "src/app/features/operations/presentation/process-entry/process-entry.html",
       "owner": "APP-FE-028",
       "delta": "REUSE",
-      "controls": ["app-execution-path", "app-process-evidence", "button"],
+      "controls": [
+        "app-execution-path",
+        "app-process-evidence",
+        "button",
+        "p-table"
+      ],
       "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
     },
     {
@@ -45312,7 +45488,7 @@
       "path": "src/app/features/operations/presentation/request-actions/request-actions.html",
       "owner": "APP-FE-028",
       "delta": "REUSE",
-      "controls": ["button"],
+      "controls": ["app-menu-button", "p-dialog"],
       "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
     },
     {
@@ -45326,14 +45502,26 @@
       "path": "src/app/features/operations/presentation/request-list/request-list.html",
       "owner": "APP-FE-028",
       "delta": "REUSE",
-      "controls": ["app-case-list", "app-saved-views", "button"],
+      "controls": [
+        "app-case-list",
+        "app-list-query",
+        "app-saved-views",
+        "button"
+      ],
       "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
     },
     {
       "path": "src/app/features/operations/presentation/task-controls/task-controls.html",
       "owner": "APP-FE-029",
       "delta": "EXTEND",
-      "controls": ["button", "textarea"],
+      "controls": ["app-correction-feedback-editor", "button", "textarea"],
+      "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
+    },
+    {
+      "path": "src/app/features/operations/presentation/task-feedback/task-feedback.html",
+      "owner": "APP-FE-028",
+      "delta": "REUSE",
+      "controls": ["app-form-value", "button"],
       "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
     },
     {
@@ -45345,7 +45533,22 @@
         "app-control-field",
         "app-saved-views",
         "app-select-control",
+        "app-task-list-query",
         "button"
+      ],
+      "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
+    },
+    {
+      "path": "src/app/features/operations/presentation/task-list-query/task-list-query.html",
+      "owner": "APP-FE-028",
+      "delta": "REUSE",
+      "controls": [
+        "app-control-field",
+        "app-select-control",
+        "app-temporal-control",
+        "button",
+        "input",
+        "p-panel"
       ],
       "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
     },
@@ -45371,6 +45574,120 @@
       "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
     },
     {
+      "path": "src/app/features/records/presentation/agent-capabilities/agent-capabilities.html",
+      "owner": "APP-FE-007",
+      "delta": "REUSE",
+      "controls": ["button"],
+      "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
+    },
+    {
+      "path": "src/app/features/records/presentation/agent-decision-summary/agent-decision-summary.html",
+      "owner": "APP-FE-007",
+      "delta": "REUSE",
+      "controls": [],
+      "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
+    },
+    {
+      "path": "src/app/features/records/presentation/agent-decision/agent-decision.html",
+      "owner": "APP-FE-007",
+      "delta": "EXTEND",
+      "controls": [
+        "app-control-field",
+        "app-select-control",
+        "button",
+        "input",
+        "p-tab",
+        "p-tablist",
+        "p-tabpanel",
+        "p-tabpanels",
+        "p-tabs",
+        "textarea"
+      ],
+      "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
+    },
+    {
+      "path": "src/app/features/records/presentation/agent-detail/agent-detail.html",
+      "owner": "APP-FE-007",
+      "delta": "REUSE",
+      "controls": [
+        "app-agent-capabilities",
+        "app-agent-decision-summary",
+        "app-agent-instructions",
+        "app-agent-limits",
+        "app-agent-overview",
+        "app-agent-policy-summary",
+        "app-record-summary",
+        "p-tab",
+        "p-tablist",
+        "p-tabpanel",
+        "p-tabpanels",
+        "p-tabs"
+      ],
+      "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
+    },
+    {
+      "path": "src/app/features/records/presentation/agent-fields/agent-fields.html",
+      "owner": "APP-FE-007",
+      "delta": "REUSE",
+      "controls": [
+        "app-agent-capabilities",
+        "app-agent-decision",
+        "app-agent-instructions",
+        "app-agent-limits",
+        "app-agent-overview",
+        "app-agent-policy",
+        "app-record-fields",
+        "button",
+        "p-tab",
+        "p-tablist",
+        "p-tabpanel",
+        "p-tabpanels",
+        "p-tabs"
+      ],
+      "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
+    },
+    {
+      "path": "src/app/features/records/presentation/agent-instructions/agent-instructions.html",
+      "owner": "APP-FE-007",
+      "delta": "EXTEND",
+      "controls": ["app-control-field", "input", "textarea"],
+      "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
+    },
+    {
+      "path": "src/app/features/records/presentation/agent-limits/agent-limits.html",
+      "owner": "APP-FE-007",
+      "delta": "REUSE",
+      "controls": ["app-control-field", "input", "p-checkbox"],
+      "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
+    },
+    {
+      "path": "src/app/features/records/presentation/agent-overview/agent-overview.html",
+      "owner": "APP-FE-007",
+      "delta": "REUSE",
+      "controls": [],
+      "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
+    },
+    {
+      "path": "src/app/features/records/presentation/agent-policy-summary/agent-policy-summary.html",
+      "owner": "APP-FE-007",
+      "delta": "REUSE",
+      "controls": [],
+      "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
+    },
+    {
+      "path": "src/app/features/records/presentation/agent-policy/agent-policy.html",
+      "owner": "APP-FE-007",
+      "delta": "REUSE",
+      "controls": [
+        "app-control-field",
+        "app-select-control",
+        "button",
+        "input",
+        "p-checkbox"
+      ],
+      "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
+    },
+    {
       "path": "src/app/features/records/presentation/favorites/favorites.html",
       "owner": "APP-FE-007",
       "delta": "REUSE",
@@ -45381,7 +45698,28 @@
       "path": "src/app/features/records/presentation/record-detail.html",
       "owner": "APP-FE-007",
       "delta": "REUSE",
-      "controls": ["app-copy-field", "app-record-summary", "button"],
+      "controls": [
+        "app-agent-detail",
+        "app-copy-field",
+        "app-record-summary",
+        "button"
+      ],
+      "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
+    },
+    {
+      "path": "src/app/features/records/presentation/record-editor.html",
+      "owner": "APP-FE-007",
+      "delta": "REUSE",
+      "controls": [
+        "app-agent-fields",
+        "app-control-field",
+        "app-record-fields",
+        "app-record-recovery",
+        "app-record-summary",
+        "button",
+        "input",
+        "p-dialog"
+      ],
       "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
     },
     {
@@ -45411,7 +45749,14 @@
       "path": "src/app/features/records/presentation/record-page-header.html",
       "owner": "APP-FE-007",
       "delta": "REUSE",
-      "controls": ["button"],
+      "controls": ["button", "p-menu"],
+      "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
+    },
+    {
+      "path": "src/app/features/records/presentation/record-recovery.html",
+      "owner": "APP-FE-007",
+      "delta": "REUSE",
+      "controls": ["app-record-summary", "button"],
       "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
     },
     {
@@ -45426,10 +45771,9 @@
       "owner": "APP-FE-007",
       "delta": "REUSE",
       "controls": [
-        "app-control-field",
         "app-list-query",
         "app-record-detail",
-        "app-record-fields",
+        "app-record-editor",
         "app-record-history-dialog",
         "app-record-page-header",
         "app-record-role-dialog",
@@ -45437,8 +45781,7 @@
         "app-repair-return",
         "app-resource-actions",
         "button",
-        "input",
-        "p-dialog"
+        "input"
       ],
       "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
     },
@@ -45450,10 +45793,17 @@
       "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
     },
     {
+      "path": "src/app/features/studio/infrastructure/workflow-canvas/canvas-guidance/canvas-guidance.html",
+      "owner": "APP-FE-020",
+      "delta": "REUSE",
+      "controls": ["app-help-popover"],
+      "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
+    },
+    {
       "path": "src/app/features/studio/infrastructure/workflow-canvas/canvas-toolbar.html",
       "owner": "APP-FE-020",
       "delta": "REUSE",
-      "controls": ["app-select-control", "button"],
+      "controls": ["app-menu-button", "app-select-control", "button"],
       "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
     },
     {
@@ -45461,6 +45811,7 @@
       "owner": "APP-FE-020",
       "delta": "REUSE",
       "controls": [
+        "app-canvas-guidance",
         "app-canvas-toolbar",
         "app-context-menu-control",
         "app-select-control",
@@ -45484,15 +45835,38 @@
       "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
     },
     {
+      "path": "src/app/features/studio/presentation/catalog-business-field.html",
+      "owner": "APP-FE-020",
+      "delta": "REUSE",
+      "controls": ["app-list-values", "app-studio-choice", "button", "input"],
+      "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
+    },
+    {
       "path": "src/app/features/studio/presentation/catalog-extras/catalog-extras.html",
       "owner": "APP-FE-020",
       "delta": "REUSE",
-      "controls": [
-        "app-dependency-readiness",
-        "app-favorite-action",
-        "app-saved-views",
-        "app-studio-choice"
-      ],
+      "controls": ["app-dependency-readiness", "app-studio-choice"],
+      "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
+    },
+    {
+      "path": "src/app/features/studio/presentation/catalog-relations.html",
+      "owner": "APP-FE-020",
+      "delta": "REUSE",
+      "controls": [],
+      "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
+    },
+    {
+      "path": "src/app/features/studio/presentation/collection-source/collection-source.html",
+      "owner": "APP-FE-020",
+      "delta": "REUSE",
+      "controls": ["app-select-control", "input"],
+      "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
+    },
+    {
+      "path": "src/app/features/studio/presentation/form-action-settings/form-action-settings.html",
+      "owner": "APP-FE-020",
+      "delta": "REUSE",
+      "controls": ["app-select-control"],
       "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
     },
     {
@@ -45500,7 +45874,7 @@
       "owner": "APP-FE-020",
       "delta": "EXTEND",
       "controls": [
-        "app-schema-input",
+        "app-form-choice-rows",
         "app-select-control",
         "button",
         "input",
@@ -45511,18 +45885,23 @@
     {
       "path": "src/app/features/studio/presentation/form-builder/form-builder.html",
       "owner": "APP-FE-016",
-      "delta": "EXTEND",
+      "delta": "REUSE",
       "controls": [
         "app-form-canvas",
+        "app-form-diagnostics",
         "app-form-field-placement",
         "app-form-inspector",
+        "app-form-live-preview",
+        "app-form-palette",
         "app-form-placement-controls",
+        "app-form-rule-overview",
         "app-form-settings",
-        "app-runtime-form",
-        "app-select-control",
         "button",
-        "input",
-        "textarea"
+        "p-tab",
+        "p-tablist",
+        "p-tabpanel",
+        "p-tabpanels",
+        "p-tabs"
       ],
       "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
     },
@@ -45530,7 +45909,40 @@
       "path": "src/app/features/studio/presentation/form-canvas/form-canvas.html",
       "owner": "APP-FE-020",
       "delta": "REUSE",
-      "controls": ["button"],
+      "controls": [
+        "app-form-design-control",
+        "app-select-control",
+        "button",
+        "p-menu"
+      ],
+      "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
+    },
+    {
+      "path": "src/app/features/studio/presentation/form-choice-rows/form-choice-rows.html",
+      "owner": "APP-FE-020",
+      "delta": "REUSE",
+      "controls": ["app-select-control", "button", "input"],
+      "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
+    },
+    {
+      "path": "src/app/features/studio/presentation/form-design-control/form-design-control.ts",
+      "owner": "APP-FE-020",
+      "delta": "REUSE",
+      "controls": ["app-form-design-detail"],
+      "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
+    },
+    {
+      "path": "src/app/features/studio/presentation/form-design-detail/form-design-detail.ts",
+      "owner": "APP-FE-020",
+      "delta": "REUSE",
+      "controls": [],
+      "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
+    },
+    {
+      "path": "src/app/features/studio/presentation/form-diagnostics/form-diagnostics.html",
+      "owner": "APP-FE-020",
+      "delta": "REUSE",
+      "controls": ["app-form-interaction-preview", "button"],
       "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
     },
     {
@@ -45559,13 +45971,69 @@
       "owner": "APP-FE-020",
       "delta": "REUSE",
       "controls": [
+        "app-form-action-settings",
         "app-form-behavior",
         "app-form-geometry",
-        "app-schema-input",
+        "app-form-label-editor",
+        "app-form-resource-settings",
+        "app-form-rules",
         "app-select-control",
         "button",
-        "input"
+        "p-accordion",
+        "p-accordion-content",
+        "p-accordion-header",
+        "p-accordion-panel",
+        "p-checkbox"
       ],
+      "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
+    },
+    {
+      "path": "src/app/features/studio/presentation/form-interaction-preview/form-interaction-preview.html",
+      "owner": "APP-FE-020",
+      "delta": "REUSE",
+      "controls": ["button", "input"],
+      "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
+    },
+    {
+      "path": "src/app/features/studio/presentation/form-label-editor/form-label-editor.html",
+      "owner": "APP-FE-020",
+      "delta": "REUSE",
+      "controls": ["button", "input"],
+      "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
+    },
+    {
+      "path": "src/app/features/studio/presentation/form-live-preview/form-live-preview.html",
+      "owner": "APP-FE-020",
+      "delta": "REUSE",
+      "controls": [
+        "app-control-field",
+        "app-form-preview-context",
+        "app-help-popover",
+        "app-runtime-form",
+        "app-select-control",
+        "button"
+      ],
+      "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
+    },
+    {
+      "path": "src/app/features/studio/presentation/form-message-catalog/form-message-catalog.html",
+      "owner": "APP-FE-020",
+      "delta": "REUSE",
+      "controls": ["button", "p-card", "p-table"],
+      "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
+    },
+    {
+      "path": "src/app/features/studio/presentation/form-pages/form-pages.html",
+      "owner": "APP-FE-020",
+      "delta": "REUSE",
+      "controls": ["button", "input", "p-checkbox"],
+      "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
+    },
+    {
+      "path": "src/app/features/studio/presentation/form-palette/form-palette.html",
+      "owner": "APP-FE-020",
+      "delta": "REUSE",
+      "controls": ["app-select-control", "button", "input"],
       "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
     },
     {
@@ -45576,10 +46044,68 @@
       "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
     },
     {
+      "path": "src/app/features/studio/presentation/form-preview-context/form-preview-context.html",
+      "owner": "APP-FE-020",
+      "delta": "REUSE",
+      "controls": ["app-schema-input", "button", "p-checkbox"],
+      "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
+    },
+    {
+      "path": "src/app/features/studio/presentation/form-resource-settings/form-resource-settings.html",
+      "owner": "APP-FE-020",
+      "delta": "EXTEND",
+      "controls": [
+        "app-schema-input",
+        "app-select-control",
+        "input",
+        "textarea"
+      ],
+      "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
+    },
+    {
+      "path": "src/app/features/studio/presentation/form-rule-overview/form-rule-overview.html",
+      "owner": "APP-FE-020",
+      "delta": "REUSE",
+      "controls": ["button"],
+      "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
+    },
+    {
+      "path": "src/app/features/studio/presentation/form-rule-resource/form-rule-resource.html",
+      "owner": "APP-FE-020",
+      "delta": "REUSE",
+      "controls": ["app-select-control", "button", "input"],
+      "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
+    },
+    {
+      "path": "src/app/features/studio/presentation/form-rule-value/form-rule-value.html",
+      "owner": "APP-FE-020",
+      "delta": "REUSE",
+      "controls": ["app-form-rule-resource", "app-select-control", "input"],
+      "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
+    },
+    {
+      "path": "src/app/features/studio/presentation/form-rules/form-rules.html",
+      "owner": "APP-FE-020",
+      "delta": "REUSE",
+      "controls": [
+        "app-form-rule-resource",
+        "app-form-rule-value",
+        "app-select-control",
+        "button"
+      ],
+      "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
+    },
+    {
       "path": "src/app/features/studio/presentation/form-settings/form-settings.html",
       "owner": "APP-FE-020",
       "delta": "EXTEND",
-      "controls": ["app-schema-input", "button", "input", "textarea"],
+      "controls": [
+        "app-form-message-catalog",
+        "app-form-pages",
+        "button",
+        "input",
+        "textarea"
+      ],
       "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
     },
     {
@@ -45588,11 +46114,34 @@
       "delta": "REUSE",
       "controls": [
         "app-candidate-targets",
-        "app-schema-input",
+        "app-collection-source",
+        "app-mapping-constant",
+        "app-mapping-list",
         "app-select-control",
         "app-studio-choice",
         "app-transition-editor",
         "button"
+      ],
+      "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
+    },
+    {
+      "path": "src/app/features/studio/presentation/interface-outcomes/interface-outcomes.html",
+      "owner": "APP-FE-020",
+      "delta": "REUSE",
+      "controls": ["app-select-control", "button", "input"],
+      "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
+    },
+    {
+      "path": "src/app/features/studio/presentation/interface-shape/interface-shape.html",
+      "owner": "APP-FE-020",
+      "delta": "REUSE",
+      "controls": [
+        "app-interface-shape",
+        "app-select-control",
+        "button",
+        "input",
+        "p-checkbox",
+        "p-dialog"
       ],
       "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
     },
@@ -45608,6 +46157,20 @@
         "p-dialog",
         "textarea"
       ],
+      "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
+    },
+    {
+      "path": "src/app/features/studio/presentation/mapping-constant/mapping-constant.html",
+      "owner": "APP-FE-020",
+      "delta": "REUSE",
+      "controls": ["app-schema-input", "app-studio-choice", "button", "input"],
+      "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
+    },
+    {
+      "path": "src/app/features/studio/presentation/mapping-list/mapping-list.html",
+      "owner": "APP-FE-020",
+      "delta": "REUSE",
+      "controls": ["button"],
       "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
     },
     {
@@ -45627,6 +46190,7 @@
         "app-schema-input",
         "app-studio-choice",
         "app-subprocess-pin",
+        "app-transform-projection",
         "button"
       ],
       "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
@@ -45648,8 +46212,16 @@
     {
       "path": "src/app/features/studio/presentation/resource-catalog/catalog-actions.html",
       "owner": "APP-FE-027",
-      "delta": "EXTEND",
-      "controls": ["button", "input", "textarea"],
+      "delta": "REUSE",
+      "controls": [
+        "app-catalog-grant-list",
+        "app-control-field",
+        "app-select-control",
+        "app-studio-choice",
+        "button",
+        "p-checkbox",
+        "p-dialog"
+      ],
       "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
     },
     {
@@ -45657,6 +46229,7 @@
       "owner": "APP-FE-027",
       "delta": "REUSE",
       "controls": [
+        "app-catalog-relations",
         "app-form-display",
         "app-list-query",
         "app-record-summary",
@@ -45677,20 +46250,27 @@
       "owner": "APP-FE-027",
       "delta": "EXTEND",
       "controls": [
+        "app-catalog-business-field",
         "app-control-field",
         "button",
         "input",
-        "p-dialog",
         "p-select",
         "textarea"
       ],
       "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
     },
     {
+      "path": "src/app/features/studio/presentation/resource-catalog/catalog-grant-list.html",
+      "owner": "APP-FE-027",
+      "delta": "REUSE",
+      "controls": ["button", "p-table"],
+      "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
+    },
+    {
       "path": "src/app/features/studio/presentation/resource-catalog/catalog-header.html",
       "owner": "APP-FE-027",
       "delta": "REUSE",
-      "controls": ["button"],
+      "controls": ["app-favorite-action", "button", "p-menu"],
       "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
     },
     {
@@ -45707,6 +46287,7 @@
         "app-record-summary",
         "app-record-table",
         "app-repair-return",
+        "app-saved-views",
         "button",
         "p-dialog"
       ],
@@ -45727,15 +46308,50 @@
       "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
     },
     {
-      "path": "src/app/features/studio/presentation/subprocess-pin/subprocess-pin.html",
+      "path": "src/app/features/studio/presentation/subprocess-input/subprocess-input.html",
       "owner": "APP-FE-020",
       "delta": "REUSE",
       "controls": [
-        "app-schema-input",
+        "app-collection-source",
+        "app-mapping-constant",
         "app-select-control",
         "app-studio-choice",
         "button"
       ],
+      "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
+    },
+    {
+      "path": "src/app/features/studio/presentation/subprocess-interface/subprocess-interface.html",
+      "owner": "APP-FE-020",
+      "delta": "REUSE",
+      "controls": [],
+      "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
+    },
+    {
+      "path": "src/app/features/studio/presentation/subprocess-pin/subprocess-pin.html",
+      "owner": "APP-FE-020",
+      "delta": "REUSE",
+      "controls": [
+        "app-select-control",
+        "app-subprocess-input",
+        "app-subprocess-interface",
+        "app-subprocess-sources",
+        "button"
+      ],
+      "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
+    },
+    {
+      "path": "src/app/features/studio/presentation/subprocess-sources/subprocess-sources.html",
+      "owner": "APP-FE-020",
+      "delta": "REUSE",
+      "controls": ["app-studio-choice", "button"],
+      "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
+    },
+    {
+      "path": "src/app/features/studio/presentation/transform-projection/transform-projection.html",
+      "owner": "APP-FE-020",
+      "delta": "REUSE",
+      "controls": ["app-select-control", "button", "input"],
       "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
     },
     {
@@ -45751,12 +46367,24 @@
       "delta": "EXTEND",
       "controls": [
         "app-canvas-connections",
+        "app-menu-button",
         "app-publication-review",
         "app-select-control",
+        "app-studio-choice",
         "app-workflow-diagnostics",
         "app-workflow-editor-pane",
+        "app-workflow-history",
+        "app-workflow-interface-editor",
+        "app-workflow-palette",
+        "app-workflow-selection",
+        "app-workflow-step-action-dialog",
         "button",
         "input",
+        "p-tab",
+        "p-tablist",
+        "p-tabpanel",
+        "p-tabpanels",
+        "p-tabs",
         "textarea"
       ],
       "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
@@ -45797,6 +46425,53 @@
         "button",
         "textarea"
       ],
+      "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
+    },
+    {
+      "path": "src/app/features/studio/presentation/workflow-history/workflow-history.html",
+      "owner": "APP-FE-020",
+      "delta": "REUSE",
+      "controls": [
+        "app-record-summary",
+        "app-record-table",
+        "button",
+        "p-dialog"
+      ],
+      "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
+    },
+    {
+      "path": "src/app/features/studio/presentation/workflow-interface-editor/workflow-interface-editor.html",
+      "owner": "APP-FE-020",
+      "delta": "REUSE",
+      "controls": [
+        "app-interface-outcomes",
+        "app-interface-shape",
+        "app-select-control",
+        "button",
+        "input",
+        "p-checkbox"
+      ],
+      "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
+    },
+    {
+      "path": "src/app/features/studio/presentation/workflow-palette/workflow-palette.html",
+      "owner": "APP-FE-020",
+      "delta": "REUSE",
+      "controls": ["button", "input"],
+      "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
+    },
+    {
+      "path": "src/app/features/studio/presentation/workflow-selection/workflow-selection.html",
+      "owner": "APP-FE-020",
+      "delta": "REUSE",
+      "controls": ["app-select-control", "button", "input"],
+      "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
+    },
+    {
+      "path": "src/app/features/studio/presentation/workflow-step-action-dialog/workflow-step-action-dialog.html",
+      "owner": "APP-FE-020",
+      "delta": "REUSE",
+      "controls": ["app-select-control", "button", "input", "p-dialog"],
       "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
     },
     {
@@ -45863,13 +46538,26 @@
       "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
     },
     {
+      "path": "src/app/shared/ui/file-picker/file-picker.html",
+      "owner": "APP-FE-004",
+      "delta": "REUSE",
+      "controls": ["input"],
+      "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
+    },
+    {
+      "path": "src/app/shared/ui/help-popover/help-popover.html",
+      "owner": "APP-FE-004",
+      "delta": "REUSE",
+      "controls": ["button", "p-popover"],
+      "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
+    },
+    {
       "path": "src/app/shared/ui/list-query/list-query.html",
       "owner": "APP-FE-004",
       "delta": "REUSE",
       "controls": [
-        "app-control-field",
         "app-query-filters",
-        "app-select-control",
+        "app-query-sorts",
         "button",
         "input",
         "p-panel",
@@ -45884,11 +46572,19 @@
       "controls": [
         "app-control-field",
         "app-list-values",
+        "app-query-choice",
         "app-select-control",
         "app-temporal-control",
         "button",
         "input"
       ],
+      "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
+    },
+    {
+      "path": "src/app/shared/ui/list-query/query-sorts.html",
+      "owner": "APP-FE-004",
+      "delta": "REUSE",
+      "controls": ["app-control-field", "app-select-control", "button"],
       "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
     },
     {
@@ -45904,10 +46600,24 @@
       "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
     },
     {
+      "path": "src/app/shared/ui/menu-button/menu-button.html",
+      "owner": "APP-FE-004",
+      "delta": "REUSE",
+      "controls": ["button", "p-menu"],
+      "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
+    },
+    {
       "path": "src/app/shared/ui/not-found.html",
       "owner": "APP-FE-004",
       "delta": "REUSE",
       "controls": [],
+      "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
+    },
+    {
+      "path": "src/app/shared/ui/query-choice.ts",
+      "owner": "APP-FE-004",
+      "delta": "REUSE",
+      "controls": ["app-select-control"],
       "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
     },
     {
@@ -45918,10 +46628,22 @@
       "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
     },
     {
+      "path": "src/app/shared/ui/record-summary/record-identity/record-identity.html",
+      "owner": "APP-FE-004",
+      "delta": "REUSE",
+      "controls": [],
+      "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
+    },
+    {
       "path": "src/app/shared/ui/record-summary/record-summary.html",
       "owner": "APP-FE-004",
       "delta": "REUSE",
-      "controls": ["app-record-collections", "p-table", "p-tag"],
+      "controls": [
+        "app-record-collections",
+        "app-record-identity",
+        "p-table",
+        "p-tag"
+      ],
       "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
     },
     {
@@ -45931,6 +46653,7 @@
       "controls": [
         "app-control-field",
         "app-list-values",
+        "app-query-choice",
         "app-select-control",
         "app-temporal-control",
         "button",
@@ -45976,8 +46699,41 @@
         "app-saved-view-repair",
         "app-select-control",
         "button",
-        "input"
+        "input",
+        "p-dialog",
+        "p-menu",
+        "p-popover"
       ],
+      "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
+    },
+    {
+      "path": "src/app/shared/ui/schema-input/schema-array.html",
+      "owner": "APP-FE-007",
+      "delta": "REUSE",
+      "controls": ["app-schema-input", "button"],
+      "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
+    },
+    {
+      "path": "src/app/shared/ui/schema-input/schema-input.html",
+      "owner": "APP-FE-007",
+      "delta": "EXTEND",
+      "controls": [
+        "app-control-field",
+        "app-schema-array",
+        "app-schema-object",
+        "app-select-control",
+        "app-temporal-control",
+        "button",
+        "input",
+        "textarea"
+      ],
+      "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
+    },
+    {
+      "path": "src/app/shared/ui/schema-input/schema-object.html",
+      "owner": "APP-FE-007",
+      "delta": "REUSE",
+      "controls": ["app-control-field", "app-schema-input", "button", "input"],
       "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
     },
     {
@@ -45996,7 +46752,7 @@
         "button",
         "input",
         "p-datepicker",
-        "p-dialog"
+        "p-popover"
       ],
       "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
     },
@@ -46005,6 +46761,20 @@
       "owner": "APP-FE-004",
       "delta": "REUSE",
       "controls": ["p-select"],
+      "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
+    },
+    {
+      "path": "src/app/shared/ui/timezone-control/timezone-control.html",
+      "owner": "APP-FE-004",
+      "delta": "REUSE",
+      "controls": ["app-select-control"],
+      "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
+    },
+    {
+      "path": "src/app/shared/ui/transfer-progress/transfer-progress.ts",
+      "owner": "APP-FE-004",
+      "delta": "REUSE",
+      "controls": [],
       "disposition": "PrimeNG-first for touched business UI; retain canonical native controls, native confirmation, Material/Ant Design compatibility showcase and Foblex adapter"
     },
     {
@@ -46029,22 +46799,6 @@
   ],
   "jsonPanels": [
     {
-      "path": "src/app/features/administration/presentation/admin-console/admin-command-form.html",
-      "line": 56,
-      "owner": "APP-FE-030",
-      "source": "} @else if (field.type === \"json\") {",
-      "disposition": "REPLACE_NORMAL",
-      "replacement": "Typed domain fields and record summaries"
-    },
-    {
-      "path": "src/app/features/administration/presentation/admin-console/admin-command-form.html",
-      "line": 57,
-      "owner": "APP-FE-030",
-      "source": "<textarea",
-      "disposition": "REPLACE_NORMAL",
-      "replacement": "Typed domain fields and record summaries"
-    },
-    {
       "path": "src/app/features/administration/presentation/admin-console/admin-command-result.html",
       "line": 23,
       "owner": "APP-FE-030",
@@ -46053,16 +46807,8 @@
       "replacement": "Typed domain fields and record summaries"
     },
     {
-      "path": "src/app/features/administration/presentation/schema-input/schema-input.html",
-      "line": 117,
-      "owner": "APP-FE-007",
-      "source": "<textarea",
-      "disposition": "REPLACE_NORMAL",
-      "replacement": "Typed domain fields and record summaries"
-    },
-    {
       "path": "src/app/features/forms/presentation/runtime-node/runtime-field.html",
-      "line": 39,
+      "line": 47,
       "owner": "APP-FE-017",
       "source": "<textarea",
       "disposition": "REPLACE_NORMAL",
@@ -46070,7 +46816,7 @@
     },
     {
       "path": "src/app/features/operations/presentation/advanced-task/advanced-task.html",
-      "line": 70,
+      "line": 93,
       "owner": "APP-FE-028",
       "source": "<textarea",
       "disposition": "REPLACE_NORMAL",
@@ -46078,17 +46824,17 @@
     },
     {
       "path": "src/app/features/operations/presentation/advanced-task/advanced-task.html",
-      "line": 132,
+      "line": 165,
       "owner": "APP-FE-028",
       "source": "<textarea",
       "disposition": "REPLACE_NORMAL",
       "replacement": "Typed domain fields and record summaries"
     },
     {
-      "path": "src/app/features/operations/presentation/ai-approval/ai-approval.html",
-      "line": 13,
+      "path": "src/app/features/operations/presentation/correction-feedback-editor/correction-feedback-editor.html",
+      "line": 39,
       "owner": "APP-FE-028",
-      "source": "<pre>{{ argumentsText() }}</pre>",
+      "source": "<textarea",
       "disposition": "REPLACE_NORMAL",
       "replacement": "Typed domain fields and record summaries"
     },
@@ -46101,216 +46847,56 @@
       "replacement": "Typed domain fields and record summaries"
     },
     {
+      "path": "src/app/features/records/presentation/agent-decision/agent-decision.html",
+      "line": 10,
+      "owner": "APP-FE-007",
+      "source": "<textarea",
+      "disposition": "REPLACE_NORMAL",
+      "replacement": "Typed domain fields and record summaries"
+    },
+    {
+      "path": "src/app/features/records/presentation/agent-decision/agent-decision.html",
+      "line": 235,
+      "owner": "APP-FE-007",
+      "source": "<textarea",
+      "disposition": "REPLACE_NORMAL",
+      "replacement": "Typed domain fields and record summaries"
+    },
+    {
+      "path": "src/app/features/records/presentation/agent-instructions/agent-instructions.html",
+      "line": 19,
+      "owner": "APP-FE-007",
+      "source": "<textarea",
+      "disposition": "REPLACE_NORMAL",
+      "replacement": "Typed domain fields and record summaries"
+    },
+    {
       "path": "src/app/features/studio/presentation/form-behavior/form-behavior.html",
-      "line": 145,
+      "line": 152,
       "owner": "APP-FE-020",
       "source": "<textarea",
       "disposition": "REPLACE_NORMAL",
       "replacement": "Typed domain fields and record summaries"
     },
     {
-      "path": "src/app/features/studio/presentation/form-builder/form-builder.html",
-      "line": 199,
-      "owner": "APP-FE-016",
-      "source": "<label for=\"node-json\">{{",
+      "path": "src/app/features/studio/presentation/form-diagnostics/form-diagnostics.html",
+      "line": 3,
+      "owner": "APP-FE-020",
+      "source": "@if (vm.diagnostics()) {",
       "disposition": "REPLACE_NORMAL",
-      "replacement": "Typed form/validation/behavior inspectors"
+      "replacement": "Typed domain fields and record summaries"
     },
     {
-      "path": "src/app/features/studio/presentation/form-builder/form-builder.html",
-      "line": 202,
-      "owner": "APP-FE-016",
-      "source": "><textarea",
+      "path": "src/app/features/studio/presentation/form-resource-settings/form-resource-settings.html",
+      "line": 65,
+      "owner": "APP-FE-020",
+      "source": "<textarea",
       "disposition": "REPLACE_NORMAL",
-      "replacement": "Typed form/validation/behavior inspectors"
-    },
-    {
-      "path": "src/app/features/studio/presentation/form-builder/form-builder.html",
-      "line": 204,
-      "owner": "APP-FE-016",
-      "source": "id=\"node-json\"",
-      "disposition": "REPLACE_NORMAL",
-      "replacement": "Typed form/validation/behavior inspectors"
-    },
-    {
-      "path": "src/app/features/studio/presentation/form-builder/form-builder.html",
-      "line": 208,
-      "owner": "APP-FE-016",
-      "source": "[(ngModel)]=\"selectedJson\"",
-      "disposition": "REPLACE_NORMAL",
-      "replacement": "Typed form/validation/behavior inspectors"
-    },
-    {
-      "path": "src/app/features/studio/presentation/form-builder/form-builder.html",
-      "line": 224,
-      "owner": "APP-FE-016",
-      "source": "<label for=\"schema-json\">{{ \"Canonical data schema\" | localize }}</label",
-      "disposition": "REPLACE_NORMAL",
-      "replacement": "Typed form/validation/behavior inspectors"
-    },
-    {
-      "path": "src/app/features/studio/presentation/form-builder/form-builder.html",
-      "line": 225,
-      "owner": "APP-FE-016",
-      "source": "><textarea",
-      "disposition": "REPLACE_NORMAL",
-      "replacement": "Typed form/validation/behavior inspectors"
-    },
-    {
-      "path": "src/app/features/studio/presentation/form-builder/form-builder.html",
-      "line": 227,
-      "owner": "APP-FE-016",
-      "source": "id=\"schema-json\"",
-      "disposition": "REPLACE_NORMAL",
-      "replacement": "Typed form/validation/behavior inspectors"
-    },
-    {
-      "path": "src/app/features/studio/presentation/form-builder/form-builder.html",
-      "line": 230,
-      "owner": "APP-FE-016",
-      "source": "[(ngModel)]=\"schemaJson\"",
-      "disposition": "REPLACE_NORMAL",
-      "replacement": "Typed form/validation/behavior inspectors"
-    },
-    {
-      "path": "src/app/features/studio/presentation/form-builder/form-builder.html",
-      "line": 246,
-      "owner": "APP-FE-016",
-      "source": "<label for=\"behavior-json\">{{",
-      "disposition": "REPLACE_NORMAL",
-      "replacement": "Typed form/validation/behavior inspectors"
-    },
-    {
-      "path": "src/app/features/studio/presentation/form-builder/form-builder.html",
-      "line": 249,
-      "owner": "APP-FE-016",
-      "source": "><textarea",
-      "disposition": "REPLACE_NORMAL",
-      "replacement": "Typed form/validation/behavior inspectors"
-    },
-    {
-      "path": "src/app/features/studio/presentation/form-builder/form-builder.html",
-      "line": 251,
-      "owner": "APP-FE-016",
-      "source": "id=\"behavior-json\"",
-      "disposition": "REPLACE_NORMAL",
-      "replacement": "Typed form/validation/behavior inspectors"
-    },
-    {
-      "path": "src/app/features/studio/presentation/form-builder/form-builder.html",
-      "line": 254,
-      "owner": "APP-FE-016",
-      "source": "[(ngModel)]=\"behaviorJson\"",
-      "disposition": "REPLACE_NORMAL",
-      "replacement": "Typed form/validation/behavior inspectors"
-    },
-    {
-      "path": "src/app/features/studio/presentation/form-builder/form-builder.html",
-      "line": 302,
-      "owner": "APP-FE-016",
-      "source": "<label for=\"sample-json\">{{ \"Synthetic sample values\" | localize }}</label",
-      "disposition": "REPLACE_NORMAL",
-      "replacement": "Typed form/validation/behavior inspectors"
-    },
-    {
-      "path": "src/app/features/studio/presentation/form-builder/form-builder.html",
-      "line": 303,
-      "owner": "APP-FE-016",
-      "source": "><textarea",
-      "disposition": "REPLACE_NORMAL",
-      "replacement": "Typed form/validation/behavior inspectors"
-    },
-    {
-      "path": "src/app/features/studio/presentation/form-builder/form-builder.html",
-      "line": 305,
-      "owner": "APP-FE-016",
-      "source": "id=\"sample-json\"",
-      "disposition": "REPLACE_NORMAL",
-      "replacement": "Typed form/validation/behavior inspectors"
-    },
-    {
-      "path": "src/app/features/studio/presentation/form-builder/form-builder.html",
-      "line": 307,
-      "owner": "APP-FE-016",
-      "source": "[(ngModel)]=\"sampleJson\"",
-      "disposition": "REPLACE_NORMAL",
-      "replacement": "Typed form/validation/behavior inspectors"
-    },
-    {
-      "path": "src/app/features/studio/presentation/form-builder/form-builder.html",
-      "line": 313,
-      "owner": "APP-FE-016",
-      "source": "><textarea",
-      "disposition": "REPLACE_NORMAL",
-      "replacement": "Typed form/validation/behavior inspectors"
-    },
-    {
-      "path": "src/app/features/studio/presentation/form-builder/form-builder.html",
-      "line": 316,
-      "owner": "APP-FE-016",
-      "source": "[(ngModel)]=\"previewContextJson\"",
-      "disposition": "REPLACE_NORMAL",
-      "replacement": "Typed form/validation/behavior inspectors"
-    },
-    {
-      "path": "src/app/features/studio/presentation/form-builder/form-builder.html",
-      "line": 388,
-      "owner": "APP-FE-016",
-      "source": "(sample)=\"sampleJson = JSON.stringify($event); queuePreview()\"",
-      "disposition": "REPLACE_NORMAL",
-      "replacement": "Typed form/validation/behavior inspectors"
-    },
-    {
-      "path": "src/app/features/studio/presentation/form-builder/form-builder.html",
-      "line": 421,
-      "owner": "APP-FE-016",
-      "source": "<label for=\"interaction-json\">{{",
-      "disposition": "REPLACE_NORMAL",
-      "replacement": "Typed form/validation/behavior inspectors"
-    },
-    {
-      "path": "src/app/features/studio/presentation/form-builder/form-builder.html",
-      "line": 424,
-      "owner": "APP-FE-016",
-      "source": "><textarea",
-      "disposition": "REPLACE_NORMAL",
-      "replacement": "Typed form/validation/behavior inspectors"
-    },
-    {
-      "path": "src/app/features/studio/presentation/form-builder/form-builder.html",
-      "line": 426,
-      "owner": "APP-FE-016",
-      "source": "id=\"interaction-json\"",
-      "disposition": "REPLACE_NORMAL",
-      "replacement": "Typed form/validation/behavior inspectors"
-    },
-    {
-      "path": "src/app/features/studio/presentation/form-builder/form-builder.html",
-      "line": 427,
-      "owner": "APP-FE-016",
-      "source": "[(ngModel)]=\"interactionJson\"",
-      "disposition": "REPLACE_NORMAL",
-      "replacement": "Typed form/validation/behavior inspectors"
-    },
-    {
-      "path": "src/app/features/studio/presentation/form-builder/form-builder.html",
-      "line": 449,
-      "owner": "APP-FE-016",
-      "source": "@if (diagnostics()) {",
-      "disposition": "REPLACE_NORMAL",
-      "replacement": "Typed form/validation/behavior inspectors"
-    },
-    {
-      "path": "src/app/features/studio/presentation/form-builder/form-builder.html",
-      "line": 471,
-      "owner": "APP-FE-016",
-      "source": "<pre>{{ diagnostics() }}</pre>",
-      "disposition": "REPLACE_NORMAL",
-      "replacement": "Typed form/validation/behavior inspectors"
+      "replacement": "Typed domain fields and record summaries"
     },
     {
       "path": "src/app/features/studio/presentation/form-settings/form-settings.html",
-      "line": 53,
+      "line": 50,
       "owner": "APP-FE-020",
       "source": "><textarea",
       "disposition": "REPLACE_NORMAL",
@@ -46318,7 +46904,7 @@
     },
     {
       "path": "src/app/features/studio/presentation/form-settings/form-settings.html",
-      "line": 63,
+      "line": 60,
       "owner": "APP-FE-020",
       "source": "><textarea",
       "disposition": "REPLACE_NORMAL",
@@ -46326,7 +46912,7 @@
     },
     {
       "path": "src/app/features/studio/presentation/form-settings/form-settings.html",
-      "line": 73,
+      "line": 70,
       "owner": "APP-FE-020",
       "source": "><textarea",
       "disposition": "REPLACE_NORMAL",
@@ -46349,24 +46935,8 @@
       "replacement": "Typed domain fields and record summaries"
     },
     {
-      "path": "src/app/features/studio/presentation/resource-catalog/catalog-actions.html",
-      "line": 62,
-      "owner": "APP-FE-027",
-      "source": "<pre>{{ vm.grants() }}</pre>",
-      "disposition": "REPLACE_NORMAL",
-      "replacement": "Typed domain fields and record summaries"
-    },
-    {
-      "path": "src/app/features/studio/presentation/resource-catalog/catalog-actions.html",
-      "line": 86,
-      "owner": "APP-FE-027",
-      "source": "><textarea",
-      "disposition": "REPLACE_NORMAL",
-      "replacement": "Typed domain fields and record summaries"
-    },
-    {
       "path": "src/app/features/studio/presentation/resource-catalog/catalog-editor.html",
-      "line": 48,
+      "line": 66,
       "owner": "APP-FE-027",
       "source": "@case (\"json\") {",
       "disposition": "REPLACE_NORMAL",
@@ -46374,7 +46944,7 @@
     },
     {
       "path": "src/app/features/studio/presentation/resource-catalog/catalog-editor.html",
-      "line": 49,
+      "line": 67,
       "owner": "APP-FE-027",
       "source": "<textarea",
       "disposition": "REPLACE_NORMAL",
@@ -46382,7 +46952,7 @@
     },
     {
       "path": "src/app/features/studio/presentation/workflow-board/workflow-board.html",
-      "line": 306,
+      "line": 276,
       "owner": "APP-FE-021",
       "source": "><label for=\"graph-json\">{{",
       "disposition": "REPLACE_NORMAL",
@@ -46390,7 +46960,7 @@
     },
     {
       "path": "src/app/features/studio/presentation/workflow-board/workflow-board.html",
-      "line": 309,
+      "line": 280,
       "owner": "APP-FE-021",
       "source": "><textarea",
       "disposition": "REPLACE_NORMAL",
@@ -46398,7 +46968,7 @@
     },
     {
       "path": "src/app/features/studio/presentation/workflow-board/workflow-board.html",
-      "line": 311,
+      "line": 282,
       "owner": "APP-FE-021",
       "source": "id=\"graph-json\"",
       "disposition": "REPLACE_NORMAL",
@@ -46406,41 +46976,9 @@
     },
     {
       "path": "src/app/features/studio/presentation/workflow-board/workflow-board.html",
-      "line": 314,
+      "line": 285,
       "owner": "APP-FE-021",
       "source": "[(ngModel)]=\"graphJson\"",
-      "disposition": "REPLACE_NORMAL",
-      "replacement": "Typed node/mapping inspectors"
-    },
-    {
-      "path": "src/app/features/studio/presentation/workflow-board/workflow-board.html",
-      "line": 416,
-      "owner": "APP-FE-021",
-      "source": "><textarea",
-      "disposition": "REPLACE_NORMAL",
-      "replacement": "Typed node/mapping inspectors"
-    },
-    {
-      "path": "src/app/features/studio/presentation/workflow-board/workflow-board.html",
-      "line": 419,
-      "owner": "APP-FE-021",
-      "source": "[(ngModel)]=\"collapsedJson\"",
-      "disposition": "REPLACE_NORMAL",
-      "replacement": "Typed node/mapping inspectors"
-    },
-    {
-      "path": "src/app/features/studio/presentation/workflow-board/workflow-board.html",
-      "line": 425,
-      "owner": "APP-FE-021",
-      "source": "><textarea",
-      "disposition": "REPLACE_NORMAL",
-      "replacement": "Typed node/mapping inspectors"
-    },
-    {
-      "path": "src/app/features/studio/presentation/workflow-board/workflow-board.html",
-      "line": 428,
-      "owner": "APP-FE-021",
-      "source": "[(ngModel)]=\"routingJson\"",
       "disposition": "REPLACE_NORMAL",
       "replacement": "Typed node/mapping inspectors"
     },
@@ -46454,7 +46992,7 @@
     },
     {
       "path": "src/app/features/studio/presentation/workflow-editor-pane/workflow-editor-pane.html",
-      "line": 56,
+      "line": 59,
       "owner": "APP-FE-020",
       "source": "<label for=\"step-json\">{{",
       "disposition": "REPLACE_NORMAL",
@@ -46462,7 +47000,7 @@
     },
     {
       "path": "src/app/features/studio/presentation/workflow-editor-pane/workflow-editor-pane.html",
-      "line": 60,
+      "line": 63,
       "owner": "APP-FE-020",
       "source": "><textarea",
       "disposition": "REPLACE_NORMAL",
@@ -46470,7 +47008,7 @@
     },
     {
       "path": "src/app/features/studio/presentation/workflow-editor-pane/workflow-editor-pane.html",
-      "line": 62,
+      "line": 65,
       "owner": "APP-FE-020",
       "source": "id=\"step-json\"",
       "disposition": "REPLACE_NORMAL",
@@ -46478,17 +47016,25 @@
     },
     {
       "path": "src/app/features/studio/presentation/workflow-editor-pane/workflow-editor-pane.html",
-      "line": 65,
+      "line": 68,
       "owner": "APP-FE-020",
       "source": "[(ngModel)]=\"view().selectedJson\"",
       "disposition": "REPLACE_NORMAL",
       "replacement": "Typed node/mapping inspectors"
+    },
+    {
+      "path": "src/app/shared/ui/schema-input/schema-input.html",
+      "line": 117,
+      "owner": "APP-FE-007",
+      "source": "<textarea",
+      "disposition": "REPLACE_NORMAL",
+      "replacement": "Typed domain fields and record summaries"
     }
   ],
   "routes": [
     {
       "path": "src/app/app.routes.ts",
-      "sha256": "83b67fdf4dd89bd9138995a6687b31ce9bf8c354af4e5edcf94511c9e6c56547"
+      "sha256": "dd8e4d39abab979f62814ca0c92c7b4116830fe4039be4eaeb8cbf77fd7b3bea"
     },
     {
       "path": "src/app/core/development/preview-routes.ts",
@@ -46504,7 +47050,7 @@
     },
     {
       "path": "src/app/features/operations/presentation/operations.routes.ts",
-      "sha256": "96012f1f054aece273aa49bce8e2bf23c5179d6fe35f1673c00ea58c7542cff3"
+      "sha256": "8e80460bbc52c3cb74f5f496a60b5339f571c04b7ab054f5263e26ac6a4ba388"
     },
     {
       "path": "src/app/features/operations/presentation/runtime-preview.routes.ts",
@@ -46512,11 +47058,11 @@
     },
     {
       "path": "src/app/features/records/presentation/record.routes.ts",
-      "sha256": "d6c0678441b38bbfa9f2485db824bc9e59de45e1f5413228c9f88bc16e0812b7"
+      "sha256": "1895299ee4d32f897543b81d922771f381b99ff6f569bfaa3b6f8e960ae9152f"
     },
     {
       "path": "src/app/features/studio/presentation/studio.routes.ts",
-      "sha256": "11e1ba143042f07c11cc69fe83ffee0319b4901cac2c57665cb91716ff0589a3"
+      "sha256": "233212ddbad034604fc0eaa150fbfb5dfdace4e88bdf85d6b0e2ec302e6d8f87"
     },
     {
       "path": "src/app/features/studio/presentation/workflow-board.routes.ts",

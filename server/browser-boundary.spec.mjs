@@ -1,3 +1,4 @@
+import { publicBrowserStorageCheck } from "./browser-storage-policy.mjs";
 import { writeBrowserReport } from "./browser-report.mjs";
 import assert from "node:assert/strict";
 import { createServer } from "node:http";
@@ -134,7 +135,7 @@ const page = `<!doctype html><script>
  check(login.status === 200, 'browser login');
  check(!/fixture-access|fixture-refresh|fixture-server-secret/.test(text), 'server tokens leaked');
  check(!document.cookie.includes('workspace_session'), 'cookie readable by JavaScript');
- check(localStorage.length === 0 && sessionStorage.length === 0, 'persistent state');
+ check(${publicBrowserStorageCheck}, 'persistent state');
  const session = await (await fetch('/session/status')).json();
  check(session.authenticated && session.csrfToken === state.csrfToken, 'login cookie did not establish the browser session');
  const denied = await fetch('/api/v1/work-items/search', {method:'POST',headers:{'content-type':'application/json'},body:'{}'});

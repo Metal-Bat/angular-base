@@ -1,9 +1,11 @@
+import { WorkspaceBreadcrumbs } from './workspace-breadcrumbs/workspace-breadcrumbs';
+import { WorkspaceNavigationService } from './workspace-navigation.service';
 import { WorkspaceNotifications } from './workspace-notifications';
-import { SelectControl } from '../../shared/ui/select-control/select-control';
+import { WorkspaceAccount } from './workspace-account/workspace-account';
+import { WorkspacePreferences } from './workspace-preferences/workspace-preferences';
 import { isSupportedLocale } from '../localization/languages';
 import { NotificationPreview } from '../notifications/notification-preview';
 import { ButtonModule } from 'primeng/button';
-import { ThemePicker } from '../../shared/ui/theme-picker/theme-picker';
 import { Preferences } from '../auth/preferences';
 import { Locale } from '../localization/locale';
 import { ColorScheme } from '../theme/color-scheme';
@@ -18,26 +20,32 @@ import { AuthSession } from '../auth/auth-session';
 import { SessionContext } from '../auth/session-context';
 import { Area, canEnterArea, hasPermissions } from '../permissions/area-access';
 import {
+  afterNextRender,
   ChangeDetectionStrategy,
   Component,
   computed,
+  DestroyRef,
   effect,
+  ElementRef,
   inject,
+  Injector,
   signal,
+  viewChild,
 } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 
 @Component({
   imports: [
     WorkspaceNotifications,
-    SelectControl,
+    WorkspaceBreadcrumbs,
+    WorkspacePreferences,
+    WorkspaceAccount,
     RouterLink,
     RouterLinkActive,
     RouterOutlet,
     LocalizePipe,
     CommandFeedback,
     ButtonModule,
-    ThemePicker,
   ],
   selector: 'app-app-shell',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -45,6 +53,10 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
   templateUrl: './app-shell.html',
 })
 export class AppShell {
+  private readonly shell = inject<ElementRef<HTMLElement>>(ElementRef);
+  private readonly header =
+    viewChild<ElementRef<HTMLElement>>('workspaceHeader');
+  private readonly destroyRef = inject(DestroyRef);
   canManageWorkflows(): boolean {
     const actor = this.session.snapshot();
     return (
@@ -101,15 +113,39 @@ export class AppShell {
       path: '/operations/reports',
       icon: 'pi pi-chart-bar',
     },
-    {
-      label: 'Private uploads',
-      path: '/operations/media',
-      icon: 'pi pi-folder',
-    },
   ];
-  readonly breadcrumb = signal('');
+  readonly navigation = inject(WorkspaceNavigationService);
   private readonly router = inject(Router);
   constructor() {
+    afterNextRender(() => {
+      const header = this.header()?.nativeElement;
+      if (!header) {
+        return;
+      }
+      let frame: number | undefined;
+      const updateHeaderHeight = (): void => {
+        frame = undefined;
+        const style = this.shell.nativeElement.style;
+        const height = header.getBoundingClientRect().height + 'px';
+        if (style.getPropertyValue('--workspace-header-height') !== height) {
+          style.setProperty('--workspace-header-height', height);
+        }
+      };
+      // Defer layout writes until after observer delivery to avoid a feedback
+      // loop when a measured header changes the sidebar's available height.
+      const observer = new ResizeObserver(() => {
+        frame ??= requestAnimationFrame(updateHeaderHeight);
+      });
+      updateHeaderHeight();
+      observer.observe(header);
+      this.destroyRef.onDestroy(() => {
+        observer.disconnect();
+        if (frame !== undefined) {
+          cancelAnimationFrame(frame);
+        }
+      });
+    });
+
     const prime = inject(PrimeNG);
     effect((): void => {
       prime.setTranslation({
@@ -126,31 +162,26 @@ export class AppShell {
         aria: { ...prime.translation.aria, close: this.locale.text('Close') },
       });
     });
+    const injector = inject(Injector);
+    let previousPath = '';
+    let navigation = 0;
     this.router.events.pipe(takeUntilDestroyed()).subscribe((event): void => {
       if (event instanceof NavigationEnd) {
         this.menuOpen.set(false);
-        const area = event.urlAfterRedirects.split('/')[1].split('?')[0];
-        this.breadcrumb.set(
-          event.urlAfterRedirects.split('?')[0] === '/account/profile'
-            ? 'My information'
-            : ((
-                {
-                  operations: 'Operations',
-                  studio: 'Studio',
-                  administration: 'Administration',
-                  users: 'Users',
-                  login: 'Sign in',
-                  'ui-preview': 'Form controls',
-                  forbidden: 'Access denied',
-                  'access-unavailable': 'Access unavailable',
-                  account: 'Account and sessions',
-                  help: 'Help',
-                } as Record<string, string>
-              )[area] ?? 'Page not found'),
-        );
-        setTimeout((): void => {
-          document.querySelector<HTMLElement>('main h1')?.focus();
-        });
+        const current = ++navigation;
+        const path = new URL(event.urlAfterRedirects, document.baseURI)
+          .pathname;
+        if (path !== previousPath) {
+          afterNextRender(
+            () => {
+              if (current === navigation) {
+                document.querySelector<HTMLElement>('main h1')?.focus();
+              }
+            },
+            { injector },
+          );
+        }
+        previousPath = path;
       }
     });
   }

@@ -1,22 +1,4 @@
 @let key = catalog().key;
-@if (key === "forms" || key === "workflows") {
-  @if (catalog().selected()) {
-    <app-favorite-action
-      [disabled]="catalog().busy() || catalog().dirty()"
-      [kind]="key"
-      [reference]="catalog().reference()"
-    />
-  }
-  <app-saved-views
-    [columnOptions]="catalog().columnOptions()"
-    [columns]="catalog().savedColumns()"
-    [kind]="key"
-    [query]="catalog().appliedQuery()"
-    (applied)="catalog().applySaved($event)"
-    (columnsChanged)="catalog().savedColumns.set($event)"
-  />
-}
-
 @if (key === "workflow-versions" && catalog().selected()) {
   <section class="my-4 grid gap-3">
     <h2>{{ "Client release" | localize }}</h2>

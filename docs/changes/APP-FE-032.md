@@ -39,3 +39,14 @@ APP-FE-032.3 delivers the independent implementation recorded in [authorized rec
 Current source-qualified evidence is in the [receipt/layout continuation](../delivery/APP-FE-026-028-RECEIPTS.md): successful strict 20-case backend rehearsal and two guarded resets, plus ten actual layout browser scenarios. Scope limits, failed earlier runs and current final gate remain explicit; parent acceptance is not changed.
 
 Observed complete frontend gate: 12 stages, 579 tests / 119 files and ten Firefox scopes passed with zero emitted warnings/required skips. The [continuation record](../delivery/APP-FE-026-028-RECEIPTS.md) retains its exact source hashes, preclosure manifest and final post-documentation gate location. Parent scope limitations remain unchanged.
+
+## 2026-10-19 active child command availability
+
+Known public SUBPROCESS/WAITING positions now suppress unsupported parent mutation
+commands and explain the restriction outside the header action group. Read-only
+queries and child tracking remain available; ordinary waits, recovery-only
+operators and uncertain-result recovery retain their existing semantics. Server
+authorization remains authoritative. See [workflow continuation](APP-FE-024-INTERFACE.md)
+and its final scoped receipt for focused tests and actual fresh-reference parent
+and direct-child command rejection followed by asynchronous child completion.
+No private parent field or unsupported cascade command is invented.

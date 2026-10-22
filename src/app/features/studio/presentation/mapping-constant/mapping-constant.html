@@ -1,0 +1,60 @@
+@if (users()) {
+  <p>{{ "Choose recipients using authorized user search." | localize }}</p>
+  @for (value of values(); track $index) {
+    <div class="reference-value">
+      <app-studio-choice
+        kind="users"
+        [controlId]="controlId() + '-user-' + $index"
+        [disabled]="disabled() || otherBusy($index)"
+        [value]="String(value)"
+        (picked)="setUser($event, $index)"
+      />
+      <button
+        pButton
+        severity="secondary"
+        type="button"
+        [disabled]="disabled() || busy()"
+        (click)="remove($index)"
+      >
+        {{ "Remove recipient" | localize }} {{ $index + 1 }}
+      </button>
+    </div>
+  }
+  @for (revision of [pickerRevision()]; track revision) {
+    <app-studio-choice
+      kind="users"
+      [controlId]="controlId() + '-add-user'"
+      [disabled]="disabled() || otherBusy(values().length)"
+      (picked)="setUser($event)"
+    />
+  }
+  @if (errors()["value"]) {
+    <p role="alert">{{ errors()["value"] | localize }}</p>
+  }
+} @else {
+  @if (nullable()) {
+    <label
+      ><input
+        type="checkbox"
+        [checked]="value() === null"
+        [disabled]="disabled()"
+        (change)="nullChanged($event)"
+      />
+      {{ "Use null value" | localize }}</label
+    >
+  }
+  @if (value() !== null) {
+    <app-schema-input
+      label="Constant value"
+      path="value"
+      [controlId]="controlId()"
+      [disabled]="disabled()"
+      [errors]="errors()"
+      [literalValues]="true"
+      [required]="true"
+      [schema]="schema()"
+      [value]="value()"
+      (valueChange)="valueChange.emit($event)"
+    />
+  }
+}

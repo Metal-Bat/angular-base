@@ -1,49 +1,67 @@
 @let vm = view();
-<p-dialog
-  appendTo="body"
-  position="center"
-  [closable]="false"
-  [draggable]="false"
-  [header]="(vm.selected() ? 'Edit' : 'Create') | localize"
-  [modal]="true"
-  [resizable]="false"
-  [style]="{ width: '56rem', maxWidth: 'calc(100vw - 2rem)' }"
-  [visible]="vm.formOpen()"
->
-  @if (vm.formOpen()) {
-    <p class="text-sm text-console-muted">
-      {{ "Required fields are marked with *." | localize }}
+@if (vm.formOpen()) {
+  <p class="text-sm text-console-muted">
+    {{ "Required fields are marked with *." | localize }}
+  </p>
+  @if (vm.key === "form-versions" && !vm.selected()) {
+    <p>
+      {{
+        "Start with a blank form. Add fields and configure the layout in the designer after saving."
+          | localize
+      }}
     </p>
-    @if (vm.key === "form-versions" && !vm.selected()) {
-      <p>
-        {{
-          "Start with a blank form. Add fields and configure the layout in the designer after saving."
-            | localize
-        }}
-      </p>
-      <button
-        pButton
-        severity="secondary"
-        type="button"
-        [attr.aria-expanded]="advanced()"
-        [text]="true"
-        (click)="advanced.set(!advanced())"
-      >
-        {{ "Expert document setup" | localize }}
-      </button>
-    }
-    <form class="editor-form" (ngSubmit)="vm.save()">
-      @for (field of visibleFields(); track field.key) {
-        <app-control-field
-          [controlId]="'author-' + field.key"
-          [error]="
-            vm.invalid().includes(field.key)
-              ? 'Correct this field before saving'
-              : ''
-          "
-          [label]="field.title"
-          [required]="field.required"
+  }
+  <form #catalogEditor class="editor-form page-editor" (ngSubmit)="vm.save()">
+    <header class="page-editor-toolbar">
+      <div>
+        <h2>
+          {{ (vm.selected() ? "Edit" : "Create") | localize }} ·
+          {{ vm.spec.title | localize }}
+        </h2>
+        @if (vm.dirty()) {
+          <span role="status">{{ "Unsaved changes" | localize }}</span>
+        }
+      </div>
+      <div class="page-editor-actions">
+        <button
+          pButton
+          severity="secondary"
+          type="button"
+          [disabled]="vm.busy()"
+          [outlined]="true"
+          (click)="vm.closeForm()"
         >
+          {{ "Cancel" | localize }}
+        </button>
+        <button pButton type="submit" [disabled]="!vm.canSave()">
+          {{ "Save" | localize }}
+        </button>
+      </div>
+    </header>
+    @if (vm.error()) {
+      <p role="alert">{{ vm.error() | localize }}</p>
+    }
+
+    @for (field of visibleFields(); track field.key) {
+      <app-control-field
+        [controlId]="'author-' + field.key"
+        [error]="
+          vm.settingsErrors()[field.key] ||
+          (vm.invalid().includes(field.key)
+            ? 'Correct this field before saving'
+            : '')
+        "
+        [label]="field.title"
+        [required]="field.required"
+      >
+        @if (businessField(field)) {
+          <app-catalog-business-field
+            [disabled]="vm.controlsDisabled()"
+            [field]="field"
+            [values]="vm.values()"
+            (changed)="typedChange(field, $event)"
+          />
+        } @else {
           @switch (field.type) {
             @case ("json") {
               <textarea
@@ -72,6 +90,7 @@
             @default {
               @if (field.options.length) {
                 <p-select
+                  appSelectEscape
                   appendTo="body"
                   optionLabel="label"
                   optionValue="value"
@@ -104,30 +123,14 @@
               }
             }
           }
-          @for (hint of hints(field); track hint.label) {
-            <small class="text-console-muted" fieldHint
-              >{{ hint.label | localize }}{{ hint.value }}</small
-            >
-          }
-        </app-control-field>
-      }
-      <div class="flex justify-end gap-3 mt-5">
-        <button
-          pButton
-          severity="secondary"
-          type="button"
-          [disabled]="vm.busy()"
-          [outlined]="true"
-          (click)="vm.closeForm()"
+        }
+        <small
+          class="text-console-muted"
+          fieldHint
+          [hidden]="!hints(field).length"
+          >{{ hintText(field) }}</small
         >
-          {{ "Cancel" | localize }}</button
-        ><button pButton type="submit" [disabled]="!vm.canSave()">
-          {{ "Save" | localize }}
-        </button>
-      </div>
-    </form>
-    @if (vm.error()) {
-      <p role="alert">{{ vm.error() | localize }}</p>
+      </app-control-field>
     }
-  }
-</p-dialog>
+  </form>
+}

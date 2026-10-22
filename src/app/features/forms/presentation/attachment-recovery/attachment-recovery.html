@@ -1,0 +1,57 @@
+@let pending = resources().pendingAttachment();
+@if (
+  pending &&
+  (path() === null
+    ? !pending.presentInForm
+    : pending.presentInForm && pending.path === path())
+) {
+  <section
+    class="attachment-recovery"
+    [attr.aria-label]="'Pending attachment' | localize"
+  >
+    <h3>
+      {{ "Pending attachment" | localize }} ·
+      <bdi>{{ pending.fieldLabel }}</bdi>
+    </h3>
+    <p>
+      <bdi>{{ pending.name }}</bdi> · {{ locale.number(pending.size) }}
+      {{ "bytes" | localize }}
+    </p>
+    @if (pending.caption) {
+      <p>
+        {{ "Caption" | localize }}: <bdi>{{ pending.caption }}</bdi>
+      </p>
+    }
+    <p aria-live="polite" role="status">{{ pending.message | localize }}</p>
+    <div class="recovery-actions">
+      <button
+        pButton
+        severity="secondary"
+        type="button"
+        [disabled]="!pending.canCheck"
+        [outlined]="true"
+        (click)="resources().checkPendingAttachment()"
+      >
+        {{ "Check attachment state" | localize }}
+      </button>
+      <button
+        pButton
+        type="button"
+        [disabled]="!pending.canRetry"
+        (click)="resources().retryPendingAttachment()"
+      >
+        {{ "Retry attachment link" | localize }}
+      </button>
+      <button
+        pButton
+        severity="secondary"
+        type="button"
+        [disabled]="pending.phase === 'checking' || pending.phase === 'linking'"
+        [outlined]="true"
+        (click)="resources().discardPendingAttachment()"
+      >
+        {{ "Discard pending link" | localize }}
+      </button>
+    </div>
+  </section>
+}

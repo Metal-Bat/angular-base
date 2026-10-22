@@ -1,6 +1,13 @@
+import {
+  CorrectionInput,
+  validCorrectionFeedback,
+} from '../domain/correction-feedback';
+import { effectiveRequired } from '../../forms/domain/resolved-behavior';
+import { RuntimeAction } from '../../forms/domain/runtime-document';
 import { writablePatch } from '../../forms/domain/writable-patch';
 import {
   indicesFor,
+  isItemScope,
   replaceRow,
   rowPointer,
   writableScope,
@@ -57,6 +64,45 @@ export class CaseState {
   readonly dirty = signal(false);
   readonly blocked = signal(false);
   readonly comment = signal('');
+  readonly corrections = signal<readonly CorrectionInput[]>([]);
+  readonly decisionDirty = computed(
+    () => !!this.comment() || this.corrections().length > 0,
+  );
+  protected clearDecisionDraft(): void {
+    this.comment.set('');
+    this.corrections.set([]);
+  }
+  protected canDecide(action: RuntimeAction): boolean {
+    const document = this.document();
+    if (
+      !this.canEdit() ||
+      !this.ownTask() ||
+      !document?.actions.some(
+        (entry) =>
+          entry.key === action.key &&
+          entry.kind === action.kind &&
+          entry.outcome === action.outcome,
+      )
+    ) {
+      return false;
+    }
+    if (action.requireComment && !this.comment().trim()) {
+      this.error.set('A comment is required');
+      return false;
+    }
+    if (
+      action.kind === 'return' &&
+      !validCorrectionFeedback(document, this.corrections())
+    ) {
+      this.error.set('Choose a field and describe each required correction.');
+      return false;
+    }
+    return this.validate(
+      action.validation === 'complete'
+        ? effectiveRequired(document)
+        : action.requiredScopes,
+    );
+  }
   readonly overrides = computed(() =>
     this.document() ? overrideFields(this.document()!) : [],
   );
@@ -79,6 +125,10 @@ export class CaseState {
   );
   protected kind: CaseKind = 'request';
   readonly caseKind = (): CaseKind => this.kind;
+  readonly contextKey = computed(() => {
+    this.item();
+    return this.kind + ':' + this.reference;
+  });
   protected reference = '';
   protected generation = 0;
   protected alive = true;
@@ -102,7 +152,7 @@ export class CaseState {
       this.rowEdits.clear();
       this.pin = undefined;
       this.queue = null;
-      this.comment.set('');
+      this.clearDecisionDraft();
       this.blocked.set(true);
     });
     inject(DestroyRef).onDestroy((): void => {
@@ -110,6 +160,12 @@ export class CaseState {
       this.generation++;
       unregister();
     });
+  }
+  protected acceptRead(document: RuntimeDocument, retain: boolean): void {
+    this.accept(document, retain);
+    if (!retain) {
+      this.clearDecisionDraft();
+    }
   }
   protected accept(document: RuntimeDocument, retain: boolean): void {
     this.pin ??= document.identity;
@@ -128,10 +184,7 @@ export class CaseState {
       this.rawErrors.clear();
       this.deleted.clear();
       for (const scope of this.editedScopes) {
-        if (
-          document.policy.writable.includes(scope) &&
-          !scope.includes('/items')
-        ) {
+        if (document.policy.writable.includes(scope) && !isItemScope(scope)) {
           const value = fieldValue(this.data(), scope);
           const pointer = rowPointer(scope);
           if (errors.has(pointer)) {

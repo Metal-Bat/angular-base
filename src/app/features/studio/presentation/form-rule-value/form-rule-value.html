@@ -1,0 +1,74 @@
+@let vm = view();
+@if (vm.field() && vm.draft().operator !== "present" && !vm.presenceOnly()) {
+  @if (vm.resourceField(); as field) {
+    <app-form-rule-resource
+      [data]="vm.data()"
+      [disabled]="vm.disabled()"
+      [documents]="vm.documents()"
+      [field]="field"
+      [locale]="vm.locale()"
+      [nullable]="vm.types().includes('null')"
+      (picked)="vm.resourcePicked($event)"
+      (validChange)="vm.resourceCurrent.set($event)"
+    />
+  } @else if (vm.choices().length) {
+    <label for="rule-choice">{{ "Value" | localize }}</label>
+    <app-select-control
+      inputId="rule-choice"
+      [disabled]="vm.disabled()"
+      [ngModel]="vm.draft().text"
+      (ngModelChange)="vm.update('text', $event)"
+    >
+      <option value="">{{ "Choose a value" | localize }}</option>
+      @for (choice of vm.choices(); track choice.key) {
+        <option [value]="choice.key">{{ choice.label }}</option>
+      }
+    </app-select-control>
+  } @else {
+    <label for="rule-value-type">{{ "Value type" | localize }}</label>
+    <app-select-control
+      inputId="rule-value-type"
+      [disabled]="vm.disabled()"
+      [ngModel]="vm.draft().type"
+      (ngModelChange)="vm.update('type', $event)"
+    >
+      @for (type of vm.types(); track type) {
+        <option [value]="type">{{ type | localize }}</option>
+      }
+    </app-select-control>
+    @if (vm.draft().type === "boolean") {
+      <label for="rule-value">{{ "Value" | localize }}</label>
+      <app-select-control
+        inputId="rule-value"
+        [disabled]="vm.disabled()"
+        [ngModel]="vm.draft().text"
+        (ngModelChange)="vm.update('text', $event)"
+      >
+        <option value="true">{{ "True" | localize }}</option>
+        <option value="false">{{ "False" | localize }}</option>
+      </app-select-control>
+    } @else if (vm.draft().type === "null") {
+      <p>{{ "The comparison value is null." | localize }}</p>
+    } @else {
+      <label for="rule-value">{{ "Value" | localize }}</label>
+      <input
+        id="rule-value"
+        pInputText
+        type="text"
+        [attr.aria-describedby]="
+          vm.parsed() === undefined ? 'rule-value-error' : null
+        "
+        [attr.aria-invalid]="vm.parsed() === undefined"
+        [attr.inputmode]="vm.draft().type === 'string' ? 'text' : 'decimal'"
+        [disabled]="vm.disabled()"
+        [ngModel]="vm.draft().text"
+        (ngModelChange)="vm.update('text', $event)"
+      />
+      @if (vm.parsed() === undefined) {
+        <p id="rule-value-error" role="status">
+          {{ "Enter a valid number before adding the rule." | localize }}
+        </p>
+      }
+    }
+  }
+}

@@ -1,0 +1,59 @@
+<div
+  class="calendar-toolbar flex flex-wrap gap-2 my-4"
+  role="group"
+  [attr.aria-label]="'Calendar view' | localize"
+>
+  <button
+    pButton
+    severity="secondary"
+    type="button"
+    (click)="todayRequested.emit()"
+  >
+    {{ "Today" | localize }}
+  </button>
+  <button
+    pButton
+    severity="secondary"
+    type="button"
+    [attr.aria-label]="'Previous period' | localize"
+    (click)="periodMoved.emit(-1)"
+  >
+    <i aria-hidden="true" class="pi pi-chevron-left rtl:rotate-180"></i>
+  </button>
+  <button
+    pButton
+    severity="secondary"
+    type="button"
+    [attr.aria-label]="'Next period' | localize"
+    (click)="periodMoved.emit(1)"
+  >
+    <i aria-hidden="true" class="pi pi-chevron-right rtl:rotate-180"></i>
+  </button>
+  <strong class="period-title">{{ title() }}</strong>
+  @for (mode of views; track mode) {
+    <button
+      class="view-mode"
+      pButton
+      severity="secondary"
+      type="button"
+      [attr.aria-pressed]="view() === mode"
+      [attr.data-calendar-view]="mode"
+      [outlined]="true"
+      (click)="viewChanged.emit(mode)"
+    >
+      {{ labels[mode] | localize }}
+    </button>
+  }
+  <div class="view-selector">
+    <app-select-control
+      inputId="calendar-view"
+      [ariaLabel]="'Calendar view' | localize"
+      [value]="view()"
+      (selectionChanged)="changeView($event.target.value)"
+    >
+      @for (mode of views; track mode) {
+        <option [value]="mode">{{ labels[mode] | localize }}</option>
+      }
+    </app-select-control>
+  </div>
+</div>

@@ -1,13 +1,17 @@
 :host {
   display: block;
   min-inline-size: 0;
+  container: runtime-node / inline-size;
 }
 .runtime-layout {
   display: grid;
   gap: 1rem;
   grid-template-columns: minmax(0, 1fr);
 }
-@media (min-width: 40rem) {
+.compact-layout {
+  gap: 0.5rem;
+}
+@container runtime-node (min-width: 40rem) {
   .runtime-layout > app-runtime-node {
     grid-column: var(--form-grid-column, auto);
     grid-row: var(--form-grid-row, auto);
@@ -32,4 +36,20 @@ output {
   padding: 0.75rem 1rem;
   border-radius: 0.6rem;
   background: var(--console-canvas);
+}
+
+.field-actions {
+  display: flex;
+  justify-content: end;
+}
+.field-actions button {
+  margin: 0;
+  inline-size: 2.5rem;
+  min-block-size: 2.5rem;
+  padding: 0;
+}
+.runtime-layout:focus,
+output:focus {
+  outline: 2px solid var(--p-primary-color);
+  outline-offset: 3px;
 }

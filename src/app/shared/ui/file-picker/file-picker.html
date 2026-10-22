@@ -1,0 +1,30 @@
+<div
+  class="file-drop"
+  role="group"
+  [attr.aria-label]="label() | localize"
+  (dragover)="drag($event)"
+  (drop)="drop($event)"
+>
+  <label [for]="controlId()">{{ label() | localize }}</label>
+  <input
+    type="file"
+    [accept]="accept()"
+    [attr.aria-describedby]="controlId() + '-hint'"
+    [attr.capture]="capture()"
+    [disabled]="disabled()"
+    [id]="controlId()"
+    (change)="choose($event)"
+  />
+  <p [id]="controlId() + '-hint'">
+    {{ "Drop one file here or choose a file." | localize }}
+  </p>
+  @if (selection(); as file) {
+    <p class="selected-file">
+      <bdi>{{ file.name }}</bdi> · {{ locale.number(file.size) }}
+      {{ "bytes" | localize }}
+    </p>
+  }
+  @if (error()) {
+    <p role="alert">{{ error() | localize }}</p>
+  }
+</div>

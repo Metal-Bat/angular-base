@@ -1,0 +1,48 @@
+<p>
+  {{
+    "Child source schemas must match the pinned input exactly. Incompatible choices are disabled."
+      | localize
+  }}
+</p>
+<details>
+  <summary>{{ "Authorized child input sources" | localize }}</summary>
+  <app-studio-choice
+    controlId="child-request"
+    kind="request_types"
+    [disabled]="disabled() || busy()"
+    [value]="request()"
+    (picked)="setRequest($event)"
+  />
+  <div class="paging">
+    <button
+      pButton
+      type="button"
+      [disabled]="disabled() || busy() || !request() || !version()"
+      (click)="load()"
+    >
+      {{ "Binding suggestions" | localize }}
+    </button>
+    <button
+      pButton
+      type="button"
+      [disabled]="disabled() || busy() || page() <= 1"
+      (click)="load(page() - 1)"
+    >
+      {{ "Previous" | localize }}
+    </button>
+    <button
+      pButton
+      type="button"
+      [disabled]="disabled() || busy() || page() >= pages()"
+      (click)="load(page() + 1)"
+    >
+      {{ "Next" | localize }}
+    </button>
+  </div>
+  @if (busy()) {
+    <p role="status">{{ "Loading…" | localize }}</p>
+  }
+  @if (error()) {
+    <p role="alert">{{ error() | localize }}</p>
+  }
+</details>

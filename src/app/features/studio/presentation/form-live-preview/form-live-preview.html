@@ -1,0 +1,121 @@
+@let vm = view();
+
+<header class="preview-heading">
+  <h2>{{ "Runtime preview" | localize }}</h2>
+  <p class="preview-freshness" role="status">
+    {{
+      (vm.previewFreshness() === "pending"
+        ? "Apply pending edits"
+        : vm.previewFreshness() === "loading"
+          ? "Updating…"
+          : vm.previewFreshness() === "ready"
+            ? "Up to date"
+            : vm.previewFreshness() === "invalid"
+              ? "Preview is incompatible"
+              : "Preview unavailable"
+      ) | localize
+    }}
+  </p>
+</header>
+<div
+  class="preview-device-controls"
+  role="group"
+  [attr.aria-label]="'Preview width' | localize"
+>
+  <button
+    data-preview-device="desktop"
+    pButton
+    severity="secondary"
+    type="button"
+    [attr.aria-pressed]="vm.previewDevice() === 'desktop'"
+    [outlined]="true"
+    (click)="vm.previewDevice.set('desktop')"
+  >
+    {{ "Desktop" | localize }}
+  </button>
+  <button
+    data-preview-device="phone"
+    pButton
+    severity="secondary"
+    type="button"
+    [attr.aria-pressed]="vm.previewDevice() === 'phone'"
+    [outlined]="true"
+    (click)="vm.previewDevice.set('phone')"
+  >
+    {{ "Phone" | localize }}
+  </button>
+  <button
+    pButton
+    severity="secondary"
+    type="button"
+    [attr.aria-label]="'Refresh preview' | localize"
+    [attr.title]="'Refresh preview' | localize"
+    [disabled]="vm.previewBusy() || vm.pending().length > 0"
+    [outlined]="true"
+    (click)="vm.renderPreview()"
+  >
+    <i aria-hidden="true" class="pi pi-refresh"></i>
+    <span class="sr-only">{{ "Refresh preview" | localize }}</span>
+  </button>
+  <app-help-popover label="About preview" [iconOnly]="true">
+    <p>
+      {{
+        "Try sample answers and rows here. They are not saved. File uploads are unavailable in preview."
+          | localize
+      }}
+    </p></app-help-popover
+  >
+</div>
+<div class="preview-settings">
+  <app-control-field controlId="preview-purpose" label="Purpose"
+    ><app-select-control
+      inputId="preview-purpose"
+      [(ngModel)]="vm.purpose"
+      (ngModelChange)="vm.queuePreview()"
+    >
+      <option value="edit">{{ "Entry" | localize }}</option>
+      <option value="summary">{{ "Summary" | localize }}</option>
+      <option value="print">{{ "Print" | localize }}</option>
+      <option value="correction">
+        {{ "Correction" | localize }}
+      </option></app-select-control
+    ></app-control-field
+  >
+  <app-control-field controlId="preview-locale" label="Locale"
+    ><app-select-control
+      inputId="preview-locale"
+      [(ngModel)]="vm.locale"
+      (ngModelChange)="vm.queuePreview()"
+    >
+      <option value="en">English</option>
+      <option value="fa">فارسی</option>
+      <option value="ar">العربية</option></app-select-control
+    ></app-control-field
+  >
+</div>
+<app-form-preview-context [view]="vm" />
+<p role="alert" [hidden]="!vm.previewError()">
+  {{ vm.previewError() | localize }}
+</p>
+@if (vm.previewFreshness() === "invalid") {
+  <button
+    pButton
+    severity="secondary"
+    type="button"
+    (click)="vm.workspaceTab.set('diagnostics'); vm.previewMode.set(false)"
+  >
+    {{ "Diagnostics" | localize }}
+  </button>
+}
+@if (vm.runtime(); as document) {
+  <div
+    class="preview-device-frame"
+    [class.phone-frame]="vm.previewDevice() === 'phone'"
+  >
+    <app-runtime-form
+      [data]="vm.data()"
+      [document]="document"
+      (edit)="vm.editSample($event)"
+    />
+  </div>
+}

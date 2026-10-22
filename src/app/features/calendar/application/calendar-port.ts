@@ -33,7 +33,10 @@ export type Reminder = {
   status: 'PENDING' | 'SENT' | 'CANCELLED' | 'EXPIRED';
 };
 export type CalendarPort = {
-  search(body: CalendarQuery): Promise<{
+  search(
+    body: CalendarQuery,
+    signal?: AbortSignal,
+  ): Promise<{
     items: readonly { item: CalendarItem; event: CalendarEvent }[];
     totalPages: number;
   }>;
@@ -48,3 +51,6 @@ export type CalendarPort = {
   ): Promise<Reminder[]>;
   cancel(ref: string): Promise<void>;
 };
+
+/** Read authority changed; partial private rows must be discarded. */
+export class CalendarSearchDenied extends Error {}

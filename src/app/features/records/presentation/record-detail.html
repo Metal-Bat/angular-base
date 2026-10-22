@@ -7,7 +7,7 @@
       severity="secondary"
       type="button"
       [text]="true"
-      (click)="vm.detail.set(null)"
+      (click)="vm.backToList()"
     >
       <i aria-hidden="true" class="pi pi-arrow-left rtl:rotate-180"></i
       >{{ "Back to list" | localize }}
@@ -34,78 +34,46 @@
       {{ "This record is deleted." | localize }}
     </p>
   }
-  <app-record-summary
-    [caption]="vm.definition.title"
-    [icon]="vm.user ? 'pi pi-user' : 'pi pi-file'"
-    [record]="row"
-    [title]="
-      $any(
-        row['username'] ||
-          row['name'] ||
-          row['file_name'] ||
-          row['event_type'] ||
-          ('Record detail' | localize)
-      )
-    "
-  />
-  <div class="flex flex-wrap gap-3 mt-5">
-    @if (vm.user && !vm.deleted()) {
-      @if (vm.roleAllowed()) {
-        <button
-          pButton
-          severity="secondary"
-          type="button"
-          [disabled]="vm.actionBusy()"
-          [outlined]="true"
-          (click)="vm.assignRole()"
-        >
-          {{ "Assign role" | localize }}
-        </button>
-      }
-      <button
-        pButton
-        severity="secondary"
-        type="button"
-        [disabled]="vm.actionBusy()"
-        [outlined]="true"
-        (click)="vm.resetPassword()"
-      >
-        {{ "Reset password" | localize }}
-      </button>
-    }
-    @if (vm.definition.operations.delete && !vm.deleted() && !vm.immutable()) {
-      <button
-        pButton
-        severity="danger"
-        type="button"
-        [disabled]="vm.actionBusy() || !vm.allowed()"
-        [outlined]="true"
-        (click)="vm.remove()"
-      >
-        {{ "Delete" | localize }}
-      </button>
-    }
-    @if (vm.definition.operations.restore && vm.deleted()) {
-      <button
-        pButton
-        type="button"
-        [disabled]="vm.actionBusy() || !vm.allowed()"
-        (click)="vm.restore()"
-      >
-        {{ "Restore User" | localize }}
-      </button>
-    }
-    @if (vm.definition.key === "reports" && row["status"] === "READY") {
-      <button
-        pButton
-        type="button"
-        [disabled]="vm.transfer.busy()"
-        (click)="vm.download()"
-      >
-        {{ "Download" | localize }}
-      </button>
-    }
-  </div>
+  @if (vm.definition.key === "task-executions") {
+    <p>
+      {{
+        "This is a background execution result. Business approval is tracked by the owning request."
+          | localize
+      }}
+    </p>
+  }
+  @if (vm.definition.key === "agents") {
+    <app-agent-detail [record]="row" />
+  } @else {
+    <app-record-summary
+      [caption]="vm.definition.title"
+      [groups]="sections(vm.definition.key, vm.user)"
+      [icon]="vm.user ? 'pi pi-user' : 'pi pi-file'"
+      [includeRemaining]="true"
+      [record]="row"
+      [showIdentity]="false"
+      [title]="
+        $any(
+          row['username'] ||
+            row['name'] ||
+            row['file_name'] ||
+            row['event_type'] ||
+            ('Record detail' | localize)
+        )
+      "
+    />
+  }
+
+  @if (vm.definition.key === "task-executions") {
+    <details>
+      <summary>{{ "Execution diagnostics" | localize }}</summary>
+      <app-record-summary
+        title="Execution diagnostics"
+        [record]="row"
+        [showIdentity]="false"
+      />
+    </details>
+  }
   @if (vm.definition.key === "reports" && row["zip_password"]) {
     <app-copy-field
       controlId="report-password"

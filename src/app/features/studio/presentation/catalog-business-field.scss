@@ -1,0 +1,23 @@
+:host,
+fieldset,
+.target-row {
+  display: grid;
+  min-inline-size: 0;
+  gap: 0.75rem;
+}
+fieldset {
+  border: 1px solid var(--console-border);
+  border-radius: 0.75rem;
+  padding: 1rem;
+}
+.target-row {
+  border-block-start: 1px solid var(--console-border);
+  padding-block: 1rem;
+}
+button {
+  justify-self: start;
+}
+p {
+  color: var(--console-muted);
+  font-size: 0.875rem;
+}

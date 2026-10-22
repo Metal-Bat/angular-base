@@ -25,7 +25,7 @@ import {
     @for (field of fields(); track field.key) {
       @if (field.key === 'permissions' && field.type === 'strings') {
         <app-permission-choices
-          [controlId]="'record-' + field.key"
+          [controlId]="controlPrefix() + '-' + field.key"
           [disabled]="disabled()"
           [error]="errors()[field.key] || ''"
           [value]="permissions(field)"
@@ -33,7 +33,7 @@ import {
         />
       } @else {
         <app-schema-input
-          [controlId]="'record-' + field.key"
+          [controlId]="controlPrefix() + '-' + field.key"
           [disabled]="disabled()"
           [errors]="errors()"
           [label]="field.label"
@@ -71,6 +71,7 @@ import {
 })
 export class RecordFields {
   readonly fields = input.required<readonly RecordField[]>();
+  readonly controlPrefix = input('record');
   readonly values = input.required<Record<string, string | boolean>>();
   readonly draft = linkedSignal(() => this.values());
   readonly valuesChange = output<Record<string, string | boolean>>();

@@ -1,473 +1,446 @@
-<header class="console-page-header">
-  <h1 tabindex="-1">{{ "Form designer" | localize }}</h1>
-  <a routerLink="/studio/form-versions">{{ "Form versions" | localize }}</a>
-</header>
-<p class="console-record-status">{{ status() }}</p>
-@if (error()) {
-  <p role="alert">{{ error() | localize }}</p>
-}
-@if (busy()) {
-  <p role="status">{{ "Loading…" | localize }}</p>
-}
-<button
-  class="reload-control"
-  pButton
-  severity="secondary"
-  type="button"
-  [attr.aria-label]="'Reload' | localize"
-  [attr.title]="'Reload' | localize"
-  [disabled]="busy()"
-  [text]="true"
-  (click)="load()"
->
-  <i aria-hidden="true" class="pi pi-refresh"></i
-  ><span class="sr-only">{{ "Reload" | localize }}</span></button
-><button
-  pButton
-  severity="secondary"
-  type="button"
-  [disabled]="readonly() || pending().length > 0"
-  [outlined]="true"
-  (click)="save()"
->
-  {{ "Save draft" | localize }}</button
-><button
-  pButton
-  severity="secondary"
-  type="button"
-  [disabled]="busy()"
-  [outlined]="true"
-  (click)="validate()"
->
-  {{ "Validate" | localize }}
-</button>
-@if (pending().length) {
-  <p role="status">
-    {{ "Apply pending editor changes before saving." | localize }}
-  </p>
-}
-<div class="authoring-workspace">
-  <div class="designer">
-    <section
-      class="form-design-canvas"
-      [attr.aria-label]="'Form layout' | localize"
-    >
-      <h2>{{ "Form layout" | localize }}</h2>
-      <p>
-        {{
-          "Select a field to edit its label, choices, validation and appearance."
-            | localize
-        }}
+<div class="editor-document-bar">
+  <header class="console-page-header">
+    <div class="form-heading">
+      <h1 tabindex="-1">{{ "Form designer" | localize }}</h1>
+      <p class="console-record-status">
+        {{ fieldLabel(status().toLowerCase()) | localize }}
       </p>
-      <app-form-canvas
-        [disabled]="readonly() || pending().length > 0"
-        [documents]="documents()"
-        [selected]="selected()"
-        (addRequested)="quickAdd($event)"
-        (dragEnded)="cancelDrag()"
-        (dragStarted)="drag($event.event, $event.path)"
-        (dropRequested)="drop($event.event, $event.target, $event.position)"
-        (selectedChange)="select($event)"
-      />
-    </section>
+      <a class="version-link" routerLink="/studio/form-versions"
+        ><i aria-hidden="true" class="pi pi-history compact-action-icon"></i
+        ><span class="compact-action-label">{{
+          "Form versions" | localize
+        }}</span></a
+      >
+    </div>
+  </header>
 
-    <section
-      class="form-palette"
-      [attr.aria-label]="'Component palette' | localize"
-    >
-      <h2>{{ "Components" | localize }}</h2>
-      <details>
-        <summary>{{ "All field types and layouts" | localize }}</summary>
-        <label for="form-palette-search">{{
-          "Search components" | localize
-        }}</label
-        ><input
-          id="form-palette-search"
-          [ngModel]="paletteSearch()"
-          (ngModelChange)="paletteSearch.set($event)"
-        />
-        <label for="palette-category">{{
-          "Component category" | localize
-        }}</label>
-        <app-select-control
-          inputId="palette-category"
-          [ngModel]="paletteCategory()"
-          (ngModelChange)="paletteCategory.set($event)"
-        >
-          <option value="">{{ "All components" | localize }}</option>
-          @for (category of categories; track category) {
-            <option [value]="category">{{ category | localize }}</option>
-          }
-        </app-select-control>
-        <label for="primitive">{{ "Component" | localize }}</label
-        ><app-select-control inputId="primitive" [(ngModel)]="primitive">
-          @for (kind of filteredPalette(); track kind) {
-            <option [value]="kind">
-              {{ componentLabels[kind] | localize }}
-            </option>
-          }</app-select-control
-        ><label for="property-name">{{
-          "Canonical field key" | localize
-        }}</label
-        ><input id="property-name" [(ngModel)]="propertyName" />
-        <label for="component-label">{{ "Display label" | localize }}</label
-        ><input
-          id="component-label"
-          maxlength="255"
-          [(ngModel)]="componentLabel"
-        /><button
-          pButton
-          severity="secondary"
-          type="button"
-          [disabled]="readonly()"
-          [outlined]="true"
-          (click)="add()"
-        >
-          {{ "Add to selected layout" | localize }}
-        </button>
-      </details>
-      <h2>{{ "Outline" | localize }}</h2>
-      <ul>
-        @for (item of outline(); track item.identity) {
-          <li
-            [draggable]="!readonly()"
-            [style.padding-inline-start.rem]="item.path.length"
-            (dragend)="cancelDrag()"
-            (dragover)="$event.preventDefault()"
-            (dragstart)="drag($event, item.path)"
-            (drop)="drop($event, item.path)"
-          >
-            <button
-              pButton
-              severity="secondary"
-              type="button"
-              [outlined]="true"
-              (click)="select(item.path)"
-            >
-              {{ item.label }}</button
-            ><small>{{ item.scope }}</small>
-          </li>
-        }
-      </ul>
+  @if (error()) {
+    <p role="alert">{{ error() | localize }}</p>
+  }
+  @if (busy()) {
+    <p role="status">{{ "Loading…" | localize }}</p>
+  }
+  <div class="form-document-actions">
+    @if (calculationPending()) {
       <button
         pButton
         severity="secondary"
         type="button"
-        [disabled]="readonly()"
-        [outlined]="true"
-        (click)="move(-1)"
+        (click)="cancelCalculation()"
       >
-        {{ "Move up" | localize }}</button
-      ><button
-        pButton
-        severity="secondary"
-        type="button"
-        [disabled]="readonly()"
-        [outlined]="true"
-        (click)="move(1)"
-      >
-        {{ "Move down" | localize }}
+        {{ "Cancel field" | localize }}
       </button>
-      <app-form-field-placement
-        [disabled]="readonly() || pending().length > 0"
-        [documents]="documents()"
-        [path]="selected()"
-        (applied)="applyProperties($event)"
-      />
-      <app-form-placement-controls
-        [disabled]="readonly() || pending().length > 0"
-        [documents]="documents()"
-        [path]="selected()"
-        (duplicateRequested)="duplicate()"
-        (moveRequested)="reparent($event)"
-      />
-    </section>
-    <section
-      class="form-properties"
-      [attr.aria-label]="'Selected component' | localize"
+    }
+    <button
+      class="reload-control"
+      pButton
+      severity="secondary"
+      type="button"
+      [attr.aria-label]="'Reload' | localize"
+      [attr.title]="'Reload' | localize"
+      [disabled]="busy()"
+      [text]="true"
+      (click)="load()"
     >
-      <h2>{{ "Selected component" | localize }}</h2>
-      <app-form-inspector
-        [disabled]="readonly()"
-        [documents]="documents()"
-        [path]="selected()"
-        (applied)="applyProperties($event)"
-        (changed)="markPending('inspector')"
-      />
-      <details>
-        <summary>{{ "Expert component inspection" | localize }}</summary>
-        <label for="node-json">{{
-          "Binding, options, calculation and supported behavior" | localize
-        }}</label
-        ><textarea
-          class="font-mono"
-          id="node-json"
-          rows="14"
-          spellcheck="false"
-          [disabled]="readonly()"
-          [(ngModel)]="selectedJson"
-          (ngModelChange)="markPending('node')"
-        ></textarea
-        ><button
-          pButton
-          severity="secondary"
-          type="button"
-          [disabled]="readonly()"
-          [outlined]="true"
-          (click)="applyNode()"
-        >
-          {{ "Apply component" | localize }}
-        </button>
-      </details>
-      <details>
-        <summary>{{ "Data schema" | localize }}</summary>
-        <label for="schema-json">{{ "Canonical data schema" | localize }}</label
-        ><textarea
-          class="font-mono"
-          id="schema-json"
-          rows="10"
-          [disabled]="readonly()"
-          [(ngModel)]="schemaJson"
-          (ngModelChange)="markPending('schema')"
-        ></textarea
-        ><button
-          pButton
-          severity="secondary"
-          type="button"
-          [disabled]="readonly()"
-          [outlined]="true"
-          (click)="applySchema()"
-        >
-          {{ "Apply schema" | localize }}
-        </button>
-      </details>
-      <details>
-        <summary>{{ "Pages, variants and localization" | localize }}</summary>
-        <label for="behavior-json">{{
-          "Versioned presentation settings" | localize
-        }}</label
-        ><textarea
-          class="font-mono"
-          id="behavior-json"
-          rows="10"
-          [disabled]="readonly()"
-          [(ngModel)]="behaviorJson"
-          (ngModelChange)="markPending('settings')"
-        ></textarea
-        ><button
-          pButton
-          severity="secondary"
-          type="button"
-          [disabled]="readonly()"
-          [outlined]="true"
-          (click)="applyBehavior()"
-        >
-          {{ "Apply settings" | localize }}
-        </button>
-      </details>
-    </section>
-  </div>
-  <section
-    class="form-live-preview"
-    [attr.aria-label]="'Simulated runtime preview' | localize"
-  >
-    <h2>{{ "Runtime preview" | localize }}</h2>
-    <p>
-      {{
-        "Simulated author context. No request is created; uploads and structural case commands are unavailable."
-          | localize
-      }}
-    </p>
-    <label for="preview-purpose">{{ "Purpose" | localize }}</label
-    ><app-select-control
-      inputId="preview-purpose"
-      [(ngModel)]="purpose"
-      (ngModelChange)="queuePreview()"
+      <i aria-hidden="true" class="pi pi-refresh"></i
+      ><span class="sr-only">{{ "Reload" | localize }}</span></button
+    ><button
+      pButton
+      type="button"
+      [disabled]="readonly() || pending().length > 0"
+      (click)="save()"
     >
-      <option>edit</option>
-      <option>summary</option>
-      <option>print</option>
-      <option>correction</option></app-select-control
-    ><label for="preview-locale">{{ "Locale" | localize }}</label
-    ><app-select-control
-      inputId="preview-locale"
-      [(ngModel)]="locale"
-      (ngModelChange)="queuePreview()"
+      {{ "Save draft" | localize }}</button
+    ><button
+      class="compact-command"
+      pButton
+      severity="secondary"
+      type="button"
+      [disabled]="busy() || pending().length > 0"
+      [outlined]="true"
+      (click)="validate()"
     >
-      <option>en</option>
-      <option>fa</option></app-select-control
-    >
-    <details>
-      <summary>{{ "Expert preview context" | localize }}</summary>
-      <label for="sample-json">{{ "Synthetic sample values" | localize }}</label
-      ><textarea
-        class="font-mono"
-        id="sample-json"
-        rows="5"
-        [(ngModel)]="sampleJson"
-        (ngModelChange)="queuePreview()"
-      ></textarea>
-      <label for="preview-context">{{
-        "Simulated policy, prior values and stable row identities" | localize
-      }}</label
-      ><textarea
-        class="font-mono"
-        id="preview-context"
-        [(ngModel)]="previewContextJson"
-        (ngModelChange)="queuePreview()"
-      ></textarea>
-    </details>
+      <i aria-hidden="true" class="pi pi-check-circle compact-action-icon"></i
+      ><span class="compact-action-label">{{ "Validate" | localize }}</span>
+    </button>
+
     <button
       pButton
       severity="secondary"
       type="button"
-      [disabled]="previewBusy() || pending().length > 0"
+      [disabled]="readonly() || pending().length > 0 || !canUndo()"
+      [text]="true"
+      (click)="undo()"
+    >
+      <i aria-hidden="true" class="pi pi-undo"></i
+      ><span class="sr-only">{{ "Undo" | localize }}</span>
+    </button>
+    <button
+      pButton
+      severity="secondary"
+      type="button"
+      [disabled]="readonly() || pending().length > 0 || !canRedo()"
+      [text]="true"
+      (click)="undo(true)"
+    >
+      <i aria-hidden="true" class="pi pi-refresh"></i
+      ><span class="sr-only">{{ "Redo" | localize }}</span>
+    </button>
+  </div>
+
+  <div
+    class="form-modes"
+    role="group"
+    [attr.aria-label]="'Form designer' | localize"
+  >
+    <button
+      pButton
+      severity="secondary"
+      type="button"
+      [attr.aria-pressed]="workspaceTab() === 'design' && !previewMode()"
       [outlined]="true"
-      (click)="renderPreview()"
+      (click)="workspaceTab.set('design'); previewMode.set(false)"
+    >
+      {{ "Design" | localize }}
+    </button>
+    <button
+      pButton
+      severity="secondary"
+      type="button"
+      [attr.aria-pressed]="workspaceTab() === 'rules'"
+      [outlined]="true"
+      (click)="
+        workspaceTab.set('rules');
+        previewMode.set(false);
+        toolsTab.set('properties')
+      "
+    >
+      {{ "Rules" | localize }}
+    </button>
+    <button
+      class="preview-mode-button"
+      pButton
+      severity="secondary"
+      type="button"
+      [attr.aria-pressed]="workspaceTab() === 'design' && previewMode()"
+      [outlined]="true"
+      (click)="workspaceTab.set('design'); previewMode.set(true)"
     >
       {{ "Preview" | localize }}
     </button>
-    <p role="status">
-      {{
-        (previewFreshness() === "pending"
-          ? "Apply pending editor changes before previewing."
-          : previewFreshness() === "loading"
-            ? "Refreshing preview…"
-            : previewFreshness() === "ready"
-              ? "Preview matches the current design."
-              : previewFreshness() === "invalid"
-                ? "Preview is incompatible"
-                : "Preview unavailable"
-        ) | localize
-      }}
-    </p>
-    <p role="alert" [hidden]="!previewError()">
-      {{ previewError() | localize }}
-    </p>
-    @if (runtime(); as document) {
-      <app-runtime-form
-        [busy]="previewBusy()"
-        [data]="data()"
-        [document]="document"
-        (edit)="editSample($event)"
-      />
-    }
-  </section>
+    <button
+      pButton
+      severity="secondary"
+      type="button"
+      [attr.aria-pressed]="workspaceTab() === 'languages'"
+      [attr.title]="'Languages' | localize"
+      [outlined]="true"
+      (click)="workspaceTab.set('languages')"
+    >
+      <i aria-hidden="true" class="pi pi-language compact-action-icon"></i>
+      <span class="compact-action-label">{{ "Languages" | localize }}</span>
+    </button>
+    <button
+      pButton
+      severity="secondary"
+      type="button"
+      [attr.aria-pressed]="workspaceTab() === 'settings'"
+      [attr.title]="'Settings' | localize"
+      [outlined]="true"
+      (click)="workspaceTab.set('settings')"
+    >
+      <i aria-hidden="true" class="pi pi-sliders-h compact-action-icon"></i
+      ><span class="compact-action-label">{{ "Settings" | localize }}</span>
+    </button>
+    <button
+      pButton
+      severity="secondary"
+      type="button"
+      [attr.aria-pressed]="workspaceTab() === 'diagnostics'"
+      [attr.title]="'Diagnostics' | localize"
+      [outlined]="true"
+      (click)="workspaceTab.set('diagnostics')"
+    >
+      <i
+        aria-hidden="true"
+        class="pi pi-exclamation-circle compact-action-icon"
+      ></i
+      ><span class="compact-action-label">{{ "Diagnostics" | localize }}</span>
+    </button>
+    <button
+      class="tools-toggle"
+      pButton
+      severity="secondary"
+      type="button"
+      [attr.aria-expanded]="toolsOpen()"
+      [outlined]="true"
+      (click)="toolsOpen.set(!toolsOpen())"
+    >
+      {{ "Tools" | localize }}
+    </button>
+  </div>
 </div>
-<div class="flex flex-wrap gap-2 my-4">
-  <button
-    pButton
-    type="button"
-    [disabled]="readonly() || pending().length > 0"
-    (click)="undo()"
+<div class="editor-content" [class.tools-open]="toolsOpen()">
+  <div
+    class="design-mode"
+    [class.rules-mode]="workspaceTab() === 'rules'"
+    [hidden]="!['design', 'rules'].includes(workspaceTab())"
   >
-    {{ "Undo" | localize }}
-  </button>
-  <button
-    pButton
-    type="button"
-    [disabled]="readonly() || pending().length > 0"
-    (click)="undo(true)"
-  >
-    {{ "Redo" | localize }}
-  </button>
-  <button
-    pButton
-    type="button"
-    [disabled]="readonly() || !selected().length || pending().length > 0"
-    (click)="removePlacement()"
-  >
-    {{ "Remove placement" | localize }}
-  </button>
-</div>
-<app-form-settings
-  [disabled]="readonly()"
-  [documents]="documents()"
-  (applied)="applyProperties($event, 'settings-ui')"
-  (changed)="markPending('settings-ui')"
-  (sample)="sampleJson = JSON.stringify($event); queuePreview()"
-/>
-
-<button
-  pButton
-  severity="secondary"
-  type="button"
-  [disabled]="busy()"
-  [outlined]="true"
-  (click)="inspect('schema')"
->
-  {{ "Render contract" | localize }}</button
-><button
-  pButton
-  severity="secondary"
-  type="button"
-  [disabled]="busy()"
-  [outlined]="true"
-  (click)="inspect('fields')"
->
-  {{ "Field catalog" | localize }}</button
-><button
-  pButton
-  severity="secondary"
-  type="button"
-  [disabled]="busy()"
-  [outlined]="true"
-  (click)="inspect('behavior')"
->
-  {{ "Evaluate behavior" | localize }}
-</button>
-<details>
-  <summary>{{ "Options and navigation preview" | localize }}</summary>
-  <label for="interaction-json">{{
-    "Node pointer and synthetic query" | localize
-  }}</label
-  ><textarea
-    class="font-mono"
-    id="interaction-json"
-    [(ngModel)]="interactionJson"
-  ></textarea
-  ><button
-    pButton
-    severity="secondary"
-    type="button"
-    [disabled]="busy()"
-    [outlined]="true"
-    (click)="inspect('options')"
-  >
-    {{ "Preview options" | localize }}</button
-  ><button
-    pButton
-    severity="secondary"
-    type="button"
-    [disabled]="busy()"
-    [outlined]="true"
-    (click)="inspect('navigation')"
-  >
-    {{ "Preview navigation" | localize }}
-  </button>
-</details>
-@if (diagnostics()) {
-  <section [attr.aria-label]="'Validation diagnostics' | localize">
-    <h2>{{ "Diagnostics" | localize }}</h2>
-    <ul>
-      @for (issue of issues(); track $index) {
-        <li>
-          @if (issue.path) {
-            <button
-              pButton
-              severity="secondary"
-              type="button"
-              [outlined]="true"
-              (click)="select(issue.path)"
-            >
-              {{ issue.pointer }} · {{ issue.code }} {{ issue.edge }}
-            </button>
+    <div class="authoring-workspace" [class.preview-mode]="previewMode()">
+      <div class="designer">
+        <section
+          class="form-design-canvas"
+          [attr.aria-label]="'Form layout' | localize"
+        >
+          @if (workspaceTab() === "rules") {
+            <app-form-rule-overview
+              [disabled]="pending().length > 0"
+              [documents]="documents()"
+              [items]="outline()"
+              [selected]="selected()"
+              (selectedChange)="select($event)"
+            />
           } @else {
-            {{ issue.pointer }} · {{ issue.code }}
+            <header class="form-heading">
+              <h2 style="margin: 0">{{ "Form layout" | localize }}</h2>
+              <button
+                pButton
+                style="margin: 0"
+                type="button"
+                [disabled]="readonly() || pending().length > 0"
+                (click)="toolsTab.set('components'); toolsOpen.set(true)"
+              >
+                <i aria-hidden="true" class="pi pi-plus"></i>
+                {{ "Add field" | localize }}
+              </button>
+              <button
+                pButton
+                severity="secondary"
+                style="margin: 0"
+                type="button"
+                [attr.aria-label]="'Manage pages' | localize"
+                [outlined]="true"
+                (click)="workspaceTab.set('settings')"
+              >
+                <i aria-hidden="true" class="pi pi-file"></i>
+                {{ "Pages" | localize }}
+              </button>
+            </header>
+            <p>
+              {{
+                "Drag from Add or click a field type. Select a field to edit."
+                  | localize
+              }}
+            </p>
+            <app-form-canvas
+              [context]="contextEpoch()"
+              [disabled]="readonly() || pending().length > 0"
+              [documents]="documents()"
+              [dragging]="dragging()"
+              [resolvedRender]="
+                previewFreshness() === 'ready'
+                  ? (runtime()?.render ?? null)
+                  : null
+              "
+              [selected]="selected()"
+              (dragEnded)="cancelDrag()"
+              (dragStarted)="drag($event.event, $event.path)"
+              (dropRequested)="
+                drop($event.event, $event.target, $event.position)
+              "
+              (duplicateRequested)="select($event) && duplicate()"
+              (moveToRequested)="select($event) && toolsTab.set('outline')"
+              (removeRequested)="select($event) && removePlacement()"
+              (selectedChange)="select($event)"
+            />
           }
-        </li>
-      }
-    </ul>
-    <pre>{{ diagnostics() }}</pre>
+        </section>
+
+        <aside class="form-tools">
+          <p-tabs
+            [showNavigators]="false"
+            [value]="toolsTab()"
+            (valueChange)="toolsTab.set($any($event))"
+          >
+            <p-tablist
+              [hidden]="workspaceTab() === 'rules'"
+              [pt]="{
+                tabList: {
+                  style: {
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+                    width: '100%',
+                  },
+                },
+              }"
+            >
+              <p-tab value="components">{{ "Add" | localize }}</p-tab>
+              <p-tab value="outline">{{ "Outline" | localize }}</p-tab>
+              <p-tab value="properties">{{ "Edit" | localize }}</p-tab>
+            </p-tablist>
+            <p-tabpanels>
+              <p-tabpanel value="components">
+                <app-form-palette [view]="this" />
+              </p-tabpanel>
+              <p-tabpanel value="outline">
+                <h2>{{ "Outline" | localize }}</h2>
+                @if (pageList().length) {
+                  <h3>{{ "Pages" | localize }}</h3>
+                  <ul class="form-page-outline">
+                    @for (page of pageList(); track page.key) {
+                      <li>
+                        <button
+                          pButton
+                          severity="secondary"
+                          type="button"
+                          [outlined]="true"
+                          (click)="
+                            languageSettings.editPage(page.key);
+                            workspaceTab.set('settings')
+                          "
+                        >
+                          {{ page.title || ("Untitled page" | localize) }}
+                        </button>
+                      </li>
+                    }
+                  </ul>
+                }
+                <ul class="form-outline">
+                  @for (item of outline(); track item.identity) {
+                    <li
+                      [draggable]="!readonly()"
+                      [style.padding-inline-start.rem]="item.path.length"
+                      (dragend)="cancelDrag()"
+                      (dragover)="$event.preventDefault()"
+                      (dragstart)="drag($event, item.path)"
+                      (drop)="drop($event, item.path)"
+                    >
+                      <button
+                        pButton
+                        severity="secondary"
+                        type="button"
+                        [outlined]="true"
+                        (click)="select(item.path)"
+                      >
+                        {{ item.label }}
+                      </button>
+                    </li>
+                  }
+                </ul>
+                <button
+                  pButton
+                  severity="secondary"
+                  type="button"
+                  [disabled]="readonly()"
+                  [outlined]="true"
+                  (click)="move(-1)"
+                >
+                  {{ "Move up" | localize }}</button
+                ><button
+                  pButton
+                  severity="secondary"
+                  type="button"
+                  [disabled]="readonly()"
+                  [outlined]="true"
+                  (click)="move(1)"
+                >
+                  {{ "Move down" | localize }}
+                </button>
+                <app-form-field-placement
+                  [disabled]="readonly() || pending().length > 0"
+                  [documents]="documents()"
+                  [path]="selected()"
+                  (applied)="applyProperties($event)"
+                />
+                <app-form-placement-controls
+                  [disabled]="readonly() || pending().length > 0"
+                  [documents]="documents()"
+                  [path]="selected()"
+                  (duplicateRequested)="duplicate()"
+                  (moveRequested)="reparent($event)"
+                />
+              </p-tabpanel>
+              <p-tabpanel value="properties">
+                <section
+                  class="form-properties"
+                  [attr.aria-label]="'Selected component' | localize"
+                >
+                  <div class="form-properties-heading">
+                    <h2 tabindex="-1">
+                      {{ selectedLabel() }}
+                    </h2>
+                    <button
+                      pButton
+                      severity="danger"
+                      type="button"
+                      [attr.aria-label]="'Remove placement' | localize"
+                      [attr.title]="'Remove placement' | localize"
+                      [disabled]="
+                        readonly() || !selected().length || pending().length > 0
+                      "
+                      [text]="true"
+                      (click)="removePlacement()"
+                    >
+                      <i aria-hidden="true" class="pi pi-trash"></i
+                      ><span class="sr-only">{{
+                        "Remove placement" | localize
+                      }}</span>
+                    </button>
+                  </div>
+                  <app-form-inspector
+                    [disabled]="readonly()"
+                    [documents]="documents()"
+                    [path]="selected()"
+                    [pendingEdits]="pending().length > 0"
+                    [previewLocale]="locale"
+                    [resolvedLabel]="selectedLabel()"
+                    [resolvedRender]="
+                      previewFreshness() === 'ready'
+                        ? (runtime()?.render ?? null)
+                        : null
+                    "
+                    [rulesOnly]="workspaceTab() === 'rules'"
+                    [sampleData]="data()"
+                    (applied)="applyProperties($event)"
+                    (changed)="markPending('inspector')"
+                    (translationRequested)="
+                      languageSettings.editMessage($event);
+                      workspaceTab.set('languages')
+                    "
+                  />
+                </section>
+              </p-tabpanel>
+            </p-tabpanels>
+          </p-tabs>
+        </aside>
+      </div>
+      <app-form-live-preview class="form-live-preview" [view]="this" />
+    </div>
+  </div>
+  <section
+    class="settings-mode"
+    [hidden]="!['languages', 'settings'].includes(workspaceTab())"
+  >
+    <app-form-settings
+      #languageSettings
+      [blocked]="settingsBlocked()"
+      [context]="contextEpoch()"
+      [disabled]="readonly()"
+      [documents]="documents()"
+      [mode]="workspaceTab() === 'settings' ? 'settings' : 'languages'"
+      [resolvedRender]="
+        previewFreshness() === 'ready' ? (runtime()?.render ?? null) : null
+      "
+      (applied)="applyProperties($event, 'settings-ui')"
+      (changed)="markPending('settings-ui')"
+      (discarded)="discardSettings()"
+    />
   </section>
+  <section class="diagnostics-mode" [hidden]="workspaceTab() !== 'diagnostics'">
+    <app-form-diagnostics [view]="this" />
+  </section>
+</div>
+
+@if (status()) {
+  <p class="editor-feedback" role="status">{{ draftStatus() | localize }}</p>
 }

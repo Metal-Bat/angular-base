@@ -1,3 +1,4 @@
+import { hasActiveSubprocess } from '../../domain/action-availability';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -7,8 +8,9 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
+import { TableModule } from 'primeng/table';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { ActorState } from '../../../../core/auth/actor-state';
@@ -27,6 +29,8 @@ import { ResourceActions } from '../resource-actions/resource-actions';
   host: { class: 'console-page' },
   imports: [
     FormsModule,
+    RouterLink,
+    TableModule,
     ButtonModule,
     InputTextModule,
     ControlField,
@@ -44,6 +48,30 @@ export class ProcessControls {
   readonly actions = viewChild(ResourceActions);
   readonly busy = signal(false);
   readonly row = signal<JsonObject | null>(null);
+  readonly sections = [
+    {
+      title: 'Lifecycle',
+      keys: ['status', 'started_at', 'ended_at', 'last_error_code'],
+    },
+  ];
+  readonly positions = computed(() => {
+    const value = this.row()?.['current_positions'];
+    return Array.isArray(value)
+      ? value.filter(
+          (position): position is JsonObject =>
+            !!position &&
+            typeof position === 'object' &&
+            !Array.isArray(position),
+        )
+      : [];
+  });
+  readonly waitingForChild = computed(() =>
+    hasActiveSubprocess(this.row() ?? {}),
+  );
+  readonly requestReference = computed(() => {
+    const value = this.row()?.['business_request_ref_id'];
+    return typeof value === 'string' ? value : null;
+  });
   readonly error = signal('');
   readonly notice = signal('');
   readonly canRead = computed(() => {

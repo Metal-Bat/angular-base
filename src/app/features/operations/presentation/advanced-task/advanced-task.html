@@ -1,183 +1,212 @@
-<h2>{{ "Personal task organization" | localize }}</h2>
+<app-menu-button
+  label="More task actions"
+  [disabled]="disabled()"
+  [items]="commands()"
+/>
 @if (error()) {
   <p role="alert">{{ error() | localize }}</p>
 }
-<fieldset [disabled]="editor().busy() || editor().blocked()">
-  <button
-    pButton
-    severity="secondary"
-    type="button"
-    [outlined]="true"
-    (click)="resources.personal('read', true)"
-  >
-    {{ "Mark read" | localize }}
-  </button>
-  <button
-    pButton
-    severity="secondary"
-    type="button"
-    [outlined]="true"
-    (click)="resources.personal('pin', true)"
-  >
-    {{ "Pin" | localize }}
-  </button>
-  <button
-    pButton
-    severity="secondary"
-    type="button"
-    [outlined]="true"
-    (click)="resources.personal('pin', false)"
-  >
-    {{ "Unpin" | localize }}
-  </button>
-  <button
-    pButton
-    severity="secondary"
-    type="button"
-    [outlined]="true"
-    (click)="resources.personal('watch', true)"
-  >
-    {{ "Watch" | localize }}
-  </button>
-  <button
-    pButton
-    severity="secondary"
-    type="button"
-    [outlined]="true"
-    (click)="resources.personal('watch', false)"
-  >
-    {{ "Unwatch" | localize }}
-  </button>
-  <button
-    pButton
-    severity="secondary"
-    type="button"
-    [outlined]="true"
-    (click)="resources.personal('archive', true)"
-  >
-    {{ "Archive" | localize }}
-  </button>
-  <button
-    pButton
-    severity="secondary"
-    type="button"
-    [outlined]="true"
-    (click)="resources.personal('archive', false)"
-  >
-    {{ "Unarchive" | localize }}
-  </button>
-  <label for="additional-comment">{{ "Add comment" | localize }}</label>
-  <textarea
-    id="additional-comment"
-    maxlength="4000"
-    [ngModel]="comment()"
-    (ngModelChange)="comment.set($event)"
-  ></textarea>
-  <button
-    pButton
-    severity="secondary"
-    type="button"
-    [outlined]="true"
-    (click)="resources.comment(comment()); comment.set('')"
-  >
-    {{ "Post comment" | localize }}
-  </button>
-</fieldset>
-<h2>{{ "Correction feedback" | localize }}</h2>
-<ul>
-  @for (entry of feedback(); track entry.key) {
-    <li>
-      <bdi>{{ entry.scope }} {{ entry.item }}</bdi> · {{ entry.message }} ·
-      {{ entry.status | localize }}
-      <dl>
-        <dt>{{ "Current value" | localize }}</dt>
-        <dd>{{ entry.current | valueText }}</dd>
-        <dt>{{ "Previous value" | localize }}</dt>
-        <dd>{{ entry.prior | valueText }}</dd>
-      </dl>
-      @if (entry.status === "OPEN" && editor().canEdit()) {
+<app-task-feedback
+  [busy]="feedbackBusy()"
+  [canResolve]="editor().canEdit()"
+  [disabled]="disabled()"
+  [document]="editor().document()"
+  [expanded]="feedbackExpanded()"
+  [feedback]="feedback()"
+  [kinds]="kinds()"
+  [labels]="labels()"
+  (expandedChange)="feedbackExpanded.set($event)"
+  (fieldRequested)="fieldRequested.emit($event)"
+  (resolved)="resolve($event)"
+/>
+<p-dialog
+  appendTo="body"
+  [closable]="false"
+  [closeAriaLabel]="'Close' | localize"
+  [closeOnEscape]="false"
+  [draggable]="false"
+  [header]="dialogTitle() | localize"
+  [modal]="true"
+  [resizable]="false"
+  [style]="{ width: 'min(36rem, calc(100vw - 2rem))' }"
+  [visible]="!!dialog()"
+  (onHide)="restoreFocus()"
+  (visibleChange)="close()"
+>
+  <ng-template #header let-titleId="ariaLabelledBy">
+    <div
+      class="flex w-full items-center justify-between gap-4"
+      tabindex="-1"
+      (keydown.escape)="escape($event)"
+    >
+      <span class="font-semibold" [id]="titleId">{{
+        dialogTitle() | localize
+      }}</span>
+      <button
+        pButton
+        severity="secondary"
+        type="button"
+        [attr.aria-label]="'Close' | localize"
+        [disabled]="pending() || editor().busy()"
+        [text]="true"
+        (click)="close()"
+      >
+        <i aria-hidden="true" class="pi pi-times"></i>
+      </button>
+    </div>
+  </ng-template>
+  <div tabindex="-1" (keydown.escape)="escape($event)">
+    @if (editor().error()) {
+      <p role="alert">{{ editor().error() | localize }}</p>
+    }
+    @if (dialog() === "lifecycle") {
+      <p>
+        {{
+          "Only the requester or an administrator may close this task."
+            | localize
+        }}
+      </p>
+      <button
+        pButton
+        severity="danger"
+        type="button"
+        [disabled]="disabled()"
+        (click)="resources.administrative('cancel')"
+      >
+        {{ "Cancel task" | localize }}
+      </button>
+      <button
+        pButton
+        severity="secondary"
+        type="button"
+        [disabled]="disabled()"
+        (click)="resources.administrative('expire')"
+      >
+        {{ "Expire overdue task" | localize }}
+      </button>
+    } @else if (dialog() === "comment") {
+      <app-control-field
+        controlId="additional-comment"
+        label="Add comment"
+        [required]="true"
+      >
+        <textarea
+          id="additional-comment"
+          maxlength="4000"
+          required
+          [disabled]="disabled()"
+          [ngModel]="comment()"
+          (ngModelChange)="comment.set($event)"
+        ></textarea>
+      </app-control-field>
+    } @else if (dialog() === "forward") {
+      <p>
+        {{
+          "Choose an authorized recipient. Forwarding transfers this task and returns you to the inbox."
+            | localize
+        }}
+      </p>
+      <div class="recipient-actions">
         <button
           pButton
           severity="secondary"
           type="button"
-          [outlined]="true"
-          (click)="resolve(entry.key)"
+          [disabled]="disabled()"
+          (click)="picker().open({ key: 'user_ref_id', path: 'user_ref_id' })"
         >
-          {{ "Resolve" | localize }}
+          {{ "Choose user" | localize }}
+        </button>
+        @if (user()) {
+          <span
+            ><bdi>{{ userLabel() }}</bdi></span
+          ><button
+            pButton
+            severity="secondary"
+            type="button"
+            [disabled]="disabled()"
+            (click)="user.set(''); userLabel.set('')"
+          >
+            {{ "Clear user" | localize }}
+          </button>
+        }
+        <button
+          pButton
+          severity="secondary"
+          type="button"
+          [disabled]="disabled()"
+          (click)="
+            picker().open({
+              key: 'work_group_ref_id',
+              path: 'work_group_ref_id',
+            })
+          "
+        >
+          {{ "Choose work group" | localize }}
+        </button>
+        @if (group()) {
+          <span
+            ><bdi>{{ groupLabel() }}</bdi></span
+          ><button
+            pButton
+            severity="secondary"
+            type="button"
+            [disabled]="disabled()"
+            (click)="group.set(''); groupLabel.set('')"
+          >
+            {{ "Clear work group" | localize }}
+          </button>
+        }
+      </div>
+      <app-control-field
+        controlId="forward-reason"
+        label="Reason"
+        [required]="true"
+      >
+        <textarea
+          id="forward-reason"
+          maxlength="4000"
+          required
+          [disabled]="disabled()"
+          [ngModel]="reason()"
+          (ngModelChange)="reason.set($event)"
+        ></textarea>
+      </app-control-field>
+    }
+    <div class="dialog-actions">
+      <button
+        pButton
+        severity="secondary"
+        type="button"
+        [disabled]="pending()"
+        (click)="close()"
+      >
+        {{ "Cancel" | localize }}
+      </button>
+      @if (dialog() === "comment") {
+        <button
+          pButton
+          type="button"
+          [disabled]="disabled() || !comment().trim()"
+          (click)="post()"
+        >
+          {{ "Post comment" | localize }}
+        </button>
+      } @else if (dialog() === "forward") {
+        <button
+          pButton
+          type="button"
+          [disabled]="
+            disabled() ||
+            !canForward() ||
+            !reason().trim() ||
+            (!user() && !group())
+          "
+          (click)="forward()"
+        >
+          {{ "Forward" | localize }}
         </button>
       }
-    </li>
-  } @empty {
-    <li>{{ "No correction feedback" | localize }}</li>
-  }
-</ul>
-@if (editor().ownTask() && editor().item()?.kind === "HUMAN_TASK") {
-  <fieldset [disabled]="editor().busy() || editor().blocked()">
-    <legend>{{ "Forward task" | localize }}</legend>
-    <label for="forward-user">{{ "User reference" | localize }}</label>
-    <input
-      id="forward-user"
-      type="text"
-      [ngModel]="user()"
-      (ngModelChange)="user.set($event)"
-    />
-    <label for="forward-group">{{ "Work group reference" | localize }}</label>
-    <input
-      id="forward-group"
-      type="text"
-      [ngModel]="group()"
-      (ngModelChange)="group.set($event)"
-    />
-    <label for="forward-reason">{{ "Reason" | localize }}</label>
-    <textarea
-      id="forward-reason"
-      maxlength="4000"
-      [ngModel]="reason()"
-      (ngModelChange)="reason.set($event)"
-    ></textarea>
-    <button
-      pButton
-      severity="secondary"
-      type="button"
-      [outlined]="true"
-      (click)="forward()"
-    >
-      {{ "Forward" | localize }}
-    </button>
-  </fieldset>
-}
-
-@if (
-  editor().item()?.status !== "COMPLETED" &&
-  editor().item()?.status !== "CANCELLED" &&
-  editor().item()?.status !== "EXPIRED"
-) {
-  <details>
-    <summary>{{ "Close task lifecycle" | localize }}</summary>
-    <p>
-      {{
-        "Only the requester or an administrator may close this task." | localize
-      }}
-    </p>
-    <button
-      pButton
-      severity="secondary"
-      type="button"
-      [disabled]="editor().busy() || editor().blocked()"
-      [outlined]="true"
-      (click)="resources.administrative('cancel')"
-    >
-      {{ "Cancel task" | localize }}
-    </button>
-    <button
-      pButton
-      severity="secondary"
-      type="button"
-      [disabled]="editor().busy() || editor().blocked()"
-      [outlined]="true"
-      (click)="resources.administrative('expire')"
-    >
-      {{ "Expire overdue task" | localize }}
-    </button>
-  </details>
-}
+    </div>
+  </div>
+</p-dialog>
+<app-reference-picker (picked)="pick($event)" />

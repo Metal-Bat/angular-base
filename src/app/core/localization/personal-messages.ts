@@ -1,4 +1,56 @@
+import workspaceRepairMessages from './workspace-repair-messages.json';
+import agentMessages from './agent-messages.json';
 export const personalMessages: Readonly<Record<string, string>> = {
+  'Change timezone in user settings.': 'تغییر منطقهٔ زمانی در تنظیمات کاربر.',
+  'Choose a calculation function and source fields before applying this field.':
+    'پیش از اعمال این فیلد، تابع محاسبه و فیلدهای منبع را انتخاب کنید.',
+  'Review diagnostics to correct the form configuration.':
+    'برای اصلاح تنظیمات فرم، بخش عیب‌یابی را بررسی کنید.',
+  'Choose compatible calculation source fields.':
+    'فیلدهای منبع سازگار با تابع محاسبه را انتخاب کنید.',
+  'The choice item type must be configured before selecting one value.':
+    'پیش از انتخاب یک مقدار، نوع گزینه‌ها را تنظیم کنید.',
+  'Clear the multi-value default before switching to one choice.':
+    'پیش از تغییر به انتخاب تکی، مقدار پیش‌فرض چندگزینه‌ای را پاک کنید.',
+  'Multiple sample selections were cleared. Choose one sample value.':
+    'انتخاب‌های چندگانه نمونه پاک شد. یک مقدار نمونه انتخاب کنید.',
+  'Choices conflict with the existing field constraints.':
+    'گزینه‌ها با محدودیت‌های فعلی فیلد سازگار نیستند.',
+  'Cancel field': 'لغو فیلد',
+  'View more events in agenda': 'دیدن رویدادهای بیشتر در دستور کار',
+  ...agentMessages,
+  ...workspaceRepairMessages,
+  'Only some events are shown. Refresh to load the complete period.':
+    'فقط بخشی از رویدادها نمایش داده می‌شود. برای دریافت کامل این بازه، تازه‌سازی کنید.',
+  'Event details': 'جزئیات رویداد',
+  Today: 'امروز',
+  Day: 'روز',
+  Arrange: 'مرتب‌سازی',
+  'Left to right': 'از چپ به راست',
+  'Top to bottom': 'از بالا به پایین',
+  'Calendar settings': 'تنظیمات تقویم',
+  'Previous period': 'بازه قبل',
+  'Next period': 'بازه بعد',
+  'Data table': 'جدول داده‌ها',
+  'Unknown observations leave gaps. Exact values are available in the data table.':
+    'داده‌های نامعلوم فاصله خالی ایجاد می‌کنند. مقادیر دقیق در جدول داده‌ها در دسترس هستند.',
+  'Languages and settings': 'زبان‌ها و تنظیمات',
+  Tools: 'ابزارها',
+  Design: 'طراحی',
+  Identity: 'هویت',
+  Execution: 'اجرا',
+  Worker: 'پردازشگر',
+  'Execution diagnostics': 'اطلاعات فنی اجرا',
+  'Additional settings': 'تنظیمات بیشتر',
+  'This is a background execution result. Business approval is tracked by the owning request.':
+    'این نتیجه اجرای پس‌زمینه است. تأیید کسب‌وکار در درخواست مربوط پیگیری می‌شود.',
+  Account: 'حساب',
+  'Focus mode': 'حالت تمرکز',
+  Rename: 'تغییر نام',
+  'Save current view': 'ذخیره نمای فعلی',
+  'View actions': 'عملیات نما',
+  'Uses the current applied filters and sort order.':
+    'از فیلترها و ترتیب مرتب‌سازی اعمال‌شده فعلی استفاده می‌کند.',
   'The destination is unavailable. Refresh to check current access.':
     'مقصد در دسترس نیست. برای بررسی دسترسی فعلی، تازه‌سازی کنید.',
   Model: 'مدل',
@@ -158,6 +210,9 @@ export const personalMessages: Readonly<Record<string, string>> = {
     'نمای اصلی تا جایگزینی صریح حفظ می‌شود. هر دو مجموعه محدودیت را بررسی کنید.',
 
   'Page size must be between 1 and 100.': 'اندازه صفحه باید بین ۱ تا ۱۰۰ باشد.',
+  'Star a form, workflow or other supported item to find it here.':
+    'فرم، گردش کار یا مورد پشتیبانی‌شده‌ای را ستاره‌دار کنید تا اینجا پیدا شود.',
+  'Remove from favorites': 'حذف از علاقه‌مندی‌ها',
   'Add to favorites': 'افزودن به علاقه‌مندی‌ها',
   'Dependency readiness': 'آمادگی وابستگی‌ها',
   'Author readiness does not establish requester eligibility.':

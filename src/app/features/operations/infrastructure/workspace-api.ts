@@ -1,3 +1,4 @@
+import { CorrectionInput } from '../domain/correction-feedback';
 import type { components } from '../../../core/transport/generated/schema';
 import { inject, Injectable } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
@@ -185,6 +186,7 @@ export class WorkspaceApi {
     deleted: readonly string[],
     outcome: string,
     comment: string,
+    feedback: readonly CorrectionInput[] = [],
   ): Promise<CaseRecord> {
     const operation = {
       complete: 'complete_work_item_api_v1_work_items__ref_id__complete_post',
@@ -202,7 +204,7 @@ export class WorkspaceApi {
             delete_paths: [...deleted],
             outcome_key: outcome,
             comment: comment || null,
-            feedback: [],
+            feedback: [...feedback],
           },
         }),
       ),

@@ -1,12 +1,10 @@
 import contracts from './node-inspectors.json';
 import { JsonObject, JsonValue } from '../../forms/domain/runtime-document';
-import {
-  schemaErrors,
-  schemaLabel,
-} from '../../administration/domain/schema-form';
+import { schemaErrors, schemaLabel } from '../../../shared/domain/schema-form';
 export type Inspector = {
   handler_key: string;
   handler_version: string;
+  contract_fingerprint: string;
   config_schema: JsonObject;
   outcomes: readonly string[];
   bindings: readonly {
@@ -51,8 +49,9 @@ export function inspectorFor(
   try {
     if (
       !entry?.['type_schema'] ||
-      canonical(resolveSchema(entry['type_schema'] as JsonObject)) !==
-        canonical(handler.config_schema)
+      canonical(
+        configurationSchema(entry['type_schema'] as JsonObject, handler),
+      ) !== canonical(handler.config_schema)
     ) {
       return null;
     }
@@ -69,6 +68,31 @@ export function inspectorFor(
       ? (metadata['ports'] as JsonObject[])
       : handler.ports,
   };
+}
+
+function configurationSchema(
+  schema: JsonObject,
+  handler: Inspector,
+): JsonObject {
+  const resolved = resolveSchema(schema);
+  if (
+    resolved['x-step-definition-fingerprint'] ===
+      handler.contract_fingerprint &&
+    resolved['x-step-definition'] &&
+    typeof resolved['x-step-definition'] === 'object' &&
+    !Array.isArray(resolved['x-step-definition'])
+  ) {
+    // The catalog enriches reviewed built-ins with display metadata. Only these
+    // two root annotations are separate from the frozen configuration schema;
+    // constraints, nested extensions and unrecognized annotations still compare.
+    return Object.fromEntries(
+      Object.entries(resolved).filter(
+        ([key]) =>
+          !['x-step-definition', 'x-step-definition-fingerprint'].includes(key),
+      ),
+    );
+  }
+  return resolved;
 }
 export function editableFields(inspector: Inspector): readonly {
   key: string;

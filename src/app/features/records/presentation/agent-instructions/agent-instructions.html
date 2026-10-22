@@ -1,0 +1,54 @@
+@if (readonly()) {
+  <section>
+    <h3>{{ "Agent instructions" | localize }}</h3>
+    <p class="instructions">{{ value()["instructions"] }}</p>
+    <p>
+      {{ "Prompt version" | localize }}:
+      <bdi>{{ value()["prompt_version"] }}</bdi>
+    </p>
+  </section>
+} @else {
+  <app-control-field
+    controlId="agent-instructions"
+    data-field-path="spec.instructions"
+    hint="Describe the task, the permitted evidence and how to explain the decision."
+    label="Agent instructions"
+    [error]="errors()['spec.instructions'] || ''"
+    [required]="true"
+  >
+    <textarea
+      aria-describedby="agent-instructions-help"
+      dir="auto"
+      id="agent-instructions"
+      maxlength="8192"
+      pTextarea
+      required
+      rows="10"
+      [attr.aria-invalid]="errors()['spec.instructions'] ? 'true' : null"
+      [disabled]="disabled()"
+      [ngModel]="value()['instructions'] ?? ''"
+      (ngModelChange)="change('instructions', $event)"
+    ></textarea>
+    <small fieldHint id="agent-instructions-help">{{
+      "Up to 8192 characters. Editing does not run the agent." | localize
+    }}</small>
+  </app-control-field>
+  <app-control-field
+    controlId="agent-prompt-version"
+    data-field-path="spec.prompt_version"
+    label="Prompt version"
+    [error]="errors()['spec.prompt_version'] || ''"
+    [required]="true"
+  >
+    <input
+      id="agent-prompt-version"
+      maxlength="128"
+      pInputText
+      required
+      [attr.aria-invalid]="errors()['spec.prompt_version'] ? 'true' : null"
+      [disabled]="disabled()"
+      [ngModel]="value()['prompt_version'] ?? ''"
+      (ngModelChange)="change('prompt_version', $event)"
+    />
+  </app-control-field>
+}

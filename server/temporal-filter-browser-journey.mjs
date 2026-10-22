@@ -3,7 +3,7 @@ export const temporalFilterBrowserScript = String.raw`
  await (async()=>{
    const choose=async(control,label)=>{control.click();await wait(()=>[...document.querySelectorAll('[role="option"]')].some(option=>option.textContent.trim()===label),'Temporal choice '+label);[...document.querySelectorAll('[role="option"]')].find(option=>option.textContent.trim()===label).click();await wait(dropdownsIdle,'Temporal choice settled');};
    await click(root(),'Add filter');
-   await choose(root().querySelector('.filter-row [role="combobox"][id$="-field-0"]'),'Created At');
+   await choose(root().querySelector('.filter-row [data-query-field="0"] [role="combobox"]'),'Created At');
    await wait(()=>root().querySelector('app-query-filters app-temporal-control'),'Datetime picker rendered');
    const picker=()=>root().querySelector('app-query-filters app-temporal-control');
    const dateInput=()=>picker().querySelector('.date-entry input');
@@ -12,21 +12,24 @@ export const temporalFilterBrowserScript = String.raw`
    await wait(()=>document.querySelector('.calendar-days button[data-calendar-day="2024-03-20"]'),'Gregorian calendar day');
    document.querySelector('.calendar-days button[data-calendar-day="2024-03-20"]').click();
    await wait(()=>!document.querySelector('.calendar-days'),'Date chosen');
-   await choose(picker().querySelector('app-select-control [role="combobox"]'),'Jalali');
+   await click(picker(),'Choose date');await wait(()=>document.querySelector('.calendar-settings [role="combobox"]'),'Calendar settings opened');
+   await choose(document.querySelector('.calendar-settings [role="combobox"]'),'Jalali');
    await wait(()=>dateInput().value==='1403-01-01','Jalali conversion');
-   await click(picker(),'Choose date');
    await wait(()=>document.querySelector('.calendar-days'),'Jalali month');
    check(document.querySelectorAll('.calendar-days button').length===31,'Jalali month length');
-   await auditAccessibility('jalali-date-dialog',document.querySelector('.p-dialog'));
+   await auditAccessibility('jalali-date-dialog',document.querySelector('.p-popover'));
    const day=document.querySelector('.calendar-days button[data-calendar-day="2024-03-20"]');day.focus();day.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowRight',bubbles:true}));await wait(()=>document.activeElement?.dataset.calendarDay==='2024-03-21','Keyboard calendar movement');
    document.querySelector('.calendar-days button[data-calendar-day="2024-03-20"]').click();
    await wait(()=>!document.querySelector('.calendar-days'),'Jalali date chosen');
-   await choose(picker().querySelector('app-select-control [role="combobox"]'),'Islamic (civil Hijri)');
+   await click(picker(),'Choose date');await wait(()=>document.querySelector('.calendar-settings [role="combobox"]'),'Calendar settings reopened');
+   await choose(document.querySelector('.calendar-settings [role="combobox"]'),'Islamic (civil Hijri)');
    await wait(()=>dateInput().value==='1445-09-10','Hijri conversion');
-   await click(picker(),'Choose date');await wait(()=>document.querySelector('.calendar-days'),'Hijri month');
+   await wait(()=>document.querySelector('.calendar-days'),'Hijri month');
    check(document.querySelectorAll('.calendar-days button').length===30,'Hijri month length');
    document.querySelector('.calendar-days button[data-calendar-day="2024-03-20"]').click();await wait(()=>!document.querySelector('.calendar-days'),'Hijri date chosen');
-   await choose(picker().querySelector('app-select-control [role="combobox"]'),'Gregorian');
+   await click(picker(),'Choose date');await wait(()=>document.querySelector('.calendar-settings [role="combobox"]'),'Calendar settings final');
+   await choose(document.querySelector('.calendar-settings [role="combobox"]'),'Gregorian');
+   document.querySelector('.calendar-days button[data-calendar-day="2024-03-20"]').click();await wait(()=>!document.querySelector('.calendar-days'),'Gregorian selection closed');
    await click(root(),'Apply');await wait(()=>!root().textContent.includes('Loading…'),'Canonical datetime applied');
    check(picker().querySelector('p-datepicker input').readOnly,'Time uses a purpose-built picker');
    picker().querySelector('p-datepicker input').click();await wait(()=>document.querySelector('.p-datepicker-time-picker'),'Time picker opened');
@@ -50,11 +53,11 @@ export const temporalFilterBrowserScript = String.raw`
      mobile.documentElement.classList.add('app-dark');mobile.documentElement.dataset.palette='emerald';mobile.documentElement.dir='rtl';
      check(mobile.documentElement.scrollWidth<=frame.clientWidth+1,'RTL dark mobile table overflow');
      button(mobileRoot(),'Advanced filters').click();await wait(()=>button(mobileRoot(),'Add filter'),'Mobile filters');button(mobileRoot(),'Add filter').click();await wait(()=>mobileRoot().querySelector('.filter-row'),'Mobile filter row');
-     const mobileField=[...mobileRoot().querySelectorAll('.filter-row [role="combobox"]')].filter(control=>/-field-\d+$/.test(control.id)).at(-1);check(mobileField,'Mobile field chooser');mobileField.click();await wait(()=>[...mobile.querySelectorAll('[role="option"]')].some(option=>option.textContent.trim()==='Created At'),'Mobile dated field');[...mobile.querySelectorAll('[role="option"]')].find(option=>option.textContent.trim()==='Created At').click();
+     const mobileField=[...mobileRoot().querySelectorAll('.filter-row [data-query-field] [role="combobox"]')].at(-1);check(mobileField,'Mobile field chooser');mobileField.click();await wait(()=>[...mobile.querySelectorAll('[role="option"]')].some(option=>option.textContent.trim()==='Created At'),'Mobile dated field');[...mobile.querySelectorAll('[role="option"]')].find(option=>option.textContent.trim()==='Created At').click();
      await wait(()=>mobileRoot().querySelector('app-temporal-control'),'Mobile datetime control');
      check(mobile.documentElement.scrollWidth<=frame.clientWidth+1,'Mobile datetime filter overflow');
      button(mobileRoot().querySelector('app-temporal-control'),'Choose date').click();await wait(()=>mobile.querySelector('.calendar-days'),'Mobile calendar dialog');
-     const bounds=mobile.querySelector('.p-dialog').getBoundingClientRect();check(bounds.left>=-1&&bounds.right<=frame.clientWidth+1,'Mobile calendar outside viewport');
+     const bounds=mobile.querySelector('.p-popover').getBoundingClientRect();check(bounds.left>=-1&&bounds.right<=frame.clientWidth+1,'Mobile calendar outside viewport');
    } catch(error) { throw new Error(error.message+'; mobile-frame='+frame.contentDocument?.body.textContent.slice(0,1600)); } finally { frame.remove(); }
    await click(root(),'Clear');await wait(()=>!root().querySelector('app-query-filters app-temporal-control'),'Temporal query cleared');
  })();

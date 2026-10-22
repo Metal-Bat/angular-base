@@ -46,6 +46,7 @@ export const routes: Routes = [
       },
       {
         path: 'account',
+        title: 'Account and sessions | Workflow workspace',
         canActivate: [routeAccessGuard],
         data: { access: 'authenticated', requiredPermissions: [] },
         loadComponent: () =>

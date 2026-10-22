@@ -1,0 +1,25 @@
+:host {
+  display: inline;
+}
+.resource-choice {
+  display: grid;
+  gap: 0.5rem;
+  min-inline-size: 0;
+}
+input {
+  inline-size: 100%;
+  min-inline-size: 0;
+  min-block-size: 2.75rem;
+}
+.resource-pages {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+button {
+  min-block-size: 2.75rem;
+  white-space: normal;
+}
+p {
+  margin: 0;
+}

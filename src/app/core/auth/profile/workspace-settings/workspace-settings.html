@@ -14,17 +14,12 @@
   >
   <form class="grid gap-3" (ngSubmit)="zone()">
     <label for="preference-timezone">{{ "Timezone" | localize }}</label
-    ><input
-      id="preference-timezone"
-      maxlength="64"
-      name="timezone"
-      pInputText
-      [attr.aria-describedby]="
-        invalidZone() ? 'preference-timezone-error' : null
-      "
-      [attr.aria-invalid]="invalidZone() ? 'true' : null"
+    ><app-timezone-control
+      controlId="preference-timezone"
+      [describedBy]="invalidZone() ? 'preference-timezone-error' : null"
       [disabled]="preferences.loading()"
-      [(ngModel)]="timezone"
+      [invalid]="invalidZone()"
+      [(value)]="timezone"
     /><button pButton type="submit" [disabled]="preferences.loading()">
       {{ "Save timezone" | localize }}
     </button>

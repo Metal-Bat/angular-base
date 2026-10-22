@@ -72,5 +72,6 @@ export type StudioPort = {
     purpose: string,
     locale: string,
     context?: JsonObject,
+    abort?: AbortSignal,
   ): Promise<RuntimeCompatibility>;
 };

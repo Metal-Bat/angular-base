@@ -2,6 +2,25 @@
 
 Scope: existing pinned Foblex 19.3.0 adapter and owned workspace model. This is an implementation/evidence matrix, not full task acceptance. No replacement library, dependency, executable dialect or persistence architecture was introduced.
 
+## Current supported implementation — 2026-10-17
+
+This matrix supersedes implementation-gap statements in the preserved historical baseline below. Exact current tests, failures, source/contract identities and remaining acceptance are recorded in [workflow authoring acceptance](WORKFLOW-AUTHORING-ACCEPTANCE.md).
+
+| Interaction         | Current behavior                                                                                                                                                                                    | Evidence boundary                                                                                                      |
+| ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| Palette             | Public handler-derived categories, exact version captions, current-document single-use drag tokens, inverse coordinates, Add/place/keyboard alternatives                                            | Native zoomed drop and save/reopen; no invented runtime capabilities                                                   |
+| Selection/movement  | Ordinary/Shift/marquee/outline/context selection agree; native group drag commits one delta once; Escape/capture loss/blur fence commits; Undo keeps the surviving active single selection coherent | Native all-engine gestures and semantic Undo/Redo; actual-service group save/reopen                                    |
+| Local step actions  | Registered Add next and Insert step require explicit outcomes; branch policy, mappings, targets and pins survive insertion                                                                          | Native Cancel/Undo/Redo/save/reopen and actual current-ref insertion; configure/validate before promotion              |
+| Deletion            | Guarded selected-group removal removes only attached references and never connects around approvals                                                                                                 | Native confirmation/Undo and actual approval-chain preservation                                                        |
+| Wiring/reconnection | Explicit control outcomes, distinct typed data ports, both endpoint gestures; stable inspected identity and manual-route rekeying                                                                   | Existing native/API contracts and final source-qualified tests; no new executor                                        |
+| Routing/layout      | Adaptive curves, separate parallel view lanes, explicit editable route persistence, measured branch/cycle/disconnected arrangement                                                                  | Executable graph unchanged; exact route/layout Undo/save/reopen; Fit accounts for accessible sockets during zoom-out   |
+| History/repair      | Header-authorized workspace history with readable changes; issue links select and focus typed settings; pending owners retained                                                                     | Stale/actor/owner/error fences, native fields and actual history reads; advanced expert configuration remains explicit |
+| Readonly/navigation | Exact version/state and parent-scoped authorized draft-catalog path; inspect/pan/zoom remain usable                                                                                                 | Published pins stay immutable; deployment, human accessibility and broader APP/D05 acceptance remain separate          |
+
+## Historical baseline — 2026-10-10
+
+The following table and links are retained as historical implementation/evidence, not the current gap list.
+
 | Interaction        | Current behavior                                                                                                                | Local evidence / remaining acceptance                                                                                                             |
 | ------------------ | ------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Searchable palette | Registered catalog title/key search; add, drag/drop, select-and-place and Enter placement                                       | Existing and extended canvas browser fixture; category filters for workflow step types still require verified metadata                            |

@@ -1,3 +1,4 @@
+import { publicBrowserStorageCheck } from "./browser-storage-policy.mjs";
 /** Real-backend receipt journey; credentials stay in the private harness. */
 export function receiptBrowserJourney(credentials) {
   return `(async()=>{
@@ -63,7 +64,7 @@ export function receiptBrowserJourney(credentials) {
    if(accounts.language==='fa')check(evidence.textContent.includes('رسیدها و شواهد اجرای هوش مصنوعی')&&document.documentElement.dir==='rtl','Evidence localization/RTL');
    extra.push('authorized-requester-process-receipt','actor-switch-cleanup');
   }
-  check(localStorage.length===0&&sessionStorage.length===0,'Private browser persistence');
+  check(${publicBrowserStorageCheck},'Private browser persistence');
   await fetch('/__result',{method:'POST',body:JSON.stringify({ok:true,diagnostics:window.fixtureDiagnostics,scenarios:[...extra,scenario.id,'ordinary-auth','human-approve','actual-worker-order','readonly-receipt','acknowledge','filtered-task-process-denied','ordinary-recovery-denied',accounts.language]})});
  }catch(error){await fetch('/__result',{method:'POST',body:JSON.stringify({ok:false,error:error.message,diagnostics:window.fixtureDiagnostics,ui:{taskInbox:!!document.querySelector('app-task-inbox'),caseDetail:!!document.querySelector('app-case-detail'),tracking:!!document.querySelector('app-process-entry'),evidence:!!document.querySelector('app-process-evidence'),evidenceBusy:document.querySelector('app-process-evidence section')?.getAttribute('aria-busy'),evidenceError:!!document.querySelector('app-process-evidence [role=alert]'),dialog:!!document.querySelector('dialog[open]'),href:location.pathname.split('/').slice(0,3).join('/'),alerts:[...document.querySelectorAll('[role=alert]')].map(e=>e.textContent.includes('kept')?'kept':e.textContent.includes('permission')?'permission':'other')}})});}
 })();`;

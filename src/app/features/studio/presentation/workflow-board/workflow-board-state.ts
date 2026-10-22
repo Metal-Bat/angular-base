@@ -1,3 +1,7 @@
+import { watchWorkflowRoute } from './workflow-route';
+import { workflowAssistanceQuery } from './workflow-assistance-query';
+import { CommandMenuItem } from '../../../../shared/ui/menu-button/menu-button';
+import { Locale } from '../../../../core/localization/locale';
 import { ApiFailure } from '../../../../core/transport/api-failure';
 import { authorIssues } from '../../domain/authoring-diagnostics';
 import { computed, DestroyRef, Directive, inject, signal } from '@angular/core';
@@ -14,6 +18,31 @@ import { WorkspaceHistory } from '../../domain/workflow-authoring';
 import { CANVAS_VIEW, STUDIO_API } from '../../bindings';
 @Directive()
 export abstract class WorkflowBoardState {
+  private readonly locale = inject(Locale);
+  readonly publicationActions = computed<CommandMenuItem[]>(() => {
+    this.locale.language();
+    const disabled =
+      this.readonly() || this.dirty() || this.pending().length > 0;
+    return [
+      {
+        label: this.locale.text('Promote graph'),
+        disabled,
+        command: (): void => {
+          void this.promote();
+        },
+      },
+      {
+        label: this.locale.text('Publish'),
+        disabled,
+        command: (): void => {
+          void this.publish();
+        },
+      },
+    ];
+  });
+  readonly dockOpen = signal(false);
+  readonly paletteSearch = signal('');
+  readonly paletteSelection = signal('');
   protected readonly api = inject(STUDIO_API);
   protected readonly feedback = inject(Feedback);
   readonly canvas = inject(CANVAS_VIEW);
@@ -32,8 +61,20 @@ export abstract class WorkflowBoardState {
   readonly busy = signal(false);
   readonly dirty = signal(false);
   readonly status = signal('');
+  readonly versionNumber = signal<number | null>(null);
+  readonly versionParent = signal('');
   readonly error = signal('');
   readonly diagnostics = signal('');
+  readonly commandMessage = computed(() =>
+    [
+      'Workspace saved. This is not an executable graph.',
+      'Promoted. Publication is a separate explicit action.',
+      'Published immutable workflow version',
+      'Duplicated steps require validation of external dependencies.',
+    ].includes(this.diagnostics())
+      ? this.diagnostics()
+      : '',
+  );
   readonly issues = computed(() => {
     try {
       return authorIssues(
@@ -66,8 +107,6 @@ export abstract class WorkflowBoardState {
   startForm = '';
   source = '';
   target = '';
-  collapsedJson = '[]';
-  routingJson = '{}';
   protected readonly history = new WorkspaceHistory();
   protected generation = 0;
   constructor() {
@@ -76,10 +115,18 @@ export abstract class WorkflowBoardState {
       this.clear();
       release();
     });
+    watchWorkflowRoute((reference) => {
+      this.clear();
+      this.reference.set(reference);
+      void this.load();
+      void this.loadCatalog();
+    });
     void this.load();
     void this.loadCatalog();
   }
   protected clear(): void {
+    this.paletteSearch.set('');
+    this.paletteSelection.set('');
     this.generation++;
     this.reference.set('');
     this.selected.set('');
@@ -88,8 +135,6 @@ export abstract class WorkflowBoardState {
     this.requestType = '';
     this.startForm = '';
     this.selectorSearch = '';
-    this.collapsedJson = '';
-    this.routingJson = '';
     this.document.set(emptyWorkspace());
     this.state.set(null);
     this.catalog.set([]);
@@ -98,6 +143,8 @@ export abstract class WorkflowBoardState {
     this.pending.set([]);
     this.pendingStep.set('');
     this.status.set('');
+    this.versionNumber.set(null);
+    this.versionParent.set('');
     this.error.set('');
     this.busy.set(false);
     this.history.clear();
@@ -128,14 +175,20 @@ export abstract class WorkflowBoardState {
         return;
       }
       this.status.set(String(version['status']));
+      this.versionParent.set(
+        typeof version['workflow_ref_id'] === 'string'
+          ? version['workflow_ref_id']
+          : '',
+      );
+      this.versionNumber.set(
+        typeof version['number'] === 'number' ? version['number'] : null,
+      );
       this.reference.set(state.version);
       this.state.set(state);
       this.document.set(state.document);
       this.selected.set('');
       this.selectedJson = '{}';
       this.graphJson = JSON.stringify(state.document.graph, null, 2);
-      this.collapsedJson = JSON.stringify(state.document.collapsed);
-      this.routingJson = JSON.stringify(state.document.routing, null, 2);
       this.history.clear();
       this.pending.set([]);
       this.pendingStep.set('');
@@ -280,31 +333,13 @@ export abstract class WorkflowBoardState {
     this.assistantTool = tool;
     this.assistantPage.set(page);
     await this.run(async (generation) => {
-      const body: JsonObject =
-        tool === 'workspaceHistory'
-          ? { page, size: 20 }
-          : tool === 'selectors'
-            ? {
-                page,
-                size: 20,
-                ...(this.selectorSearch ? { search: this.selectorSearch } : {}),
-              }
-            : tool === 'inventory'
-              ? {
-                  workflow_version_ref_id: this.reference(),
-                  ...(this.startForm
-                    ? { start_form_version_ref_id: this.startForm }
-                    : {}),
-                  page,
-                  size: 20,
-                }
-              : {
-                  workflow_version_ref_id: this.reference(),
-                  request_type_ref_id: this.requestType,
-                  current_step_key: this.selected(),
-                  page,
-                  size: 20,
-                };
+      const body = workflowAssistanceQuery(tool, page, {
+        reference: this.reference(),
+        selectorSearch: this.selectorSearch,
+        startForm: this.startForm,
+        requestType: this.requestType,
+        selected: this.selected(),
+      });
       const value = await this.api.auxiliary(
         tool,
         body,

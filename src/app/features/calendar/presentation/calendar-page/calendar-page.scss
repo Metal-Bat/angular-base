@@ -1,0 +1,16 @@
+.calendar-settings {
+  padding: 0.5rem 0.75rem;
+  margin-block: 0.5rem;
+}
+.calendar-settings-fields {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: end;
+  gap: 1rem;
+  margin-block-start: 1rem;
+}
+@media (max-width: 48rem) {
+  .calendar-settings-fields {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

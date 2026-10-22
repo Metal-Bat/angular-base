@@ -1,0 +1,84 @@
+:host {
+  display: block;
+  min-inline-size: 0;
+}
+.month-scroll {
+  overflow: auto;
+  border: 1px solid var(--console-border);
+  border-radius: 0.75rem;
+  background: var(--console-surface);
+}
+.month-grid {
+  inline-size: 100%;
+  min-inline-size: 42rem;
+  table-layout: fixed;
+  border-collapse: collapse;
+}
+.month-grid th {
+  font-size: 0.875rem;
+  padding: 0.75rem;
+  background: var(--console-canvas);
+  text-align: start;
+}
+.month-grid td {
+  vertical-align: top;
+  block-size: 7rem;
+  padding: 0.5rem;
+  border: 1px solid var(--console-border);
+}
+.month-grid time {
+  display: inline-grid;
+  place-items: center;
+  min-inline-size: 2rem;
+  min-block-size: 2rem;
+  font-size: 0.875rem;
+}
+.today time {
+  border-radius: 50%;
+  background: var(--console-accent);
+  color: var(--console-on-accent);
+}
+.adjacent {
+  background: var(--console-canvas);
+  color: var(--console-muted);
+}
+.selected-day {
+  outline: 2px solid var(--console-accent);
+  outline-offset: -2px;
+}
+.day-events {
+  display: grid;
+  gap: 0.25rem;
+}
+.day-events button {
+  display: grid;
+  text-align: start;
+  inline-size: 100%;
+  margin: 0;
+  font-size: 0.875rem;
+  padding: 0.25rem;
+}
+.day-events small,
+.timed-event small {
+  display: block;
+  font-size: 0.8125rem;
+}
+
+.day-create {
+  margin: 0;
+  padding: 0;
+  min-inline-size: 2rem;
+  min-block-size: 2rem;
+}
+@media (max-width: 48rem) {
+  .day-create {
+    min-inline-size: 2.875rem;
+    min-block-size: 2.875rem;
+  }
+}
+
+.calendar-scroll-hint {
+  color: var(--console-muted);
+  font-size: 0.8125rem;
+  margin-block: 0.5rem;
+}

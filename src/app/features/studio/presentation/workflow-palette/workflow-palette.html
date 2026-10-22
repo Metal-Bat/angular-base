@@ -1,0 +1,91 @@
+<h2>{{ "Studio steps" | localize }}</h2>
+<p class="palette-hint">
+  {{
+    "Drag a step onto the canvas, or select it and click where to place it."
+      | localize
+  }}
+</p>
+<label for="palette-search">{{ "Search" | localize }}</label>
+<input
+  id="palette-search"
+  pInputText
+  [ngModel]="search()"
+  (ngModelChange)="search.set($event)"
+/>
+<div class="palette-items">
+  @for (type of groupedEntries(); track type.key; let index = $index) {
+    @if (
+      index === 0 || groupedEntries()[index - 1].category !== type.category
+    ) {
+      <h3 class="palette-category">{{ type.category | localize }}</h3>
+    }
+    <div
+      class="palette-card"
+      [class.palette-selected]="selectedKey() === type.key"
+    >
+      <button
+        class="palette-item"
+        type="button"
+        [attr.aria-pressed]="selectedKey() === type.key"
+        [disabled]="disabled()"
+        [draggable]="!disabled()"
+        (click)="selected.emit(type.key)"
+        (dragend)="dragFinished.emit()"
+        (dragstart)="dragged.emit({ event: $event, key: type.key })"
+      >
+        <i aria-hidden="true" class="pi pi-box"></i>
+        <span
+          >{{ type.title }}
+          @if (type.duplicateTitle && type.typeLabel !== type.title) {
+            <small class="block text-sm text-console-muted">{{
+              type.typeLabel | localize
+            }}</small>
+          }
+          @if (type.versionNumber) {
+            <small class="block text-sm text-console-muted"
+              >{{ "Version" | localize }}
+              <bdi>{{ type.versionNumber }}</bdi></small
+            >
+          }
+        </span>
+        <i aria-hidden="true" class="pi pi-bars"></i>
+      </button>
+      <button
+        class="palette-add"
+        pButton
+        severity="secondary"
+        type="button"
+        [attr.aria-label]="
+          ('Add step' | localize) +
+          ': ' +
+          type.title +
+          (type.duplicateTitle && type.versionNumber
+            ? ' · ' +
+              (type.typeLabel !== type.title
+                ? (type.typeLabel | localize) + ' · '
+                : '') +
+              ('Version' | localize) +
+              ' ' +
+              type.versionNumber
+            : '')
+        "
+        [attr.title]="'Add step' | localize"
+        [disabled]="disabled()"
+        [text]="true"
+        (click)="added.emit(type.key)"
+      >
+        <i aria-hidden="true" class="pi pi-plus"></i>
+      </button>
+    </div>
+    @if (type.titleMissing) {
+      <p class="text-sm text-console-muted" role="status">
+        {{ "The registered type label is unavailable." | localize }}
+        <a routerLink="/operations/support">{{
+          "Report label issue" | localize
+        }}</a>
+      </p>
+    }
+  } @empty {
+    <p>{{ "No results" | localize }}</p>
+  }
+</div>

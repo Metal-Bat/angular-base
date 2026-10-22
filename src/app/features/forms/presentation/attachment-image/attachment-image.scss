@@ -1,0 +1,11 @@
+:host {
+  display: block;
+  min-inline-size: 0;
+}
+figure {
+  margin: 0.75rem 0;
+}
+figcaption {
+  color: var(--console-muted);
+  font-size: 0.875rem;
+}

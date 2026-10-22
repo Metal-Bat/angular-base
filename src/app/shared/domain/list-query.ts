@@ -5,6 +5,7 @@ export type QueryField = {
   label: string;
   type: 'text' | 'number' | 'boolean' | 'date' | 'datetime' | 'time' | 'uuid';
   nullable?: boolean;
+  options?: readonly string[];
 };
 export type FilterOperation =
   | 'equal'
@@ -118,6 +119,35 @@ function parseValue(field: QueryField, value: string): QueryValue {
   }
   return value;
 }
+function filterValue(field: QueryField, draft: FilterDraft): QueryValue {
+  let value: QueryValue;
+  if (['isNull', 'isNotNull'].includes(draft.operation)) {
+    value = null;
+  } else if (['in', 'nin'].includes(draft.operation)) {
+    const values = String(draft.value).split('\n');
+    if (!draft.value) {
+      throw Error('Enter at least one value.');
+    }
+    if (values.some((item) => !item.length)) {
+      throw Error('Complete or remove empty list values.');
+    }
+    value = values.map((v) => parseValue(field, v));
+  } else if (draft.operation === 'between') {
+    value = [parseValue(field, draft.value), parseValue(field, draft.end)];
+  } else {
+    value = parseValue(field, draft.value);
+  }
+  if (
+    field.options?.length &&
+    ['equal', 'notEqual', 'in', 'nin'].includes(draft.operation) &&
+    (Array.isArray(value) ? value : [value]).some(
+      (item) => !field.options!.includes(String(item)),
+    )
+  ) {
+    throw Error('Choose an available value.');
+  }
+  return value;
+}
 export function compileQuery(
   fields: readonly QueryField[],
   filters: readonly FilterDraft[],
@@ -148,23 +178,11 @@ export function compileQuery(
       if (!operationsFor(field).includes(draft.operation)) {
         throw Error('Choose a supported filter operation.');
       }
-      let value: QueryValue;
-      if (['isNull', 'isNotNull'].includes(draft.operation)) {
-        value = null;
-      } else if (['in', 'nin'].includes(draft.operation)) {
-        const values = String(draft.value)
-          .split('\n')
-          .filter((v) => v.length);
-        if (!values.length) {
-          throw Error('Enter at least one value.');
-        }
-        value = values.map((v) => parseValue(field, v));
-      } else if (draft.operation === 'between') {
-        value = [parseValue(field, draft.value), parseValue(field, draft.end)];
-      } else {
-        value = parseValue(field, draft.value);
-      }
-      return { field_name: draft.field, operation: draft.operation, value };
+      return {
+        field_name: draft.field,
+        operation: draft.operation,
+        value: filterValue(field, draft),
+      };
     }),
     sort_orders: sorts.map((draft) => {
       const names = draft.fields.split(',').map((name) => name.trim());

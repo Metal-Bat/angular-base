@@ -1,0 +1,41 @@
+:host {
+  --p-accordion-header-padding: 0.65rem 0.75rem;
+  --p-accordion-content-padding: 0.75rem;
+  display: block;
+  min-inline-size: 0;
+}
+.property-group {
+  display: grid;
+  gap: 0.5rem;
+}
+input {
+  inline-size: 100%;
+  max-inline-size: 100%;
+  min-inline-size: 0;
+}
+.required-control {
+  --p-checkbox-width: 1.5rem;
+  --p-checkbox-height: 1.5rem;
+  min-block-size: var(--workspace-control-height);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-block: 0.5rem;
+}
+.required-control label {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  align-self: stretch;
+  flex: 1;
+}
+.inspector-actions {
+  position: sticky;
+  inset-block-start: 0;
+  z-index: 1;
+  padding-block: 0;
+  background: var(--console-surface);
+}
+.inspector-actions button {
+  margin: 0;
+}

@@ -10,26 +10,30 @@
     <button
       pButton
       severity="secondary"
-      size="small"
       type="button"
+      [disabled]="vm.busy()"
+      [id]="vm.sortFieldsId + '-add-filter'"
       [outlined]="true"
       (click)="vm.addFilter()"
     >
       <i aria-hidden="true" class="pi pi-plus"></i>{{ "Add filter" | localize }}
     </button>
   </div>
+  <p class="query-empty">
+    {{ "Show records matching all these conditions." | localize }}
+  </p>
   @if (!vm.filters.length) {
     <p class="query-empty">
       {{ "Add a condition to narrow the results." | localize }}
     </p>
   }
-  @for (filter of vm.filters; track $index; let index = $index) {
+  @for (filter of vm.filters; track id(filter); let index = $index) {
     <div class="filter-row">
-      <app-control-field
-        label="Field"
-        [controlId]="vm.sortFieldsId + '-field-' + index"
+      <app-control-field label="Field" [controlId]="id(filter) + '-field'"
         ><app-select-control
-          [inputId]="vm.sortFieldsId + '-field-' + index"
+          [attr.data-query-field]="index"
+          [disabled]="vm.busy()"
+          [inputId]="id(filter) + '-field'"
           [name]="'field' + index"
           [(ngModel)]="filter.field"
           (ngModelChange)="
@@ -45,10 +49,11 @@
       >
       <app-control-field
         label="Operation"
-        [controlId]="vm.sortFieldsId + '-operation-' + index"
+        [controlId]="id(filter) + '-operation'"
         ><app-select-control
           [attr.data-query-operation]="index"
-          [inputId]="vm.sortFieldsId + '-operation-' + index"
+          [disabled]="vm.busy()"
+          [inputId]="id(filter) + '-operation'"
           [name]="'operator' + index"
           [(ngModel)]="filter.operation"
         >
@@ -66,12 +71,30 @@
         >
           <app-control-field
             label="Value"
-            [controlId]="vm.sortFieldsId + '-value-' + index"
+            [controlId]="id(filter) + '-value'"
             [error]="vm.filterErrors[index] || ''"
           >
-            @if (filter.operation === "in" || filter.operation === "nin") {
+            @if (
+              choices(filter.field).length &&
+              ["equal", "notEqual", "in", "nin"].includes(filter.operation)
+            ) {
+              <app-query-choice
+                [controlId]="id(filter) + '-value'"
+                [describedBy]="
+                  vm.filterErrors[index] ? id(filter) + '-value-error' : null
+                "
+                [disabled]="vm.busy()"
+                [multiple]="
+                  filter.operation === 'in' || filter.operation === 'nin'
+                "
+                [options]="choices(filter.field)"
+                [(value)]="filter.value"
+              />
+            } @else if (
+              filter.operation === "in" || filter.operation === "nin"
+            ) {
               <app-list-values
-                [controlId]="vm.sortFieldsId + '-value-' + index"
+                [controlId]="id(filter) + '-value'"
                 [disabled]="vm.busy()"
                 [type]="vm.fieldType(filter.field)"
                 [(value)]="filter.value"
@@ -79,7 +102,8 @@
             } @else if (vm.fieldType(filter.field) === "boolean") {
               <app-select-control
                 [attr.data-query-value]="index"
-                [inputId]="vm.sortFieldsId + '-value-' + index"
+                [disabled]="vm.busy()"
+                [inputId]="id(filter) + '-value'"
                 [name]="'value' + index"
                 [(ngModel)]="filter.value"
               >
@@ -93,7 +117,7 @@
               ["date", "datetime", "time"].includes(vm.fieldType(filter.field))
             ) {
               <app-temporal-control
-                [controlId]="vm.sortFieldsId + '-value-' + index"
+                [controlId]="id(filter) + '-value'"
                 [disabled]="vm.busy()"
                 [kind]="vm.fieldType(filter.field)"
                 [(value)]="filter.value"
@@ -102,7 +126,8 @@
               <input
                 pInputText
                 [attr.data-query-value]="index"
-                [id]="vm.sortFieldsId + '-value-' + index"
+                [disabled]="vm.busy()"
+                [id]="id(filter) + '-value'"
                 [name]="'value' + index"
                 [type]="
                   vm.fieldType(filter.field) === 'number' ? 'number' : 'text'
@@ -112,17 +137,14 @@
             }
           </app-control-field>
           @if (filter.operation === "between") {
-            <app-control-field
-              label="To"
-              [controlId]="vm.sortFieldsId + '-end-' + index"
-            >
+            <app-control-field label="To" [controlId]="id(filter) + '-end'">
               @if (
                 ["date", "datetime", "time"].includes(
                   vm.fieldType(filter.field)
                 )
               ) {
                 <app-temporal-control
-                  [controlId]="vm.sortFieldsId + '-end-' + index"
+                  [controlId]="id(filter) + '-end'"
                   [disabled]="vm.busy()"
                   [kind]="vm.fieldType(filter.field)"
                   [(value)]="filter.end"
@@ -130,7 +152,8 @@
               } @else {
                 <input
                   pInputText
-                  [id]="vm.sortFieldsId + '-end-' + index"
+                  [disabled]="vm.busy()"
+                  [id]="id(filter) + '-end'"
                   [name]="'end' + index"
                   [type]="
                     vm.fieldType(filter.field) === 'number' ? 'number' : 'text'
@@ -150,12 +173,9 @@
         severity="secondary"
         type="button"
         [attr.aria-label]="('Remove filter' | localize) + ' ' + (index + 1)"
+        [disabled]="vm.busy()"
         [text]="true"
-        (click)="
-          vm.filters = vm.filters
-            .slice(0, index)
-            .concat(vm.filters.slice(index + 1))
-        "
+        (click)="remove(index)"
       >
         <i aria-hidden="true" class="pi pi-times"></i>
       </button>

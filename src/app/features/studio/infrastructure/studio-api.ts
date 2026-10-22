@@ -1,4 +1,4 @@
-import { operationCatalog } from './operation-catalog';
+import { readAuxiliary } from './auxiliary-result';
 import { loadChoices } from './choice-request';
 import { readWorkspace } from '../domain/workspace-document';
 import { OptionInput, OptionPage } from '../../forms/domain/option-coordinator';
@@ -209,16 +209,7 @@ export class StudioApi implements StudioPort {
       path,
       abort,
     );
-    if (key === 'operations') {
-      return readData(response, operationCatalog);
-    }
-    if (Array.isArray(response.body)) {
-      return response.body;
-    }
-    const envelope = record(response.body);
-    return 'result' in envelope
-      ? readResultPage(response, (value) => record(value))
-      : readData(response, (value) => value);
+    return readAuxiliary(key, response, body);
   }
   choices(...input: Parameters<StudioPort['choices']>): Promise<AuthorPage> {
     return loadChoices(this.api, ...input);
@@ -359,6 +350,7 @@ export class StudioApi implements StudioPort {
     purpose: string,
     locale: string,
     context: JsonObject = {},
+    abort?: AbortSignal,
   ): Promise<RuntimeCompatibility> {
     return readData(
       await this.request(
@@ -387,6 +379,8 @@ export class StudioApi implements StudioPort {
             context,
           ),
         },
+        undefined,
+        abort,
       ),
       (value) =>
         readRuntimeDocument(value, undefined, this.config.rendererCapabilities),

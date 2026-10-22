@@ -1,0 +1,34 @@
+<ng-template #legend>
+  <div class="edge-legend">
+    <span
+      ><i aria-hidden="true" class="control-line"></i
+      >{{ "Control flow" | localize }}</span
+    >
+    <span
+      ><i aria-hidden="true" class="data-line"></i
+      >{{ "Data binding" | localize }}</span
+    >
+  </div>
+</ng-template>
+<footer class="canvas-footer flex flex-wrap items-center justify-between gap-3">
+  <app-help-popover>
+    <div class="guidance-copy">
+      <p>
+        {{
+          (readOnly()
+            ? "Read-only diagram. Pan, zoom and select steps to inspect the flow."
+            : "Drag steps to arrange them. Use arrow keys to move a focused step."
+          ) | localize
+        }}
+      </p>
+      <p [hidden]="readOnly()">
+        {{
+          "Use step actions to connect, or drag from an output port to an input port."
+            | localize
+        }}
+      </p>
+      <ng-container [ngTemplateOutlet]="legend" />
+    </div>
+  </app-help-popover>
+  <div class="full-legend"><ng-container [ngTemplateOutlet]="legend" /></div>
+</footer>

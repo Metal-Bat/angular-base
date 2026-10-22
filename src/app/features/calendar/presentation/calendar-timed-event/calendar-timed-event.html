@@ -1,0 +1,30 @@
+@let row = entry();
+<button
+  #eventTrigger
+  class="timed-event"
+  type="button"
+  [attr.aria-label]="
+    row.kind === 'more'
+      ? locale.text('View more events in agenda') +
+        ' · ' +
+        locale.number(row.count)
+      : null
+  "
+  [attr.title]="
+    row.kind === 'more'
+      ? locale.text('View more events in agenda')
+      : row.event.title + ' · ' + view().timeLabel(row.event)
+  "
+  [style.block-size.rem]="((row.end - row.start) / 60) * 3"
+  [style.inline-size.%]="100 / row.lanes"
+  [style.inset-block-start.rem]="(row.start / 60) * 3"
+  [style.inset-inline-start.%]="(row.lane / row.lanes) * 100"
+  (click)="activate(eventTrigger)"
+>
+  @if (row.kind === "event") {
+    <strong>{{ row.event.title }}</strong
+    ><small>{{ view().timeLabel(row.event) }}</small>
+  } @else {
+    +{{ locale.number(row.count) }}
+  }
+</button>

@@ -1,0 +1,39 @@
+<section>
+  <h3>{{ "Decision" | localize }}</h3>
+  <p class="decision-question">{{ value()["question"] }}</p>
+  <dl>
+    <div>
+      <dt>{{ "Choice source" | localize }}</dt>
+      <dd>
+        {{
+          (value()["options_input_key"]
+            ? "Choices supplied by the workflow"
+            : "Fixed choices"
+          ) | localize
+        }}
+      </dd>
+    </div>
+    <div>
+      <dt>{{ "Human review below confidence" | localize }}</dt>
+      <dd>{{ value()["review_below"] ?? 0.8 }}</dd>
+    </div>
+  </dl>
+  @if (value()["options_input_key"]) {
+    <p>
+      {{ "Workflow choices input" | localize }}:
+      <bdi>{{ value()["options_input_key"] }}</bdi>
+    </p>
+  }
+  <ul class="decision-choices">
+    @for (choice of choices(); track choice["key"]) {
+      <li>
+        <strong>{{ choice["title"] }}</strong>
+        <p>{{ choice["description"] }}</p>
+        <details>
+          <summary>{{ "Advanced identity" | localize }}</summary>
+          <bdi>{{ choice["key"] }}</bdi>
+        </details>
+      </li>
+    }
+  </ul>
+</section>

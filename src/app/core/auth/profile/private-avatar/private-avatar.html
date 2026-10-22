@@ -1,0 +1,27 @@
+<figure>
+  @if (source()) {
+    <p-image
+      height="96"
+      width="96"
+      [alt]="label() | localize"
+      [imageStyle]="{ 'border-radius': '50%', 'object-fit': 'cover' }"
+      [src]="source()"
+    />
+  } @else {
+    <i aria-hidden="true" class="pi pi-user"></i>
+  }
+  <figcaption>
+    {{ label() | localize }}
+    @if (state() === "loading") {
+      <span role="status">{{ "Loading…" | localize }}</span>
+    }
+    @if (state() === "failed") {
+      <span role="status">{{
+        "Image preview is unavailable." | localize
+      }}</span>
+    }
+    @if (state() === "empty") {
+      <span>{{ "No avatar" | localize }}</span>
+    }
+  </figcaption>
+</figure>

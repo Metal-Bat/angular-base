@@ -3,6 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
 import { ApiClient } from '../../../core/transport/api-client';
 import { StudioApi } from './studio-api';
+import { runtimeFixture } from '../../forms/testing/runtime-fixtures';
 
 describe('Studio list contracts', () => {
   const call = vi.fn();
@@ -11,6 +12,39 @@ describe('Studio list contracts', () => {
     TestBed.configureTestingModule({
       providers: [{ provide: ApiClient, useValue: { call } }],
     });
+  });
+  it('passes preview cancellation to transport while retaining the exact bounded request body', async () => {
+    call.mockReturnValue(
+      of(
+        new HttpResponse({
+          status: 200,
+          body: { success: true, data: runtimeFixture() },
+        }),
+      ),
+    );
+    const controller = new AbortController();
+    const result = await TestBed.inject(StudioApi).preview(
+      {},
+      { amount: 0, approved: false },
+      'edit',
+      'en',
+      { policy: null, extra: 'not forwarded' },
+      controller.signal,
+    );
+    expect(result.status).toBe('ready');
+    expect(call).toHaveBeenCalledExactlyOnceWith(
+      'simulated_runtime_preview_api_v1_forms_runtime_preview_post',
+      {
+        body: {
+          documents: {},
+          data: { amount: 0, approved: false },
+          purpose: 'edit',
+          locale: 'en',
+          policy: null,
+        },
+      },
+      controller.signal,
+    );
   });
   it('decodes the actual synchronous report page and preserves filters and parent scope', async () => {
     call.mockReturnValue(

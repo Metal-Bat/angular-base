@@ -1,4 +1,9 @@
-import { calendarEvent } from './calendar-api';
+import { TestBed } from '@angular/core/testing';
+import { Subject } from 'rxjs';
+import { ApiClient } from '../../../core/transport/api-client';
+import { ApiFailure } from '../../../core/transport/api-failure';
+import { CalendarSearchDenied } from '../application/calendar-port';
+import { CalendarApi, calendarEvent } from './calendar-api';
 import { eventsInWindow, eventsOnDay } from '../domain/calendar-events';
 describe('Authoritative calendar projection', () => {
   const deadline = {
@@ -59,4 +64,68 @@ describe('Authoritative calendar projection', () => {
     expect(eventsOnDay([event], '2026-10-09', 'UTC')).toEqual([event]);
     expect(eventsOnDay([event], '2026-10-10', 'Asia/Tehran')).toEqual([]);
   });
+});
+
+it('cancels obsolete HTTP reads and classifies lost calendar authority without changing the wire query', async () => {
+  const response = new Subject<unknown>();
+  const call = vi.fn(() => response);
+  TestBed.configureTestingModule({
+    providers: [{ provide: ApiClient, useValue: { call } }],
+  });
+  const api = TestBed.inject(CalendarApi);
+  const body = {
+    start_date: '2026-10-01',
+    end_date: '2026-11-01',
+    timezone: 'UTC',
+    include_work_deadlines: true,
+    page: 1,
+    size: 100,
+  };
+  const controller = new AbortController();
+  const pending = api.search(body, controller.signal);
+  expect(response.observed).toBe(true);
+  expect(call).toHaveBeenCalledExactlyOnceWith(
+    'search_api_v1_calendar_events_search_post',
+    { body },
+  );
+  const cancelled = expect(pending).rejects.toThrow();
+  controller.abort();
+  await cancelled;
+  expect(response.observed).toBe(false);
+  await expect(api.search(body, controller.signal)).rejects.toThrow();
+  expect(call).toHaveBeenCalledTimes(1);
+  const denied = expect(api.search(body)).rejects.toBeInstanceOf(
+    CalendarSearchDenied,
+  );
+  response.error(new ApiFailure(403, 'denied', null, []));
+  await denied;
+});
+
+it('rejects mismatched source routes and any projection that offers editing a workflow deadline', () => {
+  const work = {
+    ref_id: 'work',
+    title: 'Deadline',
+    source_kind: 'work_item',
+    route_key: 'work_items',
+    editable: false,
+    schedule: {
+      kind: 'deadline',
+      due_at: '2026-10-15T12:00:00Z',
+      timezone: 'UTC',
+    },
+  };
+  expect(calendarEvent(work).item.editable).toBe(false);
+  expect(() => calendarEvent({ ...work, editable: true })).toThrow(
+    'Invalid calendar source authority',
+  );
+  expect(() =>
+    calendarEvent({ ...work, route_key: 'calendar_events' }),
+  ).toThrow('Invalid calendar source authority');
+  expect(() =>
+    calendarEvent({
+      ...work,
+      source_kind: 'manual',
+      route_key: 'calendar_events',
+    }),
+  ).toThrow('Invalid calendar source authority');
 });

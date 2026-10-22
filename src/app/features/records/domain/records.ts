@@ -9,6 +9,7 @@ import {
 } from '../../administration/domain/schema-form';
 import { parseDocument } from '../../studio/domain/authoring';
 import { JsonObject, JsonValue } from '../../forms/domain/runtime-document';
+import { publicConfiguration } from '../../../shared/domain/record-presentation';
 export type RecordRow = JsonObject;
 export type RecordField = {
   key: string;
@@ -161,9 +162,9 @@ export function formBody(
   }
   return body;
 }
-export function redactRecord(value: JsonValue): JsonValue {
+export function redactRecord(value: JsonValue, path = ''): JsonValue {
   if (Array.isArray(value)) {
-    return value.map(redactRecord);
+    return value.map((item) => redactRecord(item, path));
   }
   if (!value || typeof value !== 'object') {
     return value;
@@ -175,9 +176,16 @@ export function redactRecord(value: JsonValue): JsonValue {
       )
       .map(([key, item]) => [
         key,
-        /password|secret|credential|token|authorization|api_key/i.test(key)
+        /password|secret|credential|token|authorization|api_key/i.test(key) &&
+        !publicConfiguration(key, item) &&
+        !(
+          ['spec.user_limits', 'effective_limits'].includes(path) &&
+          ['input_tokens', 'output_tokens', 'total_tokens'].includes(key) &&
+          typeof item === 'number' &&
+          Number.isFinite(item)
+        )
           ? '[redacted]'
-          : redactRecord(item),
+          : redactRecord(item, path ? path + '.' + key : key),
       ]),
   );
 }

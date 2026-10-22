@@ -1,3 +1,4 @@
+import { connectionKey } from '../../domain/workflow-authoring';
 import { TestBed } from '@angular/core/testing';
 import { ActorState } from '../../../../core/auth/actor-state';
 import { TransitionEditor } from './transition-editor';
@@ -60,4 +61,28 @@ it('discards buffers and fences readonly and old actor changes', async () => {
   TestBed.inject(ActorState).reset();
   expect(vm.draft()).toEqual({});
   expect(vm.dirty()).toBe(false);
+});
+
+it('inspects the exact non-first canvas branch and retains its row after a coordinated edit', async () => {
+  const fixture = TestBed.createComponent(TransitionEditor);
+  const alternate = { ...graph.transitions[0], outcome: 'return', priority: 2 };
+  const branches = { ...graph, transitions: [...graph.transitions, alternate] };
+  fixture.componentRef.setInput('graph', branches);
+  fixture.componentRef.setInput('selected', 'review');
+  fixture.componentRef.setInput(
+    'inspected',
+    connectionKey('transition', alternate),
+  );
+  await fixture.whenStable();
+  const vm = fixture.componentInstance;
+  expect(vm.current()?.edge['outcome']).toBe('return');
+  expect(vm.draft()['priority']).toBe(2);
+  const changed = { ...alternate, priority: 7 };
+  fixture.componentRef.setInput('graph', {
+    ...branches,
+    transitions: [branches.transitions[0], changed],
+  });
+  await fixture.whenStable();
+  expect(vm.current()?.edge['outcome']).toBe('return');
+  expect(vm.draft()['priority']).toBe(7);
 });

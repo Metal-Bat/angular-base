@@ -1,3 +1,10 @@
+import { reviewerBrowserJourney } from "./reviewer-browser-journey.mjs";
+import { reviewerRace } from "./reviewer-race.mjs";
+import { publicBrowserStorageCheck } from "./browser-storage-policy.mjs";
+import { administrationDetailsBrowserJourney } from "./administration-details-browser-journey.mjs";
+import { inlineAttachmentsBrowserJourney } from "./inline-attachments-browser-journey.mjs";
+import { formDesignerBrowserJourney } from "./form-designer-browser-journey.mjs";
+import { agentEditorBrowserJourney } from "./agent-editor-browser-journey.mjs";
 import { receiptBrowserJourney } from "./receipt-browser-journey.mjs";
 import { nodeAuthoringBrowserJourney } from "./node-authoring-browser-journey.mjs";
 import { formLayoutBrowserJourney } from "./form-layout-browser-journey.mjs";
@@ -83,12 +90,29 @@ let receiptDrop =
 let receiptDrops = 0;
 const foundations = process.env.FOUNDATIONS_BROWSER_CHECKS === "1";
 const foundationTask = process.env.FOUNDATION_TASK || null;
+const formDesignerScope = process.env.FORM_DESIGNER_SCOPE || "core";
+assert.ok(
+  ["core", "repairs", "kinds", "presentation"].includes(formDesignerScope) &&
+    (formDesignerScope === "core" || (foundations && foundationTask === "016")),
+  "Unsupported form designer dataset",
+);
 assert.ok(
   !foundationTask ||
     (foundations &&
-      ["009", "010", "011", "013", "014", "015", "016", "021"].includes(
-        foundationTask,
-      )),
+      [
+        "009",
+        "010",
+        "011",
+        "013",
+        "014",
+        "015",
+        "016",
+        "021",
+        "028",
+        "029",
+        "030",
+        "031",
+      ].includes(foundationTask)),
   "Unsupported task scope",
 );
 if (foundations) {
@@ -113,6 +137,20 @@ if (foundations) {
     ].join("\n"),
   );
 }
+let inlineDropReceipt = false;
+let inlineDropAvatarReceipt = false;
+const inlineTransferEvidence = {
+  fileUploads: 0,
+  imageUploads: 0,
+  attachmentPosts: 0,
+  replacements: 0,
+  avatarPatches: 0,
+  droppedAttachmentReceipts: 0,
+  droppedAvatarReceipts: 0,
+  validationFailures: [],
+};
+let reviewerDropCompletion = false;
+const reviewerCommands = [];
 let calendarDropResponses = false;
 const calendarCommands = [];
 let supportNetworkFault = false;
@@ -137,11 +175,24 @@ const script =
                 ? calendarBrowserJourney(credentials)
                 : foundationTask === "015"
                   ? analyticsBrowserJourney(credentials)
-                  : foundationTask === "021"
-                    ? nodeAuthoringBrowserJourney(credentials)
-                    : foundationTask === "016"
-                      ? formLayoutBrowserJourney(credentials)
-                      : foundationsBrowserJourney(credentials)
+                  : foundationTask === "029"
+                    ? reviewerBrowserJourney(credentials)
+                    : foundationTask === "028"
+                      ? inlineAttachmentsBrowserJourney(credentials)
+                      : foundationTask === "021"
+                        ? nodeAuthoringBrowserJourney(credentials)
+                        : foundationTask === "030"
+                          ? agentEditorBrowserJourney(credentials)
+                          : foundationTask === "031"
+                            ? administrationDetailsBrowserJourney(credentials)
+                            : foundationTask === "016"
+                              ? formDesignerScope === "core"
+                                ? formLayoutBrowserJourney(credentials)
+                                : formDesignerBrowserJourney(
+                                    credentials,
+                                    formDesignerScope,
+                                  )
+                              : foundationsBrowserJourney(credentials)
       : notifications
         ? notificationBrowserJourney(credentials)
         : `
@@ -171,16 +222,16 @@ const script =
   check(document.querySelector('[data-row-key]').dataset.rowKey===firstKey,'Original row identity changed');
   await click('Submit'); await confirm(); await wait(()=>document.querySelector('a[href*="/operations/processes/"]') && !document.querySelector('app-case-detail')?.textContent.includes('Loading…'),'Process reference');
   document.querySelector('a[href*="/operations/processes/"]').click(); await wait(()=>document.querySelector('app-process-entry')?.textContent.includes('Timeline') && document.querySelector('app-process-entry')?.textContent.includes('WAITING'),'Real timeline');
-  await click('Sign out'); await login(1); await wait(()=>document.querySelector('a[href="/operations/tasks"]'),'Task navigation'); document.querySelector('a[href="/operations/tasks"]').click();
+  await click('Sign out'); await login(1); await wait(()=>location.pathname!=='/login'&&!document.getElementById('username')&&document.querySelector('details.account-menu summary')?.textContent.includes(accounts.users[1]),'Reviewer authenticated landing'); await wait(()=>document.querySelector('a[href="/operations/tasks"]'),'Task navigation'); document.querySelector('a[href="/operations/tasks"]').click();
   await wait(()=>document.querySelector('app-task-inbox a[href*="/operations/tasks/"]'),'Available task'); document.querySelector('app-task-inbox a[href*="/operations/tasks/"]').click();
   await click('Claim'); await wait(()=>document.getElementById(field('/amount'))?.tagName==='INPUT' && !document.getElementById(field('/amount')).disabled,'Claimed form');
   check(!document.getElementById(field('/private_note')) && !document.querySelector('main').textContent.includes('hidden-default'),'Hidden field disclosed');
   fill(field('/amount'),'200.000'); await click('Save'); await wait(()=>document.querySelector('app-case-detail')?.textContent.includes('Saved') && !document.querySelector('app-case-detail')?.textContent.includes('Loading…'),'Reviewer save');
   await click('Approve'); await confirm(); await wait(()=>document.querySelector('app-case-detail')?.textContent.includes('COMPLETED'),'Completed task');
   check(!document.getElementById(field('/private_note')),'Hidden field disclosed after completion');
-  check(localStorage.length===0 && sessionStorage.length===0,'Private state persisted in browser storage');
+  check(${publicBrowserStorageCheck},'Private state persisted in browser storage');
   await fetch('/__result',{method:'POST',body:JSON.stringify({ok:true,diagnostics:window.fixtureDiagnostics})});
- } catch(error) { await fetch('/__result',{method:'POST',body:JSON.stringify({ok:false,error:error.message+"; "+[...document.querySelectorAll("app-case-detail [role=alert]")].map(el=>el.textContent).join("; ")})}); }
+ } catch(error) { await fetch('/__result',{method:'POST',body:JSON.stringify({ok:false,error:error.message+"; "+[...document.querySelectorAll("app-case-detail [role=alert]")].map(el=>el.textContent).join("; "),diagnostics:window.fixtureDiagnostics})}); }
 })();`;
 const server = createServer(async (req, res) => {
   try {
@@ -212,6 +263,74 @@ const server = createServer(async (req, res) => {
         query.sort_orders?.length === 1 &&
         query.sort_orders[0].field_name === "created_at" &&
         query.sort_orders[0].operation === "desc";
+    }
+    if (
+      foundations &&
+      foundationTask === "029" &&
+      url.pathname === "/__reviewer-evidence"
+    ) {
+      if (req.method === "POST")
+        reviewerDropCompletion =
+          JSON.parse(Buffer.concat(parts).toString("utf8")).dropCompletion ===
+          true;
+      res.writeHead(200, {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+      });
+      res.end(JSON.stringify({ commands: reviewerCommands }));
+      return;
+    }
+    if (
+      foundations &&
+      foundationTask === "029" &&
+      url.pathname === "/__reviewer-race" &&
+      req.method === "POST"
+    ) {
+      const body = JSON.parse(Buffer.concat(parts).toString("utf8"));
+      const result = await reviewerRace(
+        credentials,
+        process.env.BACKEND_BROWSER_ORIGIN,
+        body.ref,
+      );
+      res.writeHead(200, {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+      });
+      res.end(JSON.stringify(result));
+      return;
+    }
+    if (
+      foundations &&
+      foundationTask === "029" &&
+      [
+        "/__reviewer-intake",
+        "/__reviewer-finish",
+        "/__reviewer-literal-finish",
+      ].includes(url.pathname) &&
+      req.method === "POST"
+    ) {
+      const result = await promisify(execFile)(
+        process.env.FOUNDATION_BACKEND_PYTHON,
+        [
+          process.env.FOUNDATION_ACTION_SCRIPT,
+          url.pathname === "/__reviewer-literal-finish"
+            ? "literal_finish"
+            : url.pathname.endsWith("finish")
+              ? "reviewer_finish"
+              : "reviewer_intake",
+        ],
+        {
+          cwd: process.env.FOUNDATION_BACKEND_ROOT,
+          env: process.env,
+          timeout: 30000,
+        },
+      );
+      res.writeHead(200, {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+      });
+      res.end(result.stdout.trim().split("\n").at(-1));
+      return;
     }
     if (foundations && url.pathname === "/__foundation-progress") {
       progress = JSON.parse(Buffer.concat(parts).toString("utf8"));
@@ -267,11 +386,13 @@ const server = createServer(async (req, res) => {
       req.method === "POST"
     ) {
       const action = url.pathname.split("/").at(-1);
-      assert.ok(["disconnect", "online", "cancelled"].includes(action));
-      if (action === "cancelled") {
+      assert.ok(
+        ["disconnect", "online", "cancelled", "deadline"].includes(action),
+      );
+      if (action === "cancelled" || action === "deadline") {
         const result = await promisify(execFile)(
           process.env.FOUNDATION_BACKEND_PYTHON,
-          [process.env.CALENDAR_ACTION_SCRIPT],
+          [process.env.CALENDAR_ACTION_SCRIPT, action],
           {
             cwd: process.env.FOUNDATION_BACKEND_ROOT,
             env: process.env,
@@ -373,12 +494,23 @@ const server = createServer(async (req, res) => {
     }
     if (
       foundations &&
-      url.pathname === "/__foundation-action/reminders" &&
+      [
+        "/__foundation-action/reminders",
+        "/__foundation-action/subprocess",
+        "/__foundation-action/workflow",
+      ].includes(url.pathname) &&
       req.method === "POST"
     ) {
       const result = await promisify(execFile)(
         process.env.FOUNDATION_BACKEND_PYTHON,
-        [process.env.FOUNDATION_ACTION_SCRIPT],
+        [
+          process.env.FOUNDATION_ACTION_SCRIPT,
+          ...(url.pathname.endsWith("/subprocess")
+            ? ["subprocess"]
+            : url.pathname.endsWith("/workflow")
+              ? ["workflow"]
+              : []),
+        ],
         {
           cwd: process.env.FOUNDATION_BACKEND_ROOT,
           env: process.env,
@@ -425,6 +557,35 @@ const server = createServer(async (req, res) => {
       res.end("ok");
       return;
     }
+    if (
+      foundations &&
+      foundationTask === "028" &&
+      url.pathname === "/__inline-transfer-control" &&
+      req.method === "POST"
+    ) {
+      const control = JSON.parse(Buffer.concat(parts).toString());
+      inlineDropReceipt = control.dropAttachmentReceipt === true;
+      inlineDropAvatarReceipt = control.dropAvatarReceipt === true;
+      res.writeHead(200, {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+      });
+      res.end(JSON.stringify({ enabled: inlineDropReceipt }));
+      return;
+    }
+    if (
+      foundations &&
+      foundationTask === "028" &&
+      url.pathname === "/__inline-transfer-evidence" &&
+      req.method === "GET"
+    ) {
+      res.writeHead(200, {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+      });
+      res.end(JSON.stringify(inlineTransferEvidence));
+      return;
+    }
     if (url.pathname === "/__result") {
       resolveResult(JSON.parse(Buffer.concat(parts)));
       res.end("ok");
@@ -460,14 +621,88 @@ const server = createServer(async (req, res) => {
         path: url.pathname,
         status: response.status,
       });
+      if (foundations && foundationTask === "028") {
+        if (!response.ok && /\/(attachments|media)(\/|$)/.test(url.pathname)) {
+          const failure = await response
+            .clone()
+            .json()
+            .catch(() => null);
+          const issues = Array.isArray(failure?.data?.issues)
+            ? failure.data.issues
+            : [];
+          inlineTransferEvidence.validationFailures.push({
+            method: req.method,
+            status: response.status,
+            applicationCode:
+              typeof failure?.code === "number" ? failure.code : null,
+            issues: issues.map((issue) =>
+              typeof issue.code === "string" &&
+              /^[a-z0-9._-]{1,80}$/.test(issue.code)
+                ? issue.code
+                : "unavailable",
+            ),
+          });
+        }
+        if (req.method === "POST" && url.pathname === "/api/v1/media/files")
+          inlineTransferEvidence.fileUploads++;
+        if (req.method === "POST" && url.pathname === "/api/v1/media/images")
+          inlineTransferEvidence.imageUploads++;
+        if (req.method === "PATCH" && url.pathname === "/api/v1/me/profile") {
+          inlineTransferEvidence.avatarPatches++;
+          if (inlineDropAvatarReceipt && response.ok) {
+            await response.arrayBuffer();
+            inlineDropAvatarReceipt = false;
+            inlineTransferEvidence.droppedAvatarReceipts++;
+            res.writeHead(200, {
+              "content-type": "application/json",
+              "cache-control": "private, no-store",
+            });
+            res.end(JSON.stringify({ success: true, data: {} }));
+            return;
+          }
+        }
+        const attachmentPath =
+          /^\/api\/v1\/(business-requests|work-items)\/[^/]+\/attachments$/;
+        if (req.method === "POST" && attachmentPath.test(url.pathname)) {
+          inlineTransferEvidence.attachmentPosts++;
+          if (inlineDropReceipt && response.ok) {
+            // The real server committed. Only its successful link receipt is unusable.
+            await response.arrayBuffer();
+            inlineDropReceipt = false;
+            inlineTransferEvidence.droppedAttachmentReceipts++;
+            res.writeHead(200, {
+              "content-type": "application/json",
+              "cache-control": "private, no-store",
+            });
+            res.end(JSON.stringify({ success: true, data: {} }));
+            return;
+          }
+        }
+        if (req.method === "PUT" && /\/attachments\/[^/]+$/.test(url.pathname))
+          inlineTransferEvidence.replacements++;
+      }
       if (
-        receiptDrop &&
+        (receiptDrop ||
+          (foundations &&
+            foundationTask === "029" &&
+            reviewerDropCompletion)) &&
         req.method === "POST" &&
         /^\/api\/v1\/work-items\/[^/]+\/complete$/.test(url.pathname) &&
         response.ok
       ) {
         await response.arrayBuffer();
         receiptDrop = false;
+        if (foundations && foundationTask === "029") {
+          reviewerDropCompletion = false;
+          reviewerCommands.push({
+            action: "complete",
+            status: response.status,
+            hash: createHash("sha256")
+              .update(Buffer.concat(parts))
+              .digest("hex"),
+            dropped: true,
+          });
+        }
         receiptDrops += 1;
         res.off("close", disconnected);
         // Start the reply before dropping it so the browser cannot transparently
@@ -530,6 +765,24 @@ const server = createServer(async (req, res) => {
             return;
           }
         }
+        if (
+          foundations &&
+          foundationTask === "029" &&
+          req.method === "POST" &&
+          /^\/api\/v1\/(?:work-items|business-requests)\/[^/]+\/(claim|return|complete|submit|save)$/.test(
+            url.pathname,
+          )
+        ) {
+          const action = url.pathname.split("/").at(-1);
+          reviewerCommands.push({
+            action,
+            status: response.status,
+            hash: createHash("sha256")
+              .update(Buffer.concat(parts))
+              .digest("hex"),
+            dropped: false,
+          });
+        }
         res.end(bytes);
         res.off("close", disconnected);
       }
@@ -571,7 +824,23 @@ const server = createServer(async (req, res) => {
             "</script></body>",
         ),
     );
-  } catch {
+  } catch (error) {
+    if (foundationTask === "029" && typeof error.code === "number") {
+      const trace = String(error.stderr ?? "");
+      const marker = trace.match(/AssertionError: (owned_[a-z_]+)/)?.[1];
+      console.log("Owned reviewer evidence failure:", {
+        marker: marker ?? error.name,
+        code: error.code,
+        killed: error.killed,
+        signal: error.signal,
+        assertion: trace.includes("AssertionError"),
+        importFailure: trace.includes("ImportError"),
+        attributeFailure: trace.includes("AttributeError"),
+        tracebackLine: trace.match(
+          /foundations-paired-action\.py", line (\d+)/,
+        )?.[1],
+      });
+    }
     if (res.headersSent || res.destroyed) {
       res.destroy();
       return;
@@ -627,6 +896,13 @@ try {
       "Notification opening executed a business command",
     );
   }
+  if (foundations && foundationTask === "016" && outcome.ok) {
+    assert.equal(
+      outcome.scenarios.length,
+      { core: 13, repairs: 4, kinds: 1, presentation: 4 }[formDesignerScope],
+      "Required form designer scenario count",
+    );
+  }
   let privateTransferEvidence;
   if (foundations && foundationTask === "021" && outcome.ok) {
     const bytes = await readFile(
@@ -646,6 +922,34 @@ try {
       evidence: "actual owned browser download",
     };
   }
+  if (foundations && foundationTask === "028" && outcome.ok) {
+    const target = join(profile, "downloads", "owned-inline-036.txt");
+    let bytes;
+    for (const deadline = Date.now() + 5000; Date.now() < deadline;) {
+      try {
+        bytes = await readFile(target);
+        break;
+      } catch (error) {
+        if (error.code !== "ENOENT") throw error;
+        await new Promise((resolve) => setTimeout(resolve, 50));
+      }
+    }
+    assert.ok(bytes, "Actual private inline download must exist");
+    const expected = Buffer.from(
+      Uint8Array.from({ length: 256 * 1024 }, (_, index) => 65 + (index % 26)),
+    );
+    assert.deepEqual(bytes, expected, "Actual inline download bytes");
+    assert.equal(
+      outcome.scenarios.length,
+      9,
+      "All inline real-service scenarios must execute",
+    );
+    privateTransferEvidence = {
+      bytes: bytes.length,
+      sha256: createHash("sha256").update(bytes).digest("hex"),
+      evidence: "actual owned inline browser download",
+    };
+  }
   if (process.env.BROWSER_REPORT_PATH) {
     const { mkdir, writeFile } = await import("node:fs/promises");
     const { dirname } = await import("node:path");
@@ -655,6 +959,10 @@ try {
       JSON.stringify(
         {
           engine: "Firefox",
+          formDesignerScope:
+            foundations && foundationTask === "016"
+              ? formDesignerScope
+              : undefined,
           evidence: "real-http",
           diagnostics: outcome.diagnostics,
           live: outcome.live,
@@ -685,7 +993,17 @@ try {
                   ),
                 })),
           calendarEvidence: foundations ? calendarEvidence : undefined,
+          reviewerCommandEvidence:
+            foundations && foundationTask === "029"
+              ? reviewerCommands
+              : undefined,
+          reviewerUI:
+            foundations && foundationTask === "029" ? outcome.ui : undefined,
           privateTransferEvidence,
+          inlineTransferEvidence:
+            foundations && foundationTask === "028"
+              ? inlineTransferEvidence
+              : undefined,
           status: outcome.ok ? "passed" : "failed",
           failure: outcome.ok ? null : outcome.error,
         },

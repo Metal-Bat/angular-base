@@ -1,116 +1,201 @@
 @let vm = view();
-@if (vm.selected()) {
-  <nav
-    class="catalog-actions"
-    [attr.aria-label]="'Definition actions' | localize"
+@if (vm.selected() && vm.spec.actions.includes("grant")) {
+  <button
+    data-catalog-access
+    pButton
+    severity="secondary"
+    type="button"
+    [disabled]="blocked()"
+    [outlined]="true"
+    (click)="open()"
   >
-    @if (vm.versionCatalog) {
-      <a
-        class="p-button p-button-outlined"
-        [queryParams]="{ parent: vm.reference() }"
-        [routerLink]="['/studio', vm.versionCatalog]"
-        >{{ "Versions" | localize }}</a
-      >
-    }
-    @if (vm.key === "forms") {
-      <a
-        class="p-button"
-        [queryParams]="{ parent: vm.reference(), create: '1' }"
-        [routerLink]="['/studio/form-versions']"
-        >{{ "Create draft" | localize }}</a
-      >
-    }
-    @if (vm.spec.editor) {
-      <a
-        class="p-button p-button-outlined"
-        [routerLink]="['/studio', vm.key, vm.reference(), 'edit']"
-        >{{ "Open designer" | localize }}</a
-      >
-    }
-    @for (
-      action of ["publish", "retire", "disable", "rotate", "remove"];
-      track action
-    ) {
-      @if (vm.spec.actions.includes(action)) {
-        <button
-          pButton
-          severity="secondary"
-          type="button"
-          [disabled]="vm.busy() || vm.dirty() || vm.reconcileRequired()"
-          [outlined]="true"
-          (click)="vm.act(action)"
-        >
-          {{ action | localize }}
-        </button>
-      }
-    }
-  </nav>
-  @if (vm.spec.actions.includes("grant")) {
-    <details>
-      <summary>{{ "Access grants" | localize }}</summary>
-      @if (vm.spec.actions.includes("grants")) {
-        <button
-          pButton
-          severity="secondary"
-          type="button"
-          [disabled]="vm.busy()"
-          [outlined]="true"
-          (click)="vm.loadGrants()"
-        >
-          {{ "Current grants" | localize }}
-        </button>
-        <pre>{{ vm.grants() }}</pre>
-        <button
-          pButton
-          severity="secondary"
-          type="button"
-          [disabled]="vm.grantPage() <= 1"
-          [outlined]="true"
-          (click)="vm.loadGrants(vm.grantPage() - 1)"
-        >
-          {{ "Previous" | localize }}</button
-        ><button
-          pButton
-          severity="secondary"
-          type="button"
-          [disabled]="vm.grantPage() >= vm.grantPages()"
-          [outlined]="true"
-          (click)="vm.loadGrants(vm.grantPage() + 1)"
-        >
-          {{ "Next" | localize }}
-        </button>
-      }
-      <label for="grant-body">{{
-        "Grant target and capabilities" | localize
-      }}</label
-      ><textarea
-        class="font-mono"
-        id="grant-body"
-        rows="4"
-        [(ngModel)]="vm.grantBody"
-      ></textarea
-      ><button
-        pButton
-        severity="secondary"
-        type="button"
-        [disabled]="vm.busy() || vm.dirty() || vm.reconcileRequired()"
-        [outlined]="true"
-        (click)="vm.grant()"
-      >
-        {{ "Add grant" | localize }}</button
-      ><label for="grant-reference">{{
-        "Grant reference to revoke" | localize
-      }}</label
-      ><input id="grant-reference" [(ngModel)]="vm.grantTarget" /><button
-        pButton
-        severity="secondary"
-        type="button"
-        [disabled]="vm.busy() || vm.dirty() || vm.reconcileRequired()"
-        [outlined]="true"
-        (click)="vm.grant(true)"
-      >
-        {{ "Revoke grant" | localize }}
-      </button>
-    </details>
-  }
+    <i aria-hidden="true" class="pi pi-lock"></i>{{ "Access" | localize }}
+  </button>
 }
+<p-dialog
+  appendTo="body"
+  [closable]="false"
+  [closeOnEscape]="false"
+  [draggable]="false"
+  [header]="'Access' | localize"
+  [modal]="true"
+  [resizable]="false"
+  [style]="{ width: '52rem', maxWidth: 'calc(100vw - 2rem)' }"
+  [visible]="visible()"
+  (onHide)="restoreFocus()"
+>
+  <ng-template #header let-titleId="ariaLabelledBy">
+    <div
+      class="flex w-full items-center justify-between gap-4"
+      tabindex="-1"
+      (keydown.escape)="escape($event)"
+    >
+      <span class="font-semibold" [id]="titleId">{{
+        "Access" | localize
+      }}</span>
+      <button
+        pButton
+        severity="secondary"
+        type="button"
+        [attr.aria-label]="'Close' | localize"
+        [disabled]="blocked()"
+        [text]="true"
+        (click)="close()"
+      >
+        <i aria-hidden="true" class="pi pi-times"></i>
+      </button>
+    </div>
+  </ng-template>
+  <div tabindex="-1" (keydown.escape)="escape($event)">
+    @if (visible()) {
+      <p>
+        {{
+          "Access grants do not grant permission to edit definitions."
+            | localize
+        }}
+      </p>
+      @if (error() || vm.error()) {
+        <p role="alert">{{ error() || vm.error() | localize }}</p>
+      }
+      @if (notice()) {
+        <p role="status">{{ notice() | localize }}</p>
+      }
+      @if (uncertain()) {
+        <p role="status">
+          {{
+            "This access change is unconfirmed. Inspect current entries before another change."
+              | localize
+          }}
+        </p>
+      }
+      @if (loading()) {
+        <p role="status">{{ "Loading…" | localize }}</p>
+      }
+      <button
+        pButton
+        severity="secondary"
+        type="button"
+        [disabled]="blocked()"
+        [outlined]="true"
+        (click)="refresh()"
+      >
+        {{ "Check current state" | localize }}
+      </button>
+      @if (!vm.spec.actions.includes("grants")) {
+        <p>
+          {{
+            "Existing access entries cannot be listed here. Newly added entries remain available in this view."
+              | localize
+          }}
+        </p>
+      }
+      <app-catalog-grant-list
+        [busy]="mutationsBlocked()"
+        [rows]="rows()"
+        [workflow]="vm.key === 'workflows'"
+        (revoked)="revoke($event)"
+      />
+      @if (vm.spec.actions.includes("grants")) {
+        <div class="flex flex-wrap items-center gap-2">
+          <button
+            pButton
+            severity="secondary"
+            type="button"
+            [disabled]="blocked() || page() <= 1"
+            [text]="true"
+            (click)="load(page() - 1)"
+          >
+            {{ "Previous" | localize }}
+          </button>
+          <span
+            >{{ "Page" | localize }} {{ page() }} {{ "of" | localize }}
+            {{ pages() || 1 }}</span
+          >
+          <button
+            pButton
+            severity="secondary"
+            type="button"
+            [disabled]="blocked() || page() >= pages()"
+            [text]="true"
+            (click)="load(page() + 1)"
+          >
+            {{ "Next" | localize }}
+          </button>
+        </div>
+      }
+      <form class="grid gap-4 mt-5" (ngSubmit)="add()">
+        <h3>{{ "Add grant" | localize }}</h3>
+        <app-control-field
+          controlId="access-recipient-kind"
+          label="Recipient type"
+        >
+          <app-select-control
+            inputId="access-recipient-kind"
+            name="recipient-kind"
+            [disabled]="mutationsBlocked()"
+            [ngModel]="kind"
+            (ngModelChange)="setKind($event)"
+          >
+            <option value="users">{{ "User" | localize }}</option>
+            <option value="work_groups">{{ "Work group" | localize }}</option>
+          </app-select-control>
+        </app-control-field>
+        <app-studio-choice
+          #recipientChoice
+          controlId="access-recipient"
+          [disabled]="mutationsBlocked()"
+          [kind]="kind"
+          [value]="target"
+          (picked)="target = $event"
+        />
+        @if (vm.key === "workflows") {
+          <div class="flex flex-wrap gap-4">
+            <div class="flex items-center gap-2">
+              <p-checkbox
+                inputId="access-view"
+                name="can-view"
+                [binary]="true"
+                [disabled]="mutationsBlocked()"
+                [(ngModel)]="viewPermission"
+              /><label for="access-view">{{
+                "View workflow" | localize
+              }}</label>
+            </div>
+            <div class="flex items-center gap-2">
+              <p-checkbox
+                inputId="access-start"
+                name="can-start"
+                [binary]="true"
+                [disabled]="mutationsBlocked()"
+                [(ngModel)]="startPermission"
+              /><label for="access-start">{{
+                "Start workflow" | localize
+              }}</label>
+            </div>
+          </div>
+        } @else {
+          <p>{{ "Use definition" | localize }}</p>
+        }
+        <div class="flex flex-wrap justify-end gap-2">
+          <button
+            pButton
+            severity="secondary"
+            type="button"
+            [disabled]="blocked()"
+            [outlined]="true"
+            (click)="close()"
+          >
+            {{ "Close" | localize }}
+          </button>
+          <button
+            pButton
+            type="submit"
+            [disabled]="mutationsBlocked() || !target"
+          >
+            {{ "Add grant" | localize }}
+          </button>
+        </div>
+      </form>
+    }
+  </div>
+</p-dialog>

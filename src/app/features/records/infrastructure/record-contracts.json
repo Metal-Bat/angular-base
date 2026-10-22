@@ -757,8 +757,8 @@
     "description": "Track requested reports and download ready files.",
     "permission": "",
     "columns": [
-      { "key": "definition_key", "label": "Report Type" },
       { "key": "file_name", "label": "File Name" },
+      { "key": "definition_key", "label": "Report Type" },
       { "key": "status", "label": "Status" },
       { "key": "created_at", "label": "Created At" },
       { "key": "expires_at", "label": "Expires At" }
@@ -825,8 +825,8 @@
     "description": "Search, open and manage work groups.",
     "permission": "admin.work_groups.manage",
     "columns": [
-      { "key": "code", "label": "Code" },
       { "key": "name", "label": "Name" },
+      { "key": "code", "label": "Code" },
       { "key": "is_active", "label": "Active" },
       { "key": "created_at", "label": "Created At" }
     ],
@@ -998,8 +998,8 @@
     "description": "Search, open and manage integration connections.",
     "permission": "integrations.manage",
     "columns": [
-      { "key": "code", "label": "Code" },
       { "key": "name", "label": "Name" },
+      { "key": "code", "label": "Code" },
       { "key": "provider", "label": "Provider" },
       { "key": "kind", "label": "Type" },
       { "key": "status", "label": "Status" },
@@ -1244,8 +1244,8 @@
     "description": "Search, open and manage ai agents.",
     "permission": "workflows.manage",
     "columns": [
-      { "key": "code", "label": "Code" },
       { "key": "name", "label": "Name" },
+      { "key": "code", "label": "Code" },
       { "key": "number", "label": "Version Number" },
       { "key": "status", "label": "Status" },
       { "key": "created_at", "label": "Created At" }
@@ -1265,7 +1265,13 @@
         "type": "number",
         "nullable": false
       },
-      { "key": "status", "label": "Status", "type": "text", "nullable": false }
+      {
+        "key": "status",
+        "label": "Status",
+        "type": "text",
+        "nullable": false,
+        "options": ["DRAFT", "PUBLISHED", "RETIRED"]
+      }
     ],
     "extras": [],
     "fixed": [],
@@ -1872,8 +1878,8 @@
     "description": "Inspect pinned step metadata without publishing or changing it.",
     "permission": "workflows.manage",
     "columns": [
-      { "key": "code", "label": "Code" },
       { "key": "name", "label": "Name" },
+      { "key": "code", "label": "Code" },
       { "key": "number", "label": "Version Number" },
       { "key": "status", "label": "Status" },
       { "key": "is_available", "label": "Available" }
@@ -2070,7 +2076,8 @@
         "key": "schedule_type",
         "label": "Schedule type",
         "type": "text",
-        "nullable": false
+        "nullable": false,
+        "options": ["interval", "crontab", "clocked"]
       },
       {
         "key": "start_at",

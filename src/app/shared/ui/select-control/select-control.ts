@@ -1,3 +1,4 @@
+import { LocalizePipe } from '../localize-pipe';
 import {
   afterNextRender,
   booleanAttribute,
@@ -20,11 +21,20 @@ import {
 } from '@angular/forms';
 import { Select, SelectModule } from 'primeng/select';
 import { MultiSelectModule } from 'primeng/multiselect';
+import { MultiSelectEscape } from '../multiselect-escape';
+import { SelectEscape } from '../select-escape';
 
 /** Shares PrimeNG dropdown behavior while preserving projected, translated options. */
 @Component({
   selector: 'app-select-control',
-  imports: [FormsModule, SelectModule, MultiSelectModule],
+  imports: [
+    LocalizePipe,
+    FormsModule,
+    SelectModule,
+    MultiSelectModule,
+    MultiSelectEscape,
+    SelectEscape,
+  ],
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
@@ -40,6 +50,8 @@ import { MultiSelectModule } from 'primeng/multiselect';
     </select>
     @if (multiple()) {
       <p-multiselect
+        #escape="appMultiSelectEscape"
+        appMultiSelectEscape
         appendTo="body"
         optionDisabled="disabled"
         optionLabel="label"
@@ -52,6 +64,12 @@ import { MultiSelectModule } from 'primeng/multiselect';
         [ngModel]="value() === undefined ? model() : value()"
         [ngModelOptions]="{ standalone: true }"
         [options]="options()"
+        [overlayOptions]="escape.overlayOptions"
+        [placeholder]="'Choose a value' | localize"
+        [pt]="{
+          option: optionAccessibility,
+        }"
+        [readonly]="escape.closing()"
         [required]="required()"
         [style]="{
           width: '100%',
@@ -64,20 +82,30 @@ import { MultiSelectModule } from 'primeng/multiselect';
     } @else {
       <p-select
         #dropdown
+        #escape="appSelectEscape"
+        appSelectEscape
         appendTo="body"
         optionDisabled="disabled"
         optionLabel="label"
         optionValue="value"
         scrollHeight="20rem"
+        [ariaFilterLabel]="filterLabel()"
         [ariaLabel]="label()"
         [checkmark]="true"
-        [disabled]="disabled() || formDisabled()"
+        [disabled]="disabled() || formDisabled() || escape.closing()"
+        [emptyFilterMessage]="emptyFilterMessage()"
+        [filter]="filter()"
+        [filterPlaceholder]="filterLabel()"
         [inputId]="inputId()"
         [invalid]="invalid() === true || invalid() === 'true'"
         [ngModel]="value() === undefined ? model() : value()"
         [ngModelOptions]="{ standalone: true }"
         [options]="options()"
-        [pt]="{ label: { 'aria-describedby': describedBy() } }"
+        [overlayOptions]="escape.overlayOptions"
+        [pt]="{
+          label: { 'aria-describedby': describedBy() },
+          option: optionAccessibility,
+        }"
         [required]="required()"
         [style]="{
           width: '100%',
@@ -91,10 +119,21 @@ import { MultiSelectModule } from 'primeng/multiselect';
   `,
 })
 export class SelectControl implements ControlValueAccessor {
+  // PrimeNG 21 supplies item context at runtime, outside its generic PT declaration.
+  readonly optionAccessibility = (
+    options: unknown,
+  ): { 'aria-disabled': boolean } => ({
+    'aria-disabled':
+      (options as { context?: { disabled?: boolean } }).context?.disabled ===
+      true,
+  });
   readonly inputId = input('');
   readonly required = input(false, { transform: booleanAttribute });
   readonly disabled = input(false, { transform: booleanAttribute });
   readonly multiple = input(false, { transform: booleanAttribute });
+  readonly filter = input(false, { transform: booleanAttribute });
+  readonly filterLabel = input('');
+  readonly emptyFilterMessage = input('');
   readonly value = input<unknown>(undefined);
   readonly invalid = input<boolean | string | null>(null);
   readonly describedBy = input<string | null>(null);
@@ -116,7 +155,7 @@ export class SelectControl implements ControlValueAccessor {
     const destroy = inject(DestroyRef);
     afterNextRender(() => {
       const source = this.source().nativeElement;
-      const refresh = (): void => {
+      const refreshOptions = (): void => {
         this.options.set(
           Array.from(source.options, (option) => ({
             label: option.textContent?.trim() ?? '',
@@ -124,24 +163,58 @@ export class SelectControl implements ControlValueAccessor {
             disabled: option.disabled,
           })),
         );
+      };
+      const refreshLabel = (): void => {
         const label = source.ownerDocument.querySelector<HTMLLabelElement>(
           'label[for="' + this.inputId() + '"]',
         );
-        this.sourceLabel.set(label?.textContent?.trim() ?? this.inputId());
+        const accessible = label?.cloneNode(true) as HTMLElement | undefined;
+        accessible
+          ?.querySelectorAll('[aria-hidden="true"]')
+          .forEach((element) => element.remove());
+        this.sourceLabel.set(
+          accessible
+            ? Array.from(accessible.childNodes)
+                .filter((node) => node.nodeType === 1 || node.nodeType === 3)
+                .map((node) => node.textContent?.trim())
+                .filter(Boolean)
+                .join(' ')
+            : this.inputId(),
+        );
       };
-      refresh();
-      const observer = new MutationObserver(refresh);
-      observer.observe(source, {
+      refreshOptions();
+      refreshLabel();
+      const observer = new MutationObserver((records) => {
+        if (records.some((record) => source.contains(record.target))) {
+          refreshOptions();
+        }
+        refreshLabel();
+      });
+      const config = {
         subtree: true,
         childList: true,
         characterData: true,
         attributes: true,
-      });
+      };
+      observer.observe(source, config);
+      const label = source.ownerDocument.querySelector(
+        'label[for="' + this.inputId() + '"]',
+      );
+      if (label) {
+        observer.observe(label, config);
+      }
       destroy.onDestroy(() => observer.disconnect());
     });
   }
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   focus(): void {
-    this.dropdown()?.focus();
+    if (this.multiple()) {
+      this.host.nativeElement
+        .querySelector<HTMLElement>('p-multiselect [role="combobox"]')
+        ?.focus();
+    } else {
+      this.dropdown()?.focus();
+    }
   }
   writeValue(value: unknown): void {
     this.model.set(value);

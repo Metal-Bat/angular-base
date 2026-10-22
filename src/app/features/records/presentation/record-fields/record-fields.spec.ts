@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { RecordFields } from './record-fields';
 import { RecordField } from '../../domain/records';
 import { SchemaInput } from '../../../administration/presentation/schema-input/schema-input';
+import { Locale } from '../../../../core/localization/locale';
 
 describe('Consecutive structured form edits', () => {
   it('shows a picked label while retaining the opaque key and unrelated restrictions', async () => {
@@ -29,14 +30,22 @@ describe('Consecutive structured form edits', () => {
     fixture.componentInstance.pick(
       'spec.user_ref_id',
       'opaque-current-key',
-      'Sara',
+      'Yes',
     );
     fixture.detectChanges();
     await fixture.whenStable();
     const input = fixture.nativeElement.querySelector(
       '#record-spec-user_ref_id',
     ) as HTMLInputElement;
-    expect(input.value).toBe('Sara');
+    expect(input.value).toBe('Yes');
+    const locale = TestBed.inject(Locale);
+    try {
+      await locale.set('fa');
+      fixture.detectChanges();
+      expect(input.value).toBe('Yes');
+    } finally {
+      await locale.set('en');
+    }
     expect(input.readOnly).toBe(true);
     expect(
       JSON.parse(String(fixture.componentInstance.draft()['spec'])),

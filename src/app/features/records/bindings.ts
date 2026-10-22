@@ -1,5 +1,9 @@
 import { InjectionToken } from '@angular/core';
 import { RecordsPort } from './application/records-port';
+import { AgentMetadataPort } from './application/agent-metadata-port';
+export const AGENT_METADATA = new InjectionToken<AgentMetadataPort>(
+  'Agent metadata',
+);
 import { RecordDefinition } from './domain/records';
 export const RECORDS = new InjectionToken<RecordsPort>('RECORDS');
 export const RECORD_DEFINITION = new InjectionToken<RecordDefinition>(

@@ -1,3 +1,5 @@
+import { JsonObject } from '../../../forms/domain/runtime-document';
+import { CatalogRelations } from '../catalog-relations';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
 import {
@@ -23,6 +25,7 @@ import { FormDisplay } from '../form-display/form-display';
 @Component({
   selector: 'app-catalog-content',
   imports: [
+    CatalogRelations,
     NgTemplateOutlet,
     TabsModule,
     RecordSummary,
@@ -42,6 +45,49 @@ import { FormDisplay } from '../form-display/form-display';
   changeDetection: ChangeDetectionStrategy.Default,
 })
 export class CatalogContent {
+  businessRecord(key: string, row: JsonObject): JsonObject {
+    if (key !== 'request-types') {
+      return row;
+    }
+    return Object.fromEntries(
+      Object.entries(row).filter(([field]) => field !== 'client_targets'),
+    );
+  }
+  businessSections(
+    key: string,
+  ): readonly { title: string; keys: readonly string[] }[] {
+    const sections: Readonly<
+      Record<string, readonly { title: string; keys: readonly string[] }[]>
+    > = {
+      clients: [
+        { title: 'Identity', keys: ['name', 'code', 'kind', 'platform'] },
+        { title: 'Access', keys: ['confidential', 'is_active'] },
+      ],
+      'client-releases': [
+        {
+          title: 'Release',
+          keys: [
+            'version',
+            'api_version',
+            'renderer_capabilities',
+            'is_enabled',
+          ],
+        },
+      ],
+      'request-types': [
+        { title: 'Identity', keys: ['name', 'code', 'is_active'] },
+        {
+          title: 'Request settings',
+          keys: [
+            'default_priority',
+            'extension_contract',
+            'allow_cross_client_resume',
+          ],
+        },
+      ],
+    };
+    return sections[key] ?? [];
+  }
   private readonly route = inject(ActivatedRoute);
   private readonly query = toSignal(this.route.queryParamMap, {
     initialValue: this.route.snapshot.queryParamMap,

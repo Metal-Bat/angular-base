@@ -1,0 +1,101 @@
+<p-dialog
+  appendTo="body"
+  [closeAriaLabel]="'Close' | localize"
+  [draggable]="false"
+  [header]="
+    (request()?.mode === 'insert' ? 'Insert step' : 'Add next') | localize
+  "
+  [modal]="true"
+  [resizable]="false"
+  [style]="{ width: '30rem', maxWidth: 'calc(100vw - 2rem)' }"
+  [visible]="!!request()"
+  (visibleChange)="!$event && cancelled.emit()"
+>
+  @if (request(); as action) {
+    <p>
+      {{ action.title }}
+      @if (action.target) {
+        → {{ action.target }}
+      }
+    </p>
+    <p>
+      {{
+        "Configure the new step and validate before promotion. Existing data mappings remain unchanged."
+          | localize
+      }}
+    </p>
+    @if (action.mode === "insert") {
+      <p>
+        {{
+          "The original branch keeps its condition and priority. Only its manual connection route resets."
+            | localize
+        }}
+      </p>
+    }
+    <label for="placement-step-type">{{
+      "Registered step type" | localize
+    }}</label>
+    <app-select-control
+      inputId="placement-step-type"
+      required
+      [disabled]="disabled()"
+      [ngModel]="type()"
+      (ngModelChange)="type.set($event)"
+    >
+      <option value="">{{ "Choose" | localize }}</option>
+      @for (entry of typeOptions(); track entry.key) {
+        <option [value]="entry.key">{{ entry.label }}</option>
+      }
+    </app-select-control>
+    <label for="placement-outcome">{{
+      (action.mode === "insert" ? "New step outcome" : "Control outcome")
+        | localize
+    }}</label>
+    @if (declared().length) {
+      <app-select-control
+        inputId="placement-outcome"
+        required
+        [disabled]="disabled()"
+        [ngModel]="outcome()"
+        (ngModelChange)="outcome.set($event)"
+        ><option value="">{{ "Choose" | localize }}</option>
+        @for (choice of choices(); track choice) {
+          <option [value]="choice">{{ choice }}</option>
+        }
+      </app-select-control>
+    } @else {
+      <input
+        id="placement-outcome"
+        maxlength="64"
+        pInputText
+        required
+        [disabled]="disabled()"
+        [ngModel]="outcome()"
+        (ngModelChange)="outcome.set($event)"
+      />
+    }
+    @if (conflict()) {
+      <p role="alert">
+        {{
+          "That outcome already has a connection. Insert a step on its connection instead."
+            | localize
+        }}
+      </p>
+    }
+    @if (error()) {
+      <p role="alert">{{ error() | localize }}</p>
+    }
+  }
+  <ng-template #footer
+    ><button
+      pButton
+      severity="secondary"
+      type="button"
+      (click)="cancelled.emit()"
+    >
+      {{ "Cancel" | localize }}</button
+    ><button pButton type="button" [disabled]="!valid()" (click)="apply()">
+      {{ actionLabel() | localize }}
+    </button></ng-template
+  >
+</p-dialog>

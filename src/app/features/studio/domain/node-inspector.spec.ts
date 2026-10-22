@@ -73,6 +73,43 @@ describe('Frozen node inspector registry', () => {
       ]),
     ).toBeNull();
   });
+  it('accepts catalog display enrichment only with the frozen fingerprint and unchanged constraints', () => {
+    for (const handler of handlers) {
+      const entry = registered.find(
+        (row) =>
+          (row['metadata'] as JsonObject)['ref_id'] ===
+          handler.handler_key + handler.handler_version,
+      )!;
+      const step = {
+        key: 'step',
+        type_code: (entry['metadata'] as JsonObject)['code'],
+        type_version_ref: (entry['metadata'] as JsonObject)['ref_id'],
+      };
+      const enriched: JsonObject = {
+        ...(entry['type_schema'] as JsonObject),
+        'x-step-definition': {
+          name_key: 'step.' + handler.handler_key + '.name',
+          outcomes: [...handler.outcomes],
+        },
+        'x-step-definition-fingerprint': handler.contract_fingerprint,
+      };
+      expect(
+        inspectorFor(step, [{ ...entry, type_schema: enriched }]),
+      ).not.toBeNull();
+      const mutations: JsonObject[] = [
+        { 'x-step-definition-fingerprint': 'unreviewed' },
+        { additionalProperties: !enriched['additionalProperties'] },
+        { 'x-unreviewed': true },
+      ];
+      for (const mutation of mutations) {
+        expect(
+          inspectorFor(step, [
+            { ...entry, type_schema: { ...enriched, ...mutation } },
+          ]),
+        ).toBeNull();
+      }
+    }
+  });
   it('preserves identity, subprocess pins and unknown properties while validating timer bounds', () => {
     const handler = handlers.find((item) => item.handler_key === 'timer')!;
     const step = {

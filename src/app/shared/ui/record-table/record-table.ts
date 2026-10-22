@@ -1,9 +1,11 @@
+import { SelectEscape } from '../select-escape';
 import { RecordTableHeader } from './record-table-header';
 import { SelectModule } from 'primeng/select';
 import { ControlField } from '../control-field/control-field';
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   inject,
   input,
   output,
@@ -34,10 +36,25 @@ export type RowAction = {
   disabled?: boolean;
 };
 export type RowActionEvent = { key: string; row: Record<string, unknown> };
+const literalColumns = new Set([
+  'name',
+  'title',
+  'label',
+  'value',
+  'code',
+  'username',
+  'first_name',
+  'last_name',
+  'email',
+  'file_name',
+  'description',
+  'reason',
+]);
 @Component({
   selector: 'app-record-table',
   imports: [
     RecordTableHeader,
+    SelectEscape,
     SelectModule,
     ControlField,
     TableModule,
@@ -72,6 +89,23 @@ export class RecordTable {
   readonly busy = input(false);
   readonly actionLabel = input('Open');
   readonly opened = output<Record<string, unknown>>();
+  readonly rowHref = input<(row: Record<string, unknown>) => string>(() => '');
+  readonly primaryKey = input('');
+  follow(event: MouseEvent, row: Record<string, unknown>): void {
+    if (
+      event.button ||
+      event.ctrlKey ||
+      event.metaKey ||
+      event.shiftKey ||
+      event.altKey
+    ) {
+      return;
+    }
+    event.preventDefault();
+    if (!this.busy()) {
+      this.opened.emit(row);
+    }
+  }
   readonly canEdit = input<(row: Record<string, unknown>) => boolean>(
     () => false,
   );
@@ -117,6 +151,12 @@ export class RecordTable {
   readonly pageChanged = output<number>();
   readonly fields = input<readonly QueryField[]>([]);
   readonly query = input<ListQuery>(emptyQuery());
+  readonly pageSizes = computed(() => {
+    const current = this.query().size;
+    return [...new Set([10, 20, 50, 100, current])]
+      .filter((size) => Number.isInteger(size) && size >= 1 && size <= 100)
+      .sort((left, right) => left - right);
+  });
   readonly queried = output<ListQuery>();
   draft: FilterDraft = { field: '', operation: 'equal', value: '', end: '' };
   error = '';
@@ -286,11 +326,17 @@ export class RecordTable {
       return '—';
     }
     if (typeof value === 'boolean') {
-      return value ? 'Yes' : 'No';
+      return this.locale.text(value ? 'Yes' : 'No');
     }
     if (Array.isArray(value)) {
       return value.join(', ');
     }
-    return typeof value === 'object' ? 'Details' : String(value);
+    if (typeof value === 'object') {
+      return this.locale.text('Details');
+    }
+    const text = String(value);
+    return literalColumns.has(key) || key === this.primaryKey()
+      ? text
+      : this.locale.text(text);
   }
 }

@@ -1,14 +1,4 @@
-<header class="console-page-header">
-  <h1 tabindex="-1">
-    {{ (kind === "request" ? "Request detail" : "Task detail") | localize }}
-  </h1>
-</header>
-<a
-  [routerLink]="
-    kind === 'request' ? '/operations/requests' : '/operations/tasks'
-  "
-  >{{ "Back to list" | localize }}</a
->
+<app-case-page-header [view]="this" />
 @if (editor.busy()) {
   <p role="status">{{ "Loading…" | localize }}</p>
 }
@@ -38,11 +28,21 @@
   ><span class="sr-only">{{ "Check current state" | localize }}</span>
 </button>
 @if (editor.item(); as item) {
-  <app-case-summary
-    [disabled]="editor.busy() || resources.transferBusy()"
-    [item]="item"
-    [kind]="kind"
-  />
+  @if (kind === "task") {
+    <section aria-labelledby="task-action-title">
+      <h2 id="task-action-title">{{ "Task actions" | localize }}</h2>
+      <app-task-controls [disabled]="formBusy()" [editor]="editor" />
+      <app-advanced-task
+        [editor]="editor"
+        (fieldRequested)="focusCorrection($event)"
+      />
+      @if (aiApproval()) {
+        <app-ai-approval [editor]="editor" />
+      }
+    </section>
+  }
+  <app-case-summary [disabled]="formBusy()" [item]="item" [kind]="kind" />
+  <app-attachment-recovery [resources]="resources" />
   @if (runtimeIncompatible()) {
     <p role="alert">{{ "This runtime document is incompatible" | localize }}</p>
   }
@@ -52,10 +52,13 @@
       {{ "Form version" | localize }} {{ document.identity.versionNumber }} ·
       <bdi>{{ document.identity.view }}</bdi>
     </p>
-    <p>
-      {{ "Current reference" | localize }}:
-      <bdi>{{ document.identity.resource }}</bdi>
-    </p>
+    <details>
+      <summary>{{ "Technical details" | localize }}</summary>
+      <p>
+        {{ "Current reference" | localize }}:
+        <bdi>{{ document.identity.resource }}</bdi>
+      </p>
+    </details>
     <app-runtime-form
       [busy]="formBusy()"
       [data]="editor.data()"
@@ -63,40 +66,6 @@
       [issues]="editor.issues()"
       (edit)="editor.edit($event)"
     />
-    @if (editor.canEdit()) {
-      <button
-        pButton
-        severity="secondary"
-        type="button"
-        [disabled]="resources.transferBusy()"
-        [outlined]="true"
-        (click)="editor.save()"
-      >
-        {{ "Save" | localize }}
-      </button>
-      @if (canSubmit()) {
-        <button
-          pButton
-          severity="secondary"
-          type="button"
-          [disabled]="resources.transferBusy()"
-          [outlined]="true"
-          (click)="editor.submit()"
-        >
-          {{ "Submit" | localize }}
-        </button>
-      }
-    }
   }
-  @if (kind === "request") {
-    <app-request-actions [editor]="editor" />
-  } @else {
-    <app-task-controls [editor]="editor" />
-    <app-advanced-task [editor]="editor" />
-    @if (aiApproval()) {
-      <app-ai-approval [editor]="editor" />
-    }
-  }
-  <app-case-history [kind]="kind" [reference]="item.ref" />
   <app-case-overrides [editor]="editor" />
 }

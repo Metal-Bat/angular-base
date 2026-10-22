@@ -1,178 +1,162 @@
-.designer,
-.inspectors {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
-  gap: 1.5rem;
-  margin-block: 1.5rem;
-}
-.designer > section,
-.inspectors > section {
+:host {
+  display: flex;
+  flex-direction: column;
+  block-size: var(--editor-available-height, auto);
+  min-block-size: 0;
   min-inline-size: 0;
-  padding: 1.5rem;
-  border: 1px solid var(--console-border);
-  border-radius: 1rem;
-  background: var(--console-surface);
+  container-type: inline-size;
 }
-textarea {
-  max-inline-size: none;
+.editor-document-bar {
+  flex: 0 0 auto;
 }
-.designer ul {
-  gap: 0.35rem;
+.console-page-header {
+  gap: 0.5rem;
 }
-.designer li {
-  padding: 0.5rem;
-  background: var(--console-canvas);
-}
-.designer small {
-  display: block;
-  padding-inline: 0.5rem;
-  color: var(--console-muted);
-  overflow-wrap: anywhere;
-}
-@media (max-width: 60rem) {
-  .designer,
-  .inspectors {
-    grid-template-columns: minmax(0, 1fr);
-  }
-}
-.canvas-workspace {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(16rem, 21rem);
-  align-items: start;
-  gap: 1.25rem;
-  margin-block: 1.25rem;
-}
-.canvas-workspace .inspectors {
-  display: block;
-  margin: 0;
-}
-.step-inspector h2 {
-  overflow-wrap: anywhere;
-}
-.workflow-reference {
-  color: var(--console-muted);
-  font-size: 0.7rem;
-  overflow-wrap: anywhere;
-}
-.save-state {
-  color: var(--console-muted);
-  font-size: 0.75rem;
-}
-.workflow-commands {
-  padding-block: 0.75rem;
-  border-block: 1px solid var(--console-border);
-}
-.palette-fields {
+.workflow-heading {
   display: flex;
   flex-wrap: wrap;
-  align-items: end;
-  gap: 0.65rem;
-  label {
-    margin: 0.35rem 0 0;
-  }
-  select {
-    max-inline-size: 100%;
-  }
-  input {
-    max-inline-size: 14rem;
-  }
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  min-inline-size: 0;
 }
-.graph-editor > section {
-  padding-block: 0.25rem 1.25rem;
+.workflow-heading h1 {
+  margin: 0;
+  font-size: 1.25rem;
+  line-height: 1.4;
 }
-@media (max-width: 60rem) {
-  .canvas-workspace {
-    grid-template-columns: minmax(0, 1fr);
-  }
-}
-
-.palette-type {
-  flex: 1;
-  min-inline-size: min(100%, 15rem);
-}
-.palette-fields > div {
-  max-inline-size: 100%;
-}
-.palette-pagination {
+.workflow-heading > a {
   margin-inline-start: auto;
+  font-size: 0.875rem;
 }
-
 h1:focus {
   outline: none;
 }
-
-.step-palette {
-  padding: 1rem;
-  border: 1px solid var(--console-border);
-  border-radius: 1rem;
-  background: var(--console-surface);
-  margin-bottom: 1rem;
+.workflow-commands {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
 }
-.palette-items {
+.workflow-commands button {
+  margin: 0;
+}
+.canvas-workspace {
+  display: grid;
+  flex: 1;
+  min-block-size: 0;
+  grid-template-columns: minmax(0, 1fr) 21rem;
+  align-items: stretch;
+  gap: 1rem;
+  margin-block: 0.75rem 0;
+  overflow: hidden;
+}
+.workflow-surface {
+  --workflow-canvas-height: 100%;
+  min-block-size: 0;
+  min-inline-size: 0;
+  display: flex;
+}
+.inspectors {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  min-inline-size: 0;
+  min-block-size: 0;
+  overflow: hidden;
+  border: 1px solid var(--console-border);
+  border-radius: 0.75rem;
+  background: var(--console-surface);
+}
+.inspectors > p-tabs {
+  display: flex;
+  flex-direction: column;
+  block-size: 100%;
+  min-block-size: 0;
+}
+p-tablist {
+  flex: 0 0 auto;
+}
+p-tabpanels {
+  flex: 1;
+  min-block-size: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  scroll-padding-block: 1rem;
+}
+.inspectors section {
+  min-inline-size: 0;
+  padding: 1rem;
+  overflow-wrap: anywhere;
+}
+.step-palette {
+  padding: 0.5rem;
+}
+.palette-fields {
   display: grid;
   gap: 0.5rem;
-  max-height: 24rem;
-  overflow: auto;
-  margin-block: 1rem;
 }
-.palette-item {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  text-align: start;
+.palette-fields > div {
+  min-inline-size: 0;
 }
-.palette-item span {
-  flex: 1;
-}
-.palette-item[draggable="true"] {
-  cursor: grab;
-}
-.step-palette .palette-fields {
-  display: grid;
-}
-.step-palette input,
-.step-palette app-select-control {
-  width: 100%;
+.palette-fields input,
+.palette-fields app-select-control {
+  inline-size: 100%;
   max-inline-size: 100%;
   box-sizing: border-box;
 }
-
-.palette-hint {
-  color: var(--console-muted);
-  font-size: 0.8rem;
-  line-height: 1.5;
-  margin: 0.5rem 0;
-}
-.palette-card {
+.palette-pagination {
   display: flex;
-  align-items: center;
-  border: 1px solid var(--console-border);
-  border-radius: 0.6rem;
-  background: var(--console-surface);
+  gap: 0.5rem;
 }
-.palette-card:hover,
-.palette-selected {
-  border-color: var(--console-accent);
-  background: var(--console-accent-soft);
+textarea {
+  inline-size: 100%;
+  max-inline-size: 100%;
+  box-sizing: border-box;
 }
-.palette-card .palette-item {
-  flex: 1;
-  min-width: 0;
-  margin: 0;
-  border: 0;
-  border-radius: 0.6rem;
-  background: transparent;
-  color: var(--console-text);
-  padding: 0.75rem;
+.save-state {
+  color: var(--console-muted);
+  font-size: 0.8125rem;
 }
-.palette-item span {
-  overflow-wrap: anywhere;
+.editor-feedback,
+.pending-notice,
+.readonly-notice {
+  flex: 0 0 auto;
+  margin-block: 0.5rem;
+  font-size: 0.875rem;
 }
-.palette-card .pi {
-  color: var(--console-accent);
-  font-size: 1rem;
+.pending-notice {
+  padding: 0.375rem 0.75rem;
 }
-.palette-card .palette-add {
-  margin: 0 0.25rem;
-  flex-shrink: 0;
+.dock-toggle {
+  display: none;
+}
+@container (max-width: 54rem) {
+  .command-label {
+    display: none;
+  }
+  .dock-toggle {
+    display: inline-flex;
+  }
+  .canvas-workspace {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .canvas-workspace .inspectors {
+    display: none;
+    grid-area: 1 / 1;
+  }
+  .canvas-workspace.dock-open .inspectors {
+    display: block;
+  }
+  .canvas-workspace .workflow-surface {
+    grid-area: 1 / 1;
+  }
+  .canvas-workspace.dock-open .workflow-surface {
+    // Retain the flow's measured geometry and unfinished navigation while Tools
+    // occupies the same grid cell. Visibility also removes its controls from focus.
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+  }
 }

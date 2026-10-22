@@ -4,11 +4,12 @@
   min-inline-size: 0;
 }
 .field-label {
+  position: relative;
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
   margin: 0;
-  font-size: 0.8rem;
+  font-size: 0.875rem;
   font-weight: 600;
   line-height: 1.4;
 }
@@ -19,7 +20,7 @@
   display: grid;
   gap: 0.25rem;
   color: var(--console-muted);
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
   line-height: 1.5;
 }
 .field-hint:empty {
@@ -45,7 +46,7 @@
 
 .field-error {
   color: var(--mat-sys-error);
-  font-size: 0.8rem;
+  font-size: 0.875rem;
 }
 :host:has(.field-error) .field-label {
   color: var(--mat-sys-error);

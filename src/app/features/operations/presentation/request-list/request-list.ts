@@ -1,8 +1,15 @@
 import { CaseList } from '../case-list/case-list';
+import { ListQueryEditor } from '../../../../shared/ui/list-query/list-query';
+import { ListQuery, queryBody } from '../../../../shared/domain/list-query';
+import { jsonObject } from '../../../../shared/domain/json-value';
+import {
+  requestListQuery,
+  requestQueryFields,
+} from '../../domain/request-list-query';
 import { SavedViews } from '../../../../shared/ui/saved-views/saved-views';
 import { JsonObject } from '../../../forms/domain/runtime-document';
 import { NotificationPreview } from '../../../../core/notifications/notification-preview';
-import { effect, signal, untracked, viewChild } from '@angular/core';
+import { computed, effect, signal, untracked, viewChild } from '@angular/core';
 import { ButtonDirective } from 'primeng/button';
 import { BoundedPolling } from '../../../../core/transport/bounded-polling';
 import { PagesPort } from '../../application/workspace-ports';
@@ -21,11 +28,19 @@ import { WORKSPACE_PAGES, WORKSPACE_PAGES_FACTORY } from '../../bindings';
   ],
   selector: 'app-request-list',
 
-  imports: [CaseList, SavedViews, ButtonDirective, LocalizePipe, RouterLink],
+  imports: [
+    CaseList,
+    ListQueryEditor,
+    SavedViews,
+    ButtonDirective,
+    LocalizePipe,
+    RouterLink,
+  ],
   templateUrl: './request-list.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RequestList {
+  readonly queryEditing = signal(false);
   private readonly savedViews = viewChild(SavedViews);
   async canLeave(): Promise<boolean> {
     return this.savedViews()?.canLeave() ?? true;
@@ -40,6 +55,16 @@ export class RequestList {
   ];
   readonly polling = inject(BoundedPolling);
   readonly pages = inject(WORKSPACE_PAGES);
+  readonly queryFields = requestQueryFields;
+  readonly listQuery = computed(() =>
+    requestListQuery(this.pages.appliedQuery()),
+  );
+  applyQuery(query: ListQuery): void {
+    void this.pages.load('request', 1, 'available', undefined, {
+      ...jsonObject(queryBody(query)),
+      scope: this.pages.appliedQuery()?.['scope'] ?? 'mine',
+    });
+  }
   applyView(event: { query: JsonObject; columns: string[] }): void {
     this.columns.set(event.columns);
     void this.pages.load('request', 1, 'available', undefined, event.query);
@@ -49,7 +74,7 @@ export class RequestList {
     let applied = notifications.revision();
     effect(() => {
       const revision = notifications.revision();
-      const idle = this.pages.state() !== 'loading';
+      const idle = this.pages.state() !== 'loading' && !this.queryEditing();
       if (revision !== applied && idle) {
         applied = revision;
         untracked(
@@ -61,7 +86,7 @@ export class RequestList {
     this.polling.start(
       (abort) =>
         this.pages.load('request', this.pages.page(), 'available', abort),
-      () => this.pages.state() !== 'loading',
+      () => this.pages.state() !== 'loading' && !this.queryEditing(),
     );
   }
 }

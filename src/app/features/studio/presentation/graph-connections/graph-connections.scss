@@ -1,0 +1,46 @@
+:host {
+  display: block;
+  min-inline-size: 0;
+}
+section {
+  display: grid;
+  gap: 0.75rem;
+  min-inline-size: 0;
+}
+h3,
+p {
+  margin: 0;
+}
+.mapping-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 0.75rem;
+}
+.mapping-list li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  border: 1px solid var(--console-border);
+  border-radius: 0.75rem;
+  padding: 0.75rem;
+  min-inline-size: 0;
+}
+.mapping-list p {
+  flex-basis: 100%;
+  overflow-wrap: anywhere;
+}
+.mapping-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.mapping-hint {
+  color: var(--console-muted);
+  overflow-wrap: anywhere;
+}
+button {
+  max-inline-size: 100%;
+  white-space: normal;
+}

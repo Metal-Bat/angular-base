@@ -1,3 +1,4 @@
+import { TimezoneControl } from '../../../../shared/ui/timezone-control/timezone-control';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -22,6 +23,7 @@ import { SelectControl } from '../../../../shared/ui/select-control/select-contr
     ButtonDirective,
     LocalizePipe,
     SelectControl,
+    TimezoneControl,
   ],
   templateUrl: './workspace-settings.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

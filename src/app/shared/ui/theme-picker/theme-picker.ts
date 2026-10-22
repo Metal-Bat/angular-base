@@ -1,3 +1,4 @@
+import { SelectEscape } from '../select-escape';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -14,7 +15,7 @@ import { LocalizePipe } from '../localize-pipe';
 
 @Component({
   selector: 'app-theme-picker',
-  imports: [FormsModule, SelectModule, LocalizePipe],
+  imports: [FormsModule, SelectModule, SelectEscape, LocalizePipe],
   host: { style: 'display:inline-flex; min-width:0; max-width:100%' },
   templateUrl: './theme-picker.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

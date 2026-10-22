@@ -1,3 +1,4 @@
+import { constrainPopover, restorePopoverFocus } from '../anchored-popover';
 import type { Button } from 'primeng/button';
 import type { PassThroughContext } from 'primeng/api';
 import type { DatePickerPassThrough } from 'primeng/types/datepicker';
@@ -21,7 +22,7 @@ import {
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { DatePickerModule } from 'primeng/datepicker';
-import { DialogModule } from 'primeng/dialog';
+import { Popover, PopoverModule } from 'primeng/popover';
 import { InputTextModule } from 'primeng/inputtext';
 import { Locale } from '../../../core/localization/locale';
 import {
@@ -54,7 +55,7 @@ function temporalKind(value: string): TemporalKind {
     FormsModule,
     ButtonModule,
     DatePickerModule,
-    DialogModule,
+    PopoverModule,
     InputTextModule,
     LocalizePipe,
     SelectControl,
@@ -71,6 +72,7 @@ export class TemporalControl {
   });
   readonly disabled = input(false);
   readonly invalid = input(false);
+  readonly required = input(false);
   readonly describedBy = input<string | null>('');
   readonly ariaLabel = input('');
   readonly timezone = input<string>();
@@ -78,6 +80,7 @@ export class TemporalControl {
   readonly value = model('');
   readonly dateText = signal('');
   readonly time = signal<Date | null>(null);
+  readonly timeOrigin = new Date(2000, 0, 1);
   readonly error = signal('');
   private readonly draftCalendar = signal<CalendarSystem>('gregory');
   readonly calendar = computed(() =>
@@ -85,6 +88,7 @@ export class TemporalControl {
   );
   private readonly injector = inject(Injector);
   readonly opened = signal(false);
+  private readonly datePopup = viewChild<Popover>('datePopup');
   private readonly calendarTrigger =
     viewChild<ElementRef<HTMLButtonElement>>('calendarTrigger');
   readonly anchor = signal(new Date().toISOString().slice(0, 10));
@@ -119,6 +123,9 @@ export class TemporalControl {
     return {
       'aria-label':
         host.getAttribute('aria-label') || this.locale.text(fallback),
+      style:
+        'min-width:var(--workspace-control-height);' +
+        'min-height:var(--workspace-control-height);',
     };
   }
   private emitted: string | undefined;
@@ -140,7 +147,7 @@ export class TemporalControl {
   readonly weekdays = computed(() =>
     Array.from({ length: 7 }, (_, index) =>
       new Intl.DateTimeFormat(this.locale.language(), {
-        weekday: 'short',
+        weekday: 'narrow',
         timeZone: 'UTC',
       }).format(Date.UTC(2026, 0, 4 + index)),
     ),
@@ -150,7 +157,7 @@ export class TemporalControl {
       this.dateText.set('');
       this.time.set(null);
       this.error.set('');
-      this.opened.set(false);
+      this.closeCalendar();
       this.candidates.set([]);
       this.selectedDate.set('');
       this.anchor.set(new Date().toISOString().slice(0, 10));
@@ -256,6 +263,9 @@ export class TemporalControl {
         this.publish(date);
         return;
       }
+      if (!this.time()) {
+        this.time.set(new Date(this.timeOrigin.getTime()));
+      }
       const clock = this.clock();
       const local = date + 'T' + clock;
       if (this.kind() === 'datetime-local') {
@@ -294,16 +304,24 @@ export class TemporalControl {
       this.publish(value);
     }
   }
-  showCalendar(): void {
-    if (!this.disabled()) {
-      this.opened.set(true);
+  fitCalendar(): void {
+    constrainPopover(this.datePopup(), 320);
+  }
+  showCalendar(event?: Event): void {
+    const trigger = this.calendarTrigger()?.nativeElement;
+    if (!this.disabled() && trigger) {
+      this.datePopup()?.toggle(event ?? new Event('click'), trigger);
     }
   }
+  private closeCalendar(): void {
+    this.opened.set(false);
+    this.datePopup()?.hide();
+  }
   restoreDateFocus(): void {
-    const trigger = this.calendarTrigger()?.nativeElement;
-    if (trigger?.isConnected && !trigger.disabled) {
-      trigger.focus();
-    }
+    restorePopoverFocus(
+      this.datePopup(),
+      this.calendarTrigger()?.nativeElement,
+    );
   }
   moveMonth(direction: number): void {
     const days = this.days();
@@ -357,14 +375,11 @@ export class TemporalControl {
       return;
     }
     if (date === this.selectedDate() && !this.error() && this.value()) {
-      this.opened.set(false);
+      this.closeCalendar();
       return;
     }
     this.dateText.set(calendarText(date, this.calendar()));
-    if (this.kind() !== 'date' && !this.time()) {
-      this.time.set(new Date(2000, 0, 1));
-    }
-    this.opened.set(false);
+    this.closeCalendar();
     this.commit();
   }
   clear(): void {

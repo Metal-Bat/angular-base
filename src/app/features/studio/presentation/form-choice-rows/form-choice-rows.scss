@@ -1,0 +1,44 @@
+:host {
+  display: block;
+  min-inline-size: 0;
+}
+ol {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+li {
+  display: grid;
+  gap: 0.5rem;
+  padding: 1rem 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  border-block-end: 1px solid var(--console-border);
+}
+.choice-heading,
+.choice-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+.choice-heading {
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+.choice-actions button {
+  margin: 0;
+}
+.choice-note {
+  color: var(--console-muted);
+  font-size: 0.875rem;
+  margin-block: 0.5rem;
+}
+input,
+app-select-control {
+  inline-size: 100%;
+  min-inline-size: 0;
+}
+label {
+  margin: 0;
+}

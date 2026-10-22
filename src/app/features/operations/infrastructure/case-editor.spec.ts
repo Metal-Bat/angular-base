@@ -1,3 +1,4 @@
+import { CorrectionInput } from '../domain/correction-feedback';
 import { TestBed } from '@angular/core/testing';
 import { signal } from '@angular/core';
 import { ApiFailure } from '../../../core/transport/api-failure';
@@ -33,6 +34,7 @@ describe('Requester and reviewer command journeys', () => {
     deleted?: readonly string[];
     outcome?: string;
     comment?: string;
+    feedback?: readonly CorrectionInput[];
   }[];
   let dto: Record<string, unknown>;
   let current: CaseRecord;
@@ -105,6 +107,7 @@ describe('Requester and reviewer command journeys', () => {
               deleted: readonly string[],
               outcome: string,
               comment: string,
+              feedback: readonly CorrectionInput[],
             ): Promise<CaseRecord> => {
               calls.push({
                 reference,
@@ -114,6 +117,7 @@ describe('Requester and reviewer command journeys', () => {
                 deleted,
                 outcome,
                 comment,
+                feedback,
               });
               return item('closed', 'COMPLETED');
             },
@@ -122,6 +126,28 @@ describe('Requester and reviewer command journeys', () => {
       ],
     });
     vi.spyOn(TestBed.inject(Feedback), 'confirm').mockResolvedValue(true);
+  });
+  it('finishes a confirmed forwarding handoff without reading the recipient form', async () => {
+    const editor = TestBed.inject(CaseEditor);
+    await editor.open('request', 'initial');
+    const reader = TestBed.inject(RuntimeReader);
+    const taskRead = vi.spyOn(reader, 'task');
+    const send = vi.fn().mockResolvedValue('recipient-current');
+    expect(
+      await editor.command(
+        { reason: 'Named handoff' },
+        send,
+        true,
+        false,
+        true,
+      ),
+    ).toBe(true);
+    expect(taskRead).not.toHaveBeenCalled();
+    expect(editor.document()).toBeNull();
+    expect(editor.item()).toBeNull();
+    expect(editor.data()).toEqual({});
+    expect(editor.dirty()).toBe(false);
+    expect(send).toHaveBeenCalledOnce();
   });
   it('flushes changed canonical data then submits the saved reference with only a stable submit key', async () => {
     const editor = TestBed.inject(CaseEditor);
@@ -177,13 +203,70 @@ describe('Requester and reviewer command journeys', () => {
     expect(editor.data()['approved']).toBe(false);
     editor.edit({ scope: '/properties/decimal', value: MISSING });
     editor.comment.set('Please correct');
+    editor.corrections.set([
+      {
+        scope: '/properties/amount',
+        item_key: null,
+        message: 'Correct amount',
+      },
+    ]);
     await editor.decide(editor.document()!.actions[0]);
     expect(calls[0].operation).toBe('return');
     expect(calls[0].outcome).toBe('CORRECT');
     expect(calls[0].comment).toBe('Please correct');
+    expect(calls[0].feedback).toEqual([
+      {
+        scope: '/properties/amount',
+        item_key: null,
+        message: 'Correct amount',
+      },
+    ]);
+    expect(editor.corrections()).toEqual([]);
+    expect(editor.decisionDirty()).toBe(false);
     expect(calls[0].data).toEqual({ amount: 125 });
     expect(calls[0].deleted).toEqual(['/decimal']);
     expect(calls[0].key).toBeTruthy();
+  });
+  it('retains an unfinished correction and clears decision drafts across task and actor changes', async () => {
+    current = item('task', 'CLAIMED');
+    dto = runtimeFixture();
+    const editor = TestBed.inject(CaseEditor);
+    await editor.open('task', 'task');
+    const action = {
+      ...editor.document()!.actions[0],
+      kind: 'return' as const,
+    };
+    dto['actions'] = [
+      {
+        key: action.key,
+        kind: 'return',
+        outcome_key: action.outcome,
+        title: action.title,
+        confirmation: null,
+        require_comment: false,
+        required_scopes: [],
+        validation: 'partial',
+      },
+    ];
+    await editor.refresh(false);
+    editor.comment.set('Retained comment');
+    editor.corrections.set([
+      { scope: '/properties/amount', item_key: null, message: '' },
+    ]);
+    await editor.decide(editor.document()!.actions[0]);
+    expect(calls).toEqual([]);
+    expect(editor.error()).toBe(
+      'Choose a field and describe each required correction.',
+    );
+    expect(editor.decisionDirty()).toBe(true);
+    await editor.open('task', 'other-task');
+    expect(editor.comment()).toBe('');
+    expect(editor.corrections()).toEqual([]);
+    editor.corrections.set([
+      { scope: '/properties/amount', item_key: null, message: 'Private draft' },
+    ]);
+    TestBed.inject(ActorState).reset();
+    expect(editor.corrections()).toEqual([]);
   });
   it('blocks an observer decision and clears data when the actor changes', async () => {
     current = { ...item('task', 'CLAIMED'), claimant: 'someone-else' };
@@ -212,6 +295,40 @@ describe('Requester and reviewer command journeys', () => {
     expect(editor.data()['decimal']).toBe('new server value');
     expect(editor.blocked()).toBe(false);
     expect(editor.dirty()).toBe(true);
+  });
+  it('retains ordinary items-prefixed edits across authoritative refresh and saves the literal key', async () => {
+    const scope = '/properties/items_total';
+    Object.assign(dto, {
+      data: { items_total: 3 },
+      readable_scopes: [scope],
+      writable_scopes: [scope],
+      required_scopes: [],
+      field_metadata: [
+        {
+          scope,
+          validation_schema: { type: 'integer' },
+          writable: true,
+          required: false,
+        },
+      ],
+      render_schema: {
+        dialect: 'bpms.render/1',
+        root: {
+          component: 'vertical',
+          children: [{ component: 'integer', scope, label: 'Item count' }],
+        },
+      },
+      actions: [],
+    });
+    const editor = TestBed.inject(CaseEditor);
+    await editor.open('request', 'initial');
+    editor.edit({ scope, value: 4 });
+    dto['data'] = { items_total: 6 };
+    await editor.refresh(true);
+    expect(editor.data()).toEqual({ items_total: 4 });
+    expect(editor.dirty()).toBe(true);
+    await editor.save();
+    expect(calls.at(-1)?.data).toEqual({ items_total: 4 });
   });
   it.each(['AI_APPROVAL', 'UNSUPPORTED'] as const)(
     'keeps %s separate from human editing',

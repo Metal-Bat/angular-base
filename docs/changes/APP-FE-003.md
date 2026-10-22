@@ -4,6 +4,8 @@ Date: 2026-10-08. Status: DONE. Verification: VERIFIED_LOCAL.
 
 ## Summary and scope
 
+Revision 5 R14 continuation is recorded in [APP-FE-016.UX01](APP-FE-016.UX01.md): the existing generic schema controls and pure helper now have shared owners, old TypeScript paths retain compatibility exports, and Studio consumes the shared seam. This does not reopen or erase the earlier local review history, and it does not complete CONS-FE-004 or the current master acceptance gate.
+
 Parent lifetime/selection fence and missing-envelope-member checks repaired with regressions. Existing architecture, actors, canonical values and published pins retained; later product gaps stay with their owners.
 
 ## Reuse and changes

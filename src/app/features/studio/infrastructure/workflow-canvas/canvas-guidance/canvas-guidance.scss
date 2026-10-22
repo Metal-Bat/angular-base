@@ -1,0 +1,46 @@
+:host {
+  display: block;
+}
+.canvas-footer {
+  padding: 0.5rem 0.75rem;
+  border-block-start: 1px solid var(--console-border);
+  color: var(--console-muted);
+  font-size: 0.8125rem;
+}
+.edge-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  i {
+    inline-size: 1.25rem;
+    border-block-start: 2px solid var(--console-accent);
+  }
+  .data-line {
+    border-block-start-style: dashed;
+    border-color: var(--console-muted);
+  }
+}
+
+.guidance-copy p {
+  margin-block: 0 1rem;
+}
+@media (max-height: 35rem) {
+  .canvas-footer {
+    position: absolute;
+    inset-inline-end: 0.5rem;
+    inset-block-end: 0.5rem;
+    z-index: 2;
+    padding: 0 0.25rem;
+    border: 1px solid var(--console-border);
+    border-radius: 0.5rem;
+    background: var(--console-surface);
+  }
+  .full-legend {
+    display: none;
+  }
+}

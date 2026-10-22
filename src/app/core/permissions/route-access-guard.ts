@@ -1,9 +1,10 @@
-import { inject } from '@angular/core';
+import { inject, Injector } from '@angular/core';
 import { CanActivateChildFn, Router } from '@angular/router';
 
 import { hasPermissions } from './area-access';
 import { safeReturnPath } from '../auth/safe-return-path';
 import { SessionContext } from '../auth/session-context';
+import { ActorState } from '../auth/actor-state';
 
 export type RouteAccessPolicy = 'planning-preview' | 'authenticated';
 
@@ -18,7 +19,8 @@ export const routeAccessGuard: CanActivateChildFn = (route, state) => {
     return router.parseUrl('/forbidden');
   }
 
-  const session = inject(SessionContext).snapshot();
+  const context = inject(SessionContext);
+  const session = context.snapshot();
   if (session.status === 'unresolved') {
     return router.parseUrl('/access-unavailable');
   }
@@ -42,7 +44,16 @@ export const routeAccessGuard: CanActivateChildFn = (route, state) => {
   ) {
     return router.parseUrl('/forbidden');
   }
-  return hasPermissions(session.permissions, required, any)
-    ? true
-    : router.parseUrl('/forbidden');
+  if (!hasPermissions(session.permissions, required, any)) {
+    return router.parseUrl('/forbidden');
+  }
+  const actor = inject(ActorState);
+  const injector = inject(Injector);
+  const epoch = actor.epoch;
+  // Resolve the existing account defaults before a feature snapshots its initial
+  // timezone/digits. Later navigation reuses that read and never resets drafts.
+  return import('./resolve-route-preferences').then(
+    ({ resolveRoutePreferences }) =>
+      resolveRoutePreferences(injector, epoch, required, any),
+  );
 };

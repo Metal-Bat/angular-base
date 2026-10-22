@@ -1,0 +1,36 @@
+@let vm = view();
+<details
+  #settings
+  tabindex="-1"
+  [open]="!narrow()"
+  (keydown.escape)="escape($event, settings)"
+>
+  <summary
+    [attr.aria-label]="'Display settings' | localize"
+    [attr.title]="'Display settings' | localize"
+  >
+    <i aria-hidden="true" class="pi pi-sliders-h"></i
+    ><span class="sr-only">{{ "Display settings" | localize }}</span>
+  </summary>
+  <div class="preference-controls">
+    <div class="inline-flex items-center gap-2">
+      <i aria-hidden="true" class="pi pi-globe text-console-muted"></i>
+      <span class="sr-only">{{ "Language" | localize }}</span>
+      <app-select-control
+        class="w-32 max-w-full"
+        data-language-picker
+        [ariaLabel]="'Language' | localize"
+        [disabled]="vm.locale.changing() || vm.preferences.loading()"
+        [value]="vm.locale.language()"
+        (selectionChanged)="vm.setLanguage($any($event.target).value)"
+      >
+        @for (language of vm.locale.languages; track language.code) {
+          <option [attr.lang]="language.code" [value]="language.code">
+            {{ language.name }}
+          </option>
+        }
+      </app-select-control>
+    </div>
+    <app-theme-picker class="w-52 max-w-full" />
+  </div>
+</details>

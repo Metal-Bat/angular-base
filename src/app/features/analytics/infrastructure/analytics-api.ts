@@ -1,5 +1,5 @@
 import { inject, Injectable } from '@angular/core';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, fromEvent, takeUntil } from 'rxjs';
 import { ActorState } from '../../../core/auth/actor-state';
 import { ApiClient } from '../../../core/transport/api-client';
 import { record } from '../../../core/transport/api-failure';
@@ -40,12 +40,19 @@ export class AnalyticsApi {
     }
     return result;
   }
-  async query(body: MetricQuery): Promise<MetricProjection> {
+  async query(
+    body: MetricQuery,
+    signal?: AbortSignal,
+  ): Promise<MetricProjection> {
+    signal?.throwIfAborted();
     metricWindow(body.start_date, body.end_date, body.timezone);
     const epoch = this.actor.epoch;
+    const request = this.api.call('query_metrics_api_v1_analytics_query_post', {
+      body,
+    });
     const result = readData(
       await firstValueFrom(
-        this.api.call('query_metrics_api_v1_analytics_query_post', { body }),
+        signal ? request.pipe(takeUntil(fromEvent(signal, 'abort'))) : request,
       ),
       readMetric,
     );

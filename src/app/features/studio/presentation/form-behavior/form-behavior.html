@@ -1,6 +1,5 @@
 @let vm = view();
-@if (vm.hasChoices()) {
-  <h3>{{ "Option source" | localize }}</h3>
+@if (vm.hasChoices() && mode() !== "calculation") {
   @if (vm.source()["kind"] === "remote") {
     <p>
       {{
@@ -36,54 +35,16 @@
       </option>
       <option value="domain">{{ "Authorized selector" | localize }}</option>
     </app-select-control>
-    <h4>{{ "Option dependencies" | localize }}</h4>
-    <ul>
-      @for (dependency of vm.dependencies(); track dependency[0]) {
-        <li>
-          <bdi>{{ dependency[0] }} · {{ dependency[1] }}</bdi
-          ><button
-            pButton
-            type="button"
-            [disabled]="vm.disabled()"
-            (click)="vm.removeDependency(dependency[0])"
-          >
-            {{ "Remove dependency" | localize }}
-          </button>
-        </li>
-      }
-    </ul>
-    <label for="dependency-name">{{ "Dependency name" | localize }}</label>
-    <input
-      id="dependency-name"
-      maxlength="32"
-      [disabled]="vm.disabled()"
-      [(ngModel)]="vm.dependencyName"
-    />
-    <label for="dependency-scope">{{ "Dependency field" | localize }}</label>
-    <app-select-control
-      inputId="dependency-scope"
-      [disabled]="vm.disabled()"
-      [(ngModel)]="vm.dependencyScope"
-    >
-      <option value="">{{ "Choose" | localize }}</option>
-      @for (field of vm.fields(); track field.scope) {
-        <option [value]="field.scope">{{ field.label }}</option>
-      }
-    </app-select-control>
-    <button
-      pButton
-      type="button"
-      [disabled]="vm.disabled() || vm.dependencies().length >= 8"
-      (click)="vm.addDependency()"
-    >
-      {{ "Add dependency" | localize }}
-    </button>
+
     @if (vm.source()["kind"] === "custom") {
-      <app-schema-input
-        controlId="source-choices"
+      <app-form-choice-rows
+        [allowTypeChange]="vm.node()['component'] === 'choice'"
         [disabled]="vm.disabled()"
-        [schema]="vm.choicesSchema"
+        [identity]="vm.path().join('.')"
+        [schema]="vm.constraints()"
         [value]="vm.source()['items']"
+        (changed)="vm.changed.emit()"
+        (validity)="vm.choiceValid.set($event)"
         (valueChange)="vm.sourcePatch('items', $event)"
       />
     }
@@ -99,10 +60,55 @@
         <option value="work_groups">{{ "Work groups" | localize }}</option>
       </app-select-control>
     }
+    <details>
+      <summary>{{ "Option dependencies" | localize }}</summary>
+      <ul>
+        @for (dependency of vm.dependencies(); track dependency[0]) {
+          <li>
+            <bdi>{{ dependency[0] }} · {{ dependency[1] }}</bdi
+            ><button
+              pButton
+              type="button"
+              [disabled]="vm.disabled()"
+              (click)="vm.removeDependency(dependency[0])"
+            >
+              {{ "Remove dependency" | localize }}
+            </button>
+          </li>
+        }
+      </ul>
+      <label for="dependency-name">{{ "Dependency name" | localize }}</label>
+      <input
+        id="dependency-name"
+        maxlength="32"
+        [disabled]="vm.disabled()"
+        [(ngModel)]="vm.dependencyName"
+      />
+      <label for="dependency-scope">{{ "Dependency field" | localize }}</label>
+      <app-select-control
+        inputId="dependency-scope"
+        [disabled]="vm.disabled()"
+        [(ngModel)]="vm.dependencyScope"
+      >
+        <option value="">{{ "Choose" | localize }}</option>
+        @for (field of vm.fields(); track field.scope) {
+          <option [value]="field.scope">{{ field.label }}</option>
+        }
+      </app-select-control>
+      <button
+        pButton
+        type="button"
+        [disabled]="vm.disabled() || vm.dependencies().length >= 8"
+        (click)="vm.addDependency()"
+      >
+        {{ "Add dependency" | localize }}
+      </button>
+    </details>
   }
 }
-@if (vm.node()["component"] === "calculated") {
+@if (vm.node()["component"] === "calculated" && mode() !== "choices") {
   <h3>{{ "Registered calculation" | localize }}</h3>
+  <p>{{ "Value type" | localize }}: {{ vm.calculationResult() | localize }}</p>
   <label for="calculation-function">{{ "Function" | localize }}</label>
   <app-select-control
     inputId="calculation-function"
@@ -134,26 +140,28 @@
   >
     {{ "Set function" | localize }}
   </button>
-  <h3>{{ "Calculation expression" | localize }}</h3>
-  <p>
-    {{
-      "Expressions are validated by the server and never executed as JavaScript."
-        | localize
-    }}
-  </p>
-  <label for="calculation-expression">{{ "Expression" | localize }}</label>
-  <textarea
-    id="calculation-expression"
-    maxlength="1024"
-    [disabled]="vm.disabled()"
-    [(ngModel)]="vm.expression"
-  ></textarea>
-  <button
-    pButton
-    type="button"
-    [disabled]="vm.disabled()"
-    (click)="vm.setExpression()"
-  >
-    {{ "Set expression" | localize }}
-  </button>
+  @if (vm.expressionAvailable()) {
+    <h3>{{ "Calculation expression" | localize }}</h3>
+    <p>
+      {{
+        "Expressions are validated by the server and never executed as JavaScript."
+          | localize
+      }}
+    </p>
+    <label for="calculation-expression">{{ "Expression" | localize }}</label>
+    <textarea
+      id="calculation-expression"
+      maxlength="1024"
+      [disabled]="vm.disabled()"
+      [(ngModel)]="vm.expression"
+    ></textarea>
+    <button
+      pButton
+      type="button"
+      [disabled]="vm.disabled()"
+      (click)="vm.setExpression()"
+    >
+      {{ "Set expression" | localize }}
+    </button>
+  }
 }

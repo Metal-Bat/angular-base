@@ -6,7 +6,6 @@ import {
   Injectable,
   signal,
 } from '@angular/core';
-import { ActorState } from '../auth/actor-state';
 export const themePalettes = [
   { key: 'blue', name: 'Blue' },
   { key: 'indigo', name: 'Indigo' },
@@ -16,6 +15,7 @@ export const themePalettes = [
   { key: 'rose', name: 'Rose' },
   { key: 'amber', name: 'Amber' },
 ] as const;
+export const themeStorageKey = 'workspace.public-theme';
 export type ThemePalette = (typeof themePalettes)[number]['key'];
 @Injectable({ providedIn: 'root' })
 export class ColorScheme {
@@ -36,7 +36,7 @@ export class ColorScheme {
     () => `${this.palette()}-${this.dark() ? 'dark' : 'light'}`,
   );
   constructor() {
-    const release = inject(ActorState).register(() => this.reset());
+    this.restore();
     const changed = (): void => {
       if (this.mode() === 'system') {
         this.dark.set(this.media?.matches ?? false);
@@ -45,13 +45,8 @@ export class ColorScheme {
     };
     this.media?.addEventListener('change', changed);
     inject(DestroyRef).onDestroy(() => {
-      release();
       this.media?.removeEventListener('change', changed);
     });
-  }
-  reset(): void {
-    this.palette.set('blue');
-    this.setMode('light');
   }
   setMode(mode: 'light' | 'dark' | 'system'): void {
     if (
@@ -78,13 +73,35 @@ export class ColorScheme {
     this.mode.set(this.dark() ? 'dark' : 'light');
     this.apply();
   }
-  toggle(): void {
-    this.dark.update((value) => !value);
-    this.mode.set(this.dark() ? 'dark' : 'light');
-    this.apply();
+  private restore(): void {
+    // Only a bounded, nonprivate appearance hint survives logout. Server preferences
+    // remain authoritative after login; no actor identity or other settings are cached.
+    try {
+      const stored =
+        this.document.defaultView?.localStorage.getItem(themeStorageKey);
+      const [palette, mode] = (stored ?? '').split('-');
+      if (
+        stored === `${palette}-${mode}` &&
+        this.palettes.some((item) => item.key === palette) &&
+        ['light', 'dark', 'system'].includes(mode)
+      ) {
+        this.palette.set(palette as ThemePalette);
+        this.setMode(mode as 'light' | 'dark' | 'system');
+      }
+    } catch {
+      // Storage can be unavailable in private/restricted browser contexts.
+    }
   }
   private apply(): void {
     this.document.documentElement.classList.toggle('app-dark', this.dark());
     this.document.documentElement.dataset['palette'] = this.palette();
+    try {
+      this.document.defaultView?.localStorage.setItem(
+        themeStorageKey,
+        `${this.palette()}-${this.mode()}`,
+      );
+    } catch {
+      // Theme switching continues to work when browser storage is unavailable.
+    }
   }
 }

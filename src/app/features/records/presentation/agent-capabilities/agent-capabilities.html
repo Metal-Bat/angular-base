@@ -1,0 +1,76 @@
+<section class="agent-capabilities">
+  <header>
+    <h3>{{ "Selected model capabilities" | localize }}</h3>
+    <button
+      pButton
+      severity="secondary"
+      type="button"
+      [disabled]="busy()"
+      [text]="true"
+      (click)="load()"
+    >
+      {{ "Recheck" | localize }}
+    </button>
+  </header>
+  @if (busy()) {
+    <p role="status">{{ "Loading…" | localize }}</p>
+  }
+  @if (unavailable()) {
+    <p role="alert">
+      {{
+        "Some metadata is unavailable. Re-select a current authorized connection and model before publication."
+          | localize
+      }}
+    </p>
+  }
+  @if (provider(); as selected) {
+    <dl>
+      <div>
+        <dt>{{ "Provider adapter available" | localize }}</dt>
+        <dd>{{ (selected.available ? "Yes" : "No") | localize }}</dd>
+      </div>
+      <div>
+        <dt>{{ "Governed execution" | localize }}</dt>
+        <dd>{{ (selected.governed_execution ? "Yes" : "No") | localize }}</dd>
+      </div>
+      <div>
+        <dt>{{ "Strict spend supported" | localize }}</dt>
+        <dd>
+          {{ (selected.strict_spend_supported ? "Yes" : "No") | localize }}
+        </dd>
+      </div>
+    </dl>
+  }
+  @if (model(); as selected) {
+    <dl>
+      <div>
+        <dt>{{ "Execution adapter available" | localize }}</dt>
+        <dd>{{ (selected.can_execute ? "Yes" : "No") | localize }}</dd>
+      </div>
+      <div>
+        <dt>{{ "Structured output" | localize }}</dt>
+        <dd>
+          {{ (selected.supports_structured_output ? "Yes" : "No") | localize }}
+        </dd>
+      </div>
+      <div>
+        <dt>{{ "Tools supported" | localize }}</dt>
+        <dd>{{ (selected.supports_tools ? "Yes" : "No") | localize }}</dd>
+      </div>
+      <div>
+        <dt>{{ "Region" | localize }}</dt>
+        <dd>{{ selected.region ?? ("Unknown" | localize) }}</dd>
+      </div>
+      <div>
+        <dt>{{ "Provider retention" | localize }}</dt>
+        <dd>{{ selected.provider_retention | localize }}</dd>
+      </div>
+    </dl>
+  }
+  <p class="capability-note">
+    {{
+      "Capabilities are metadata, not publication or execution approval. The server also checks the current connection, price and effective limits."
+        | localize
+    }}
+  </p>
+</section>

@@ -1,3 +1,6 @@
+import { actionAvailable } from '../../domain/action-availability';
+import type { MenuItem } from 'primeng/api';
+import { ResourceActionMenu } from './resource-action-menu';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -39,6 +42,7 @@ import {
   actionContext,
   actionErrors,
   actionInput,
+  actionTargetTitle,
   inputSchema,
   knownTarget,
   pageInput,
@@ -49,6 +53,7 @@ import { ReferencePicker } from '../reference-picker/reference-picker';
 @Component({
   selector: 'app-resource-actions',
   imports: [
+    ResourceActionMenu,
     FormsModule,
     ButtonModule,
     DialogModule,
@@ -63,6 +68,7 @@ import { ReferencePicker } from '../reference-picker/reference-picker';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ResourceActions {
+  readonly extraActions = input<readonly MenuItem[]>([]);
   private readonly actor = inject(ActorState);
   private readonly api = inject(ADMIN_API);
   private readonly session = inject(SessionContext);
@@ -97,6 +103,7 @@ export class ResourceActions {
       .commands(this.group())
       .filter((command) => {
         if (
+          !actionAvailable(command, this.group(), this.row()) ||
           actor.status !== 'authenticated' ||
           !hasPermissions(actor.permissions, [command.permission])
         ) {
@@ -146,14 +153,7 @@ export class ResourceActions {
       ? (value as JsonObject)
       : null;
   });
-  readonly targetTitle = computed(() =>
-    String(
-      this.row()['name'] ||
-        this.row()['task_name'] ||
-        this.row()['code'] ||
-        'Current record',
-    ),
-  );
+  readonly targetTitle = computed(() => actionTargetTitle(this.row()));
   constructor() {
     const release = inject(ActorState).register(() => this.clear());
     inject(DestroyRef).onDestroy(() => {
@@ -267,10 +267,7 @@ export class ResourceActions {
     if (this.busy()) {
       return;
     }
-    if (
-      !this.dirty ||
-      (await this.feedback.confirm('Discard unsaved changes?'))
-    ) {
+    if (await this.canLeave()) {
       this.command.set(null);
       this.input.set({ body: {}, path: {}, query: {} });
       this.errors.set({});
@@ -348,7 +345,8 @@ export class ResourceActions {
       generation === this.generation &&
       actor.status === 'authenticated' &&
       this.actor.epoch === epoch &&
-      hasPermissions(actor.permissions, [command.permission])
+      hasPermissions(actor.permissions, [command.permission]) &&
+      actionAvailable(command, this.group(), this.row())
     );
   }
   private accept(

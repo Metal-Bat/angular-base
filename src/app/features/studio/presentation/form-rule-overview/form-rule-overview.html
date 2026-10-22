@@ -1,0 +1,25 @@
+<h2>{{ "Rules" | localize }}</h2>
+<p>{{ "Choose the field affected by a rule." | localize }}</p>
+@if (disabled()) {
+  <p role="status">
+    {{ "Apply pending edits before choosing another field." | localize }}
+  </p>
+}
+<ul>
+  @for (row of rows(); track row.identity) {
+    <li>
+      <button
+        pButton
+        severity="secondary"
+        type="button"
+        [attr.aria-pressed]="row.active"
+        [disabled]="disabled()"
+        [outlined]="true"
+        (click)="selectedChange.emit(row.path)"
+      >
+        <span>{{ (row.path.length ? row.label : "The form") | localize }}</span
+        ><span>{{ "Rules" | localize }}: {{ row.count }}</span>
+      </button>
+    </li>
+  }
+</ul>

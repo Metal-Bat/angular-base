@@ -2,10 +2,16 @@
   [attr.dir]="document().locale.direction"
   [attr.lang]="document().locale.language"
 >
+  @if (navigationError()) {
+    <p role="status">{{ navigationError() | localize }}</p>
+  }
   @if (pages().length > 1 && document().purpose !== "print") {
     <nav [attr.aria-label]="'Form pages' | localize">
       <h2>{{ pages()[page()].title }}</h2>
-      <span>{{ page() + 1 }} / {{ pages().length }}</span>
+      <span
+        >{{ locale.number(page() + 1) }} /
+        {{ locale.number(pages().length) }}</span
+      >
       <button
         pButton
         severity="secondary"
@@ -48,18 +54,25 @@
     />
   }
   @if (document().before; as before) {
-    <details>
+    <details #prior (toggle)="priorExpanded.set(prior.open)">
       <summary>{{ "Previous submission" | localize }}</summary>
-      <dl>
-        @for (field of document().fields; track field.scope) {
-          @if (!field.scope.includes("/items")) {
-            <dt>{{ field.scope }}</dt>
+      @if (priorExpanded()) {
+        <dl>
+          @for (field of previousFields(); track field.scope) {
+            <dt>
+              {{ labels()[field.scope] || ("Field unavailable" | localize) }}
+            </dt>
             <dd>
-              <bdi>{{ fieldValue(before, field.scope) | valueText }}</bdi>
+              <app-form-value
+                [kinds]="kinds()"
+                [labels]="labels()"
+                [scope]="field.scope"
+                [value]="fieldValue(before, field.scope)"
+              />
             </dd>
           }
-        }
-      </dl>
+        </dl>
+      }
     </details>
   }
 </section>

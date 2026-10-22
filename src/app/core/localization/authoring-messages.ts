@@ -1,4 +1,8 @@
+import workflowAuthoringMessages from './workflow-authoring-messages.json';
+import formAuthoringMessages from './form-authoring-messages.json';
 export const authoringMessages: Readonly<Record<string, string>> = {
+  ...formAuthoringMessages,
+  ...workflowAuthoringMessages,
   'Pending edits are retained on another step.':
     'ویرایش‌های در انتظار روی مرحلهٔ دیگر حفظ شده‌اند.',
   'Return to pending edits': 'بازگشت به ویرایش‌های در انتظار',
@@ -108,6 +112,22 @@ export const authoringMessages: Readonly<Record<string, string>> = {
     'پیش از ذخیره، تغییرات ویرایشگر را اعمال کنید.',
   'Apply properties': 'اعمال ویژگی‌ها',
   'Apply translation': 'اعمال ترجمه',
+  'Edit translation': 'ویرایش ترجمه',
+  Outcome: 'نتیجه',
+  'The registered type label is unavailable.':
+    'عنوان نوع ثبت‌شده در دسترس نیست.',
+  'Report label issue': 'گزارش مشکل عنوان',
+  'Registered step details': 'جزئیات نوع گام ثبت‌شده',
+  'Choose a declared outcome': 'یک نتیجه تعریف‌شده انتخاب کنید',
+  'Choose a declared outcome for an action field.':
+    'برای فیلد اقدام، یک نتیجه تعریف‌شده انتخاب کنید.',
+  'This form has no declared outcomes. Its outcome contract must be configured before this action can be used.':
+    'این فرم نتیجه تعریف‌شده‌ای ندارد. پیش از استفاده از این اقدام، قرارداد نتایج آن باید تنظیم شود.',
+  'Discard translation edits': 'لغو ویرایش ترجمه',
+  'This label is translated. Edit its translations in Languages and settings.':
+    'این عنوان ترجمه شده است. ترجمه‌های آن را در زبان‌ها و تنظیمات ویرایش کنید.',
+  'Apply or discard translation edits before opening another translation.':
+    'پیش از باز کردن ترجمه دیگر، ویرایش‌های ترجمه را اعمال یا لغو کنید.',
   'As of': 'تا زمان',
   'Authorized selector': 'انتخابگر مجاز',
   'Behavior rules': 'قوانین رفتار',

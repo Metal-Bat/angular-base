@@ -1,8 +1,10 @@
 <h3>{{ "Control transitions" | localize }}</h3>
 <p>
   {{
-    "Higher priorities are evaluated first; default is the final else."
-      | localize
+    (parallel()
+      ? "ALL split starts every eligible route, including an eligible default route."
+      : "Higher priorities are evaluated first; default is the final else."
+    ) | localize
   }}
 </p>
 <label for="transition-selection">{{ "Transition to edit" | localize }}</label>
@@ -39,11 +41,54 @@
   <label for="transition-condition">{{ "Condition" | localize }}</label>
   <input
     id="transition-condition"
+    maxlength="1024"
     pInputText
     [disabled]="disabled()"
     [ngModel]="draft()['condition'] || ''"
     (ngModelChange)="update('condition', $event || null)"
   />
+  @if (values().length) {
+    <label for="condition-value-path">{{
+      "Authorized condition value" | localize
+    }}</label>
+    <app-select-control
+      inputId="condition-value-path"
+      [ariaLabel]="'Authorized condition value' | localize"
+      [disabled]="disabled()"
+      [(ngModel)]="valuePath"
+    >
+      <option value="">{{ "Choose a value" | localize }}</option>
+      @for (path of blockedValues(); track path) {
+        <option [disabled]="true" [value]="path">
+          {{ path }} · {{ "Requires a typed request mapping" | localize }}
+        </option>
+      }
+      @for (path of values(); track path) {
+        <option [value]="path">{{ path }}</option>
+      }
+    </app-select-control>
+    <p>
+      {{
+        "Request fields need a typed request data mapping before the producer can validate their expressions."
+          | localize
+      }}
+    </p>
+    <button
+      pButton
+      severity="secondary"
+      type="button"
+      [disabled]="disabled() || !valuePath()"
+      (click)="insertPath()"
+    >
+      {{ "Insert value path" | localize }}
+    </button>
+    <p>
+      {{
+        "Complete a boolean condition using these authorized values. Validate the graph before publication."
+          | localize
+      }}
+    </p>
+  }
   <button
     pButton
     type="button"

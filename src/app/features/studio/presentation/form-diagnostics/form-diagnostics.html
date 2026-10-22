@@ -1,0 +1,93 @@
+@let vm = view();
+
+@if (vm.diagnostics()) {
+  <section
+    class="issues-tray"
+    [attr.aria-label]="'Validation diagnostics' | localize"
+  >
+    <h2>{{ "Diagnostics" | localize }}</h2>
+    <p role="status">
+      {{ "Errors" | localize }}: {{ locale.number(errors()) }} ·
+      {{ "Warnings" | localize }}: {{ locale.number(warnings()) }}
+    </p>
+    <ul>
+      @for (issue of rows(); track $index) {
+        <li>
+          <p>
+            <strong>{{ issue.severity | localize }}</strong> ·
+            <bdi>{{ issue.label | localize }}</bdi>
+          </p>
+          <p>{{ issue.message | localize }}</p>
+          <button
+            pButton
+            severity="secondary"
+            type="button"
+            [disabled]="vm.busy()"
+            [outlined]="true"
+            (click)="goToIssue(issue)"
+          >
+            {{ (issue.path ? "Go to field" : "Go to settings") | localize }} ·
+            <bdi>{{ issue.label | localize }}</bdi>
+          </button>
+        </li>
+      } @empty {
+        <li>
+          {{ "No issues were returned." | localize }}
+        </li>
+      }
+    </ul>
+    <p class="validation-result" role="status">
+      {{ resultLabel() | localize }}
+    </p>
+    @if (inspection().length) {
+      <dl class="inspection-fields">
+        @for (field of inspection(); track $index) {
+          <dt>
+            <bdi>{{ field.label }}</bdi>
+          </dt>
+          <dd>
+            <bdi>{{ field.value | localize }}</bdi>
+          </dd>
+        }
+      </dl>
+    }
+  </section>
+}
+
+<details [open]="rows().length === 0">
+  <summary>{{ "Options and navigation preview" | localize }}</summary>
+  <app-form-interaction-preview [view]="vm" />
+</details>
+
+<details>
+  <summary>{{ "Advanced inspection" | localize }}</summary>
+
+  <button
+    pButton
+    severity="secondary"
+    type="button"
+    [disabled]="vm.busy()"
+    [outlined]="true"
+    (click)="vm.inspect('schema')"
+  >
+    {{ "Render contract" | localize }}</button
+  ><button
+    pButton
+    severity="secondary"
+    type="button"
+    [disabled]="vm.busy()"
+    [outlined]="true"
+    (click)="vm.inspect('fields')"
+  >
+    {{ "Field catalog" | localize }}</button
+  ><button
+    pButton
+    severity="secondary"
+    type="button"
+    [disabled]="vm.busy()"
+    [outlined]="true"
+    (click)="vm.inspect('behavior')"
+  >
+    {{ "Evaluate behavior" | localize }}
+  </button>
+</details>

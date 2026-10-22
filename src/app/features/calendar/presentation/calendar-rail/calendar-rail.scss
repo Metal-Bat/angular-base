@@ -1,0 +1,89 @@
+:host {
+  display: block;
+  min-inline-size: 0;
+}
+.calendar-rail {
+  margin-block: 1rem;
+  border: 1px solid var(--console-border);
+  border-radius: 0.75rem;
+}
+summary {
+  display: none;
+  padding: 0.75rem;
+  cursor: pointer;
+}
+.rail-content {
+  padding: 0.75rem;
+}
+.mini-navigation {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.875rem;
+}
+.mini-navigation button {
+  padding: 0;
+  inline-size: 2rem;
+  block-size: 2rem;
+  margin: 0;
+}
+.mini-days {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0.125rem;
+  text-align: center;
+  margin-block: 0.5rem 1rem;
+}
+.mini-days span {
+  color: var(--console-muted);
+  font-size: 0.8125rem;
+}
+.mini-days button {
+  padding: 0;
+  min-inline-size: 0;
+  block-size: 2rem;
+  min-block-size: 2rem;
+  font-size: 0.875rem;
+  margin: 0;
+}
+.mini-days [aria-current="date"] {
+  box-shadow: inset 0 0 0 2px var(--console-accent);
+}
+.mini-days .adjacent {
+  color: var(--console-muted);
+}
+.sources {
+  border: 0;
+  padding: 0;
+  margin: 0;
+}
+.sources legend {
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-block-end: 0.5rem;
+}
+.sources > div {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  min-block-size: var(--workspace-control-height);
+}
+.sources label {
+  cursor: pointer;
+}
+@media (max-width: 64rem) {
+  summary {
+    display: list-item;
+  }
+  .mini-days {
+    max-inline-size: 22rem;
+  }
+  .mini-days button,
+  .mini-navigation button {
+    min-block-size: 2.875rem;
+  }
+  .mini-navigation button {
+    min-inline-size: 2.875rem;
+  }
+}

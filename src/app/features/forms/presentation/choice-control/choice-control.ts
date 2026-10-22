@@ -1,10 +1,12 @@
 import { SelectControl } from '../../../../shared/ui/select-control/select-control';
+import { InputTextModule } from 'primeng/inputtext';
 import { ButtonDirective } from 'primeng/button';
 import { fieldSchema, keysAt, rowValue } from '../../domain/row-values';
 import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  DestroyRef,
   effect,
   inject,
   input,
@@ -32,8 +34,15 @@ import {
 @Component({
   host: { class: 'console-fragment' },
   selector: 'app-choice-control',
-  imports: [SelectControl, ButtonDirective, FormsModule, LocalizePipe],
+  imports: [
+    SelectControl,
+    ButtonDirective,
+    InputTextModule,
+    FormsModule,
+    LocalizePipe,
+  ],
   templateUrl: './choice-control.html',
+  styleUrl: './choice-control.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ChoiceControl {
@@ -46,9 +55,11 @@ export class ChoiceControl {
   readonly indices = input<readonly number[]>([]);
   readonly disabled = input(false);
   readonly invalid = input(false);
+  readonly required = input(false);
   readonly edit = output<FieldEdit>();
   readonly locale = inject(Locale);
   private readonly optionsApi = inject(RUNTIME_OPTIONS);
+  private definitionIdentity: object | undefined;
   readonly value = computed(() =>
     this.node().scope
       ? rowValue(this.data(), this.node().scope!, this.indices())
@@ -79,11 +90,30 @@ export class ChoiceControl {
   readonly optionState = signal<'idle' | 'loading' | 'error' | 'ready'>('idle');
   readonly options = signal<OptionPage | null>(null);
   readonly search = signal('');
+  readonly searchOpen = signal(false);
+  readonly statusMessage = computed(() => {
+    if (this.optionState() === 'loading') {
+      return 'Loading…';
+    }
+    if (this.optionState() === 'error') {
+      return 'The service is unavailable.';
+    }
+    const state = this.options()?.state;
+    return state === 'BLOCKED'
+      ? 'Complete the dependent fields first'
+      : state === 'EMPTY'
+        ? 'No options'
+        : state === 'CLIENT_FETCH'
+          ? 'This option source is not supported'
+          : '';
+  });
   readonly page = signal(1);
   private readonly reload = signal(0);
   readonly multiple = computed(
     () =>
-      this.schema()['type'] === 'array' ||
+      (Array.isArray(this.schema()['type'])
+        ? (this.schema()['type'] as readonly string[]).includes('array')
+        : this.schema()['type'] === 'array') ||
       (this.node().display['options'] as JsonObject | undefined)?.[
         'multiple'
       ] === true,
@@ -107,7 +137,27 @@ export class ChoiceControl {
       (key) => !this.options()?.items.some((option) => option.key === key),
     ),
   );
+  readonly membershipChecked = computed(
+    () =>
+      this.optionState() === 'ready' &&
+      ['READY', 'EMPTY'].includes(this.options()?.state ?? ''),
+  );
   choose(value: string | string[]): void {
+    if (this.optionState() !== 'ready') {
+      return;
+    }
+    const available =
+      this.options()?.state === 'READY'
+        ? this.options()!.items.map((option) => option.key)
+        : [];
+    const allowed = new Set([
+      ...available,
+      ...(this.multiple() ? this.selectedKeys() : []),
+    ]);
+    const keys = Array.isArray(value) ? value : [value];
+    if (keys.some((key) => !allowed.has(key))) {
+      return;
+    }
     if (Array.isArray(value)) {
       this.set(value.map(decodeChoice));
     } else if (value) {
@@ -125,7 +175,16 @@ export class ChoiceControl {
       ),
   );
   constructor() {
+    inject(DestroyRef).onDestroy(() => {
+      this.coordinator.close();
+      this.options.set(null);
+    });
     effect((onCleanup) => {
+      const definition = this.optionsApi.definitionIdentity?.();
+      if (definition !== this.definitionIdentity) {
+        this.definitionIdentity = definition;
+        this.coordinator.reset();
+      }
       if (this.disabled()) {
         return;
       }
@@ -143,7 +202,6 @@ export class ChoiceControl {
             : (Array.isArray(value) ? value : [value]).map(encodeChoice),
       };
       this.optionState.set('loading');
-      this.options.set(null);
       let active = true;
       const timer = setTimeout((): void => {
         void this.coordinator
@@ -156,6 +214,7 @@ export class ChoiceControl {
           })
           .catch((): void => {
             if (active) {
+              this.options.set(null);
               this.optionState.set('error');
             }
           });
@@ -166,6 +225,20 @@ export class ChoiceControl {
         this.coordinator.close();
       });
     });
+  }
+  missingLabel(key: string): string {
+    const value = decodeChoice(key);
+    if (
+      typeof value === 'string' &&
+      ['user', 'group'].includes(this.node().component)
+    ) {
+      return this.locale.text('Selection unavailable');
+    }
+    return typeof value === 'boolean'
+      ? this.locale.text(value ? 'Yes' : 'No')
+      : typeof value === 'number'
+        ? this.locale.number(value)
+        : String(value);
   }
   reloadOptions(): void {
     this.coordinator.reset();

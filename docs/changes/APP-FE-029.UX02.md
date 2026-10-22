@@ -1,0 +1,9 @@
+# APP-FE-029.UX02 — contextual task commands
+
+2026-10-17. Existing master V33 ownership; APP-FE-029.UX03/04 retain targeted correction and AI/human decision semantics. Full-card status remains IMPLEMENTED_PARTIAL where producer/manual acceptance is outstanding.
+
+[Process/task/Calendar acceptance](../delivery/PROCESS-TASK-CALENDAR-ACCEPTANCE.md) records the scope, preserved failures, current verification receipt location and exact producer gaps. Task supplemental actions move into the current task action area, with focused comment/forward/lifecycle dialogs, confirmed personal state, preserved drafts and actor/focus guards. Named authorized recipient selection replaces copied references. A confirmed forwarding handoff returns to the inbox without reading the recipient's form. AI tool parameters use structured fields; correction feedback retains the existing stable field/row semantics.
+
+No new backend authority, API, schema, migration or automatic command retry is introduced. Ordinary-reviewer recipient discovery is still blocked by the current selector permissions. The final unchanged-source gate and actual acceptance receipts govern the supported verification scope; no deployed/user/master completion is claimed.
+
+Real-service acceptance additionally exposed a transport-reference defect: a full WorkItemDTO contains both its own `ref_id` and its parent's `request_ref_id`, but the shared mutation decoder chose the parent first. Personal actions consequently made the next task-runtime read against a request reference. The owning mutation reference now wins while explicit runtime/attachment owner wrappers retain their mappings. Regression tests cover both DTO and wrapper shapes, and the browser fixture now includes the real parent field rather than omitting it. The original actual-service failures are retained; this is a frontend mapping correction, not a producer change. The touched task labels now have explicit Persian/Arabic translations.

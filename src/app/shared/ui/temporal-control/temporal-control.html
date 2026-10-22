@@ -9,6 +9,7 @@
         [attr.aria-describedby]="describedBy() || null"
         [attr.aria-invalid]="invalid() || !!error()"
         [attr.aria-label]="ariaLabel() || null"
+        [attr.aria-required]="required()"
         [disabled]="disabled()"
         [id]="controlId()"
         [value]="dateText()"
@@ -24,25 +25,11 @@
         [attr.aria-label]="'Choose date' | localize"
         [disabled]="disabled()"
         [outlined]="true"
-        (click)="showCalendar()"
+        (click)="showCalendar($event)"
       >
         <i aria-hidden="true" class="pi pi-calendar"></i>
       </button>
     </div>
-    <app-select-control
-      [ariaLabel]="'Calendar system' | localize"
-      [disabled]="disabled() || !!error()"
-      [inputId]="controlId() + '-calendar'"
-      [ngModel]="calendar()"
-      [ngModelOptions]="{ standalone: true }"
-      (ngModelChange)="calendarChanged($event)"
-    >
-      @for (calendar of calendars; track calendar) {
-        <option [value]="calendar">
-          {{ calendarLabels[calendar] | localize }}
-        </option>
-      }
-    </app-select-control>
   }
   @if (kind() !== "date") {
     <p-datepicker
@@ -50,6 +37,7 @@
       hourFormat="24"
       iconDisplay="input"
       [ariaLabel]="ariaLabel() || 'Time' | localize"
+      [defaultDate]="timeOrigin"
       [disabled]="disabled()"
       [fluid]="true"
       [inputId]="kind() === 'time' ? controlId() : controlId() + '-time'"
@@ -58,6 +46,7 @@
       [ngModelOptions]="{ standalone: true }"
       [pt]="timePt()"
       [readonlyInput]="true"
+      [required]="required()"
       [showIcon]="true"
       [showSeconds]="kind() !== 'datetime-local'"
       [timeOnly]="true"
@@ -101,62 +90,91 @@
     }
   </app-select-control>
 }
-<p-dialog
+<p-popover
+  #datePopup
   appendTo="body"
-  [closeAriaLabel]="'Close' | localize"
-  [header]="'Choose date' | localize"
-  [modal]="true"
-  [style]="{ width: '24rem', maxWidth: 'calc(100vw - 2rem)' }"
-  [(visible)]="opened"
-  (onHide)="restoreDateFocus()"
+  [ariaLabel]="'Choose date' | localize"
+  [pt]="{
+    root: { 'aria-modal': 'false' },
+    content: { style: { padding: '0' } },
+  }"
+  [style]="{
+    width: '24rem',
+    maxWidth: 'calc(100vw - 2rem)',
+  }"
+  (onHide)="opened.set(false); restoreDateFocus()"
+  (onShow)="opened.set(true); fitCalendar()"
 >
-  <div class="calendar-navigation">
-    <button
-      pButton
-      severity="secondary"
-      type="button"
-      [attr.aria-label]="'Previous month' | localize"
-      [disabled]="disabled()"
-      [text]="true"
-      (click)="moveMonth(-1)"
-    >
-      <i aria-hidden="true" class="pi pi-chevron-left"></i>
-    </button>
-    <strong aria-live="polite">{{ monthTitle() }}</strong>
-    <button
-      pButton
-      severity="secondary"
-      type="button"
-      [attr.aria-label]="'Next month' | localize"
-      [disabled]="disabled()"
-      [text]="true"
-      (click)="moveMonth(1)"
-    >
-      <i aria-hidden="true" class="pi pi-chevron-right"></i>
-    </button>
-  </div>
-  <div class="calendar-days" role="group" [attr.aria-label]="monthTitle()">
-    @for (day of weekdays(); track $index) {
-      <span aria-hidden="true">{{ day }}</span>
-    }
-    @for (blank of blanks(); track blank) {
-      <span></span>
-    }
-    <!-- Month-day positions stay stable; their date bindings change with the month. -->
-    @for (day of days(); track $index) {
-      <button
-        pButton
-        type="button"
-        [attr.aria-label]="dayLabel(day)"
-        [attr.aria-pressed]="day === selectedDate()"
-        [attr.data-calendar-day]="day"
-        [disabled]="disabled()"
-        [text]="day !== selectedDate()"
-        (click)="chooseDate(day)"
-        (keydown)="navigateDay($event, day)"
+  <div class="calendar-sheet">
+    <div class="calendar-scroll">
+      <div class="calendar-navigation">
+        <button
+          pButton
+          severity="secondary"
+          type="button"
+          [attr.aria-label]="'Previous month' | localize"
+          [disabled]="disabled()"
+          [text]="true"
+          (click)="moveMonth(-1)"
+        >
+          <i aria-hidden="true" class="pi pi-chevron-left"></i>
+        </button>
+        <strong aria-live="polite">{{ monthTitle() }}</strong>
+        <button
+          pButton
+          severity="secondary"
+          type="button"
+          [attr.aria-label]="'Next month' | localize"
+          [disabled]="disabled()"
+          [text]="true"
+          (click)="moveMonth(1)"
+        >
+          <i aria-hidden="true" class="pi pi-chevron-right"></i>
+        </button>
+      </div>
+      <div class="calendar-days" role="group" [attr.aria-label]="monthTitle()">
+        @for (day of weekdays(); track $index) {
+          <span aria-hidden="true">{{ day }}</span>
+        }
+        @for (blank of blanks(); track blank) {
+          <span></span>
+        }
+        <!-- Month-day positions stay stable; their date bindings change with the month. -->
+        @for (day of days(); track $index) {
+          <button
+            pButton
+            type="button"
+            [attr.aria-label]="dayLabel(day)"
+            [attr.aria-pressed]="day === selectedDate()"
+            [attr.data-calendar-day]="day"
+            [disabled]="disabled()"
+            [text]="day !== selectedDate()"
+            (click)="chooseDate(day)"
+            (keydown)="navigateDay($event, day)"
+          >
+            {{ dayNumber(day) }}
+          </button>
+        }
+      </div>
+    </div>
+    <div class="calendar-settings">
+      <label [for]="controlId() + '-calendar'">{{
+        "Calendar system" | localize
+      }}</label>
+      <app-select-control
+        [ariaLabel]="'Calendar system' | localize"
+        [disabled]="disabled() || !!error()"
+        [inputId]="controlId() + '-calendar'"
+        [ngModel]="calendar()"
+        [ngModelOptions]="{ standalone: true }"
+        (ngModelChange)="calendarChanged($event)"
       >
-        {{ dayNumber(day) }}
-      </button>
-    }
+        @for (calendar of calendars; track calendar) {
+          <option [value]="calendar">
+            {{ calendarLabels[calendar] | localize }}
+          </option>
+        }
+      </app-select-control>
+    </div>
   </div>
-</p-dialog>
+</p-popover>

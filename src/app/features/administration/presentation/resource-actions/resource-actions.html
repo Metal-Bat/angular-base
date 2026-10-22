@@ -1,26 +1,10 @@
-@if (actions().length) {
-  <section class="resource-actions" [attr.aria-label]="'Actions' | localize">
-    <h3>{{ (tools() ? "Additional tools" : "Actions") | localize }}</h3>
-    <div class="action-buttons">
-      @for (action of actions(); track action.id) {
-        <button
-          pButton
-          severity="secondary"
-          type="button"
-          [disabled]="disabled() || busy()"
-          [outlined]="true"
-          (click)="open(action)"
-        >
-          <i
-            aria-hidden="true"
-            [class]="action.mutation ? 'pi pi-bolt' : 'pi pi-eye'"
-          ></i
-          >{{ action.title | localize }}
-        </button>
-      }
-    </div>
-  </section>
-}
+<app-resource-action-menu
+  [actions]="actions()"
+  [additional]="extraActions()"
+  [disabled]="disabled() || busy()"
+  [tools]="tools()"
+  (chosen)="open($event)"
+/>
 <p-dialog
   [closable]="!busy()"
   [closeAriaLabel]="'Close' | localize"

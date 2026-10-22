@@ -1,3 +1,4 @@
+import { publicBrowserStorageCheck } from "./browser-storage-policy.mjs";
 import { Readable } from "node:stream";
 import { pipeline } from "node:stream/promises";
 import { writeBrowserReport } from "./browser-report.mjs";
@@ -53,6 +54,7 @@ const axe =
     ? await readFile("node_modules/axe-core/axe.min.js", "utf8")
     : "";
 const workspace = createWorkspaceFixture();
+const workspaceReadonlyValues = [];
 const foundations = createFoundationsFixture();
 const canvasFixture = createCanvasFixture();
 const recordsFixture = createRecordsFixture();
@@ -241,6 +243,13 @@ const upstream = createServer(async (req, res) => {
       data: null,
       code: 204,
     };
+    if (
+      process.env.WORKSPACE_BROWSER_CHECKS === "1" &&
+      req.method === "GET" &&
+      req.url.split("?")[0].endsWith("/runtime")
+    ) {
+      workspaceReadonlyValues.push(result.data?.data?.approved);
+    }
   } else {
     result = { success: true, data: null, code: 204 };
   }
@@ -271,8 +280,14 @@ const script = `
  const wait = async (predicate, name) => { for (let i=0;i<200;i++) { if(predicate()) return; await new Promise(r=>setTimeout(r,25)); } throw Error('Timed out: '+name+' dropdowns='+JSON.stringify({expanded:[...document.querySelectorAll('[role="combobox"][aria-expanded="true"]')].map(item=>item.id),animations:[...document.querySelectorAll('.p-select-overlay, .p-multiselect-overlay')].flatMap(item=>item.getAnimations({subtree:true}).filter(animation=>animation.playState==='running').map(animation=>({state:animation.playState,name:animation.animationName??animation.transitionProperty, duration:animation.effect?.getTiming().duration})))})); };
  const text = () => document.querySelector('main')?.textContent ?? '';
  const themeControl=()=>document.querySelector('[data-theme-picker] [role="combobox"]');
+ const openPreferences=async()=>{
+  const details=document.querySelector('app-workspace-preferences details');
+  if(details&&!details.open){details.querySelector('summary').click();await wait(()=>details.open,'display settings open');}
+  await wait(()=>themeControl()?.getClientRects().length,'visible theme control');
+ };
  const dropdownsIdle=()=>!document.querySelector('[role="combobox"][aria-expanded="true"]') && Array.from(document.querySelectorAll('.p-select-overlay, .p-multiselect-overlay')).every(overlay=>overlay.getAnimations({subtree:true}).every(animation=>animation.playState!=='running'));
  const chooseTheme=async value=>{
+  await openPreferences();
   await wait(dropdownsIdle,'previous dropdown closed');
   const control=themeControl();check(control,'PrimeNG theme combobox');
   control.focus();control.click();await wait(()=>control.getAttribute('aria-expanded')==='true','theme popup');
@@ -284,6 +299,7 @@ const script = `
   await wait(dropdownsIdle,'theme overlay removed');
  };
  const chooseLanguage=async value=>{
+  await openPreferences();
   await wait(dropdownsIdle,'previous language dropdown closed');
   const picker=document.querySelector('[data-language-picker]');
   const source=picker.querySelector('select');
@@ -354,6 +370,7 @@ const script = `
   check(sample.querySelectorAll('table').length===2 && sample.textContent.includes('No records'),'empty and populated tables');
 
   await auditAccessibility('shared-ui-light');
+  await openPreferences();
   const themePicker=themeControl();check(themePicker?.getAttribute('aria-label')==='Theme','theme accessible name');
   const languageSelect=document.querySelector('[data-language-picker] p-select');
   const themeSelect=document.querySelector('[data-theme-picker]');
@@ -370,7 +387,7 @@ const script = `
   await auditAccessibility('theme-picker-open');
   themePicker.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',code:'Escape',bubbles:true}));
   await wait(()=>themePicker.getAttribute('aria-expanded')==='false','theme escape');
-  await wait(dropdownsIdle,'theme escape animation complete');
+  await wait(()=>dropdownsIdle()&&themePicker.getAttribute('aria-disabled')!=='true','theme escape animation complete and keyboard ready');
   check(document.activeElement===themePicker,'theme focus restored');
   themePicker.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowDown',code:'ArrowDown',bubbles:true}));
   await wait(()=>themePicker.getAttribute('aria-expanded')==='true','keyboard theme open');
@@ -428,7 +445,7 @@ const script = `
   await chooseTheme('blue-dark');
   check(document.documentElement.dataset.palette==='blue'&&document.documentElement.classList.contains('app-dark'),'RTL selection preserved');
   await auditAccessibility('shared-ui-persian-dark');
-  check(getComputedStyle(prime).fontFamily.includes('Yekan'),'Persian font stack missing on PrimeNG');check(getComputedStyle(material).fontFamily.includes('Yekan'),'Persian font stack missing on Material');check(getComputedStyle(ant).fontFamily.includes('Yekan')&&ant.closest('.ant-design').dir==='rtl'&&ant.value==='Ant ۱۲۳','Ant Persian font, direction and preserved input');
+  check(getComputedStyle(prime).fontFamily.includes('Vazirmatn'),'Persian font stack missing on PrimeNG');check(getComputedStyle(material).fontFamily.includes('Vazirmatn'),'Persian font stack missing on Material');check(getComputedStyle(ant).fontFamily.includes('Vazirmatn')&&ant.closest('.ant-design').dir==='rtl'&&ant.value==='Ant ۱۲۳','Ant Persian font, direction and preserved input');
   const languagePicker=document.querySelector('[data-language-picker] select');check(languagePicker.options.length===3,'language dropdown');await chooseLanguage('ar');await wait(()=>document.documentElement.lang==='ar'&&sample.textContent.includes('عناصر النموذج')&&!languagePicker.disabled,'Arabic language and catalog rendered');check(document.documentElement.dir==='rtl','Arabic direction');check(sample.textContent.includes('عناصر النموذج'),'Arabic catalog');check(themeControl().getAttribute('aria-label')==='المظهر'&&themeControl().textContent.includes('أزرق'),'Arabic theme labels');check(prime.value==='Ali ۱۲۳'&&material.value==='Review','Arabic changed canonical values');await auditAccessibility('shared-ui-arabic-dark');await chooseLanguage('fa');await wait(()=>document.documentElement.lang==='fa'&&!languagePicker.disabled,'Persian restore');
 
   window.fixtureStage='prime-dialog';
@@ -486,7 +503,7 @@ const script = `
   await wait(()=>document.querySelector('main a[href^="/operations/tasks/"]'),'Inbox ready after audit');document.querySelector('main a[href^="/operations/tasks/"]').click();
   await wait(()=>button('Claim') && !button('Claim').disabled,'observer task'); check(!button('Approve'),'observer decision controls');
   window.fixtureStage='claim'; button('Claim').click(); await wait(()=>button('Approve') && button('Save'),'claimed authorized task');
-  const readonly=document.getElementById('field-'+encodeURIComponent('/approved')); check(readonly?.tagName==='OUTPUT' && readonly.textContent.includes('false'),'readonly boolean');
+  const readonly=document.getElementById('field-'+encodeURIComponent('/approved')); check(readonly?.tagName==='OUTPUT' && readonly.textContent.trim()==='No','readable readonly boolean');
   window.fixtureStage='task-save'; input('/amount','150.25'); button('Save').click(); await wait(()=>text().includes('task/saved') && button('Approve'),'filtered save');
   button('Approve').click(); await approveDialog(); await wait(()=>text().includes('COMPLETED') && !button('Approve'),'completed task');
   await fetch('/test-result',{method:'POST',body:JSON.stringify({ok:true, accessibility})});
@@ -553,7 +570,7 @@ const script = `
   await wait(()=>text().includes('Sign in'), 'logout');
   await wait(()=>frame.contentDocument?.querySelector('h1')?.textContent==='Sign in', 'cross-tab logout');
   frame.remove(); await settleLogout(1);
-  check(localStorage.length===0 && sessionStorage.length===0,'persistent credentials');
+  check(${publicBrowserStorageCheck},'persistent credentials');
   await login('fixture-password'); await wait(()=>text().includes('Operations'),'second login');
   await fetch('/test-control?revoke=1'); window.dispatchEvent(new Event('focus')); window.dispatchEvent(new Event('focus'));
   await wait(()=>text().includes('Access denied'),'revoked permission');
@@ -949,6 +966,13 @@ try {
   }
   if (process.env.WORKSPACE_BROWSER_CHECKS === "1") {
     const records = workspace.records;
+    assert.ok(
+      workspaceReadonlyValues.length >= 2,
+      "Observer and claimed runtime reads are required",
+    );
+    for (const value of workspaceReadonlyValues) {
+      assert.equal(value, false, "Readonly canonical boolean changed");
+    }
     assert.ok(
       records.some(
         (call) =>

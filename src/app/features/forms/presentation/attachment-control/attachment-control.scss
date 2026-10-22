@@ -1,0 +1,32 @@
+fieldset {
+  min-inline-size: 0;
+}
+.attachment-items {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 1rem;
+}
+.attachment-items > li {
+  border: 1px solid var(--console-border);
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  min-inline-size: 0;
+}
+p {
+  overflow-wrap: anywhere;
+}
+.attachment-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-block: 0.75rem;
+}
+.attachment-inputs {
+  display: grid;
+  gap: 0.5rem;
+}
+fieldset:focus {
+  outline: 2px solid var(--p-primary-color);
+  outline-offset: 3px;
+}

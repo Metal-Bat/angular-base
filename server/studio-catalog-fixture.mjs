@@ -1,6 +1,9 @@
-import { formPreviewFixture } from "./form-preview-fixture.mjs";
+import {
+  formOptionsFixture,
+  formPreviewFixture,
+} from "./form-preview-fixture.mjs";
 // Disposable catalogs: no requests are sent to the user's backend.
-export function createStudioCatalogFixture() {
+export function createStudioCatalogFixture({ typedChoice = false } = {}) {
   const calls = [];
   const roots = [
     "forms",
@@ -36,6 +39,27 @@ export function createStudioCatalogFixture() {
       ],
     ]),
   );
+  Object.assign(rows.get("clients")[0], {
+    kind: "WEB",
+    platform: "browser",
+    confidential: true,
+  });
+  Object.assign(rows.get("client-releases")[0], {
+    api_version: "1",
+    renderer_capabilities: ["forms/1"],
+    client_ref_id: "fixture-clients-v1",
+  });
+  Object.assign(rows.get("request-types")[0], {
+    form_ref_id: "fixture-forms-v1",
+    workflow_ref_id: "fixture-workflows-v1",
+    client_targets: [
+      {
+        client_ref_id: "fixture-clients-v1",
+        minimum_release: "1.0.0",
+        maximum_release_exclusive: null,
+      },
+    ],
+  });
   Object.assign(rows.get("form-versions")[0], {
     data_schema: { type: "object", properties: { name: { type: "string" } } },
     render_schema: {
@@ -53,6 +77,23 @@ export function createStudioCatalogFixture() {
       },
     },
   });
+  if (typedChoice) {
+    const form = rows.get("form-versions")[0];
+    form.data_schema.properties.decision = {
+      type: ["string", "number", "boolean"],
+    };
+    form.render_schema.root.children.push({
+      component: "choice",
+      node_key: "decision",
+      label: "Decision",
+      scope: "/properties/decision",
+      source: {
+        kind: "custom",
+        items: [{ key: "option1", value: "Option 1" }],
+      },
+    });
+  }
+
   rows.get("workflows").push({
     ...rows.get("workflows")[0],
     ref_id: "fixture-empty-workflow",
@@ -73,6 +114,38 @@ export function createStudioCatalogFixture() {
   return {
     calls,
     handle(method, url, raw) {
+      if (
+        method === "POST" &&
+        [
+          "/api/v1/me/saved-views/search",
+          "/api/v1/me/favorites/search",
+        ].includes(url)
+      ) {
+        const body = JSON.parse(raw);
+        return {
+          success: true,
+          result: {
+            items: [],
+            page: body.page,
+            size: body.size,
+            total: 0,
+            total_pages: 0,
+          },
+        };
+      }
+      if (method === "POST" && url === "/api/v1/resource-links") {
+        const body = JSON.parse(raw);
+        return data({
+          ...body,
+          available: true,
+          route_key: body.kind,
+          label: "Example " + body.kind,
+          locator: "fixture-stable-" + body.ref_id,
+        });
+      }
+      if (method === "POST" && url === "/api/v1/forms/options") {
+        return formOptionsFixture(JSON.parse(raw));
+      }
       if (method === "POST" && url === "/api/v1/forms/runtime-preview") {
         const body = JSON.parse(raw);
         calls.push({
@@ -87,6 +160,45 @@ export function createStudioCatalogFixture() {
         url,
         "http://fixture.invalid",
       ).pathname.split("/");
+      if (
+        key === "designer" &&
+        reference === "selectors" &&
+        ["forms", "workflows", "request_types"].includes(action)
+      ) {
+        const body = raw ? JSON.parse(raw) : {};
+        const matches = rows.get(action.replaceAll("_", "-")) ?? [];
+        return page(
+          matches
+            .filter(
+              (row) =>
+                !body.search ||
+                row.name.toLowerCase().includes(body.search.toLowerCase()),
+            )
+            .map((row) => ({ key: row.ref_id, value: row.name })),
+          body,
+        );
+      }
+      if (key === "resource-links" && reference === "selected") {
+        const body = raw ? JSON.parse(raw) : {};
+        const owned = (body.resources ?? []).every((item) =>
+          rows.has(item.kind.replaceAll("_", "-")),
+        );
+        if (!owned) return null;
+        return data(
+          body.resources.map((item) => {
+            const row = rows
+              .get(item.kind.replaceAll("_", "-"))
+              .find((candidate) => candidate.ref_id === item.ref_id);
+            return {
+              kind: item.kind,
+              ref_id: item.ref_id,
+              available: !!row,
+              label: row?.name ?? "",
+              number: row?.number ?? null,
+            };
+          }),
+        );
+      }
       if (key === "designer" && reference === "library") {
         const body = raw ? JSON.parse(raw) : {};
         calls.push({ method, key, reference, action, body });
@@ -157,6 +269,24 @@ export function createStudioCatalogFixture() {
             routing: {},
           },
         });
+      if (reference === "select") {
+        return page(
+          rows
+            .get(key)
+            .filter(
+              (row) =>
+                !body.search ||
+                String(row.name ?? row.version)
+                  .toLowerCase()
+                  .includes(body.search.toLowerCase()),
+            )
+            .map((row) => ({
+              key: row.ref_id,
+              value: row.name ?? row.version,
+            })),
+          body,
+        );
+      }
       if (reference === "search") {
         if (
           key === "workflow-versions" &&
@@ -207,7 +337,7 @@ export const studioCatalogBrowserScript = String.raw`
  const root=()=>document.querySelector('app-resource-catalog');
  const button=(scope,label)=>[...scope.querySelectorAll('button')].find(b=>(b.textContent.trim()||b.getAttribute('aria-label'))===label);
  const click=async(scope,label)=>{await wait(()=>button(scope,label)&&!button(scope,label).disabled,label);button(scope,label).click();await new Promise(r=>setTimeout(r,40));};
- const modal=()=>document.querySelector('.p-dialog');
+ const modal=()=>document.querySelector('.p-dialog') ?? document.querySelector('.page-editor');
  const fill=(id,value)=>{const input=document.getElementById(id);check(input,'Missing '+id);input.value=value;input.dispatchEvent(new Event('input',{bubbles:true}));};
  const navigate=async(key)=>{history.pushState(null,'','/studio/'+key);window.dispatchEvent(new PopStateEvent('popstate'));await wait(()=>root()?.querySelector('h1')?.textContent.trim()===titles[key]&&!root().textContent.includes('Loading…'),key);};
  const titles={'forms':'Forms','workflows':'Workflows','clients':'Clients','request-types':'Request types','form-components':'Reusable components','form-data-types':'Reusable data types','form-versions':'Form versions','workflow-versions':'Workflow versions','client-releases':'Client releases','form-component-versions':'Component versions','form-data-type-versions':'Data type versions'};
@@ -216,6 +346,7 @@ export const studioCatalogBrowserScript = String.raw`
  check(!document.getElementById('author-name'),'Create form displayed under list');
  await auditAccessibility('studio-forms-light');
  const table=root().querySelector('app-record-table');const pager=table.querySelector('nav');check(pager.compareDocumentPosition(table.querySelector('p-table'))&Node.DOCUMENT_POSITION_PRECEDING,'Pagination is not below table');
+ const pageSize=pager.querySelector('[role=combobox]');check(pageSize.textContent.trim()==='25','Saved page size is readable');check(pager.textContent.includes('Page 1 of 2'),'Saved page size governs initial pagination');pageSize.click();await wait(()=>document.getElementById(pageSize.getAttribute('aria-controls')),'Owned page-size options');const sizeList=document.getElementById(pageSize.getAttribute('aria-controls'));const twenty=[...sizeList.querySelectorAll('[role=option]')].find(option=>option.textContent.trim()==='20');check(twenty,'Standard 20-row option');twenty.click();await wait(()=>pageSize.textContent.trim()==='20'&&pager.textContent.includes('Page 1 of 3'),'Explicit pagination size');
  await click(pager,'Last');await wait(()=>pager.textContent.includes('Page 3 of 3'),'last page');await click(pager,'First');await wait(()=>pager.textContent.includes('Page 1 of 3'),'first page');const pageInput=pager.querySelector('input[type="number"]');pageInput.value='2';pageInput.dispatchEvent(new Event('input',{bubbles:true}));await click(pager,'Go');await wait(()=>pager.textContent.includes('Page 2 of 3'),'custom page');await click(pager,'Next');await wait(()=>pager.textContent.includes('Page 3 of 3'),'next page');await click(pager,'Previous');await wait(()=>pager.textContent.includes('Page 2 of 3'),'previous page');await click(pager,'First');await wait(()=>pager.textContent.includes('Page 1 of 3'),'first page restored');
  const headerFilter=table.querySelector('thead button[aria-label="Filter Code"]');check(headerFilter,'Header filter missing');headerFilter.click();await wait(()=>document.querySelector('.column-filter input[name="value"]'),'header filter popup');await wait(()=>document.querySelector('.column-filter')?.contains(document.activeElement),'header filter focus');await auditAccessibility('studio-header-filter-open');const filterForm=document.querySelector('.column-filter');check(filterForm.contains(document.activeElement),'Header filter focus escaped');const filterValue=filterForm.querySelector('input[name="value"]');filterValue.value='example';filterValue.dispatchEvent(new Event('input',{bubbles:true}));await click(filterForm,'Apply');await wait(()=>!document.querySelector('.column-filter')&&table.querySelector('.filter-active'),'header filter applied');await auditAccessibility('studio-header-filter-applied');headerFilter.click();await wait(()=>document.querySelector('.column-filter'),'header filter reopen');await click(document.querySelector('.column-filter'),'Clear');await wait(()=>!document.querySelector('.column-filter')&&!table.querySelector('.filter-active'),'header filter cleared');const sort=table.querySelector('thead button[aria-label="Sort Code"]');sort.click();await wait(()=>table.querySelector('th[aria-sort="ascending"]'),'ascending header');sort.click();await wait(()=>table.querySelector('th[aria-sort="descending"]'),'descending header');sort.click();await wait(()=>!table.querySelector('th[aria-sort="descending"]'),'sort cleared');
 
@@ -223,11 +354,11 @@ export const studioCatalogBrowserScript = String.raw`
  await click(root(),'Create');await wait(()=>modal()?.querySelector('#author-name'),'Create dialog');await auditAccessibility('studio-create-dialog');for(const control of modal().querySelectorAll('input[required],textarea[required],select[required]')){const label=modal().querySelector('label[for="'+control.id+'"]');const star=label?.querySelector('span[aria-hidden="true"]');check(star?.textContent.trim()==='*','Missing required marker '+control.id);check(Math.abs(star.getBoundingClientRect().top-label.getBoundingClientRect().top)<8,'Required marker below label');} 
  await wait(()=>modal()?.contains(document.activeElement),'Create dialog focus');
  check(modal().contains(document.activeElement),'Create dialog focus escaped');
- const rect=modal().getBoundingClientRect();check(Math.abs(rect.x+rect.width/2-document.documentElement.clientWidth/2)<2&&Math.abs(rect.y+rect.height/2-document.documentElement.clientHeight/2)<2,'Create dialog not centered');fill('author-code','added');fill('author-name','Added form');await click(modal(),'Save');await wait(()=>!modal()&&root().textContent.includes('Added form'),'Created detail');
+ check(!document.querySelector('.p-dialog'),'Ordinary creation must be a page');check(modal().querySelector('.page-editor-toolbar'),'Persistent save toolbar missing');fill('author-code','added');fill('author-name','Added form');await click(modal(),'Save');await wait(()=>!modal()&&root().textContent.includes('Added form'),'Created detail');
  await click(root(),'Back to list');await wait(()=>root().querySelector('tbody button[aria-label="Edit"]'),'Studio direct edit');await click(root(),'Edit');await wait(()=>modal()?.querySelector('#author-name'),'Edit dialog');fill('author-name','Renamed form');await click(modal(),'Save');await wait(()=>!modal()&&root().textContent.includes('Renamed form'),'Saved detail');
  await click(root(),'History');await wait(()=>modal()?.querySelector('tbody button'),'Studio history list');await click(modal(),'Open');await wait(()=>modal()?.querySelector('.change-comparison tbody tr'),'Studio history comparison');const historyRow=modal().querySelector('.change-comparison tbody tr');check(historyRow.textContent.includes('Name')&&historyRow.textContent.includes('No value')&&historyRow.textContent.includes('Changed'),'Studio comparison values');check(!modal().querySelector('pre')&&!modal().textContent.includes('hidden'),'Studio raw history or secret');await auditAccessibility('studio-history-comparison',modal());modal().querySelector('.p-dialog-close-button').click();await wait(()=>!modal(),'Studio history closed');
  await click(root(),'Back to list');await wait(()=>root()?.querySelector('tbody button')&&!root().textContent.includes('Loading…'),'Back to list');await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
- await click(root(),'Advanced filters');await click(root(),'Add filter');await wait(()=>root().querySelector('input[data-query-value="0"]'),'Filter');const val=root().querySelector('input[data-query-value="0"]');val.value='example';val.dispatchEvent(new Event('input',{bubbles:true}));await click(root(),'Apply');await wait(()=>!root().textContent.includes('Loading…'),'Apply');val.value='unapplied';val.dispatchEvent(new Event('input',{bubbles:true}));await click(root(),'Preview report');await confirm();await wait(()=>modal()?.textContent.includes('Report preview'),'Report');check(modal().textContent.includes('Renamed form'),'Typed report result');modal().querySelector('.p-dialog-close-button').click();await wait(()=>!modal(),'Report preview closed');check(root().querySelector('tbody').textContent.includes('Renamed form'),'Report replaced list');
+ await click(root(),'Advanced filters');await click(root(),'Add filter');await wait(()=>root().querySelector('input[data-query-value="0"]'),'Filter');const val=root().querySelector('input[data-query-value="0"]');val.value='example';val.dispatchEvent(new Event('input',{bubbles:true}));await click(root().querySelector('app-list-query'),'Apply');await wait(()=>!root().textContent.includes('Loading…'),'Apply');val.value='unapplied';val.dispatchEvent(new Event('input',{bubbles:true}));await click(root(),'Preview report');await confirm();await wait(()=>modal()?.textContent.includes('Report preview'),'Report');check(modal().textContent.includes('Renamed form'),'Typed report result');modal().querySelector('.p-dialog-close-button').click();await wait(()=>!modal(),'Report preview closed');check(root().querySelector('tbody').textContent.includes('Renamed form'),'Report replaced list');
 
  // Creation reuses the existing form and version contracts with a blank document.
  await navigate('forms');await click(root(),'Open');await wait(()=>root().querySelector('a[href*="form-versions"]'),'Form actions');
@@ -268,7 +399,7 @@ export const studioCatalogBrowserScript = String.raw`
  await auditAccessibility('studio-library-template-dialog');await click(modal(),'Cancel');await wait(()=>!modal(),'Cancel template');
  await click(library,'Create template');await wait(()=>modal()?.querySelector('#template-code'),'Template create again');fill('template-code','copied');fill('template-name','Copied definition');await click(modal(),'Create template');await confirm();await wait(()=>!modal(),'Template created');
  await auditAccessibility('studio-library');
- await navigate('form-versions');await click(root(),'Choose parent');await wait(()=>modal()?.querySelector('tbody button'),'Parent dialog');await click(modal(),'Select');await wait(()=>!modal()&&root().querySelector('tbody button'),'Versions');await click(root(),'Open');await wait(()=>button(root(),'Edit'),'Draft detail');await click(root(),'publish');await confirm();await wait(()=>root().textContent.includes('PUBLISHED'),'Published');check(!button(root(),'Edit'),'Published version editable');
+ await navigate('form-versions');await click(root(),'Choose parent');await wait(()=>modal()?.querySelector('tbody button'),'Parent dialog');await click(modal(),'Select');await wait(()=>!modal()&&root().querySelector('tbody button'),'Versions');await click(root(),'Open');await wait(()=>button(root(),'Edit'),'Draft detail');await click(root(),'Actions');await wait(()=>document.querySelector('.p-menu'),'Lifecycle action menu');[...document.querySelectorAll('.p-menu [role=menuitem]')].find(item=>item.textContent.trim()==='publish').querySelector('a').click();await confirm();await wait(()=>root().textContent.includes('PUBLISHED'),'Published');check(!button(root(),'Edit'),'Published version editable');
 
  // Saved and immutable versions use the same runtime renderer in four views.
  check(!root().querySelector('app-form-display'),'Form display loaded before its tab');
@@ -286,6 +417,6 @@ export const studioCatalogBrowserScript = String.raw`
    await auditAccessibility('form-display-'+purpose);
  }
  await click(formDisplay,'Reset sample answers');await wait(()=>formDisplay.querySelector('app-runtime-form input')?.value==='','Explicit sample reset');
- await toggleTheme();await wait(()=>document.documentElement.classList.contains('app-dark'),'Dark');await auditAccessibility('studio-published-dark');{document.querySelector('[data-language-picker] [role="combobox"]').click();await wait(()=>[...document.querySelectorAll('[role="option"]')].some(option=>option.textContent.includes('فارسی')),'Language options');[...document.querySelectorAll('[role="option"]')].find(option=>option.textContent.includes('فارسی')).click();}await wait(()=>document.documentElement.dir==='rtl','RTL');await auditAccessibility('studio-published-rtl');
+ await toggleTheme();await wait(()=>document.documentElement.classList.contains('app-dark'),'Dark');await auditAccessibility('studio-published-dark');await chooseLanguage('fa');await wait(()=>document.documentElement.dir==='rtl','RTL');await auditAccessibility('studio-published-rtl');
  await fetch('/test-result',{method:'POST',body:JSON.stringify({ok:true,accessibility})});
 `;

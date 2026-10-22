@@ -100,7 +100,6 @@ import { SelectControl } from '../select-control/select-control';
       flex: 1;
       min-width: 0;
       min-height: var(--workspace-control-height, 2.5rem);
-      height: var(--workspace-control-height, 2.5rem);
     }
     .value-row > button {
       margin: 0;

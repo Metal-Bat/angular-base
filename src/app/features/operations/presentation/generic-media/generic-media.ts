@@ -1,3 +1,4 @@
+import { TransferProgress } from '../../../../shared/ui/transfer-progress/transfer-progress';
 import { ButtonDirective } from 'primeng/button';
 import {
   ChangeDetectionStrategy,
@@ -16,7 +17,7 @@ import { LocalizePipe } from '../../../../shared/ui/localize-pipe';
   host: { class: 'console-page' },
   selector: 'app-generic-media',
   providers: [BinaryTransfer],
-  imports: [ButtonDirective, RouterLink, LocalizePipe],
+  imports: [TransferProgress, ButtonDirective, RouterLink, LocalizePipe],
   templateUrl: './generic-media.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

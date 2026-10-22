@@ -1,0 +1,23 @@
+:host {
+  display: block;
+  min-inline-size: 0;
+}
+section {
+  border: 1px solid var(--console-border);
+  border-radius: 0.75rem;
+  padding: 1rem;
+  margin-block: 1rem;
+}
+dl {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+  gap: 1rem;
+}
+dt {
+  color: var(--console-muted);
+  font-size: 0.875rem;
+}
+dd {
+  margin: 0.25rem 0;
+  overflow-wrap: anywhere;
+}

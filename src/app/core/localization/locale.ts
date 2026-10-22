@@ -52,20 +52,15 @@ export class Locale {
   private generation = 0;
   readonly changing = signal(false);
   constructor() {
-    this.document.documentElement.lang = this.language();
-    this.document.documentElement.dir = languageDirection(this.language());
+    this.applyLanguage(this.language());
     const release = inject(ActorState).register(() => {
       this.numbering.set('latn');
       this.timezone.set('UTC');
       this.calendarOverride.set(null);
       this.generation++;
       this.catalog = this.catalogs.get(this.defaultLanguage) ?? {};
-      this.language.set(this.defaultLanguage);
+      this.applyLanguage(this.defaultLanguage);
       this.changing.set(false);
-      this.document.documentElement.lang = this.defaultLanguage;
-      this.document.documentElement.dir = languageDirection(
-        this.defaultLanguage,
-      );
     });
     inject(DestroyRef).onDestroy(() => {
       this.generation++;
@@ -88,24 +83,33 @@ export class Locale {
         return;
       }
       this.catalog = catalog;
-      this.language.set(language);
-      this.document.documentElement.lang = language;
-      this.document.documentElement.dir = languageDirection(language);
+      this.applyLanguage(language);
     } finally {
       if (generation === this.generation) {
         this.changing.set(false);
       }
     }
   }
+  private applyLanguage(language: SupportedLocale): void {
+    if (language !== this.language()) {
+      this.calendarOverride.set(null);
+    }
+    this.language.set(language);
+    this.document.documentElement.lang = language;
+    this.document.documentElement.dir = languageDirection(language);
+  }
   text(source: string): string {
     return this.language() === 'en' ? source : (this.catalog[source] ?? source);
   }
   number(value: number): string {
-    return new Intl.NumberFormat(this.language()).format(value);
+    return new Intl.NumberFormat(this.language(), {
+      numberingSystem: this.numbering(),
+    }).format(value);
   }
   date(instant: Date, timezone: string): string {
     return new Intl.DateTimeFormat(this.language(), {
       calendar: this.calendar(),
+      numberingSystem: this.numbering(),
       timeZone: timezone,
       dateStyle: 'medium',
     }).format(instant);

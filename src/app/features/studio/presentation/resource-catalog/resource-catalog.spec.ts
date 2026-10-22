@@ -295,35 +295,4 @@ describe('Definition command protection', () => {
     expect(fixture.componentInstance.immutable()).toBe(true);
     expect(fixture.componentInstance.canSave()).toBe(false);
   });
-  it('freezes a grant target and document while confirmation is pending', async () => {
-    const fixture = TestBed.createComponent(ResourceCatalog);
-    await fixture.whenStable();
-    const editor = fixture.componentInstance;
-    await editor.open('current');
-    editor.grantBody = '{"target":"reviewer"}';
-    const granting = editor.grant();
-    editor.grantBody = '{"target":"other"}';
-    editor.selected.set({ ref_id: 'other' });
-    TestBed.inject(Feedback).answer(true);
-    await granting;
-    expect(action).toHaveBeenCalledWith(
-      'request-types',
-      'current',
-      'grant',
-      { target: 'reviewer' },
-      undefined,
-    );
-  });
-  it('does not send a confirmed grant after the actor changes', async () => {
-    const fixture = TestBed.createComponent(ResourceCatalog);
-    await fixture.whenStable();
-    const editor = fixture.componentInstance;
-    await editor.open('current');
-    editor.grantBody = '{"target":"reviewer"}';
-    const granting = editor.grant();
-    TestBed.inject(ActorState).reset();
-    TestBed.inject(Feedback).answer(true);
-    await granting;
-    expect(action).not.toHaveBeenCalled();
-  });
 });

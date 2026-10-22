@@ -43,6 +43,31 @@ async def main():
                 await session.flush()
             session.add(RolePermissionEntity(role_id=role.id, permission_id=permission.id))
         session.add(UserRoleEntity(user_id=actor.id, role_id=role.id))
+        if os.environ.get('FOUNDATION_TASK') == '030':
+            # Controlled metadata in this owned database only. No credential is
+            # resolved and this seed does not establish vendor verification.
+            from apps.integrations.domain.entity import IntegrationConnectionEntity
+            from core.ref_id import create_ref_id
+            connection = IntegrationConnectionEntity(
+                code=f'owned_agent_{uuid7().hex}', name='Owned agent connection',
+                provider='typesafe', kind='AI', owner_user_id=actor.id,
+                verification_status='VERIFIED', status='ACTIVE',
+                non_secret_config={'endpoint_key': 'hosted', 'models': ['owned-model'],
+                                   'provider_retention': 'Owned acceptance metadata only'},
+                secret_ref='owned_unresolved', secret_version='1',
+            )
+            session.add(connection)
+            await session.flush()
+            accounts['agent_connection'] = create_ref_id(connection.id, connection.version)
+            outsider = (await session.exec(select(UserEntity).where(UserEntity.username == accounts['users'][1]))).one()
+            session.add(UserRoleEntity(user_id=outsider.id, role_id=role.id))
+        if os.environ.get('FOUNDATION_TASK') == '028':
+            import importlib.util
+            spec = importlib.util.spec_from_file_location('owned_inline_seed', Path(__file__).with_name('inline-attachments-paired-seed.py'))
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            reviewer = (await session.exec(select(UserEntity).where(UserEntity.username == accounts['users'][1]))).one()
+            await module.seed_inline_attachments(session, actor, reviewer, accounts)
         operator = UserEntity(username=f'owned-operator-{uuid7()}', hashed_password=actor.hashed_password, is_superuser=True)
         session.add(operator)
         accounts['users'].append(operator.username)

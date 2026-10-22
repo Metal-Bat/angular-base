@@ -240,4 +240,49 @@ describe('List-first CRUD controller', () => {
       expect(command).toHaveBeenCalledTimes(1);
     },
   );
+  it('inspects a stale edit without writing, then deliberately uses the current ref with retained values', async () => {
+    page.detail.set(user);
+    page.edit();
+    page.values['username'] = 'My retained name';
+    page.reconcileRequired.set(true);
+    vi.mocked(TestBed.inject(RECORDS).detail).mockResolvedValue({
+      ...user,
+      ref_id: 'user-v9',
+      username: 'Other edit',
+    });
+    await page.inspectCurrent();
+    expect(command).not.toHaveBeenCalled();
+    expect(page.detail()?.['ref_id']).toBe('user-v2');
+    expect(page.values['username']).toBe('My retained name');
+    expect(page.reconcileRequired()).toBe(true);
+    expect(page.recoveryRecord()?.['username']).toBe('Other edit');
+    await page.useCurrentRevision();
+    expect(page.detail()?.['ref_id']).toBe('user-v9');
+    expect(page.values['username']).toBe('My retained name');
+    expect(command).not.toHaveBeenCalled();
+    const save = page.saveForm();
+    TestBed.inject(Feedback).answer(true);
+    await save;
+    expect(command.mock.calls[0][2]).toEqual({ ref_id: 'user-v9' });
+    expect(command.mock.calls[0][1]['username']).toBe('My retained name');
+  });
+  it('rejects a late recovery read after actor cleanup and never exposes its result', async () => {
+    page.detail.set(user);
+    page.edit();
+    page.reconcileRequired.set(true);
+    let resolve!: (row: typeof user) => void;
+    vi.mocked(TestBed.inject(RECORDS).detail).mockImplementationOnce(
+      () =>
+        new Promise((done) => {
+          resolve = done;
+        }),
+    );
+    const reading = page.inspectCurrent();
+    TestBed.inject(ActorState).reset();
+    resolve({ ...user, username: 'Old actor private' });
+    await reading;
+    expect(page.recoveryRecord()).toBeNull();
+    expect(page.canReapply()).toBe(false);
+    expect(command).not.toHaveBeenCalled();
+  });
 });

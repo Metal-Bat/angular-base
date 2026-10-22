@@ -1,0 +1,87 @@
+<label [for]="id() + '-source'"
+  >{{ "Source port" | localize }} · <bdi>{{ name() }}</bdi></label
+>
+<app-select-control
+  [disabled]="disabled() || !ready()"
+  [inputId]="id() + '-source'"
+  [ngModel]="source()"
+  (ngModelChange)="choose($event)"
+>
+  <option value="">{{ "Constant value" | localize }}</option>
+  @if (hasSavedSource()) {
+    <option value="__saved__">
+      {{ "Existing source mapping is preserved." | localize }}
+    </option>
+  }
+  @for (item of sources(); track item.key) {
+    <option [disabled]="!selectable(item)" [value]="item.key">
+      {{ item.label }}
+    </option>
+  }
+</app-select-control>
+@if (source() === "__saved__") {
+  <p>
+    <bdi
+      >{{ value()?.["source_step"] || value()?.["source_kind"] }}
+      {{ value()?.["source_port"] || value()?.["source_path"] }}</bdi
+    >
+  </p>
+  @if (savedSource() === "__unavailable__") {
+    <p role="status">{{ "Reload sources to edit this mapping." | localize }}</p>
+  }
+} @else if (source()) {
+  @if (collectionSource()) {
+    <app-collection-source
+      [controlId]="id() + '-item'"
+      [disabled]="disabled()"
+      [field]="itemField()"
+      [index]="itemIndex()"
+      [schema]="selected()!.schema"
+      (fieldChange)="collection(itemIndex(), $event)"
+      (indexChange)="collection($event, itemField())"
+    />
+  }
+  <button
+    pButton
+    type="button"
+    [disabled]="disabled() || !sourceReady()"
+    (click)="applySource()"
+  >
+    {{ "Use selected child input source" | localize }}
+  </button>
+} @else if (hasSavedSource()) {
+  <p>
+    {{
+      "Clear the existing child input before entering a constant." | localize
+    }}
+  </p>
+} @else if (port()["assignment"]) {
+  <app-studio-choice
+    [controlId]="id()"
+    [disabled]="disabled()"
+    [kind]="port()['assignment'] === 'user' ? 'users' : 'work_groups'"
+    [value]="String(constant() ?? '')"
+    (picked)="edit($event)"
+  />
+} @else {
+  <app-mapping-constant
+    [controlId]="id()"
+    [disabled]="disabled()"
+    [errors]="errors()"
+    [schema]="schema()"
+    [value]="constant()"
+    (readyChange)="setReady($event)"
+    (valueChange)="edit($event)"
+  />
+}
+<div class="actions">
+  <button
+    pButton
+    severity="secondary"
+    type="button"
+    [disabled]="disabled() || !ready() || (!value() && !pending())"
+    (click)="clear()"
+  >
+    {{ "Clear child input" | localize }}
+  </button>
+</div>

@@ -1,0 +1,38 @@
+@let vm = summary();
+<header class="record-identity" [class.history-identity]="vm.isHistory()">
+  <span aria-hidden="true" class="identity-icon"
+    ><i [class]="vm.icon()"></i
+  ></span>
+  <div class="identity-text">
+    <span class="console-eyebrow">{{ vm.caption() | localize }}</span>
+    <h2>
+      <bdi>{{ vm.displayTitle() }}</bdi>
+    </h2>
+    @if (vm.subtitle()) {
+      <p>
+        <bdi>{{ vm.subtitle() }}</bdi>
+      </p>
+    }
+    @if (vm.isHistory()) {
+      <div class="history-context">
+        @if (vm.record()["changed_at"]) {
+          <time [attr.datetime]="vm.record()['changed_at']">{{
+            vm.value(vm.record()["changed_at"], true)
+          }}</time>
+        }
+        @if (vm.record()["modifier_type"] || vm.record()["actor_type"]) {
+          <span
+            >{{ "Actor Type" | localize }}:
+            {{
+              $any(vm.record()["modifier_type"] || vm.record()["actor_type"])
+                | localize
+            }}</span
+          >
+        }
+      </div>
+    }
+  </div>
+  @if (vm.status()) {
+    <span class="identity-status">{{ vm.status() | localize }}</span>
+  }
+</header>

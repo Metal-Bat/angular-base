@@ -1,4 +1,6 @@
 <p-select
+  #escape="appSelectEscape"
+  appSelectEscape
   appendTo="body"
   class="theme-picker w-full"
   data-theme-picker
@@ -7,11 +9,12 @@
   scrollHeight="20rem"
   [ariaLabel]="'Theme' | localize"
   [checkmark]="true"
-  [disabled]="preferences.loading()"
+  [disabled]="preferences.loading() || escape.closing()"
   [group]="true"
   [inputId]="inputId()"
   [ngModel]="scheme.selected()"
   [options]="groups()"
+  [overlayOptions]="escape.overlayOptions"
   [pt]="{
     listContainer: {
       tabindex: '0',

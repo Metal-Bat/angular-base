@@ -1,0 +1,175 @@
+@let vm = view();
+@if (vm.mode() === "create" || vm.mode() === "edit") {
+  <section aria-labelledby="record-editor-title" class="page-editor">
+    <form #recordEditor id="record-editor" novalidate (ngSubmit)="submit()">
+      <header class="page-editor-toolbar">
+        <div>
+          <h2 id="record-editor-title">
+            {{
+              (vm.definition.key === "agents"
+                ? vm.mode() === "create"
+                  ? "Create agent"
+                  : "Edit agent"
+                : vm.mode() === "create"
+                  ? "Create record"
+                  : "Edit record"
+              ) | localize
+            }}
+          </h2>
+          @if (vm.formDirty()) {
+            <span role="status">{{ "Unsaved changes" | localize }}</span>
+          }
+        </div>
+        <div class="page-editor-actions">
+          <button
+            pButton
+            severity="secondary"
+            type="button"
+            [disabled]="vm.actionBusy()"
+            [outlined]="true"
+            (click)="vm.closeForm()"
+          >
+            {{ "Cancel" | localize }}
+          </button>
+          <button
+            id="record-editor-save"
+            pButton
+            type="submit"
+            [disabled]="
+              vm.actionBusy() || vm.reconcileRequired() || !canSubmit()
+            "
+            [loading]="vm.actionBusy()"
+          >
+            {{ "Save" | localize }}
+          </button>
+        </div>
+      </header>
+      @if (vm.modalError()) {
+        <p role="alert">{{ vm.modalError() | localize }}</p>
+      }
+      <app-record-recovery [view]="vm" />
+      @if (vm.Object.keys(vm.fieldErrors).length) {
+        <ul
+          class="field-error-summary"
+          [attr.aria-label]="'Validation' | localize"
+        >
+          @for (key of vm.Object.keys(vm.fieldErrors); track key) {
+            <li>
+              <a
+                [href]="'#' + fieldAnchor(key)"
+                (click)="revealField($event, key)"
+                >{{ vm.fieldErrors[key] | localize }}</a
+              >
+            </li>
+          }
+        </ul>
+      }
+      <p class="text-console-muted">
+        {{ "Required fields are marked with *." | localize }}
+      </p>
+      <p class="text-console-muted" [hidden]="!scheduleHint()">
+        {{ scheduleHint() | localize }}
+      </p>
+      @if (vm.definition.key === "agents") {
+        <app-agent-fields
+          [disabled]="vm.actionBusy()"
+          [errors]="vm.fieldErrors"
+          [fields]="vm.visibleFields()"
+          [record]="vm.detail() ?? {}"
+          [values]="vm.values"
+          (changed)="vm.formDirty.set(true)"
+          (valuesChange)="vm.values = $event; vm.formDirty.set(true)"
+        />
+      } @else {
+        <div class="record-field-groups">
+          @for (group of groups(); track group.title) {
+            <section>
+              @if (group.title) {
+                <h3>{{ group.title | localize }}</h3>
+              }
+              <app-record-fields
+                [disabled]="vm.actionBusy()"
+                [errors]="vm.fieldErrors"
+                [fields]="group.fields"
+                [values]="vm.values"
+                (valuesChange)="changeGroup(group.fields, $event)"
+              />
+            </section>
+          }
+        </div>
+      }
+      @if (vm.user && vm.mode() === "edit" && vm.detail(); as record) {
+        <app-record-summary
+          title="Account"
+          [groups]="readonlySections"
+          [record]="record"
+          [showIdentity]="false"
+        />
+      }
+    </form>
+  </section>
+}
+<p-dialog
+  appendTo="body"
+  position="center"
+  [closable]="false"
+  [draggable]="false"
+  [header]="'Reset password' | localize"
+  [modal]="true"
+  [resizable]="false"
+  [style]="{ width: vm.formWidth(), maxWidth: 'calc(100vw - 2rem)' }"
+  [visible]="vm.mode() === 'password'"
+  (onHide)="restoreActions()"
+>
+  <p class="text-sm text-console-muted">
+    {{ "Required fields are marked with *." | localize }}
+  </p>
+  <form
+    #passwordEditor
+    class="grid gap-4"
+    novalidate
+    (ngSubmit)="vm.saveForm()"
+  >
+    @if (vm.mode() === "password") {
+      <app-control-field
+        controlId="new-password"
+        label="New password"
+        [error]="vm.fieldErrors['new_password'] || ''"
+        [required]="true"
+        ><input
+          autocomplete="new-password"
+          id="new-password"
+          minlength="8"
+          name="new-password"
+          pInputText
+          required
+          type="password"
+          [attr.aria-describedby]="
+            vm.fieldErrors['new_password'] ? 'new-password-error' : null
+          "
+          [attr.aria-invalid]="vm.fieldErrors['new_password'] ? 'true' : null"
+          [(ngModel)]="vm.password"
+          (ngModelChange)="vm.formDirty.set(true)"
+      /></app-control-field>
+    }
+    <div class="flex justify-end gap-3 mt-4">
+      <button
+        pButton
+        severity="secondary"
+        type="button"
+        [disabled]="vm.actionBusy()"
+        [outlined]="true"
+        (click)="vm.closeForm()"
+      >
+        {{ "Cancel" | localize }}</button
+      ><button
+        pButton
+        type="submit"
+        [disabled]="vm.actionBusy() || vm.reconcileRequired()"
+        [loading]="vm.actionBusy()"
+      >
+        {{ "Save" | localize }}
+      </button>
+    </div>
+  </form>
+</p-dialog>

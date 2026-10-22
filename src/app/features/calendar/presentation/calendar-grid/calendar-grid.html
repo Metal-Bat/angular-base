@@ -1,0 +1,143 @@
+@if (view() === "month") {
+  <app-calendar-month
+    [view]="this"
+    (activated)="activated.emit($event)"
+    (draftRequested)="draftRequested.emit($event)"
+    (selected)="selected.emit($event)"
+  />
+} @else {
+  <p class="calendar-scroll-hint" [hidden]="!horizontalOverflow()">
+    {{ "Scroll horizontally to see other days." | localize }}
+  </p>
+  <div
+    #timeScroll
+    class="time-scroll"
+    role="region"
+    tabindex="0"
+    [attr.aria-label]="'Calendar time grid' | localize"
+    [style.scroll-padding-block-start.px]="pinnedHeight()"
+  >
+    <div
+      class="time-grid"
+      [style.--calendar-heading-height.px]="headingHeight()"
+      [style.grid-template-columns]="
+        '4.5rem repeat(' + days().length + ', minmax(7rem, 1fr))'
+      "
+    >
+      <div #timeHeading class="time-heading">{{ "Time" | localize }}</div>
+      @for (day of days(); track day) {
+        <header
+          class="day-heading"
+          [class.selected-day]="day === anchor()"
+          [class.today]="day === today()"
+        >
+          <time
+            [attr.aria-label]="
+              day === anchor()
+                ? format(day, { dateStyle: 'full' }) +
+                  ' · ' +
+                  ('Selected date' | localize)
+                : null
+            "
+            [attr.datetime]="day"
+            >{{ format(day, { weekday: "short", day: "numeric" }) }}</time
+          >
+        </header>
+      }
+      <div #allDayHeading class="all-day-label">{{ "All day" | localize }}</div>
+      @for (day of days(); track day) {
+        <div class="all-day-lane">
+          @for (event of allDay(day).slice(0, 2); track event.key) {
+            <button
+              #eventTrigger
+              pButton
+              severity="secondary"
+              type="button"
+              [attr.aria-label]="event.title + ' · ' + timeLabel(event)"
+              [attr.title]="event.title + ' · ' + timeLabel(event)"
+              [text]="true"
+              (click)="
+                selected.emit(event);
+                activated.emit({ event, trigger: eventTrigger })
+              "
+            >
+              <span>{{ event.title }}</span
+              ><small>{{
+                event.kind === "all_day" ? "" : timeLabel(event)
+              }}</small>
+            </button>
+          }
+          @if (allDay(day).length > 2) {
+            <button
+              pButton
+              severity="secondary"
+              type="button"
+              [attr.aria-label]="
+                ('View more events in agenda' | localize) +
+                ' · ' +
+                locale.number(allDay(day).length - 2)
+              "
+              [attr.title]="'View more events in agenda' | localize"
+              [text]="true"
+              (click)="agendaRequested.emit(day)"
+            >
+              +{{ locale.number(allDay(day).length - 2) }}
+            </button>
+          }
+        </div>
+      }
+      <div class="time-axis">
+        @for (hour of hours; track hour) {
+          <span
+            >{{ locale.number(hour) }}:{{
+              locale.number(0).padStart(2, locale.number(0))
+            }}</span
+          >
+        }
+      </div>
+      @for (day of days(); track day) {
+        <div class="time-lane" [attr.data-calendar-day]="day">
+          <div class="empty-slots">
+            @for (hour of hours; track hour) {
+              <button
+                class="empty-slot"
+                type="button"
+                [attr.aria-label]="
+                  ('Create event' | localize) +
+                  ' · ' +
+                  format(day, { dateStyle: 'full' }) +
+                  ' · ' +
+                  locale.number(hour) +
+                  ':00'
+                "
+                [attr.data-slot-hour]="hour"
+                [attr.tabindex]="hour === slotHour() ? 0 : -1"
+                (click)="
+                  draftRequested.emit(calendarDraft(day, timezone(), hour))
+                "
+                (keydown)="navigateSlot($event, hour)"
+              ></button>
+            }
+          </div>
+          @if (day === today()) {
+            <div
+              class="now-indicator"
+              role="img"
+              [attr.aria-label]="'Current time' | localize"
+              [style.inset-block-start.%]="(nowMinute() / 1440) * 100"
+            ></div>
+          }
+
+          @for (row of timed(day); track row.key) {
+            <app-calendar-timed-event
+              [entry]="row"
+              [view]="this"
+              (activated)="selected.emit($event.event); activated.emit($event)"
+              (agendaRequested)="agendaRequested.emit(day)"
+            />
+          }
+        </div>
+      }
+    </div>
+  </div>
+}

@@ -1,3 +1,4 @@
+import { isItemScope } from '../../forms/domain/row-values';
 import { JsonObject, JsonValue } from '../../forms/domain/runtime-document';
 export const palette = [
   'vertical',
@@ -221,7 +222,11 @@ function applyPrimitiveDefaults(
   }
   if (kind === 'calculated') {
     documents['behavior_dialect'] = 'bpms.behavior/1';
-    node['calculation'] = { expression: '""' };
+    // Repeated items support registered functions, not expressions. Leave their
+    // calculation pending until the author chooses real source fields.
+    if (!isItemScope(String(node['scope']))) {
+      node['calculation'] = { expression: '""' };
+    }
   }
   if (kind === 'action') {
     node['outcome'] = 'next';

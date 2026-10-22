@@ -53,3 +53,14 @@ Current remaining criteria: Group pointer drag, native marquee synchronization, 
 The backend protected-operations handoff now records APP-BE-021/022/024/025 DONE / VERIFIED_WITH_EXCEPTION and APP-BE-023 implemented with actual-browser acceptance pending. The former APP-BE-022 unfrozen-metadata blocker is historical. The new frozen English producer was compared and reconciled (379 operations / 565 schemas), preserving all existing operation IDs and unchanged form/workspace contracts; see [intake](../reference/app-fe-016-020/contract-intake.json). No backend source/shared data/dependencies/mise/environment files were changed. Backend DB-002/D07 decisions remain scoped; SDK exceptions do not establish strict exception-free demo readiness.
 
 Actual source identities, tests, failures and final gate: [five-scope acceptance](../delivery/APP-FE-016-020-ACCEPTANCE.md). Parent remains **BLOCKED / IMPLEMENTED** for its full acceptance. This continuation supersedes the historical producer-unavailability blocker above; it does not rewrite prior evidence or mark the parent DONE. APP-FE-012/014 remain unrelated to this work.
+
+2026-10-18 reported editor failure: [native flow audit and repairs](APP-FE-016-EDITOR-FLOW-AUDIT.md) records the reproduced calculation, metadata, placement and pane-width defects. Its evidence is separate from prior receipts; the final scoped receipt governs verification and parent closure is not inferred.
+
+## Exact workflow-route continuation — 2026-10-19
+
+The [APP-FE-024.3 child inspection journey](APP-FE-024-SUBPROCESS.md) reproduced
+same-component navigation retaining the previous workflow version. Workflow state
+now observes accepted route parameter changes, clears old state and fences late
+loads through its existing generation boundary. Existing unsaved-change guards
+remain active; browser cancellation preserves the unfinished parent input. This
+is scoped navigation repair, not closure of the full canvas/master acceptance.

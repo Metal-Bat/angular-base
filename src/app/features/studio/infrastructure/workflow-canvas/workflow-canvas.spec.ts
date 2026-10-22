@@ -1,7 +1,176 @@
+import {
+  FDragStartedEvent,
+  FMoveNodesEvent,
+  FReassignConnectionEvent,
+  FSelectionChangeEvent,
+} from '@foblex/flow';
 import { TestBed } from '@angular/core/testing';
 import { WorkflowCanvas } from './workflow-canvas';
 
 describe('Workflow palette placement', () => {
+  it('opens the explicit outcome chooser even when native selection handled the target first', () => {
+    const fixture = TestBed.createComponent(WorkflowCanvas);
+    fixture.componentRef.setInput(
+      'nodes',
+      ['a', 'b'].map((key) => ({
+        key,
+        title: key,
+        ports: [],
+        position: { x: 0, y: 0 },
+      })),
+    );
+    fixture.componentRef.setInput('viewport', { x: 0, y: 0, zoom: 1 });
+    fixture.componentRef.setInput('selectNodes', vi.fn());
+    const connect = vi.fn();
+    fixture.componentRef.setInput('connect', connect);
+    const canvas = fixture.componentInstance;
+    canvas.linkSource.set('a');
+    canvas.dragStarted(new FDragStartedEvent('selection-area'));
+    canvas.dragEnded();
+    canvas.selectionChanged(new FSelectionChangeEvent(['b'], [], []));
+    canvas.select({ type: 'click', isTrusted: true } as MouseEvent, 'b');
+    expect(canvas.pendingConnection()).toEqual({
+      source: 'control:a:out',
+      target: 'control:b:in',
+    });
+    expect(canvas.linkSource()).toBe('');
+    expect(connect).not.toHaveBeenCalled();
+  });
+
+  it('accepts only the current palette token once and rejects cancelled or previous-document drags', () => {
+    const fixture = TestBed.createComponent(WorkflowCanvas);
+    const add = vi.fn();
+    fixture.componentRef.setInput('nodes', []);
+    fixture.componentRef.setInput('viewport', { x: 40, y: 20, zoom: 2 });
+    fixture.componentRef.setInput('addStep', add);
+    fixture.componentRef.setInput('paletteDrag', {
+      key: 'exact-version',
+      token: 'current',
+    });
+    const stage = document.createElement('div');
+    vi.spyOn(stage, 'getBoundingClientRect').mockReturnValue(
+      new DOMRect(100, 50, 600, 400),
+    );
+    const event = (token: string): DragEvent =>
+      ({
+        currentTarget: stage,
+        clientX: 340,
+        clientY: 270,
+        preventDefault: vi.fn(),
+        dataTransfer: { getData: () => token },
+      }) as unknown as DragEvent;
+    fixture.componentInstance.drop(event('previous'));
+    expect(add).not.toHaveBeenCalled();
+    fixture.componentInstance.drop(event('current'));
+    fixture.componentInstance.drop(event('current'));
+    expect(add).toHaveBeenCalledExactlyOnceWith('exact-version', {
+      x: 100,
+      y: 100,
+    });
+    fixture.componentRef.setInput('paletteDrag', null);
+    fixture.componentInstance.drop(event('current'));
+    expect(add).toHaveBeenCalledTimes(1);
+  });
+  it('isolates library positions and rejects cancelled or unauthorized commits', () => {
+    const fixture = TestBed.createComponent(WorkflowCanvas);
+    const nodes = [
+      { key: 'a', title: 'First', ports: [], position: { x: 20, y: 40 } },
+    ];
+    fixture.componentRef.setInput('nodes', nodes);
+    const move = vi.fn();
+    fixture.componentRef.setInput('moveNode', move);
+    const canvas = fixture.componentInstance;
+    canvas.viewNodes()[0].position.x = 999;
+    expect(nodes[0].position).toEqual({ x: 20, y: 40 });
+    canvas.dragStarted(new FDragStartedEvent('drag-node'));
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+    canvas.moved(
+      new FMoveNodesEvent([{ id: 'a', position: { x: 80, y: 100 } }]),
+    );
+    expect(move).not.toHaveBeenCalled();
+    canvas.dragEnded();
+    expect(canvas.viewNodes()[0].position).toEqual({ x: 20, y: 40 });
+    canvas.dragStarted(new FDragStartedEvent('drag-node'));
+    document.dispatchEvent(new Event('pointercancel'));
+    canvas.moved(
+      new FMoveNodesEvent([{ id: 'a', position: { x: 80, y: 100 } }]),
+    );
+    expect(move).not.toHaveBeenCalled();
+    canvas.dragEnded();
+    canvas.dragStarted(new FDragStartedEvent('drag-node'));
+    canvas.moved(
+      new FMoveNodesEvent([{ id: 'a', position: { x: 80, y: 100 } }]),
+    );
+    expect(move).toHaveBeenCalledExactlyOnceWith('a', { x: 80, y: 100 });
+    fixture.componentRef.setInput('readOnly', true);
+    canvas.moved(
+      new FMoveNodesEvent([{ id: 'a', position: { x: 100, y: 120 } }]),
+    );
+    expect(move).toHaveBeenCalledTimes(1);
+  });
+  it('reassigns either endpoint using the unchanged endpoint from the pinned canvas API', () => {
+    const fixture = TestBed.createComponent(WorkflowCanvas);
+    fixture.componentRef.setInput('nodes', []);
+    const reconnect = vi.fn();
+    fixture.componentRef.setInput('reconnect', reconnect);
+    fixture.componentInstance.reassigned(
+      new FReassignConnectionEvent(
+        'control:0',
+        'target',
+        'control:prepare:out',
+        undefined,
+        'control:review:in',
+        'control:next:in',
+        { x: 10, y: 20 },
+      ),
+    );
+    expect(reconnect).toHaveBeenLastCalledWith(
+      'control:0',
+      'control:prepare:out',
+      'control:next:in',
+    );
+    fixture.componentInstance.reassigned(
+      new FReassignConnectionEvent(
+        'control:0',
+        'source',
+        'control:prepare:out',
+        'control:other:out',
+        'control:review:in',
+        undefined,
+        { x: 10, y: 20 },
+      ),
+    );
+    expect(reconnect).toHaveBeenLastCalledWith(
+      'control:0',
+      'control:other:out',
+      'control:review:in',
+    );
+    fixture.componentInstance.reassigned(
+      new FReassignConnectionEvent(
+        'control:0',
+        'target',
+        'control:prepare:out',
+        undefined,
+        'control:review:in',
+        undefined,
+        { x: 10, y: 20 },
+      ),
+    );
+    expect(reconnect).toHaveBeenCalledTimes(2);
+    fixture.componentRef.setInput('readOnly', true);
+    fixture.componentInstance.reassigned(
+      new FReassignConnectionEvent(
+        'control:0',
+        'source',
+        'control:prepare:out',
+        'control:other:out',
+        'control:review:in',
+        undefined,
+        { x: 10, y: 20 },
+      ),
+    );
+    expect(reconnect).toHaveBeenCalledTimes(2);
+  });
   beforeEach(() => {
     TestBed.overrideComponent(WorkflowCanvas, { set: { template: '' } });
   });
@@ -115,7 +284,7 @@ describe('Workflow palette placement', () => {
     const vm = fixture.componentInstance;
     vm.rendered.set(true);
     vm.openMenu(new MouseEvent('contextmenu'), 'a');
-    expect(select).toHaveBeenCalledWith('a');
+    expect(select).toHaveBeenCalledWith('a', true);
     expect(vm.menuItems()[0].disabled).toBeUndefined();
     expect(vm.menuItems()[1].disabled).toBe(true);
     vm.changed({ position: { x: 10, y: 20 }, scale: 2 } as never);

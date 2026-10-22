@@ -48,3 +48,14 @@ export function nextFieldName(documents: JsonObject): string {
   }
   return 'field_' + index;
 }
+
+/** The existing expert presentation slice excludes canonical schema and render structure. */
+export function formSettingsDocument(row: JsonObject): JsonObject {
+  return {
+    page_settings: row['page_settings'] ?? {},
+    variants: row['variants'] ?? [],
+    localization: row['localization'] ?? null,
+    reuse_instances: row['reuse_instances'] ?? null,
+    behavior_dialect: row['behavior_dialect'] ?? null,
+  };
+}

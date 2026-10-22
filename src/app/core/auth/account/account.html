@@ -42,8 +42,9 @@
 <ul>
   @for (session of sessions(); track session.ref) {
     <li>
-      {{ session.device }} · <time>{{ session.lastUsed }}</time> ·
-      <time>{{ session.expires }}</time>
+      {{ session.device }} ·
+      <time>{{ session.lastUsed | localizedDateTime }}</time> ·
+      <time>{{ session.expires | localizedDateTime }}</time>
       <button
         pButton
         severity="secondary"
@@ -117,7 +118,8 @@
 @if (selectedSession(); as session) {
   <section>
     <h2>{{ session.device }}</h2>
-    <time>{{ session.lastUsed }}</time> · <time>{{ session.expires }}</time
+    <time>{{ session.lastUsed | localizedDateTime }}</time> ·
+    <time>{{ session.expires | localizedDateTime }}</time
     ><button
       pButton
       severity="secondary"

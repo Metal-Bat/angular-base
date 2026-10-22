@@ -25,20 +25,9 @@ export class WorkflowDiagnostics {
     input.required<
       Pick<
         WorkflowBoard,
-        'diagnostics' | 'issues' | 'select' | 'validate' | 'busy' | 'dirty'
+        'diagnostics' | 'issues' | 'selectIssue' | 'validate' | 'busy' | 'dirty'
       >
     >();
-  readonly message = computed(() => {
-    const value = this.view().diagnostics();
-    return [
-      'Workspace saved. This is not an executable graph.',
-      'Promoted. Publication is a separate explicit action.',
-      'Published immutable workflow version',
-      'Duplicated steps require validation of external dependencies.',
-    ].includes(value)
-      ? value
-      : '';
-  });
   readonly checks = computed<readonly ReadinessCheck[]>(() => {
     const view = this.view();
     let valid: boolean | null = null;

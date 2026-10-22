@@ -1,0 +1,49 @@
+<button
+  #trigger
+  pButton
+  severity="secondary"
+  type="button"
+  [attr.aria-controls]="opened() ? id : null"
+  [attr.aria-expanded]="opened()"
+  [class.icon-only]="iconOnly()"
+  [id]="id + '-label'"
+  [text]="true"
+  (click)="popup.toggle($event)"
+>
+  @if (iconOnly()) {
+    <i aria-hidden="true" class="pi pi-info-circle"></i>
+  }
+  <span [class.sr-only]="iconOnly()">{{ label() | localize }}</span>
+</button>
+<p-popover
+  #popup
+  appendTo="body"
+  [ariaLabelledBy]="id + '-label'"
+  [pt]="{
+    root: { id: id, 'aria-modal': 'false' },
+    content: {
+      style: {
+        maxHeight: 'var(--anchored-popover-height, calc(100dvh - 2rem))',
+        overflow: 'auto',
+      },
+    },
+  }"
+  [style]="{
+    width: '28rem',
+    maxWidth: 'calc(100vw - 2rem)',
+  }"
+  (onHide)="hidden()"
+  (onShow)="shown()"
+>
+  <div class="help-content"><ng-content /></div>
+  <button
+    #close
+    pButton
+    severity="secondary"
+    type="button"
+    [text]="true"
+    (click)="popup.hide()"
+  >
+    {{ "Close" | localize }}
+  </button>
+</p-popover>

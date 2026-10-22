@@ -1,0 +1,119 @@
+@let vm = view();
+<fieldset class="runtime-collection">
+  <legend>{{ vm.accessibleLabel() }}</legend>
+  @if (vm.description()) {
+    <p>{{ vm.description() }}</p>
+  }
+  @if (!vm.validRows()) {
+    <p role="alert">{{ "Row identities are incompatible" | localize }}</p>
+  }
+  @if (vm.node().component === "table") {
+    <p-table
+      class="runtime-table"
+      [attr.aria-label]="vm.accessibleLabel()"
+      [pt]="{
+        table: { 'aria-label': vm.accessibleLabel() },
+        tableContainer: {
+          tabindex: 0,
+          role: 'region',
+          'aria-label': vm.accessibleLabel(),
+        },
+      }"
+      [scrollable]="true"
+      [tableStyle]="{ width: '100%' }"
+      [value]="vm.tableRows()"
+    >
+      <ng-template #header
+        ><tr>
+          <th scope="col">{{ "Row" | localize }}</th>
+          @for (child of vm.node().children; track $index) {
+            <th scope="col" [hidden]="!vm.childVisible(child)">
+              {{ vm.childLabel(child) }}
+            </th>
+          }
+          @if (vm.writable() && vm.collections) {
+            <th scope="col">{{ "Actions" | localize }}</th>
+          }
+        </tr></ng-template
+      >
+      <ng-template #body let-index="rowIndex" let-key>
+        <tr [attr.data-row-key]="key">
+          <th scope="row">{{ vm.locale.number(index + 1) }}</th>
+          @for (
+            child of vm.node().children;
+            track $index;
+            let childIndex = $index
+          ) {
+            <td [hidden]="!vm.childVisible(child)">
+              <ng-container
+                *ngTemplateOutlet="
+                  childTemplate();
+                  context: { $implicit: child, index, childIndex }
+                "
+              />
+            </td>
+          }
+          @if (vm.writable() && vm.collections) {
+            <td class="collection-actions">
+              <app-runtime-collection-actions
+                [compact]="true"
+                [index]="index"
+                [key]="key"
+                [view]="vm"
+              />
+            </td>
+          }
+        </tr>
+      </ng-template>
+      <ng-template #emptymessage
+        ><tr>
+          <td
+            [attr.colspan]="
+              vm.node().children.length +
+              (vm.writable() && vm.collections ? 2 : 1)
+            "
+          >
+            {{ "No rows yet" | localize }}
+          </td>
+        </tr></ng-template
+      >
+    </p-table>
+  } @else {
+    @for (key of vm.rowKeys(); track key; let index = $index) {
+      <fieldset [attr.data-row-key]="key">
+        <legend>
+          {{ "Row" | localize }} {{ vm.locale.number(index + 1) }}
+        </legend>
+        @for (
+          child of vm.node().children;
+          track $index;
+          let childIndex = $index
+        ) {
+          <ng-container
+            *ngTemplateOutlet="
+              childTemplate();
+              context: { $implicit: child, index, childIndex }
+            "
+          />
+        }
+        <app-runtime-collection-actions
+          [index]="index"
+          [key]="key"
+          [view]="vm"
+        />
+      </fieldset>
+    }
+  }
+  @if (vm.writable() && vm.collections) {
+    <button
+      pButton
+      severity="secondary"
+      type="button"
+      [disabled]="!vm.canAddRow()"
+      [outlined]="true"
+      (click)="vm.rowCommand('add')"
+    >
+      {{ "Add row" | localize }}
+    </button>
+  }
+</fieldset>

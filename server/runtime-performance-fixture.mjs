@@ -1,3 +1,4 @@
+import { publicBrowserStorageCheck } from "./browser-storage-policy.mjs";
 import { runtimeFixture } from "../src/app/features/forms/testing/runtime-fixtures.ts";
 export function largeRuntimeFixture(count) {
   if (![16, 64, 256].includes(count))
@@ -103,7 +104,7 @@ export const runtimePerformanceScript = `
     }
     measurements.push({fields:count,cycles});
   }
-  check(localStorage.length===0 && sessionStorage.length===0,'Performance fixture persisted private values');
+  check(${publicBrowserStorageCheck},'Performance fixture persisted private values');
   await fetch('/test-result',{method:'POST',body:JSON.stringify({ok:true, measurements, accessibility})});
   } finally { window.fetch = originalFetch; XMLHttpRequest.prototype.open = originalOpen; XMLHttpRequest.prototype.send = originalSend; }
 `;

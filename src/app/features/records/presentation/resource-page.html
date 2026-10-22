@@ -1,5 +1,26 @@
 <app-repair-return />
-<app-record-page-header [view]="this" />
+<app-record-page-header #pageHeader [view]="this">
+  @if (detail(); as row) {
+    @if (definition.adminGroup && definition.commandBase) {
+      <app-resource-actions
+        [base]="definition.commandBase"
+        [disabled]="busy() || actionBusy()"
+        [extraActions]="pageHeader.extraActions()"
+        [group]="definition.adminGroup"
+        [row]="row"
+        (changed)="actionChanged()"
+      />
+    }
+  }
+  @if (definition.adminGroup && definition.commandBase && !detail()) {
+    <app-resource-actions
+      [base]="definition.commandBase"
+      [disabled]="busy() || actionBusy()"
+      [group]="definition.adminGroup"
+      [tools]="true"
+    />
+  }
+</app-record-page-header>
 @if (error()) {
   <p role="alert">{{ error() | localize }}</p>
   <button
@@ -34,172 +55,83 @@
 @if (busy()) {
   <p role="status">{{ "Loading…" | localize }}</p>
 }
-@if (detail(); as row) {
-  <app-record-detail [view]="this" />
-  @if (definition.adminGroup && definition.commandBase) {
-    <app-resource-actions
-      [base]="definition.commandBase"
-      [disabled]="busy() || actionBusy()"
-      [group]="definition.adminGroup"
-      [row]="row"
-      (changed)="actionChanged()"
-    />
-  }
-} @else {
-  @if (definition.key === "history") {
-    <form
-      class="flex flex-wrap gap-3 items-end mb-5"
-      (ngSubmit)="showEntityHistory()"
-    >
-      <label
-        >{{ "Entity name" | localize
-        }}<input
-          name="entity"
-          pInputText
-          required
-          [(ngModel)]="entityName" /></label
-      ><button pButton type="submit" [disabled]="busy()">
-        {{ "Show history" | localize }}
-      </button>
-    </form>
-  }
-
-  <section class="list-surface">
-    <div class="list-toolbar flex flex-wrap items-center justify-between gap-3">
-      <div>
-        <strong>{{ definition.title | localize }}</strong
-        ><small
-          >{{ "Total" | localize }}: {{ page()?.total ?? 0 }} ·
-          {{ "Filters" | localize }}: {{ applied().filters.length }} ·
-          {{ "Sorts" | localize }}: {{ applied().sort_orders.length }}</small
-        >
-      </div>
-      <button
-        class="reload-control"
-        pButton
-        severity="secondary"
-        type="button"
-        [attr.aria-label]="'Refresh' | localize"
-        [attr.title]="'Refresh' | localize"
-        [disabled]="busy() || actionBusy()"
-        [text]="true"
-        (click)="load()"
+<div [hidden]="mode() === 'create' || mode() === 'edit'">
+  @if (detail(); as row) {
+    <app-record-detail [view]="this" />
+  } @else {
+    @if (definition.key === "history") {
+      <form
+        class="flex flex-wrap gap-3 items-end mb-5"
+        (ngSubmit)="showEntityHistory()"
       >
-        <i aria-hidden="true" class="pi pi-refresh"></i
-        ><span class="sr-only">{{ "Refresh" | localize }}</span>
-      </button>
-    </div>
-    <app-list-query
-      [busy]="busy() || actionBusy()"
-      [extraFields]="definition.extras"
-      [fields]="definition.queryFields"
-      [hidden]="definition.selectQuery"
-      [query]="applied()"
-      (applied)="load($event)"
-    />
-    <app-record-table
-      [busy]="busy() || actionBusy()"
-      [canEdit]="canEditRow"
-      [columns]="definition.columns"
-      [fields]="definition.queryFields"
-      [moreActions]="rowActions"
-      [page]="page()?.page ?? 1"
-      [pages]="page()?.totalPages ?? 0"
-      [query]="applied()"
-      [rows]="page()?.items ?? []"
-      (actionRequested)="rowAction($event)"
-      (edited)="editRow($event)"
-      (opened)="open($event)"
-      (pageChanged)="pageTo($event)"
-      (queried)="load($event)"
-    />
-  </section>
-}
-<p-dialog
-  appendTo="body"
-  position="center"
-  [closable]="false"
-  [draggable]="false"
-  [header]="
-    (mode() === 'password'
-      ? 'Reset password'
-      : mode() === 'create'
-        ? user
-          ? 'Create User'
-          : 'Create record'
-        : user
-          ? 'Update User'
-          : 'Edit record'
-    ) | localize
-  "
-  [modal]="true"
-  [resizable]="false"
-  [style]="{ width: formWidth(), maxWidth: 'calc(100vw - 2rem)' }"
-  [visible]="mode() !== null"
->
-  <p class="text-sm text-console-muted">
-    {{ "Required fields are marked with *." | localize }}
-  </p>
-  <form #recordEditor class="grid gap-4" novalidate (ngSubmit)="saveForm()">
-    @if (mode() === "password") {
-      <app-control-field
-        controlId="new-password"
-        label="New password"
-        [error]="fieldErrors['new_password'] || ''"
-        [required]="true"
-        ><input
-          autocomplete="new-password"
-          id="new-password"
-          minlength="8"
-          name="new-password"
-          pInputText
-          required
-          type="password"
-          [attr.aria-describedby]="
-            fieldErrors['new_password'] ? 'new-password-error' : null
-          "
-          [attr.aria-invalid]="fieldErrors['new_password'] ? 'true' : null"
-          [(ngModel)]="password"
-          (ngModelChange)="formDirty.set(true)"
-      /></app-control-field>
-    } @else {
-      <app-record-fields
-        [disabled]="actionBusy()"
-        [errors]="fieldErrors"
-        [fields]="visibleFields()"
-        [values]="values"
-        (valuesChange)="values = $event; formDirty.set(true)"
-      />
+        <label
+          >{{ "Entity name" | localize
+          }}<input
+            name="entity"
+            pInputText
+            required
+            [(ngModel)]="entityName" /></label
+        ><button pButton type="submit" [disabled]="busy()">
+          {{ "Show history" | localize }}
+        </button>
+      </form>
     }
-    <div class="flex justify-end gap-3 mt-4">
-      <button
-        pButton
-        severity="secondary"
-        type="button"
-        [disabled]="actionBusy()"
-        [outlined]="true"
-        (click)="closeForm()"
+
+    <section class="list-surface">
+      <div
+        class="list-toolbar flex flex-wrap items-center justify-between gap-3"
       >
-        {{ "Cancel" | localize }}</button
-      ><button
-        pButton
-        type="submit"
-        [disabled]="actionBusy() || reconcileRequired()"
-        [loading]="actionBusy()"
-      >
-        {{ "Save" | localize }}
-      </button>
-    </div>
-  </form>
-</p-dialog>
+        <div>
+          <small
+            >{{ "Total" | localize }}: {{ page()?.total ?? 0 }} ·
+            {{ "Filters" | localize }}: {{ applied().filters.length }} ·
+            {{ "Sorts" | localize }}: {{ applied().sort_orders.length }}</small
+          >
+        </div>
+        <button
+          class="reload-control"
+          pButton
+          severity="secondary"
+          type="button"
+          [attr.aria-label]="'Refresh' | localize"
+          [attr.title]="'Refresh' | localize"
+          [disabled]="busy() || actionBusy()"
+          [text]="true"
+          (click)="load()"
+        >
+          <i aria-hidden="true" class="pi pi-refresh"></i
+          ><span class="sr-only">{{ "Refresh" | localize }}</span>
+        </button>
+      </div>
+      <app-list-query
+        [busy]="busy() || actionBusy()"
+        [extraFields]="definition.extras"
+        [fields]="definition.queryFields"
+        [hidden]="definition.selectQuery"
+        [query]="applied()"
+        (applied)="load($event)"
+      />
+      <app-record-table
+        [busy]="busy() || actionBusy()"
+        [canEdit]="canEditRow"
+        [columns]="definition.columns"
+        [fields]="definition.queryFields"
+        [moreActions]="rowActions"
+        [page]="page()?.page ?? 1"
+        [pages]="page()?.totalPages ?? 0"
+        [primaryKey]="user ? 'value' : definition.columns[0].key"
+        [query]="applied()"
+        [rowHref]="rowHref"
+        [rows]="page()?.items ?? []"
+        (actionRequested)="rowAction($event)"
+        (edited)="editRow($event)"
+        (opened)="open($event)"
+        (pageChanged)="pageTo($event)"
+        (queried)="load($event)"
+      />
+    </section>
+  }
+</div>
+<app-record-editor [view]="this" />
 <app-record-role-dialog [view]="this" />
 <app-record-history-dialog [view]="this" />
-
-@if (definition.adminGroup && definition.commandBase && !detail()) {
-  <app-resource-actions
-    [base]="definition.commandBase"
-    [disabled]="busy() || actionBusy()"
-    [group]="definition.adminGroup"
-    [tools]="true"
-  />
-}

@@ -1,0 +1,122 @@
+import { publicBrowserStorageCheck } from "./browser-storage-policy.mjs";
+import { foundationsBrowserHelpers } from "./foundations-browser-journey.mjs";
+/** Actual owned services; only successful acknowledgement metadata is faulted. */
+export function inlineAttachmentsBrowserJourney(credentials) {
+  return `
+(async()=>{
+${foundationsBrowserHelpers(credentials)}
+ try {
+  const state=async()=>await(await fetch('/session/status')).json();
+  const http=async(path,body,method='POST')=>{const response=await fetch(path,{method,headers:{'content-type':'application/json','x-csrf-token':(await state()).csrfToken},...(body===undefined?{}:{body:JSON.stringify(body)})});check(response.ok,'Owned inline HTTP '+response.status);const value=await response.json();check(value.success,'Owned inline envelope');return value;};
+  const evidence=async()=>await(await fetch('/__inline-transfer-evidence')).json();
+  const fault=async(value)=>{const response=await fetch('/__inline-transfer-control',{method:'POST',body:JSON.stringify(value)});check(response.ok,'Owned receipt fault enabled');};
+  const field=()=>document.querySelector('app-attachment-control');
+  const caption=async(value)=>{await wait(()=>field()?.querySelector('input[type=text]:not(:disabled)'),'Enabled private caption');const input=field().querySelector('input[type=text]');input.value=value;input.dispatchEvent(new Event('input',{bubbles:true}));};
+  const setKind=async(value)=>{const control=field().querySelector('p-select [role=combobox]');check(control,'Explicit upload kind');control.click();await wait(()=>[...document.querySelectorAll('[role=option]')].some(item=>item.textContent.trim()===value),'Upload kind option');[...document.querySelectorAll('[role=option]')].find(item=>item.textContent.trim()===value).click();await wait(()=>control.getAttribute('aria-expanded')==='false','Kind picker closed');};
+  const pick=(control,file,drop=false)=>{const transfer=new DataTransfer();transfer.items.add(file);if(drop){control.closest('.file-drop').dispatchEvent(new DragEvent('drop',{bubbles:true,cancelable:true,dataTransfer:transfer}));}else{control.files=transfer.files;control.dispatchEvent(new Event('change',{bubbles:true}));}};
+  const png=Uint8Array.from(atob('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aCioAAAAASUVORK5CYII='),value=>value.charCodeAt(0));
+  const imageFile=(name)=>new File([png],name,{type:'image/png'});
+  const ready=async()=>wait(()=>field()?.querySelector('input[type=text]:not(:disabled)'),'Inline form ready');
+  const itemWith=(text)=>[...field().querySelectorAll('.attachment-items > li')].find(item=>item.textContent.includes(text));
+  await login(0);
+  const draft=(await http('/api/v1/business-requests',{request_type_ref_id:accounts.inline_request_type,data:{evidence:[]}})).data;
+  await go('/operations/requests/'+encodeURIComponent(draft.ref_id),'app-case-detail');
+  await ready();
+  check(!document.querySelector('app-generic-media'),'In-place destination, no upload utility');
+  await record('APP-FE-028.UX03 actual authorized collection draft and typed inline destination');
+  const initial=await evidence();
+  const bytes=Uint8Array.from({length:256*1024},(_,index)=>65+(index%26));
+  await caption('Owned private file');
+  await fault({dropAttachmentReceipt:true});
+  pick(field().querySelector('.attachment-inputs input[type=file]'),new File([bytes],'owned-inline-036.txt',{type:'text/plain'}),true);
+  await wait(()=>field()?.querySelector('.attachment-recovery')&&button('Check attachment state',field()),'Actual uploaded-but-unconfirmed link');
+  let counts=await evidence();
+  check(counts.fileUploads===initial.fileUploads+1&&counts.attachmentPosts===initial.attachmentPosts+1&&counts.droppedAttachmentReceipts===1,'One actual byte upload and one committed link');
+  check(!button('Retry attachment link',field()),'Retry disabled until authoritative read');
+  await click('Check attachment state',field());
+  await wait(()=>!field()?.querySelector('.attachment-recovery')&&button('Download',field()),'Actual committed link reconciled');
+  counts=await evidence();
+  check(counts.fileUploads===initial.fileUploads+1&&counts.attachmentPosts===initial.attachmentPosts+1,'Authoritative read confirms existing link without duplicate write');
+  await click('Download',itemWith('Owned private file'));
+  await ready();
+  await record('APP-FE-017.UX05 actual private file drop, committed unusable receipt, read-before-retry, one upload and no duplicate association');
+  await caption('Owned current image');
+  await setKind('Image');
+  pick(field().querySelector('.attachment-inputs input[type=file]'),imageFile('owned-current.png'));
+  await wait(()=>itemWith('Owned current image')&&button('Preview image',itemWith('Owned current image')),'Actual image kind retained');
+  await click('Preview image',itemWith('Owned current image'));
+  await wait(()=>itemWith('Owned current image')?.querySelector('img')?.naturalWidth>0,'Actual authorized image bytes');
+  await record('APP-FE-017.UX05 actual image intent, association metadata and authorized in-field private preview');
+  await ready();
+  await caption('Owned replacement image');
+  pick(itemWith('Owned current image').querySelector('input[type=file]'),imageFile('owned-replacement.png'),true);
+  await wait(()=>itemWith('Owned replacement image')&&!itemWith('Owned current image'),'Actual replacement confirmed');
+  await ready();
+  await click('Move up',itemWith('Owned replacement image'));
+  await ready();
+  check(field().querySelector('.attachment-items > li').textContent.includes('Owned replacement image'),'Actual ordered attachment command');
+  await click('Remove',itemWith('Owned private file'));await confirm();
+  await wait(()=>!itemWith('Owned private file'),'Actual remove confirmed');
+  await record('APP-FE-028.UX03 actual in-place replacement, ordered current-reference update and removal');
+  await click('Submit',document.querySelector('app-case-page-header'));await confirm();
+  await wait(()=>!field()?.querySelector('input[type=file]'),'Submitted source is immutable');
+  await wait(()=>field()&&![...field().querySelectorAll('[role=status]')].some(element=>!element.hidden&&element.textContent.trim()==='Loading…'),'Submitted attachment read settled');
+  await click('Sign out');await login(1);
+  let tasks=[];
+  for(const deadline=Date.now()+15000;Date.now()<deadline&&!tasks.length;){tasks=(await http('/api/v1/work-items/search',{cartable:'available',page:1,size:100})).result.items;if(!tasks.length)await new Promise(resolve=>setTimeout(resolve,100));}
+  check(tasks.length===1,'Owned inline review work item');
+  await go('/operations/tasks/'+encodeURIComponent(tasks[0].ref_id),'app-case-detail');
+  await click('Claim',document.querySelector('app-task-controls'));await ready();
+  await click('Preview image',itemWith('Owned replacement image'));
+  await wait(()=>field()?.querySelector('img')?.naturalWidth>0,'Work-item authorized private content');
+  await caption('Reviewer evidence');await setKind('File');
+  pick(field().querySelector('.attachment-inputs input[type=file]'),new File(['review evidence'],'reviewer.txt',{type:'text/plain'}));
+  await wait(()=>itemWith('Reviewer evidence')||button('Check attachment state',field()),'Actual work-item upload outcome');
+  if(!itemWith('Reviewer evidence')){
+    const beforeCheck=await evidence();check(beforeCheck.fileUploads===initial.fileUploads+2,'Reviewer handle retained without another byte upload');
+    check(!button('Retry attachment link',field()),'Reviewer retry requires authoritative read');
+    await click('Check attachment state',field());
+    await wait(()=>itemWith('Reviewer evidence')||button('Retry attachment link',field()),'Reviewer authoritative attachment state');
+    if(!itemWith('Reviewer evidence'))await click('Retry attachment link',field());
+  }
+  await wait(()=>itemWith('Reviewer evidence')&&button('Download',itemWith('Reviewer evidence')),'Actual work-item attachment');
+  const reviewerEvidence=await evidence();check(reviewerEvidence.fileUploads===initial.fileUploads+2&&reviewerEvidence.attachmentPosts===initial.attachmentPosts+3,'Reviewer association retains one byte upload and one link mutation');
+  await record('APP-FE-028.UX03 actual requester-to-reviewer pin, authorized work-item image content and inline file association');
+  const latestTask=(await http('/api/v1/work-items/'+encodeURIComponent(tasks[0].ref_id),undefined,'GET')).data;
+  const privateAttachments=(await http('/api/v1/work-items/'+encodeURIComponent(latestTask.ref_id)+'/attachments',undefined,'GET')).data;
+  const privateImage=privateAttachments.find(item=>item.kind==='image');check(privateImage,'Actual image projection');
+  const privateContent='/api/v1/work-items/'+encodeURIComponent(latestTask.ref_id)+'/attachments/'+encodeURIComponent(privateImage.ref_id)+'/content';
+  await go('/account/profile','app-profile-editor');
+  const profile=()=>document.querySelector('app-profile-editor');
+  await wait(()=>document.getElementById('profile-avatar')&&!document.getElementById('profile-avatar').disabled,'Actual profile ready');
+  pick(document.getElementById('profile-avatar'),imageFile('owned-avatar-first.png'));
+  await wait(()=>profile()?.querySelector('app-private-avatar img')?.naturalWidth>0&&!profile().textContent.includes('uploaded. Its profile link'),'Initial actual avatar association');
+  const previous=profile().querySelector('app-private-avatar img').src;
+  fill('profile-first-name','Retained independent name');
+  const avatarBefore=await evidence();
+  await fault({dropAvatarReceipt:true});
+  pick(document.getElementById('profile-avatar'),imageFile('owned-avatar-next.png'),true);
+  await wait(()=>button('Check current avatar',profile()),'Actual avatar receipt uncertain');
+  check(profile().querySelector('app-private-avatar img').src===previous,'Confirmed avatar preserved until readback');
+  check(!button('Retry avatar link',profile()),'Uncertain avatar requires read');
+  await click('Check current avatar',profile());
+  await wait(()=>!button('Check current avatar',profile())&&profile()?.querySelector('app-private-avatar img')?.src!==previous,'Actual avatar link readback');
+  const avatarAfter=await evidence();
+  check(avatarAfter.imageUploads===avatarBefore.imageUploads+1&&avatarAfter.avatarPatches===avatarBefore.avatarPatches+1&&avatarAfter.droppedAvatarReceipts===1,'Known avatar handle confirmed without re-upload or duplicate patch');
+  check(document.getElementById('profile-first-name').value==='Retained independent name','Independent name draft retained');
+  await record('APP-FE-036.UX01 actual avatar choose/drop, private preview, unusable committed link receipt, one upload, no duplicate PATCH and retained name draft');
+  await choose('Language','فارسی');await wait(()=>document.documentElement.dir==='rtl'&&profile().textContent.includes('یک فایل را اینجا رها کنید'),'Persian private picker');
+  check(!document.querySelector('a[href="/operations/media"]'),'Private upload utility absent from normal navigation');
+  check(${publicBrowserStorageCheck},'Private values not persisted in browser storage');
+  await choose('زبان','English');
+  await record('APP-FE-036.UX01 actual en/fa private controls, retained deep-link compatibility and empty private browser storage');
+  await click('Sign out');await wait(()=>document.querySelector('app-login')&&!document.querySelector('app-attachment-image img')&&!document.querySelector('app-private-avatar img'),'Private image actor cleanup');
+  await record('APP-FE-036.UX01 actual actor cleanup removes mounted private previews and local selections');
+  await login(2);
+  const denied=await fetch(privateContent);check([403,404].includes(denied.status),'Actual outsider attachment content authorization');
+  check(!document.querySelector('app-attachment-image img'),'Old-case image absent for outsider');
+  await record('APP-FE-036.UX01 actual outsider attachment-content authorization after actor change');
+  await fetch('/__result',{method:'POST',body:JSON.stringify({ok:true,diagnostics:window.fixtureDiagnostics,scenarios})});
+ }catch(error){await fetch('/__result',{method:'POST',body:JSON.stringify({ok:false,error:error.message,diagnostics:window.fixtureDiagnostics,scenarios,ui:{attachment:!!document.querySelector('app-attachment-control'),recovery:!!document.querySelector('.attachment-recovery'),profile:!!document.querySelector('app-profile-editor')}})});}
+})();`;
+}

@@ -1,0 +1,99 @@
+@if (feedback().length || busy()) {
+  <details
+    class="task-feedback"
+    [attr.aria-busy]="busy()"
+    [open]="expanded()"
+    (toggle)="expanded.set($any($event.target).open)"
+  >
+    <summary>{{ "Correction feedback" | localize }}</summary>
+    @if (busy()) {
+      <p role="status">{{ "Loading…" | localize }}</p>
+    }
+    <ul>
+      @for (row of rows(); track row.entry.key) {
+        @let entry = row.entry;
+        @let label = labels()[entry.scope] || ("Form field" | localize);
+        <li [attr.data-feedback-status]="entry.status">
+          <div class="feedback-heading">
+            <bdi>{{ label }}</bdi>
+            @if (row.target?.row; as position) {
+              <span
+                >{{ "Row" | localize }}
+                <bdi>{{ rowLabel(position) }}</bdi></span
+              >
+            }
+            <span>{{
+              statusLabels[entry.status] || "Correction status unavailable"
+                | localize
+            }}</span>
+          </div>
+          <p>{{ entry.message }}</p>
+          <dl class="feedback-values">
+            <div>
+              <dt>{{ "Current value" | localize }}</dt>
+              <dd>
+                <app-form-value
+                  [kinds]="kinds()"
+                  [labels]="labels()"
+                  [scope]="entry.scope"
+                  [value]="entry.current"
+                />
+              </dd>
+            </div>
+            <div>
+              <dt>{{ "Previous value" | localize }}</dt>
+              <dd>
+                <app-form-value
+                  [kinds]="kinds()"
+                  [labels]="labels()"
+                  [scope]="entry.scope"
+                  [value]="entry.prior"
+                />
+              </dd>
+            </div>
+          </dl>
+          <div class="feedback-actions">
+            @if (row.target; as target) {
+              <button
+                pButton
+                severity="secondary"
+                type="button"
+                [attr.aria-label]="
+                  ('Go to field' | localize) +
+                  ': ' +
+                  label +
+                  (target.row
+                    ? ' · ' + ('Row' | localize) + ' ' + rowLabel(target.row)
+                    : '')
+                "
+                [disabled]="busy() || disabled()"
+                [outlined]="true"
+                (click)="fieldRequested.emit(entry)"
+              >
+                {{ "Go to field" | localize }}
+              </button>
+            } @else {
+              <p role="status">{{ "Field unavailable" | localize }}</p>
+            }
+            @if (entry.status === "OPEN" && canResolve()) {
+              <button
+                pButton
+                severity="secondary"
+                type="button"
+                [disabled]="busy() || disabled()"
+                [outlined]="true"
+                (click)="resolved.emit(entry.key)"
+              >
+                {{ "Resolve" | localize }}
+              </button>
+            }
+          </div>
+        </li>
+      } @empty {
+        @if (!busy()) {
+          <li>{{ "No correction feedback" | localize }}</li>
+        }
+      }
+    </ul>
+  </details>
+}

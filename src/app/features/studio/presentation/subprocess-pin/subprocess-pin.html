@@ -15,63 +15,94 @@
     <option [value]="call.reference">{{ call.title }}</option>
   }
 </app-select-control>
-<ul>
-  @for (port of ports(); track $index) {
-    <li>
-      {{ port["name"] }} · {{ port["direction"] }} ·
-      {{ $any(port["value_schema"])["type"] }}
-    </li>
-  }
-</ul>
-@for (port of inputs(); track port["name"]) {
-  <fieldset>
-    <legend>
-      <bdi>{{ port["name"] }}</bdi>
-    </legend>
-    @if (
-      mapping(String(port["name"]))?.["source_kind"] &&
-      mapping(String(port["name"]))?.["source_kind"] !== "CONSTANT"
-    ) {
-      <p>{{ "Existing source mapping is preserved." | localize }}</p>
-    } @else if (port["assignment"]) {
-      <app-studio-choice
-        [controlId]="'child-' + port['name']"
-        [disabled]="disabled()"
-        [kind]="port['assignment'] === 'user' ? 'users' : 'work_groups'"
-        [value]="
-          String(mapping(String(port['name']))?.['constant_value'] || '')
-        "
-        (picked)="setInput(String(port['name']), $event)"
-      />
-    } @else if (editable(port)) {
-      <app-schema-input
-        [controlId]="'child-' + port['name']"
-        [disabled]="disabled()"
-        [label]="String(port['name'])"
-        [required]="port['required'] !== false"
-        [schema]="$any(port['value_schema'])"
-        [value]="mapping(String(port['name']))?.['constant_value']"
-        (valueChange)="setInput(String(port['name']), $event)"
-      />
-    } @else {
-      <p>{{ "Structured child input mapping is unavailable." | localize }}</p>
-    }
-    <button
-      pButton
-      type="button"
-      [disabled]="disabled() || !mapping(String(port['name']))"
-      (click)="setInput(String(port['name']), undefined)"
-    >
-      {{ "Clear child input" | localize }}
-    </button>
-  </fieldset>
+@if (pinnedWithInputs()) {
+  <p>
+    {{
+      "Clear child inputs before choosing a different version. Existing pins never update automatically."
+        | localize
+    }}
+  </p>
 }
-<p>
-  {{
-    "Child input mappings require interface validation before promotion."
-      | localize
-  }}
-</p>
+@if (selected()) {
+  <a
+    class="pin-link"
+    rel="noopener"
+    target="_blank"
+    [routerLink]="['/studio/workflow-versions', selected(), 'edit']"
+    >{{ "Inspect pinned child workflow (opens a new tab)" | localize }}</a
+  >
+  @if (fallback()) {
+    <p role="status">
+      {{
+        "Child interface is unavailable. Existing mappings and pin are preserved."
+          | localize
+      }}
+    </p>
+  }
+  @if (contract()) {
+    <h3>{{ "Child workflow interface" | localize }}</h3>
+    <p>
+      {{
+        "Only explicitly mapped inputs enter the child. Parent context is not shared automatically."
+          | localize
+      }}
+    </p>
+    <app-subprocess-sources
+      [disabled]="disabled()"
+      [step]="step()"
+      [version]="version()"
+      (loaded)="rows.set($event)"
+    />
+  }
+  @for (port of inputs(); track port["name"]) {
+    <fieldset>
+      <legend>
+        <bdi>{{ port["name"] }}</bdi> ·
+        {{ summary($any(port["value_schema"])) }} ·
+        {{ (port["required"] === false ? "Optional" : "Required") | localize }}
+      </legend>
+      <app-subprocess-input
+        [disabled]="disabled()"
+        [port]="port"
+        [sources]="sources()"
+        [value]="mapping(String(port['name']))"
+        (changed)="setInput(String(port['name']), $event)"
+        (draftChanged)="draftChanged.emit()"
+        (sourceChanged)="setSource(String(port['name']), $event)"
+        (validity)="setValid(String(port['name']), $event)"
+      />
+    </fieldset>
+  }
+  @for (item of obsolete(); track item["name"]) {
+    <fieldset>
+      <legend>
+        <bdi>{{ item["name"] }}</bdi>
+      </legend>
+      <p>
+        {{
+          "Input is absent from the available child interface. Its mapping is preserved until explicitly cleared."
+            | localize
+        }}
+      </p>
+      <button
+        pButton
+        severity="secondary"
+        type="button"
+        [disabled]="disabled()"
+        (click)="setInput(String(item['name']), undefined)"
+      >
+        {{ "Clear child input" | localize }} <bdi>{{ item["name"] }}</bdi>
+      </button>
+    </fieldset>
+  }
+  <app-subprocess-interface [value]="contract()" />
+  <p>
+    {{
+      "Child input mappings require interface validation before promotion."
+        | localize
+    }}
+  </p>
+}
 @if (error()) {
   <p role="alert">{{ error() | localize }}</p>
 }

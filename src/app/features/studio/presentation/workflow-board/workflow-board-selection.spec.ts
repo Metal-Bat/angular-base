@@ -1,8 +1,9 @@
+import { of } from 'rxjs';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import { CANVAS_VIEW, STUDIO_API } from '../../bindings';
 import { emptyWorkspace } from '../../domain/authoring';
-import { graphSteps } from '../../domain/workflow-authoring';
+import { canvasEdges, graphSteps } from '../../domain/workflow-authoring';
 import { WorkflowBoard } from './workflow-board';
 import { ActorState } from '../../../../core/auth/actor-state';
 
@@ -22,6 +23,7 @@ async function prepare(): Promise<WorkflowBoard> {
         provide: ActivatedRoute,
         useValue: {
           snapshot: { paramMap: convertToParamMap({ ref: 'draft' }) },
+          paramMap: of(convertToParamMap({ ref: 'draft' })),
         },
       },
       { provide: CANVAS_VIEW, useValue: {} },
@@ -52,6 +54,98 @@ async function prepare(): Promise<WorkflowBoard> {
 }
 
 describe('Workflow selection and navigation', () => {
+  it('inserts through one workspace command and cancels without changing the graph', async () => {
+    const board = await prepare();
+    board.document.update((document) => ({
+      ...document,
+      graph: {
+        ...document.graph,
+        transitions: [
+          {
+            source: 'a',
+            target: 'b',
+            outcome: 'approve',
+            priority: 4,
+            is_default: false,
+            condition: 'request.flag',
+          },
+        ],
+      },
+    }));
+    board.catalogEntries.set([
+      {
+        category: 'step_type',
+        key: 'timer',
+        title: 'Timer',
+        metadata: {
+          code: 'TIMER',
+          ref_id: 'timer-pin',
+          handler_key: 'timer',
+          handler_version: '1',
+        },
+      },
+    ]);
+    const before = structuredClone(board.document());
+    const id = canvasEdges(before.graph)[0].id;
+    board.beginInsert(id);
+    board.cancelStepAction();
+    expect(board.document()).toEqual(before);
+    board.beginInsert(id);
+    board.placeStep({ type: 'timer', outcome: 'next' });
+    expect(graphSteps(board.document().graph)).toHaveLength(4);
+    expect(board.stepAction()).toBeNull();
+    board.undo();
+    expect(board.document()).toEqual(before);
+  });
+  it('refuses stale insertion and clears the pending command when the actor changes', async () => {
+    const board = await prepare();
+    board.document.update((document) => ({
+      ...document,
+      graph: {
+        ...document.graph,
+        transitions: [{ source: 'a', target: 'b', outcome: 'next' }],
+      },
+    }));
+    board.catalogEntries.set([
+      {
+        category: 'step_type',
+        key: 'timer',
+        metadata: { code: 'TIMER', ref_id: 'pin', handler_key: 'timer' },
+      },
+    ]);
+    board.beginInsert(canvasEdges(board.document().graph)[0].id);
+    board.viewport({ x: 10, y: 10, zoom: 1 });
+    board.placeStep({ type: 'timer', outcome: 'next' });
+    expect(graphSteps(board.document().graph)).toHaveLength(3);
+    expect(board.error()).toContain('Workflow changed');
+    TestBed.inject(ActorState).reset();
+    expect(board.stepAction()).toBeNull();
+  });
+  it('targets menus and modifier selection from authoritative state rather than stale canvas inputs', async () => {
+    const board = await prepare();
+    const staleInputs = board.inputs();
+    board.select('a');
+    staleInputs.toggleNode('b');
+    expect(board.selectionKeys()).toEqual(['a', 'b']);
+    staleInputs.selectNode('a', true);
+    expect(board.selectionKeys()).toEqual(['a', 'b']);
+    staleInputs.selectNode('c', true);
+    expect(board.selectionKeys()).toEqual(['c']);
+  });
+  it('moves the selected group once, preserves implicit positions and undoes the entire gesture', async () => {
+    const board = await prepare();
+    const before = structuredClone(board.document());
+    board.selectMany(['a', 'b']);
+    board.move('a', { x: 100, y: 80 });
+    expect(board.document().positions['a']).toEqual({ x: 100, y: 80 });
+    expect(board.document().positions['b']).toEqual({ x: 380, y: 80 });
+    expect(board.document().graph).toEqual(before.graph);
+    board.undo();
+    expect(board.document()).toEqual(before);
+    expect(board.selectionKeys()).toEqual(['a']);
+    board.undo(true);
+    expect(board.document().positions['b']).toEqual({ x: 380, y: 80 });
+  });
   it('single selection replaces the group; duplication and undo target the new node', async () => {
     const board = await prepare();
     const before = structuredClone(board.document());

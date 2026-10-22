@@ -1,4 +1,4 @@
-<p-table [value]="rows()">
+<p-table [scrollable]="true" [value]="rows()">
   <ng-template #header
     ><tr>
       <th scope="col">{{ "Details" | localize }}</th>
@@ -15,18 +15,17 @@
             kind() === 'request' ? '/operations/requests' : '/operations/tasks',
             item.ref,
           ]"
-          >{{
-            (kind() === "request" ? "Open request" : "Open task") | localize
-          }}</a
+          (click)="remember()"
+          ><bdi>{{ title(item) }}</bdi></a
         >
       </td>
       @for (column of visible(); track column) {
         <td>
-          {{
+          <bdi>{{
             value(item, column) === null
               ? ("Unknown" | localize)
               : value(item, column)
-          }}
+          }}</bdi>
         </td>
       }
     </tr></ng-template

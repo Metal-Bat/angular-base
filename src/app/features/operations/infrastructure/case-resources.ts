@@ -15,7 +15,7 @@ import { CaseFiles } from './case-files';
 import { stringField } from './workspace-decoders';
 export class CaseResources extends CaseFiles implements FormResources {
   async view(): Promise<readonly CaseFeedback[]> {
-    if (!this.task) {
+    if (!this.task || !this.reference || !this.editor.document()) {
       return [];
     }
     const response = await firstValueFrom(
@@ -89,23 +89,28 @@ export class CaseResources extends CaseFiles implements FormResources {
     if (!(await this.flush())) {
       return;
     }
-    await this.editor.command({ value: selected }, async (reference, body) =>
-      readData(
-        await firstValueFrom(
-          this.api.call(operations[action], {
-            path: { ref_id: reference },
-            body,
-          }),
+    const confirmed = await this.editor.command(
+      { value: selected },
+      async (reference, body) =>
+        readData(
+          await firstValueFrom(
+            this.api.call(operations[action], {
+              path: { ref_id: reference },
+              body,
+            }),
+          ),
+          (value) => this.referenceFrom(value),
         ),
-        (value) => this.referenceFrom(value),
-      ),
     );
-  }
-  async comment(comment: string): Promise<void> {
-    if (!comment.trim() || !(await this.flush())) {
-      return;
+    if (confirmed) {
+      await this.editor.refresh();
     }
-    await this.editor.command(
+  }
+  async comment(comment: string): Promise<boolean> {
+    if (!comment.trim() || !(await this.flush())) {
+      return false;
+    }
+    return this.editor.command(
       { comment },
       async (reference, body, key) =>
         readData(
@@ -127,19 +132,27 @@ export class CaseResources extends CaseFiles implements FormResources {
     users: readonly string[],
     groups: readonly string[],
     reason: string,
-  ): Promise<void> {
+  ): Promise<boolean> {
     if (
       !this.editor.ownTask() ||
       this.editor.item()?.kind !== 'HUMAN_TASK' ||
       !reason.trim() ||
+      (!users.length && !groups.length) ||
       !(await this.flush())
     ) {
-      return;
+      return false;
     }
-    if (!(await this.editor.feedback.confirm('Forward this task?'))) {
-      return;
+    const epoch = this.actor.epoch;
+    const owner = this.editor.contextKey();
+    if (
+      !(await this.editor.feedback.confirm('Forward this task?')) ||
+      epoch !== this.actor.epoch ||
+      owner !== this.editor.contextKey() ||
+      !this.editor.ownTask()
+    ) {
+      return false;
     }
-    await this.editor.command(
+    return this.editor.command(
       { user_ref_ids: [...users], work_group_ref_ids: [...groups], reason },
       async (reference, body, key) =>
         readData(
@@ -154,6 +167,8 @@ export class CaseResources extends CaseFiles implements FormResources {
           ),
           (value) => this.referenceFrom(value),
         ),
+      true,
+      false,
       true,
     );
   }
@@ -304,15 +319,23 @@ export class CaseResources extends CaseFiles implements FormResources {
       true,
     );
   }
+  private canPoll(): boolean {
+    return (
+      !!this.reference &&
+      !this.editor.busy() &&
+      !this.editor.dirty() &&
+      !this.editor.decisionDirty() &&
+      !this.editor.blocked() &&
+      !this.transferBusy() &&
+      !this.pendingAttachment()
+    );
+  }
   async poll(abort: AbortSignal): Promise<void> {
-    if (
-      this.editor.busy() ||
-      this.editor.dirty() ||
-      this.editor.blocked() ||
-      this.transferBusy()
-    ) {
+    if (!this.canPoll()) {
       return;
     }
+    const owner = this.editor.contextKey();
+    const epoch = this.actor.epoch;
     const response = await firstValueFrom(
       this.api.call(
         this.task
@@ -325,10 +348,10 @@ export class CaseResources extends CaseFiles implements FormResources {
     const reference = readData(response, (value) => this.referenceFrom(value));
     if (
       !abort.aborted &&
+      epoch === this.actor.epoch &&
+      owner === this.editor.contextKey() &&
       reference !== this.reference &&
-      !this.editor.busy() &&
-      !this.editor.dirty() &&
-      !this.editor.blocked()
+      this.canPoll()
     ) {
       await this.editor.refresh(false);
     }

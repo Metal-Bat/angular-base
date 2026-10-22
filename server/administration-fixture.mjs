@@ -1,3 +1,4 @@
+import { publicBrowserStorageCheck } from "./browser-storage-policy.mjs";
 import { otherCrudFixture, otherCrudScript } from "./other-crud-fixture.mjs";
 // Synthetic browser fixture. Backend integration is recorded separately.
 export function administrationFixture(path, body, method) {
@@ -88,6 +89,6 @@ export const administrationScript = `
   await fetch('/test-control?revoke=1'); window.dispatchEvent(new Event('focus'));
   await wait(()=>text().includes('Access denied'),'Revoked administration');
   check(!document.querySelector('app-admin-console,app-resource-page,app-process-controls'),'Private admin state retained after revoke');
-  check(localStorage.length===0 && sessionStorage.length===0,'Admin persisted data');
+  check(${publicBrowserStorageCheck},'Admin persisted data');
   await fetch('/test-result',{method:'POST',body:JSON.stringify({ok:true, accessibility})});
 `;

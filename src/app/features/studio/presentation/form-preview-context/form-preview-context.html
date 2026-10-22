@@ -1,0 +1,70 @@
+<details class="preview-options">
+  <summary>{{ "Preview options" | localize }}</summary>
+  <p>
+    {{
+      "Sample permissions only. Saved answers and actor access stay unchanged."
+        | localize
+    }}
+  </p>
+  <label class="permission-toggle" for="preview-simulated-policy">
+    <p-checkbox
+      inputId="preview-simulated-policy"
+      [binary]="true"
+      [ngModel]="!!context()['policy']"
+      (ngModelChange)="simulate($event)"
+    />
+    {{ "Simulate field permissions" | localize }}
+  </label>
+  @if (context()["policy"]) {
+    @for (field of fields(); track field.scope) {
+      <fieldset>
+        <legend>{{ field.label }}</legend>
+        @for (permission of permissions; track permission) {
+          <label
+            class="permission-toggle"
+            [for]="'preview-' + permission + '-' + field.identity"
+          >
+            <p-checkbox
+              [binary]="true"
+              [inputId]="'preview-' + permission + '-' + field.identity"
+              [ngModel]="allowed(permission, field.scope!)"
+              (ngModelChange)="
+                this.permission(permission, field.scope!, $event)
+              "
+            />
+            {{ permissionLabels[permission] | localize }}
+          </label>
+        }
+      </fieldset>
+    }
+  }
+  <h3>{{ "Prior correction values" | localize }}</h3>
+  <button
+    pButton
+    severity="secondary"
+    type="button"
+    [disabled]="view().previewFreshness() !== 'ready'"
+    [outlined]="true"
+    (click)="capture()"
+  >
+    {{ "Use current sample as prior values" | localize }}
+  </button>
+  @if (context()["before_data"]; as prior) {
+    <app-schema-input
+      controlId="prior-sample"
+      label="Prior correction values"
+      [disabled]="true"
+      [schema]="$any(view().documents()['data_schema'])"
+      [value]="prior"
+    />
+    <button
+      pButton
+      severity="secondary"
+      type="button"
+      [outlined]="true"
+      (click)="set({ before_data: null, before_item_identity: {} })"
+    >
+      {{ "Clear prior values" | localize }}
+    </button>
+  }
+</details>

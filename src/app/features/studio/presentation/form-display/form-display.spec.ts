@@ -74,6 +74,7 @@ describe('Form display', () => {
       {},
       'edit',
       'en',
+      { item_identity: {} },
     );
     expect(
       fixture.nativeElement.querySelector('app-runtime-form'),

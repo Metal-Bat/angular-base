@@ -76,9 +76,18 @@ const queryFields = (name, exclude) =>
                     ? "number"
                     : "text",
         nullable: shape.anyOf?.some((v) => v.type === "null") ?? false,
+        ...(value.enum?.length ? { options: value.enum.map(String) } : {}),
       };
     });
-const columns = (keys) => keys.map((key) => ({ key, label: label(key) }));
+const columns = (keys) => {
+  const primary = ["name", "username", "task_name", "file_name"].find((key) =>
+    keys.includes(key),
+  );
+  return [
+    ...(primary ? [primary] : []),
+    ...keys.filter((key) => key !== primary),
+  ].map((key) => ({ key, label: label(key) }));
+};
 const config = (
   key,
   title,

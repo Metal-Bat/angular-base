@@ -1,0 +1,29 @@
+@if (relations().length) {
+  <section [attr.aria-label]="'Related resources' | localize">
+    <h3>{{ "Related resources" | localize }}</h3>
+    @if (busy()) {
+      <p role="status">{{ "Loading…" | localize }}</p>
+    }
+    @if (error()) {
+      <p role="alert">{{ error() | localize }}</p>
+    }
+    <dl>
+      @for (row of relations(); track $index; let index = $index) {
+        <div>
+          <dt>{{ row.title | localize }}</dt>
+          <dd>{{ labels()[index] || ("Unavailable" | localize) }}</dd>
+          @if (row.minimum) {
+            <dd>
+              {{ "Minimum release (inclusive)" | localize }}: {{ row.minimum }}
+            </dd>
+          }
+          @if (row.maximum) {
+            <dd>
+              {{ "Maximum release (exclusive)" | localize }}: {{ row.maximum }}
+            </dd>
+          }
+        </div>
+      }
+    </dl>
+  </section>
+}

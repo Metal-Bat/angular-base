@@ -1,0 +1,25 @@
+:host {
+  display: block;
+  min-inline-size: 0;
+}
+.file-drop {
+  display: grid;
+  gap: 0.5rem;
+  border: 1px dashed var(--console-border);
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+}
+input {
+  min-block-size: 2.75rem;
+  max-inline-size: 100%;
+  min-inline-size: 0;
+}
+p {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--console-muted);
+  overflow-wrap: anywhere;
+}
+label {
+  font-weight: 600;
+}

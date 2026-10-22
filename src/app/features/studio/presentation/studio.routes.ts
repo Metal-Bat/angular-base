@@ -32,6 +32,7 @@ export const studioRoutes: Routes = [
         ] as ResourceKey[]
       ).map((key) => ({
         path: key,
+        runGuardsAndResolvers: 'paramsOrQueryParamsChange' as const,
         title: key + ' | Studio',
         data: {
           resourceKey: key,
@@ -57,6 +58,7 @@ export const studioRoutes: Routes = [
         path: 'form-versions/:ref/edit',
         title: 'Form designer | Studio',
         data: {
+          editor: true,
           access: 'authenticated',
           requiredPermissions: ['forms.manage'],
         },
@@ -73,6 +75,7 @@ export const studioRoutes: Routes = [
         path: 'workflow-versions/:ref/edit',
         title: 'Workflow designer | Studio',
         data: {
+          editor: true,
           access: 'authenticated',
           requiredPermissions: ['workflows.manage'],
         },

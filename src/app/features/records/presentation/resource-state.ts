@@ -1,4 +1,7 @@
-import { ActivatedRoute } from '@angular/router';
+import { scheduleFields } from '../domain/schedule-validation';
+import { ActivatedRoute, Router } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { distinctUntilChanged, map, skip } from 'rxjs';
 import { WorkspaceDefaults } from '../../../core/resources/workspace-defaults';
 import { computed, DestroyRef, inject, signal } from '@angular/core';
 import { ActorState } from '../../../core/auth/actor-state';
@@ -18,11 +21,15 @@ import {
 } from '../bindings';
 import {
   RecordDefinition,
+  RecordField,
   RecordPage,
   recordReference,
   RecordRow,
 } from '../domain/records';
 export class ResourceState {
+  private readonly route = inject(ActivatedRoute, { optional: true });
+  private readonly router = inject(Router, { optional: true });
+  private readonly referenceNavigation = {};
   protected readonly entityHistoryDefinition = inject(HISTORY_DEFINITION);
   readonly definition = inject(RECORD_DEFINITION);
   readonly rolesDefinition = inject(ROLE_DEFINITION);
@@ -69,11 +76,23 @@ export class ResourceState {
   readonly user = this.definition.userPartition !== undefined;
   readonly allowed = computed(() => this.can(this.definition.permission));
   readonly roleAllowed = computed(() => this.can('admin.permissions.manage'));
-  readonly visibleFields = computed(() =>
-    this.mode() === 'create'
-      ? this.definition.createFields
-      : this.definition.fields,
-  );
+  readonly visibleFields = (): readonly RecordField[] => {
+    const fields =
+      this.mode() === 'create'
+        ? this.definition.createFields
+        : this.definition.fields;
+    if (this.definition.key !== 'task-schedules') {
+      return fields;
+    }
+    const updating = this.mode() !== 'create';
+    const values = updating
+      ? {
+          ...this.values,
+          schedule_type: String(this.detail()?.['schedule_type'] ?? ''),
+        }
+      : this.values;
+    return scheduleFields(fields, values, updating);
+  };
   readonly formWidth = computed(() =>
     this.visibleFields().some((field) => field.type === 'json')
       ? '56rem'
@@ -100,10 +119,34 @@ export class ResourceState {
       this.clear();
       release();
     });
-    const selected = inject(ActivatedRoute, {
-      optional: true,
-    })?.snapshot.queryParamMap.get('selected');
+    const selected = this.route?.snapshot.queryParamMap.get('selected');
     void this.initialize(selected);
+    this.route?.queryParamMap
+      .pipe(
+        map((params) => params.get('selected')),
+        distinctUntilChanged(),
+        skip(1),
+        takeUntilDestroyed(),
+      )
+      .subscribe((ref) => {
+        if (ref && recordReference(this.detail() ?? {}) === ref) {
+          return;
+        }
+        this.generation++;
+        this.busy.set(false);
+        this.mode.set(null);
+        this.formDirty.set(false);
+        this.values = {};
+        this.password = '';
+        this.detail.set(null);
+        if (ref) {
+          if (this.page()) {
+            void this.open({ ref_id: ref });
+          } else {
+            void this.initialize(ref);
+          }
+        }
+      });
     if (this.definition.key === 'reports') {
       this.polling.start(
         async (abort) => {
@@ -204,6 +247,11 @@ export class ResourceState {
     this.error.set('');
   }
   async canLeave(): Promise<boolean> {
+    if (
+      this.router?.currentNavigation()?.extras.info === this.referenceNavigation
+    ) {
+      return true;
+    }
     return (
       !this.formDirty() || this.feedback.confirm('Discard unsaved changes?')
     );
@@ -232,7 +280,7 @@ export class ResourceState {
       if (generation !== this.generation || abort?.aborted) {
         return;
       }
-      if (!this.detail()) {
+      if (!this.detail() && !this.mode()) {
         this.reconcileRequired.set(false);
       }
       this.page.set(page);
@@ -279,6 +327,44 @@ export class ResourceState {
       ? 'The record changed. Reload the current record before retrying.'
       : 'The service is unavailable. Your current view has been retained.';
   }
+  readonly rowHref = (row: Record<string, unknown>): string => {
+    if (!this.router || !this.route) {
+      return '';
+    }
+    return this.router.serializeUrl(
+      this.router.createUrlTree([], {
+        relativeTo: this.route,
+        queryParams: { selected: recordReference(row as RecordRow) },
+        queryParamsHandling: 'merge',
+      }),
+    );
+  };
+  async backToList(): Promise<void> {
+    if (!(await this.canLeave())) {
+      return;
+    }
+    this.detail.set(null);
+    await this.syncSelectionUrl(null);
+  }
+  protected async syncSelectionUrl(
+    ref: string | null,
+    replaceUrl = false,
+  ): Promise<void> {
+    if (
+      !this.router ||
+      !this.route ||
+      this.route.snapshot.queryParamMap.get('selected') === ref
+    ) {
+      return;
+    }
+    await this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { selected: ref },
+      queryParamsHandling: 'merge',
+      replaceUrl,
+      info: this.referenceNavigation,
+    });
+  }
   async open(row: Record<string, unknown>, abort?: AbortSignal): Promise<void> {
     if (this.busy() || this.actionBusy()) {
       return;
@@ -286,6 +372,7 @@ export class ResourceState {
     const reference = recordReference(row as RecordRow);
     if (!this.definition.operations.get) {
       this.detail.set(row as RecordRow);
+      await this.syncSelectionUrl(reference);
       return;
     }
     const generation = ++this.generation;
@@ -296,6 +383,7 @@ export class ResourceState {
       if (generation === this.generation && !abort?.aborted) {
         this.reconcileRequired.set(false);
         this.detail.set(detail);
+        await this.syncSelectionUrl(recordReference(detail));
       }
     } catch (error) {
       if (generation === this.generation) {

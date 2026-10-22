@@ -6,106 +6,19 @@
       <fieldset [disabled]="vm.busy()">
         <legend>{{ vm.locationLabels[location] | localize }}</legend>
         @for (field of command.fields[location]; track field.key) {
-          <label [for]="location + '-' + field.key"
-            >{{ field.title | localize }}
-            @if (field.required) {
-              <span aria-hidden="true">*</span>
-            }
-          </label>
-          @if (field.type === "boolean") {
-            <input
-              type="checkbox"
-              [attr.aria-describedby]="
-                vm.invalid().includes(location + '.' + field.key)
-                  ? location + '-' + field.key + '-error'
-                  : null
-              "
-              [attr.aria-invalid]="
-                vm.invalid().includes(location + '.' + field.key)
-                  ? 'true'
-                  : null
-              "
-              [id]="location + '-' + field.key"
-              [name]="location + '-' + field.key"
-              [ngModel]="vm.input()[location][field.key]"
-              (ngModelChange)="vm.change(field, location, $event)"
-            />
-          } @else if (field.options.length) {
-            <app-select-control
-              [describedBy]="
-                vm.invalid().includes(location + '.' + field.key)
-                  ? location + '-' + field.key + '-error'
-                  : null
-              "
-              [inputId]="location + '-' + field.key"
-              [invalid]="
-                vm.invalid().includes(location + '.' + field.key)
-                  ? 'true'
-                  : null
-              "
-              [name]="location + '-' + field.key"
-              [ngModel]="vm.display(field, location)"
-              [required]="field.required"
-              (ngModelChange)="vm.change(field, location, $event)"
-            >
-              <option value="">{{ "Choose" | localize }}</option>
-              @for (option of field.options; track option) {
-                <option [value]="option">{{ option }}</option>
-              }
-            </app-select-control>
-          } @else if (field.type === "json") {
-            <textarea
-              autocomplete="off"
-              rows="5"
-              spellcheck="false"
-              [attr.aria-describedby]="
-                vm.invalid().includes(location + '.' + field.key)
-                  ? location + '-' + field.key + '-error'
-                  : null
-              "
-              [attr.aria-invalid]="
-                vm.invalid().includes(location + '.' + field.key)
-                  ? 'true'
-                  : null
-              "
-              [id]="location + '-' + field.key"
-              [name]="location + '-' + field.key"
-              [ngModel]="vm.display(field, location)"
-              [required]="field.required"
-              (ngModelChange)="vm.change(field, location, $event)"
-            ></textarea>
-          } @else {
-            <input
-              autocomplete="off"
-              [attr.aria-describedby]="
-                vm.invalid().includes(location + '.' + field.key)
-                  ? location + '-' + field.key + '-error'
-                  : null
-              "
-              [attr.aria-invalid]="
-                vm.invalid().includes(location + '.' + field.key)
-                  ? 'true'
-                  : null
-              "
-              [id]="location + '-' + field.key"
-              [name]="location + '-' + field.key"
-              [ngModel]="vm.display(field, location)"
-              [required]="field.required"
-              [type]="
-                vm.secret(field)
-                  ? 'password'
-                  : field.type === 'number'
-                    ? 'number'
-                    : 'text'
-              "
-              (ngModelChange)="vm.change(field, location, $event)"
-            />
-          }
-          @if (vm.invalid().includes(location + "." + field.key)) {
-            <p role="alert" [id]="location + '-' + field.key + '-error'">
-              {{ "Invalid value" | localize }}
-            </p>
-          }
+          <app-schema-input
+            [controlId]="location + '-' + field.key"
+            [disabled]="vm.busy()"
+            [errors]="errors()"
+            [label]="field.title"
+            [path]="location + '.' + field.key"
+            [referenceLabels]="labels()"
+            [required]="field.required"
+            [schema]="field.schema"
+            [value]="vm.input()[location][field.key]"
+            (referenceRequested)="references.open($event)"
+            (valueChange)="vm.changeTyped(field, location, $event)"
+          />
         }
       </fieldset>
     }
@@ -118,3 +31,8 @@
     {{ (command.mutation ? "Review command" : "Load") | localize }}
   </button>
 </form>
+<app-reference-picker
+  #references
+  [context]="vm.input().body"
+  (picked)="pick($event.path, $event.value, $event.label)"
+/>

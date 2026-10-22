@@ -3,9 +3,43 @@ import { TemporalControl } from '../temporal-control/temporal-control';
 import { Locale } from '../../../core/localization/locale';
 import { TestBed } from '@angular/core/testing';
 import { emptyQuery, ListQuery } from '../../domain/list-query';
+import { QueryFilters } from './query-filters';
 import { ListQueryEditor } from './list-query';
 
 describe('List query form sections', () => {
+  it('reports the whole filter editing session to its refresh owner', async () => {
+    const fixture = TestBed.createComponent(ListQueryEditor);
+    fixture.componentRef.setInput('fields', []);
+    await fixture.whenStable();
+    const editing = vi.fn();
+    fixture.componentInstance.editing.subscribe(editing);
+    const toggle = fixture.nativeElement.querySelector(
+      'button[aria-label="Advanced filters"]',
+    ) as HTMLButtonElement;
+    toggle.click();
+    await fixture.whenStable();
+    expect(editing).toHaveBeenLastCalledWith(true);
+    toggle.click();
+    await fixture.whenStable();
+    expect(editing.mock.calls).toEqual([[true], [false]]);
+  });
+  it('keeps an unfinished condition when polling returns the same applied query on another page', async () => {
+    const fixture = TestBed.createComponent(ListQueryEditor);
+    fixture.componentRef.setInput('fields', [
+      { key: 'name', label: 'Name', type: 'text' },
+    ]);
+    fixture.componentRef.setInput('query', emptyQuery());
+    await fixture.whenStable();
+    fixture.componentInstance.addFilter();
+    fixture.componentInstance.filters[0].value = 'Unfinished';
+    const condition = fixture.componentInstance.filters[0];
+    fixture.componentRef.setInput('query', { ...emptyQuery(), page: 2 });
+    await fixture.whenStable();
+    expect(fixture.componentInstance.filters[0]).toBe(condition);
+    expect(condition.value).toBe('Unfinished');
+    fixture.componentInstance.cancel();
+    expect(fixture.componentInstance.filters).toEqual([]);
+  });
   it('renders replacement queries and clears the filter section from the parent form', async () => {
     const fixture = TestBed.createComponent(ListQueryEditor);
     fixture.componentRef.setInput('fields', [
@@ -44,6 +78,89 @@ describe('List query form sections', () => {
     expect(emitted.at(-1)?.filters).toEqual([]);
   });
 
+  it('keeps condition control identity and its error after removing an earlier condition', async () => {
+    const fixture = TestBed.createComponent(ListQueryEditor);
+    fixture.componentRef.setInput('fields', [
+      { key: 'name', label: 'Name', type: 'text' },
+    ]);
+    fixture.componentRef.setInput('query', {
+      ...emptyQuery(),
+      size: 50,
+      filters: [
+        { field_name: 'name', operation: 'contains', value: 'Yes' },
+        { field_name: 'name', operation: 'notEqual', value: 'No' },
+      ],
+    });
+    const vm = fixture.componentInstance;
+    vm.collapsed = false;
+    await fixture.whenStable();
+    const child = fixture.debugElement.query(By.directive(QueryFilters))
+      .componentInstance as QueryFilters;
+    const surviving = vm.filters[1];
+    const id = child.id(surviving);
+    vm.filterErrors = { 1: 'Keep this error' };
+    child.remove(0);
+    await fixture.whenStable();
+    expect(child.id(vm.filters[0])).toBe(id);
+    expect(vm.filterErrors).toEqual({ 0: 'Keep this error' });
+    expect(
+      fixture.nativeElement.querySelector('#' + id + '-field'),
+    ).toBeTruthy();
+    vm.cancel();
+    expect(vm.filters.map((row) => row.value)).toEqual(['Yes', 'No']);
+    expect(vm.filterErrors).toEqual({});
+    const emitted: ListQuery[] = [];
+    vm.applied.subscribe((query) => emitted.push(query));
+    vm.reset();
+    expect(emitted).toEqual([{ ...emptyQuery(), size: 50 }]);
+  });
+  it('round-trips agent filters and summarizes exact numbers and literal text', async () => {
+    const query: ListQuery = {
+      ...emptyQuery(),
+      filters: [
+        { field_name: 'status', operation: 'equal', value: 'PUBLISHED' },
+        { field_name: 'name', operation: 'contains', value: 'purchase' },
+        { field_name: 'number', operation: 'gte', value: 2 },
+      ],
+      sort_orders: [
+        { field_name: 'created_at', operation: 'desc' },
+        { field_name: 'name', operation: 'asc' },
+      ],
+    };
+    const fixture = TestBed.createComponent(ListQueryEditor);
+    fixture.componentRef.setInput('fields', [
+      { key: 'status', label: 'Status', type: 'text' },
+      { key: 'name', label: 'Name', type: 'text' },
+      { key: 'number', label: 'Version', type: 'number' },
+      { key: 'created_at', label: 'Created At', type: 'datetime' },
+    ]);
+    fixture.componentRef.setInput('query', query);
+    await fixture.whenStable();
+    const vm = fixture.componentInstance;
+    const emitted: ListQuery[] = [];
+    vm.applied.subscribe((value) => emitted.push(value));
+    vm.apply();
+    expect(emitted).toEqual([query]);
+    expect(vm.appliedSummary()).toEqual([
+      'Status Equals PUBLISHED',
+      'Name Contains purchase',
+      'Version At least 2',
+      'Sort 1: Created At · Descending',
+      'Sort 2: Name · Ascending',
+    ]);
+    fixture.componentRef.setInput('query', {
+      ...query,
+      filters: [
+        { field_name: 'number', operation: 'equal', value: 1.23456789 },
+        { field_name: 'name', operation: 'equal', value: 'Yes' },
+      ],
+    });
+    await fixture.whenStable();
+    expect(vm.appliedSummary().slice(0, 2)).toEqual([
+      'Version Equals 1.23456789',
+      'Name Equals Yes',
+    ]);
+  });
   it('shows validation from the parent and submits corrected filter values', async () => {
     const fixture = TestBed.createComponent(ListQueryEditor);
     fixture.componentRef.setInput('fields', [

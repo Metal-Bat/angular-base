@@ -22,25 +22,24 @@
   :where(.console-page, .console-fragment) {
     h1 {
       margin: 0 0 0.75rem;
-      font-size: clamp(1.75rem, 3vw, 2.25rem);
+      font-size: 1.75rem;
       font-weight: 700;
       line-height: 1.3;
-      letter-spacing: -0.04em;
     }
     h2 {
       margin: 0 0 1rem;
-      font-size: 1.1rem;
+      font-size: 1.25rem;
       font-weight: 650;
       line-height: 1.4;
     }
     h3 {
       margin: 0 0 0.5rem;
-      font-size: 0.95rem;
+      font-size: 1.125rem;
       font-weight: 650;
     }
     p {
       margin-block: 0.75rem 1.25rem;
-      line-height: 1.75;
+      line-height: 1.5;
       overflow-wrap: anywhere;
     }
     a:not(.p-button):not(.console-card) {
@@ -49,9 +48,9 @@
     }
     label {
       display: block;
-      font-size: 0.8rem;
+      font-size: 0.875rem;
       font-weight: 600;
-      margin-block: 1rem 0.4rem;
+      margin-block: 0.5rem 0.25rem;
     }
     :where(input, select, textarea):not([type="checkbox"]):not(
         [type="radio"]
@@ -59,15 +58,12 @@
       display: block;
       inline-size: 100%;
       max-inline-size: 38rem;
-      min-block-size: 2.75rem;
+      min-block-size: var(--workspace-control-height, 2.5rem);
       padding: 0.7rem 0.85rem;
       border: 1px solid var(--console-input-border);
       border-radius: 0.6rem;
       background: var(--console-surface);
       color: var(--console-text);
-      transition:
-        border-color 160ms ease,
-        box-shadow 160ms ease;
       &:focus {
         border-color: var(--console-accent);
       }
@@ -80,7 +76,7 @@
     }
     textarea {
       resize: vertical;
-      font-size: 0.8rem;
+      font-size: 0.875rem;
       line-height: 1.65;
     }
     input[type="file"] {
@@ -93,8 +89,8 @@
       margin-inline-end: 0.5rem;
     }
     .p-button {
-      font-size: 0.8rem;
-      min-block-size: 2.75rem;
+      font-size: 0.875rem;
+      min-block-size: var(--workspace-control-height, 2.5rem);
     }
     .p-button[aria-pressed="true"] {
       background: var(--console-accent-soft);
@@ -106,8 +102,8 @@
     aside,
     .console-panel {
       min-inline-size: 0;
-      padding: 1.5rem;
-      margin-block: 1.25rem;
+      padding: 1rem;
+      margin-block: 1rem;
       border: 1px solid var(--console-border);
       border-radius: 1rem;
       background: var(--console-surface);
@@ -132,9 +128,8 @@
     }
     summary {
       padding: 1rem 1.25rem;
-      font-size: 0.85rem;
+      font-size: 0.875rem;
       font-weight: 600;
-      transition: background 160ms ease;
     }
     summary:hover {
       background: var(--console-accent-soft);
@@ -179,12 +174,12 @@
     }
     dt {
       color: var(--console-muted);
-      font-size: 0.8rem;
+      font-size: 0.875rem;
     }
     dd {
       margin: 0;
       overflow-wrap: anywhere;
-      font-size: 0.85rem;
+      font-size: 1rem;
     }
     pre {
       max-inline-size: 100%;
@@ -196,14 +191,14 @@
       border: 1px solid var(--console-border);
       border-radius: 0.75rem;
       background: var(--console-canvas);
-      font-size: 0.8rem;
+      font-size: 0.875rem;
     }
     code,
     bdi {
       overflow-wrap: anywhere;
     }
     p[role="alert"] {
-      border-inline-start: 3px solid var(--mat-sys-error);
+      border: 1px solid var(--mat-sys-error);
       background: var(--mat-sys-error-container);
       color: var(--mat-sys-on-error-container);
       padding: 1rem 1.25rem;
@@ -231,7 +226,7 @@
       border-block-end: 1px solid var(--console-border);
     }
     th {
-      font-size: 0.75rem;
+      font-size: 0.875rem;
       color: var(--console-muted);
       background: var(--console-canvas);
     }
@@ -254,24 +249,20 @@
     margin-block-end: 0.75rem;
     padding-block: 0.25rem;
     > div:first-child {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: baseline;
-      gap: 0.35rem 0.75rem;
       min-inline-size: 0;
       flex: 1;
     }
     h1 {
       margin: 0;
-      font-size: 1.25rem;
-      line-height: 1.4;
+      font-size: 1.75rem;
+      line-height: 1.3;
     }
     .console-eyebrow {
       display: inline;
       margin: 0;
       padding-inline-end: 0.75rem;
       border-inline-end: 1px solid var(--console-border);
-      font-size: 0.75rem;
+      font-size: 0.8125rem;
       font-weight: 500;
       letter-spacing: normal;
       text-transform: none;
@@ -283,6 +274,7 @@
     }
     > div:last-child:not(:first-child) {
       flex-shrink: 0;
+      max-inline-size: 100%;
     }
     button,
     .p-button {
@@ -301,11 +293,9 @@
   .console-eyebrow {
     display: block;
     margin-block-end: 0.75rem;
-    font-size: 0.7rem;
+    font-size: 0.8125rem;
     font-weight: 600;
     color: var(--console-muted);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
   }
   .console-card-grid {
     display: grid;
@@ -324,16 +314,10 @@
     background: var(--console-surface);
     color: var(--console-text);
     text-decoration: none;
-    transition:
-      border-color 180ms ease,
-      transform 180ms ease,
-      box-shadow 180ms ease;
   }
   .console-card:hover,
   .console-card:focus-visible {
     border-color: var(--console-accent);
-    transform: translateY(-3px);
-    box-shadow: var(--console-shadow);
   }
   .console-card-icon {
     display: grid;
@@ -357,7 +341,7 @@
   .console-card p {
     margin: 0;
     color: var(--console-muted);
-    font-size: 0.85rem;
+    font-size: 0.875rem;
   }
   .console-card-action {
     display: flex;
@@ -365,7 +349,7 @@
     gap: 0.65rem;
     margin-block-start: auto;
     padding-block-start: 1rem;
-    font-size: 0.75rem;
+    font-size: 0.875rem;
     color: var(--console-accent);
     font-weight: 600;
   }
@@ -375,17 +359,10 @@
     border-radius: 0.4rem;
     background: var(--console-accent-soft);
     color: var(--console-accent);
-    font-size: 0.7rem;
+    font-size: 0.8125rem;
     font-weight: 600;
-    margin-inline-start: 0.75rem;
   }
-  .console-page > form {
-    padding: 1.5rem;
-    margin-block: 1.25rem;
-    border: 1px solid var(--console-border);
-    border-radius: 1rem;
-    background: var(--console-surface);
-  }
+  .console-page > form,
   .console-page > section:not(.admin-console),
   .admin-console > section {
     padding: 1.5rem;
@@ -430,5 +407,50 @@
     .console-page > section:not(.admin-console) {
       padding: 1.25rem;
     }
+  }
+}
+
+@layer components {
+  // One page inset belongs to the shell; editors own only their reading width.
+  .page-editor {
+    max-inline-size: 64rem;
+    margin-inline: auto;
+    min-inline-size: 0;
+  }
+  .page-editor-toolbar {
+    position: sticky;
+    inset-block-start: var(--workspace-header-height, 4.25rem);
+    z-index: 5;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding-block: 0.75rem;
+    margin-block-end: 1rem;
+    border-block-end: 1px solid var(--console-border);
+    background: var(--console-surface);
+    h2 {
+      margin: 0;
+    }
+    span {
+      color: var(--console-muted);
+    }
+  }
+  .page-editor-actions {
+    display: flex;
+    gap: 0.5rem;
+    button {
+      margin: 0;
+    }
+  }
+  .field-error-summary {
+    a {
+      display: block;
+    }
+  }
+  .console-page > section.list-surface,
+  .console-page > div > section.list-surface {
+    padding: 0;
   }
 }

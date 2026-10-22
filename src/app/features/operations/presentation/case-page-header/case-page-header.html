@@ -1,0 +1,51 @@
+@let vm = view();
+<header class="console-page-header">
+  <div class="case-identity">
+    <h1 tabindex="-1">
+      {{
+        (vm.kind === "request" ? "Request detail" : "Task detail") | localize
+      }}
+    </h1>
+    @if (vm.editor.item(); as item) {
+      <span class="console-record-status">{{ item.status | localize }}</span>
+    }
+  </div>
+  <div class="flex flex-wrap items-center gap-2">
+    <a
+      [routerLink]="
+        vm.kind === 'request' ? '/operations/requests' : '/operations/tasks'
+      "
+      >{{ "Back to list" | localize }}</a
+    >
+    @if (vm.editor.document(); as document) {
+      @if (document.purpose === "edit" || document.purpose === "correction") {
+        <button
+          pButton
+          severity="secondary"
+          type="button"
+          [disabled]="vm.saveBusy() || !vm.editor.canEdit()"
+          [outlined]="true"
+          (click)="vm.editor.save()"
+        >
+          {{ "Save" | localize }}
+        </button>
+        @if (vm.canSubmit()) {
+          <button
+            pButton
+            type="button"
+            [disabled]="vm.formBusy() || !vm.editor.canEdit()"
+            (click)="vm.editor.submit()"
+          >
+            {{ "Submit" | localize }}
+          </button>
+        }
+      }
+    }
+    @if (vm.editor.item(); as item) {
+      <app-case-history [kind]="vm.kind" [reference]="item.ref" />
+      @if (vm.kind === "request") {
+        <app-request-actions [editor]="vm.editor" />
+      }
+    }
+  </div>
+</header>

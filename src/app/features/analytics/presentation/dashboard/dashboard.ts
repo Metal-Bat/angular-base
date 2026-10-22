@@ -1,3 +1,6 @@
+import { metricUnavailableReason } from '../metric-text';
+import { DashboardOverview } from '../dashboard-overview/dashboard-overview';
+import { ControlField } from '../../../../shared/ui/control-field/control-field';
 import { TemporalControl } from '../../../../shared/ui/temporal-control/temporal-control';
 import { ApiFailure } from '../../../../core/transport/api-failure';
 import { metricTitle } from '../../domain/metrics';
@@ -13,17 +16,24 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DOCUMENT } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { ButtonDirective } from 'primeng/button';
-import { InputTextModule } from 'primeng/inputtext';
 import { NotificationPreview } from '../../../../core/notifications/notification-preview';
 import { ActorState } from '../../../../core/auth/actor-state';
 import { Locale } from '../../../../core/localization/locale';
 import { ListNavigation } from '../../../../core/resources/list-navigation';
 import { LocalizePipe } from '../../../../shared/ui/localize-pipe';
 import { SelectControl } from '../../../../shared/ui/select-control/select-control';
-import { shiftDate, zonedDate } from '../../../calendar/domain/calendar-dates';
-import { MetricProjection, metricWindow } from '../../domain/metrics';
+import {
+  shiftDate,
+  validateZone,
+  zonedDate,
+} from '../../../calendar/domain/calendar-dates';
+import {
+  MetricProjection,
+  metricWindow,
+  MetricWindowError,
+} from '../../domain/metrics';
 import {
   MetricDefinition,
   MetricQuery,
@@ -32,15 +42,18 @@ import { MetricCard } from '../metric-card/metric-card';
 @Component({
   selector: 'app-dashboard',
   imports: [
+    DashboardOverview,
+    RouterLink,
+    ControlField,
     TemporalControl,
     FormsModule,
-    InputTextModule,
     ButtonDirective,
     SelectControl,
     LocalizePipe,
     MetricCard,
   ],
   templateUrl: './dashboard.html',
+  styleUrl: './dashboard.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Dashboard {
@@ -54,20 +67,27 @@ export class Dashboard {
   readonly result = signal<MetricProjection | null>(null);
   readonly state = signal<'loading' | 'ready' | 'failed'>('loading');
   readonly error = signal('');
+  readonly rangeError = signal('');
+  readonly zoneError = signal('');
+  readonly summaryQuery = signal<MetricQuery | null>(null);
+  period: 'today' | 'week' | 'month' | 'custom' = 'month';
   readonly range = signal<{ start: string; end: string } | null>(null);
   metric: MetricQuery['metric_key'] = 'submitted_requests';
   start = shiftDate(
     zonedDate(new Date().toISOString(), this.locale.timezone()),
-    -30,
+    -29,
   );
   end = shiftDate(
     zonedDate(new Date().toISOString(), this.locale.timezone()),
     1,
   );
-  timezone = this.locale.timezone();
+  get timezone(): string {
+    return this.locale.timezone();
+  }
   dimension: 'none' | 'status' = 'none';
   readonly stale = signal(false);
   private generation = 0;
+  private abort = new AbortController();
   private timer?: ReturnType<typeof setTimeout>;
   private poll?: ReturnType<typeof setInterval>;
   private applied: MetricQuery | null = null;
@@ -76,11 +96,13 @@ export class Dashboard {
   constructor() {
     const release = inject(ActorState).register(() => {
       this.generation++;
+      this.abort.abort();
       clearTimeout(this.timer);
       clearInterval(this.poll);
       this.applied = null;
       this.inFlight = false;
       this.refreshQueued = false;
+      this.summaryQuery.set(null);
       this.catalog.set([]);
       this.result.set(null);
       this.range.set(null);
@@ -89,6 +111,7 @@ export class Dashboard {
     });
     inject(DestroyRef).onDestroy(() => {
       this.generation++;
+      this.abort.abort();
       clearTimeout(this.timer);
       clearInterval(this.poll);
       release();
@@ -126,6 +149,12 @@ export class Dashboard {
         return;
       }
       this.catalog.set(catalog);
+      if (!catalog.some((item) => item.metric_key === this.metric)) {
+        const first = catalog.find((item) => item.availability === 'available');
+        if (first) {
+          this.metric = first.metric_key;
+        }
+      }
       await this.load();
     } catch {
       if (generation === this.generation) {
@@ -134,8 +163,61 @@ export class Dashboard {
       }
     }
   }
+  get lastDay(): string {
+    try {
+      return shiftDate(this.end, -1);
+    } catch {
+      return this.end;
+    }
+  }
+  set lastDay(value: string) {
+    this.period = 'custom';
+    try {
+      this.end = shiftDate(value, 1);
+    } catch {
+      this.end = value;
+    }
+  }
+  setPreset(value: unknown): void {
+    if (!['today', 'week', 'month', 'custom'].includes(String(value))) {
+      return;
+    }
+    this.period = value as typeof this.period;
+    if (this.period === 'custom') {
+      return;
+    }
+    try {
+      const today = zonedDate(new Date().toISOString(), this.timezone);
+      this.start = shiftDate(
+        today,
+        this.period === 'week' ? -6 : this.period === 'month' ? -29 : 0,
+      );
+      this.end = shiftDate(today, 1);
+    } catch {
+      this.zoneError.set('Choose a supported timezone.');
+      this.invalidInput();
+    }
+  }
+  private invalidInput(): void {
+    this.stale.set(this.result() !== null);
+    this.state.set('failed');
+    this.error.set('Check the highlighted fields before continuing.');
+    this.document
+      .getElementById(
+        this.zoneError() ? 'metric-zone-settings' : 'metric-start',
+      )
+      ?.focus();
+  }
   async load(): Promise<void> {
     if (this.inFlight) {
+      return;
+    }
+    this.rangeError.set('');
+    this.zoneError.set('');
+    if (!this.catalog().some((item) => item.metric_key === this.metric)) {
+      this.stale.set(this.result() !== null);
+      this.state.set('failed');
+      this.error.set('Metrics are unavailable.');
       return;
     }
     const snapshot: MetricQuery = {
@@ -147,11 +229,21 @@ export class Dashboard {
       granularity: 'day',
     };
     try {
-      metricWindow(snapshot.start_date, snapshot.end_date, snapshot.timezone);
+      validateZone(snapshot.timezone);
     } catch {
-      this.result.set(null);
-      this.state.set('failed');
-      this.error.set('Check the highlighted fields before continuing.');
+      this.zoneError.set('Choose a supported timezone.');
+      this.invalidInput();
+      return;
+    }
+    try {
+      metricWindow(snapshot.start_date, snapshot.end_date, snapshot.timezone);
+    } catch (error) {
+      this.rangeError.set(
+        error instanceof MetricWindowError
+          ? 'This range includes a midnight that does not exist in the selected timezone. Choose different dates.'
+          : 'Choose a date range of 1 to 366 days.',
+      );
+      this.invalidInput();
       return;
     }
     await this.refresh(snapshot);
@@ -168,30 +260,49 @@ export class Dashboard {
   }
   private async refresh(snapshot: MetricQuery): Promise<void> {
     this.inFlight = true;
+    this.summaryQuery.set(structuredClone(snapshot));
     const generation = ++this.generation;
+    this.abort.abort();
+    this.abort = new AbortController();
     clearTimeout(this.timer);
-    this.stale.set(false);
+    this.stale.set(this.result() !== null);
     this.state.set('loading');
     this.error.set('');
-    this.result.set(null);
     try {
-      const result = await this.api.query(snapshot);
+      const result = await this.api.query(snapshot, this.abort.signal);
       if (generation !== this.generation) {
         return;
       }
       this.applied = snapshot;
       this.result.set(result);
+      this.stale.set(false);
       this.timer = setTimeout(() => this.stale.set(true), 30000);
       this.range.set({ start: snapshot.start_date, end: snapshot.end_date });
       this.state.set('ready');
     } catch (error) {
       if (generation === this.generation) {
         this.state.set('failed');
-        this.error.set(
-          error instanceof ApiFailure && [400, 422].includes(error.httpStatus)
-            ? 'Check the highlighted fields before continuing.'
-            : 'The service is unavailable.',
-        );
+        if (
+          error instanceof ApiFailure &&
+          [400, 422].includes(error.httpStatus)
+        ) {
+          for (const issue of error.issues) {
+            const field = issue.pointer.split('/').at(-1);
+            if (field === 'timezone') {
+              this.zoneError.set('Choose a supported timezone.');
+            }
+            if (field === 'start_date' || field === 'end_date') {
+              this.rangeError.set('Choose a date range of 1 to 366 days.');
+            }
+          }
+          this.error.set(
+            this.zoneError() || this.rangeError()
+              ? 'Check the highlighted fields before continuing.'
+              : 'Check the filter settings before continuing.',
+          );
+        } else {
+          this.error.set('The service is unavailable.');
+        }
       }
     } finally {
       if (generation === this.generation) {
@@ -203,10 +314,22 @@ export class Dashboard {
       }
     }
   }
+  unavailableReason(): string {
+    return metricUnavailableReason(
+      this.catalog().find(
+        (item) => item.metric_key === this.result()?.metric_key,
+      )?.reason,
+    );
+  }
   async open(value: NonNullable<MetricProjection['drilldown']>): Promise<void> {
-    if (this.state() !== 'ready' || !this.result()?.drilldown) {
+    if (this.state() !== 'ready' || this.stale() || !this.result()?.drilldown) {
       return;
     }
+    await this.openSummary(value);
+  }
+  async openSummary(
+    value: NonNullable<MetricProjection['drilldown']>,
+  ): Promise<void> {
     // The descriptor is producer-owned and is reauthorized by the existing list endpoint.
     this.navigation.set(value);
     const moved = await this.router.navigate([

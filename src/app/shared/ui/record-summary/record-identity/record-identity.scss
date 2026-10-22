@@ -1,0 +1,58 @@
+:host {
+  display: block;
+  min-inline-size: 0;
+}
+.record-identity {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding-block-end: 1.5rem;
+  border-block-end: 1px solid var(--console-border);
+}
+.identity-icon {
+  display: grid;
+  place-items: center;
+  inline-size: 3.5rem;
+  block-size: 3.5rem;
+  flex-shrink: 0;
+  border-radius: 1rem;
+  background: var(--console-accent-soft);
+  color: var(--console-accent);
+  font-size: 1.5rem;
+}
+.identity-text {
+  flex: 1;
+  min-inline-size: 0;
+  h2 {
+    margin: 0;
+  }
+  p {
+    margin: 0.4rem 0 0;
+    font-size: 0.875rem;
+    color: var(--console-muted);
+    overflow-wrap: anywhere;
+  }
+  .console-eyebrow {
+    margin-block-end: 0.3rem;
+  }
+}
+.identity-status {
+  padding: 0.4rem 0.75rem;
+  border-radius: 2rem;
+  background: var(--console-accent-soft);
+  color: var(--console-accent);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+.history-identity {
+  padding-block: 1rem;
+}
+.history-context {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1rem;
+  margin-block-start: 0.5rem;
+  color: var(--console-muted);
+  font-size: 0.875rem;
+}

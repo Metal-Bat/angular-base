@@ -1,5 +1,6 @@
 <section class="my-5 grid gap-3 rounded-xl border border-console-border p-5">
   <h2>{{ "My information" | localize }}</h2>
+  <app-private-avatar [reference]="profile.value()?.avatar_ref_id ?? null" />
   @if (error()) {
     <p role="alert">{{ error() | localize }}</p>
   }
@@ -45,27 +46,79 @@
         preferences.loading() ||
         preferences.status() === 'saving' ||
         !profile.value() ||
-        reconcileRequired()
+        reconcileRequired() ||
+        pendingAvatar()
       "
     >
       {{ "Save" | localize }}
     </button>
   </form>
-  <label for="profile-avatar">{{ "Avatar" | localize }}</label
-  ><input
+  <app-file-picker
     accept="image/*"
-    id="profile-avatar"
-    type="file"
+    controlId="profile-avatar"
+    label="Avatar"
     [disabled]="
       busy() ||
       transfer.busy() ||
       preferences.loading() ||
       preferences.status() === 'saving' ||
       !profile.value() ||
-      reconcileRequired()
+      reconcileRequired() ||
+      !!pendingAvatar()
     "
-    (change)="avatar($event)"
+    (picked)="uploadAvatar($event)"
   />
+  @if (transfer.busy()) {
+    <app-transfer-progress
+      label="Uploading avatar…"
+      [value]="transfer.progress()"
+    />
+    <button
+      pButton
+      severity="secondary"
+      type="button"
+      (click)="transfer.cancel()"
+    >
+      {{ "Cancel transfer" | localize }}
+    </button>
+  }
+  @if (pendingAvatar()) {
+    <section [attr.aria-label]="'Avatar association' | localize">
+      <app-private-avatar label="Selected avatar" [file]="candidateAvatar()" />
+      <p role="status">
+        {{
+          "The image is uploaded. Its profile link is not yet confirmed. Check the current avatar before retrying; the uploaded bytes will be reused."
+            | localize
+        }}
+      </p>
+      <button
+        pButton
+        severity="secondary"
+        type="button"
+        [disabled]="busy() || transfer.busy()"
+        (click)="checkAvatar()"
+      >
+        {{ "Check current avatar" | localize }}
+      </button>
+      <button
+        pButton
+        type="button"
+        [disabled]="busy() || transfer.busy() || reconcileRequired()"
+        (click)="save(pendingAvatar()!)"
+      >
+        {{ "Retry avatar link" | localize }}
+      </button>
+      <button
+        pButton
+        severity="secondary"
+        type="button"
+        [disabled]="busy() || transfer.busy()"
+        (click)="discardAvatar()"
+      >
+        {{ "Discard avatar selection" | localize }}
+      </button>
+    </section>
+  }
   @if (profile.value()?.avatar_ref_id) {
     <button
       pButton

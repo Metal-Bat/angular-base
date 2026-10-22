@@ -29,3 +29,7 @@ Graph refresh: `graphify update .` follows final source changes; no API rebuild 
 ## User-requested temporal/table continuation — 2026-10-11
 
 [Shared temporal controls and responsive tables](APP-FE-004-TEMPORAL-CONTROLS.md) records the new requested delta and its actual verification independently of the original UI foundation evidence. Existing APP and CONS parent IDs/statuses are retained.
+
+## Reported calendar/select and theme continuation — 2026-10-17
+
+[Scoped repair and remaining font dependency](APP-FE-004-LOCALE-OVERLAYS.md) records the new user report, actual live browser interactions and independent final-check receipt. Historical verification and parent status are unchanged.

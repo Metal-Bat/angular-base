@@ -1,3 +1,9 @@
+import { formOutline } from '../form-selection-label';
+import {
+  inspectionBody,
+  inspectionContext,
+} from '../../domain/form-inspection';
+import { componentLabels, quickFieldTypes } from './form-palette';
 import {
   computed,
   DestroyRef,
@@ -13,19 +19,31 @@ import { ActorState } from '../../../../core/auth/actor-state';
 import { Feedback } from '../../../../core/feedback/feedback';
 import { ApiFailure } from '../../../../core/transport/api-failure';
 import { FieldEdit } from '../../../forms/domain/canonical-values';
-import { replaceRow } from '../../../forms/domain/row-values';
+import { editFormSample } from '../form-preview-sample';
 import {
   JsonObject,
   RuntimeCompatibility,
 } from '../../../forms/domain/runtime-document';
 import { parseDocument } from '../../domain/authoring';
 import { authorIssues } from '../../domain/authoring-diagnostics';
-import { outline, palette } from '../../domain/form-authoring';
+import { palette } from '../../domain/form-authoring';
 import { STUDIO_API } from '../../bindings';
 import { formDocuments } from '../../domain/form-documents';
 @Directive()
 export abstract class FormBuilderCommands {
-  abstract select(path: readonly number[]): void;
+  readonly quickFieldTypes = quickFieldTypes;
+  readonly componentLabels = componentLabels;
+  readonly workspaceTab = signal('design');
+  readonly toolsOpen = signal(false);
+  readonly dragging = signal(false);
+  readonly paletteSearch = signal('');
+  componentLabel = '';
+  readonly paletteCategory = signal('');
+
+  readonly toolsTab = signal<string | number>('components');
+  readonly previewMode = signal(false);
+  readonly previewDevice = signal<'desktop' | 'phone'>('desktop');
+  abstract select(path: readonly number[]): boolean;
   readonly api = inject(STUDIO_API);
   protected readonly feedback = inject(Feedback);
   private readonly route = inject(ActivatedRoute);
@@ -36,6 +54,8 @@ export abstract class FormBuilderCommands {
   });
   readonly status = signal('');
   readonly dirty = signal(false);
+  readonly contextEpoch = signal(0);
+  protected savedDocuments: JsonObject | null = null;
   readonly pending = signal<readonly string[]>([]);
   readonly busy = signal(false);
   readonly error = signal('');
@@ -52,9 +72,7 @@ export abstract class FormBuilderCommands {
     }
   });
   readonly selected = signal<readonly number[]>([]);
-  readonly outline = computed(() =>
-    outline(this.documents()['render_schema'] as JsonObject),
-  );
+  readonly outline = computed(() => formOutline(this));
   readonly readonly = computed(() => this.status() !== 'DRAFT' || this.busy());
   readonly preview = signal<RuntimeCompatibility | null>(null);
   readonly previewBusy = signal(false);
@@ -63,14 +81,17 @@ export abstract class FormBuilderCommands {
     'idle' | 'pending' | 'loading' | 'ready' | 'invalid' | 'failed'
   >('idle');
   private previewSequence = 0;
+  private previewController: AbortController | undefined;
   private previewTimer: ReturnType<typeof setTimeout> | undefined;
   queuePreview(): void {
     this.previewSequence++;
+    this.previewController?.abort();
+    this.previewController = undefined;
     clearTimeout(this.previewTimer);
-    this.preview.set(null);
     this.previewBusy.set(false);
     this.previewError.set('');
     if (!this.reference() || !this.status()) {
+      this.preview.set(null);
       this.previewFreshness.set('idle');
       return;
     }
@@ -86,9 +107,6 @@ export abstract class FormBuilderCommands {
     return value?.status === 'ready' ? value.document : null;
   });
   readonly data = signal<JsonObject>({});
-  selectedJson = '{}';
-  schemaJson = '{}';
-  behaviorJson = '{}';
   sampleJson = '{}';
   previewContextJson =
     '{"policy":null,"before_data":null,"item_identity":{},"before_item_identity":{}}';
@@ -121,9 +139,13 @@ export abstract class FormBuilderCommands {
   }
   protected abstract resetEditorHistory(): void;
   protected clear(): void {
+    this.contextEpoch.update((value) => value + 1);
+    this.savedDocuments = null;
     this.resetEditorHistory();
     this.generation++;
     this.previewSequence++;
+    this.previewController?.abort();
+    this.previewController = undefined;
     clearTimeout(this.previewTimer);
     this.previewBusy.set(false);
     this.previewFreshness.set('idle');
@@ -142,16 +164,15 @@ export abstract class FormBuilderCommands {
     this.busy.set(false);
     this.preview.set(null);
     this.data.set({});
-    this.selectedJson = '';
-    this.schemaJson = '';
-    this.behaviorJson = '';
     this.sampleJson = '';
+    this.toolsTab.set('components');
+    this.previewMode.set(false);
+    this.previewDevice.set('desktop');
     this.dirty.set(false);
   }
   async canLeave(): Promise<boolean> {
     return (
-      (!(this.dirty() || this.pending().length > 0) &&
-        !this.pending().length) ||
+      !(this.dirty() || this.pending().length > 0) ||
       this.feedback.confirm('Discard unsaved form changes?')
     );
   }
@@ -180,19 +201,9 @@ export abstract class FormBuilderCommands {
       if (generation === this.generation) {
         this.reference.set(String(row['ref_id']));
         this.status.set(String(row['status']));
+        this.contextEpoch.update((value) => value + 1);
         this.documents.set(formDocuments(row));
-        this.schemaJson = JSON.stringify(row['data_schema'], null, 2);
-        this.behaviorJson = JSON.stringify(
-          {
-            page_settings: row['page_settings'] ?? {},
-            variants: row['variants'] ?? [],
-            localization: row['localization'] ?? null,
-            reuse_instances: row['reuse_instances'] ?? null,
-            behavior_dialect: row['behavior_dialect'] ?? null,
-          },
-          null,
-          2,
-        );
+        this.savedDocuments = this.documents();
         this.resetEditorHistory();
         this.pending.set([]);
         this.select([]);
@@ -214,31 +225,40 @@ export abstract class FormBuilderCommands {
   markPending(key: string): void {
     this.pending.update((keys) => [...new Set([...keys, key])]);
     this.dirty.set(true);
-    this.preview.set(null);
   }
   async save(): Promise<void> {
     if (this.readonly() || this.pending().length) {
       return;
     }
     await this.run(async (generation) => {
+      const documents = this.documents();
       const row = await this.api.write(
         'form-versions',
         this.reference(),
-        this.documents(),
+        documents,
       );
       if (generation !== this.generation) {
         return;
       }
       this.reference.set(String(row['ref_id']));
-      this.dirty.set(false);
+      this.savedDocuments = documents;
+      this.reconcileDirty();
       this.diagnostics.set('Saved');
     });
+  }
+  protected reconcileDirty(): void {
+    this.dirty.set(
+      this.pending().length > 0 ||
+        JSON.stringify(this.documents()) !==
+          JSON.stringify(this.savedDocuments),
+    );
   }
   async validate(): Promise<void> {
     await this.run(async (generation) => {
       const result = await this.api.auxiliary('validate', this.documents());
       if (generation === this.generation) {
         this.diagnostics.set(JSON.stringify(result, null, 2));
+        this.workspaceTab.set('diagnostics');
       }
     });
   }
@@ -249,6 +269,9 @@ export abstract class FormBuilderCommands {
       return;
     }
     const sequence = ++this.previewSequence;
+    this.previewController?.abort();
+    const controller = new AbortController();
+    this.previewController = controller;
     const generation = this.generation;
     const documents = this.documents();
     const purpose = this.purpose;
@@ -257,6 +280,7 @@ export abstract class FormBuilderCommands {
     const sampleJson = this.sampleJson;
     const current = (): boolean =>
       sequence === this.previewSequence &&
+      !controller.signal.aborted &&
       generation === this.generation &&
       documents === this.documents() &&
       purpose === this.purpose &&
@@ -267,7 +291,6 @@ export abstract class FormBuilderCommands {
     this.previewBusy.set(true);
     this.previewFreshness.set('loading');
     this.previewError.set('');
-    this.preview.set(null);
     try {
       const result = await this.api.preview(
         documents,
@@ -275,67 +298,48 @@ export abstract class FormBuilderCommands {
         purpose,
         locale,
         parseDocument(context),
+        controller.signal,
       );
       if (!current()) {
         return;
       }
-      this.preview.set(result);
       if (result.status === 'ready') {
+        this.preview.set(result);
         this.data.set(result.document.canonical);
         this.previewFreshness.set('ready');
       } else {
         this.previewFreshness.set('invalid');
         this.previewError.set('Preview is incompatible');
       }
-    } catch {
+    } catch (error) {
       if (current()) {
-        this.previewFreshness.set('failed');
-        this.previewError.set('The form display is unavailable.');
+        if (error instanceof ApiFailure && error.httpStatus === 422) {
+          this.diagnostics.set(JSON.stringify({ issues: error.issues }));
+          this.previewFreshness.set('invalid');
+          this.previewError.set(
+            'Review diagnostics to correct the form configuration.',
+          );
+        } else {
+          this.previewFreshness.set('failed');
+          this.previewError.set('The form display is unavailable.');
+        }
       }
     } finally {
       if (sequence === this.previewSequence && generation === this.generation) {
+        this.previewController = undefined;
         this.previewBusy.set(false);
       }
     }
   }
   editSample(change: FieldEdit): void {
-    if (change.error) {
-      this.error.set(change.error);
-      return;
-    }
-    try {
-      this.data.set(
-        replaceRow(
-          this.data(),
-          change.scope,
-          change.indices ?? [],
-          change.value,
-        ),
-      );
-      this.sampleJson = JSON.stringify(this.data(), null, 2);
-    } catch {
-      this.error.set('Sample change is unavailable');
-    }
+    editFormSample(this, change);
   }
-  async inspect(tool: string): Promise<void> {
+  async inspect(tool: string, query?: JsonObject): Promise<void> {
     await this.run(async (generation) => {
-      const body =
-        tool === 'navigation' || tool === 'options'
-          ? {
-              documents: this.documents(),
-              query: parseDocument(this.interactionJson),
-            }
-          : tool === 'schema'
-            ? {}
-            : tool === 'behavior'
-              ? {
-                  documents: this.documents(),
-                  data: parseDocument(this.sampleJson),
-                  initialize: true,
-                }
-              : this.documents();
+      const current = inspectionContext(this, tool);
+      const body = inspectionBody(tool, this, query);
       const result = await this.api.auxiliary(tool, body);
-      if (generation === this.generation) {
+      if (generation === this.generation && current()) {
         this.diagnostics.set(JSON.stringify(result, null, 2));
       }
     });

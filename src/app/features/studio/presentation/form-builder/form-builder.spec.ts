@@ -1,4 +1,7 @@
+import { FormInspector } from '../form-inspector/form-inspector';
 import { TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
+import { FormSettings } from '../form-settings/form-settings';
 import {
   ActivatedRoute,
   convertToParamMap,
@@ -20,6 +23,10 @@ describe('Form authoring commands', () => {
   const api = {
     get: vi.fn(async () => structuredClone(row)),
     write: vi.fn(async () => ({ ...row, ref_id: 'next' })),
+    auxiliary: vi.fn(async (): Promise<unknown> => ({
+      valid: true,
+      issues: [],
+    })),
   };
   beforeEach(() => {
     vi.clearAllMocks();
@@ -37,6 +44,174 @@ describe('Form authoring commands', () => {
         { provide: STUDIO_API, useValue: api },
       ],
     });
+  });
+  it('reconciles discarded Settings buffers with the last confirmed saved document', async () => {
+    const fixture = TestBed.createComponent(FormBuilder);
+    await fixture.whenStable();
+    const vm = fixture.componentInstance;
+    vm.markPending('settings-ui');
+    vm.discardSettings();
+    expect(vm.dirty()).toBe(false);
+    vm.quickAdd('text');
+    vm.markPending('settings-ui');
+    vm.discardSettings();
+    expect(vm.dirty()).toBe(true);
+    await vm.save();
+    vm.markPending('settings-ui');
+    vm.discardSettings();
+    expect(vm.dirty()).toBe(false);
+    vm.quickAdd('integer');
+    vm.undo();
+    expect(vm.dirty()).toBe(false);
+    vm.undo(true);
+    expect(vm.dirty()).toBe(true);
+  });
+  it('preserves Settings buffers on failed reload and clears them only after confirmed successful reload', async () => {
+    const fixture = TestBed.createComponent(FormBuilder);
+    await fixture.whenStable();
+    const vm = fixture.componentInstance;
+    const settings = fixture.debugElement.query(By.directive(FormSettings))
+      .componentInstance as FormSettings;
+    settings.key = 'old-message';
+    settings.en = 'Private old draft';
+    vm.markPending('settings-ui');
+    api.get.mockRejectedValueOnce(Error('offline'));
+    const failed = vm.load();
+    TestBed.inject(Feedback).answer(true);
+    await failed;
+    await fixture.whenStable();
+    expect(settings.en).toBe('Private old draft');
+    expect(vm.pending()).toContain('settings-ui');
+    const reload = vm.load();
+    TestBed.inject(Feedback).answer(true);
+    await reload;
+    await fixture.whenStable();
+    expect(settings.key).toBe('');
+    expect(settings.en).toBe('');
+    expect(vm.pending()).toEqual([]);
+  });
+  it('keeps field properties pending without exposing document editors', async () => {
+    const fixture = TestBed.createComponent(FormBuilder);
+    await fixture.whenStable();
+    const vm = fixture.componentInstance;
+    vm.quickAdd('text');
+    vm.quickAdd('integer');
+    vm.markPending('inspector');
+    expect(vm.select([0])).toBe(false);
+    expect(vm.selected()).toEqual([1]);
+    expect(
+      fixture.nativeElement.querySelector(
+        '#node-json, #schema-json, #behavior-json, #sample-json, #preview-context, pre',
+      ),
+    ).toBeNull();
+  });
+  it('opens the selected field properties only after successful creation', async () => {
+    const fixture = TestBed.createComponent(FormBuilder);
+    await fixture.whenStable();
+    const vm = fixture.componentInstance;
+    vm.quickAdd('text');
+    expect(vm.toolsTab()).toBe('properties');
+    expect(vm.toolsOpen()).toBe(true);
+    expect(vm.selected()).toEqual([0]);
+    vm.toolsTab.set('components');
+    vm.pending.set(['inspector']);
+    const before = vm.documents();
+    vm.quickAdd('integer');
+    expect(vm.documents()).toBe(before);
+    expect(vm.toolsTab()).toBe('components');
+    expect(vm.selected()).toEqual([0]);
+  });
+  it('opens the affected field from validation issues instead of leaving selection hidden in diagnostics', async () => {
+    const fixture = TestBed.createComponent(FormBuilder);
+    await fixture.whenStable();
+    const vm = fixture.componentInstance;
+    vm.quickAdd('text');
+    vm.diagnostics.set(
+      JSON.stringify({
+        issues: [
+          {
+            pointer: '/render_schema/root/children/0/options',
+            code: 'render.invalid',
+          },
+        ],
+      }),
+    );
+    vm.workspaceTab.set('diagnostics');
+    vm.previewMode.set(true);
+    await fixture.whenStable();
+    const issue = fixture.nativeElement.querySelector(
+      '.diagnostics-mode li button',
+    ) as HTMLButtonElement;
+    issue.click();
+    await fixture.whenStable();
+    expect(vm.workspaceTab()).toBe('design');
+    expect(vm.previewMode()).toBe(false);
+    expect(vm.toolsTab()).toBe('properties');
+    expect(vm.selected()).toEqual([0]);
+    expect(document.activeElement?.id).toBe('field-label');
+  });
+  it('keeps uncommitted inspector text and the active mode when an issue cannot be selected', async () => {
+    const fixture = TestBed.createComponent(FormBuilder);
+    await fixture.whenStable();
+    const vm = fixture.componentInstance;
+    vm.quickAdd('text');
+    vm.quickAdd('integer');
+    await fixture.whenStable();
+    const inspector = fixture.debugElement.query(By.directive(FormInspector))
+      .componentInstance as FormInspector;
+    inspector.patch('label', 'Unfinished title');
+    vm.markPending('inspector');
+    vm.diagnostics.set(
+      JSON.stringify({
+        issues: [
+          {
+            pointer: '/render_schema/root/children/0/options',
+            code: 'render.invalid',
+          },
+        ],
+      }),
+    );
+    vm.workspaceTab.set('diagnostics');
+    await fixture.whenStable();
+    const issue = fixture.nativeElement.querySelector(
+      '.diagnostics-mode li button',
+    ) as HTMLButtonElement;
+    issue.click();
+    await fixture.whenStable();
+    expect(vm.workspaceTab()).toBe('diagnostics');
+    expect(vm.selected()).toEqual([1]);
+    expect(inspector.draft()['label']).toBe('Unfinished title');
+    expect(vm.pending()).toContain('inspector');
+  });
+  it('opens validation results and fences option inspection results from a previous selection', async () => {
+    const fixture = TestBed.createComponent(FormBuilder);
+    await fixture.whenStable();
+    const vm = fixture.componentInstance;
+    await vm.validate();
+    expect(vm.workspaceTab()).toBe('diagnostics');
+    vm.quickAdd('text');
+    vm.quickAdd('choice');
+    vm.diagnostics.set('');
+    let resolve!: (value: unknown) => void;
+    api.auxiliary.mockImplementationOnce(
+      () =>
+        new Promise((done) => {
+          resolve = done;
+        }),
+    );
+    const loading = vm.inspect('options', {
+      node_pointer: '/root/children/1',
+      data: {},
+    });
+    expect(api.auxiliary).toHaveBeenLastCalledWith(
+      'options',
+      expect.objectContaining({ locale: 'en' }),
+    );
+    vm.select([0]);
+    resolve({ state: 'READY', items: [{ value: 'Stale option' }] });
+    await loading;
+    expect(vm.diagnostics()).toBe('');
+    expect(vm.selected()).toEqual([0]);
   });
   it('reloads a changed route reference and fences the previous draft during the new read', async () => {
     const fixture = TestBed.createComponent(FormBuilder);

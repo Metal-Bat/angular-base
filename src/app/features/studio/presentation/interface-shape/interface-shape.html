@@ -1,0 +1,130 @@
+<details>
+  <summary>
+    {{ "Input structure" | localize }} · {{ summary(working()) | localize }}
+  </summary>
+  @if (!available()) {
+    <p>
+      {{
+        "This schema is retained exactly; advanced constraints remain authoritative."
+          | localize
+      }}
+    </p>
+  } @else if (working()["type"] === "object") {
+    @for (property of properties(); track property.name; let index = $index) {
+      <fieldset>
+        <legend>
+          <bdi>{{ property.name }}</bdi>
+        </legend>
+        <p-checkbox
+          [binary]="true"
+          [disabled]="disabled()"
+          [inputId]="childId(index) + '-required'"
+          [ngModel]="required(property.name)"
+          (ngModelChange)="require(property.name, $event)"
+        />
+        <label [for]="childId(index) + '-required'"
+          >{{ "Required field" | localize }} ·
+          <bdi>{{ property.name }}</bdi></label
+        >
+        <app-interface-shape
+          [controlId]="childId(index)"
+          [depth]="depth() + 1"
+          [disabled]="disabled()"
+          [schema]="property.schema"
+          (editing)="editing.emit($event)"
+          (schemaChange)="child(property.name, $event)"
+        />
+        <button
+          pButton
+          severity="secondary"
+          type="button"
+          [disabled]="disabled()"
+          (click)="remove(property.name)"
+        >
+          {{ "Remove field" | localize }} · <bdi>{{ property.name }}</bdi>
+        </button>
+      </fieldset>
+    }
+    <button
+      pButton
+      severity="secondary"
+      type="button"
+      [disabled]="disabled() || properties().length >= 64"
+      (click)="open()"
+    >
+      {{ "Add input field" | localize }}
+    </button>
+  } @else if (working()["type"] === "array") {
+    @if (!Object.keys(items()).length) {
+      <label [for]="controlId() + '-items'">{{
+        "Collection member type" | localize
+      }}</label>
+      <app-select-control
+        [ariaLabel]="'Collection member type' | localize"
+        [disabled]="disabled()"
+        [inputId]="controlId() + '-items'"
+        [ngModel]="''"
+        (ngModelChange)="itemType($event)"
+      >
+        <option value="">{{ "Any value" | localize }}</option>
+        @for (type of types; track type) {
+          <option [value]="type">{{ type | localize }}</option>
+        }
+      </app-select-control>
+    } @else {
+      <app-interface-shape
+        [controlId]="controlId() + '-member'"
+        [depth]="depth() + 1"
+        [disabled]="disabled()"
+        [schema]="items()"
+        (editing)="editing.emit($event)"
+        (schemaChange)="item($event)"
+      />
+    }
+  } @else {
+    <p>{{ "Existing value constraints are preserved." | localize }}</p>
+  }
+</details>
+<p-dialog
+  [header]="'Add input field' | localize"
+  [modal]="true"
+  [style]="{ width: '28rem', maxWidth: 'calc(100vw - 2rem)' }"
+  [visible]="dialog()"
+  (visibleChange)="!$event && close()"
+>
+  <label [for]="controlId() + '-new-name'">{{ "Field name" | localize }}</label>
+  <input
+    maxlength="64"
+    pInputText
+    [disabled]="disabled()"
+    [id]="controlId() + '-new-name'"
+    [(ngModel)]="name"
+  />
+  <label [for]="controlId() + '-new-type'">{{ "Value type" | localize }}</label>
+  <app-select-control
+    [ariaLabel]="'Value type' | localize"
+    [disabled]="disabled()"
+    [inputId]="controlId() + '-new-type'"
+    [(ngModel)]="type"
+  >
+    @for (type of types; track type) {
+      <option [value]="type">{{ type | localize }}</option>
+    }
+  </app-select-control>
+  @if (error()) {
+    <p role="alert">{{ error() | localize }}</p>
+  }
+  <div class="shape-actions">
+    <button
+      pButton
+      type="button"
+      [disabled]="disabled() || !name().trim()"
+      (click)="add()"
+    >
+      {{ "Add field" | localize }}
+    </button>
+    <button pButton severity="secondary" type="button" (click)="close()">
+      {{ "Cancel" | localize }}
+    </button>
+  </div>
+</p-dialog>

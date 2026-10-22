@@ -1,0 +1,75 @@
+<details class="calendar-rail" [open]="!narrow() || expanded()">
+  <summary (click)="toggle($event)">
+    {{ "Calendar options" | localize }}
+  </summary>
+  <div class="rail-content">
+    <nav class="mini-navigation" [attr.aria-label]="'Choose month' | localize">
+      <button
+        pButton
+        severity="secondary"
+        type="button"
+        [attr.aria-label]="'Previous month' | localize"
+        [text]="true"
+        (click)="navigate(-1)"
+      >
+        <i aria-hidden="true" class="pi pi-chevron-left rtl:rotate-180"></i>
+      </button>
+      <strong aria-live="polite">{{ title() }}</strong>
+      <button
+        pButton
+        severity="secondary"
+        type="button"
+        [attr.aria-label]="'Next month' | localize"
+        [text]="true"
+        (click)="navigate(1)"
+      >
+        <i aria-hidden="true" class="pi pi-chevron-right rtl:rotate-180"></i>
+      </button>
+    </nav>
+    <div
+      class="mini-days"
+      role="group"
+      [attr.aria-label]="'Choose date' | localize"
+    >
+      @for (day of weekdays(); track $index) {
+        <span aria-hidden="true">{{ day }}</span>
+      }
+      @for (day of days(); track day) {
+        <button
+          pButton
+          severity="secondary"
+          type="button"
+          [attr.aria-current]="day === today() ? 'date' : null"
+          [attr.aria-label]="format(day, { dateStyle: 'full' })"
+          [attr.aria-pressed]="day === anchor()"
+          [attr.data-calendar-day]="day"
+          [class.adjacent]="day < range().start || day >= range().end"
+          [text]="day !== anchor()"
+          (click)="dateSelected.emit(day)"
+        >
+          {{ format(day, { day: "numeric" }) }}
+        </button>
+      }
+    </div>
+    <fieldset class="sources">
+      <legend>{{ "Visible sources" | localize }}</legend>
+      <div>
+        <p-checkbox
+          inputId="calendar-personal"
+          [binary]="true"
+          [(ngModel)]="personal"
+        /><label for="calendar-personal">{{ "My events" | localize }}</label>
+      </div>
+      <div>
+        <p-checkbox
+          inputId="calendar-workflow"
+          [binary]="true"
+          [(ngModel)]="workflow"
+        /><label for="calendar-workflow">{{
+          "Work deadlines" | localize
+        }}</label>
+      </div>
+    </fieldset>
+    <ng-content />
+  </div>
+</details>

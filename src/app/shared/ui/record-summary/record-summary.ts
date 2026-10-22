@@ -1,3 +1,4 @@
+import { RecordIdentity } from './record-identity/record-identity';
 import { fieldLabel } from '../../domain/field-label';
 import {
   fieldChanges,
@@ -19,7 +20,13 @@ import { RecordCollections } from './record-collections';
 
 @Component({
   selector: 'app-record-summary',
-  imports: [LocalizePipe, TableModule, TagModule, RecordCollections],
+  imports: [
+    RecordIdentity,
+    LocalizePipe,
+    TableModule,
+    TagModule,
+    RecordCollections,
+  ],
   templateUrl: './record-summary.html',
   styleUrl: './record-summary.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -28,6 +35,11 @@ export class RecordSummary {
   private readonly locale = inject(Locale);
   readonly record = input.required<Readonly<Record<string, unknown>>>();
   readonly title = input.required<string>();
+  readonly showIdentity = input(true);
+  readonly groups = input<
+    readonly { title: string; keys: readonly string[] }[]
+  >([]);
+  readonly includeRemaining = input(false);
   readonly icon = input('pi pi-file');
   readonly caption = input('Record overview');
   readonly formatValue = (value: unknown): string => this.value(value);
@@ -89,7 +101,7 @@ export class RecordSummary {
       ...entry,
       label: this.pathLabel(entry.path),
       empty: entry.value === null,
-      value: this.value(entry.value),
+      value: this.value(entry.value, entry.path.at(-1)?.endsWith('_at')),
     })),
   );
   readonly collections = computed(() =>
@@ -112,10 +124,32 @@ export class RecordSummary {
         value: this.value(value, true),
       })),
   );
-  readonly sections = computed(() => [
-    { title: 'Overview', entries: this.overview() },
-    { title: 'Activity', entries: this.activity() },
-  ]);
+  readonly sections = computed(() => {
+    if (!this.groups().length) {
+      return [
+        { title: 'Overview', entries: this.overview() },
+        { title: 'Activity', entries: this.activity() },
+      ];
+    }
+    const fields = [
+      ...this.overview(),
+      ...this.activity().map((entry) => ({ ...entry, path: [entry.key] })),
+    ];
+    const sections = this.groups().map((section) => ({
+      title: section.title,
+      entries: section.keys.flatMap((key) =>
+        fields.filter((entry) => entry.path[0] === key),
+      ),
+    }));
+    const remaining = fields.filter(
+      (entry) =>
+        !this.groups().some((group) => group.keys.includes(entry.path[0])),
+    );
+    return this.includeRemaining() && remaining.length
+      ? [...sections, { title: 'Additional details', entries: remaining }]
+      : sections;
+  });
+
   readonly changes = computed(() =>
     fieldChanges(this.record()['from_values'], this.record()['to_values']).map(
       (change) => ({

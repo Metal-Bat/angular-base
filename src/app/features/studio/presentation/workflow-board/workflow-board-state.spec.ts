@@ -1,3 +1,4 @@
+import { of } from 'rxjs';
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
@@ -34,6 +35,7 @@ async function prepare(): Promise<{
         provide: ActivatedRoute,
         useValue: {
           snapshot: { paramMap: convertToParamMap({ ref: 'draft-version' }) },
+          paramMap: of(convertToParamMap({ ref: 'draft-version' })),
         },
       },
       { provide: CANVAS_VIEW, useValue: {} },

@@ -1,0 +1,99 @@
+<section class="overview" [attr.aria-label]="'Work overview' | localize">
+  @for (widget of widgets(); track widget.key) {
+    <article class="summary-card" [attr.data-metric-summary]="widget.key">
+      <h2>{{ metricTitle(widget.key) | localize }}</h2>
+      <p class="summary-caption">{{ caption(widget.key) | localize }}</p>
+      @if (widget.state === "unavailable") {
+        <p role="status">{{ "Metrics are unavailable." | localize }}</p>
+        @if (widget.reason) {
+          <p>{{ widget.reason | localize }}</p>
+        }
+      } @else {
+        @if (widget.state === "loading") {
+          <p role="status">{{ "Loading…" | localize }}</p>
+        }
+        @if (widget.state === "failed" || widget.state === "denied") {
+          <p role="alert">
+            {{
+              (widget.state === "denied"
+                ? "Access denied"
+                : "The service is unavailable."
+              ) | localize
+            }}
+          </p>
+          <button
+            pButton
+            severity="secondary"
+            type="button"
+            [text]="true"
+            (click)="retry(widget.key)"
+          >
+            {{ "Refresh" | localize }}
+          </button>
+        }
+        @if (widget.result; as result) {
+          <p
+            class="summary-value"
+            [attr.title]="
+              result.total_value === null ? null : result.total_value
+            "
+          >
+            <bdi>{{ value(widget) }}</bdi>
+            @if (
+              result.availability === "available" && result.total_value !== null
+            ) {
+              <span>{{ result.unit | localize }}</span>
+            }
+          </p>
+          @if (widget.state !== "ready" || widget.stale) {
+            <p role="status">
+              {{
+                "Results may be out of date. Recheck before continuing."
+                  | localize
+              }}
+            </p>
+          }
+          <p class="summary-meta">
+            {{ "As of" | localize }}:
+            <time [attr.datetime]="result.as_of">{{ timestamp(result) }}</time>
+          </p>
+          <p class="summary-meta">
+            {{ "Unknown values" | localize }}:
+            <bdi>{{
+              result.unknown_count === null
+                ? ("Unknown" | localize)
+                : locale.number(result.unknown_count)
+            }}</bdi>
+          </p>
+          @if (widget.period; as period) {
+            <p class="summary-meta">
+              <time [attr.datetime]="period.start_date">{{
+                date(period.start_date)
+              }}</time>
+              –
+              <time [attr.datetime]="inclusiveEnd(period)">{{
+                date(inclusiveEnd(period))
+              }}</time>
+            </p>
+          }
+          @if (
+            widget.state === "ready" &&
+            !widget.stale &&
+            result.availability === "available" &&
+            result.drilldown
+          ) {
+            <button
+              pButton
+              severity="secondary"
+              type="button"
+              [text]="true"
+              (click)="open(widget)"
+            >
+              {{ "Open matching records" | localize }}
+            </button>
+          }
+        }
+      }
+    </article>
+  }
+</section>

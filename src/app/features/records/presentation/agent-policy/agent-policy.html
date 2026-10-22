@@ -1,0 +1,171 @@
+<p>
+  {{
+    "These are named agent inputs, not a query over arbitrary database records."
+      | localize
+  }}
+</p>
+
+@for (set of sets; track set.key) {
+  <section class="policy-set">
+    <h3>{{ set.title | localize }}</h3>
+    <div class="input-add">
+      <app-control-field
+        [attr.data-field-path]="'spec.data_policy.' + set.key"
+        [controlId]="'agent-' + set.key"
+        [error]="errors()['spec.data_policy.' + set.key] || ''"
+        [hint]="set.hint"
+        [label]="set.title"
+      >
+        @if (set.key === "redacted_fields") {
+          <app-select-control
+            [disabled]="disabled()"
+            [inputId]="'agent-' + set.key"
+            [(ngModel)]="drafts[set.key]"
+          >
+            <option value="">
+              {{ "Choose a permitted input" | localize }}
+            </option>
+            @for (input of strings("allowed_fields"); track input) {
+              <option [value]="input">{{ input }}</option>
+            }
+          </app-select-control>
+        } @else {
+          <input
+            pInputText
+            [disabled]="disabled()"
+            [id]="'agent-' + set.key"
+            [(ngModel)]="drafts[set.key]"
+          />
+        }</app-control-field
+      ><button
+        pButton
+        severity="secondary"
+        type="button"
+        [disabled]="
+          disabled() ||
+          !drafts[set.key]?.trim() ||
+          strings(set.key).includes(drafts[set.key]?.trim() ?? '') ||
+          strings(set.key).length >= 64
+        "
+        (click)="add(set.key)"
+      >
+        {{ "Add input" | localize }}
+      </button>
+    </div>
+    <ul class="input-tags">
+      @for (item of strings(set.key); track item) {
+        <li>
+          <bdi>{{ item }}</bdi
+          ><button
+            pButton
+            severity="secondary"
+            type="button"
+            [attr.aria-label]="('Remove' | localize) + ' ' + item"
+            [disabled]="disabled()"
+            [text]="true"
+            (click)="remove(set.key, item)"
+          >
+            <i aria-hidden="true" class="pi pi-times"></i>
+          </button>
+        </li>
+      }
+    </ul>
+  </section>
+}
+<app-control-field
+  controlId="agent-classifications"
+  data-field-path="spec.data_policy.allowed_classifications"
+  label="Permitted classifications"
+  [error]="errors()['spec.data_policy.allowed_classifications'] || ''"
+  [required]="true"
+  ><app-select-control
+    inputId="agent-classifications"
+    [disabled]="disabled()"
+    [multiple]="true"
+    [ngModel]="strings('allowed_classifications')"
+    (ngModelChange)="set('allowed_classifications', $event)"
+  >
+    @for (item of classes; track item) {
+      <option [value]="item">{{ item | localize }}</option>
+    }
+  </app-select-control></app-control-field
+>
+<section class="input-classifications">
+  <h3>{{ "Input classifications" | localize }}</h3>
+  @for (row of classificationRows(); track row.key; let index = $index) {
+    <app-control-field
+      [attr.data-field-path]="'spec.field_classifications.' + row.key"
+      [controlId]="'agent-class-' + index"
+      [error]="errors()['spec.field_classifications.' + row.key] || ''"
+      [label]="row.key"
+      ><app-select-control
+        [disabled]="disabled()"
+        [inputId]="'agent-class-' + index"
+        [ngModel]="row.value"
+        (ngModelChange)="classify(row.key, $event)"
+      >
+        @for (item of classes; track item) {
+          <option [value]="item">{{ item | localize }}</option>
+        }
+      </app-select-control></app-control-field
+    >
+  }
+</section>
+<section>
+  <h3>{{ "Tools and report retrieval" | localize }}</h3>
+
+  <div class="tool-permission">
+    <p-checkbox
+      inputId="agent-report-lookup"
+      [binary]="true"
+      [disabled]="disabled()"
+      [ngModel]="strings('allowed_tools').includes('lookup_saved_report')"
+      (ngModelChange)="tool($event)"
+    /><label for="agent-report-lookup">{{
+      "Allow owned saved-report lookup" | localize
+    }}</label>
+  </div>
+  <p>
+    {{
+      "The model proposes an exact owned report and a limit of 1–10 rows. The eligible claimant must approve the displayed call before it runs."
+        | localize
+    }}
+  </p>
+  <p>
+    {{
+      "Saved-report lookup requires a tool-call limit of 1 and at least 2 provider requests. Publication checks provider support and administrator limits."
+        | localize
+    }}
+  </p>
+  <h4>{{ "Configured report sources" | localize }}</h4>
+  <ul>
+    @for (source of sourceKeys(); track source) {
+      <li>
+        <bdi>{{ source }}</bdi>
+      </li>
+    } @empty {
+      <li>{{ "No report source is configured." | localize }}</li>
+    }
+  </ul>
+  <p class="policy-note">
+    {{
+      "This backend exposes no general retrieval-source catalog. Existing source keys are preserved; availability and permission are rechecked by the server."
+        | localize
+    }}
+  </p>
+  @if (otherTools().length) {
+    <p>
+      {{
+        "Other saved tool keys are retained but cannot be verified against a tool catalog."
+          | localize
+      }}
+    </p>
+    <ul>
+      @for (tool of otherTools(); track tool) {
+        <li>
+          <bdi>{{ tool }}</bdi>
+        </li>
+      }
+    </ul>
+  }
+</section>

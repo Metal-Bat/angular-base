@@ -4,6 +4,19 @@ import {
   recordCollections,
 } from './record-presentation';
 describe('Read-only response presentation', () => {
+  it('shows the public connection configuration while hiding nested credentials and references', () => {
+    const fields = presentedFields({
+      non_secret_config: {
+        endpoint_key: 'hosted',
+        enabled: false,
+        retry_count: 0,
+        password: 'never-show',
+        secret_ref: 'private-ref',
+      },
+    });
+    expect(fields.map((field) => field.value)).toEqual(['hosted', false, 0]);
+    expect(JSON.stringify(fields)).not.toMatch(/never-show|private-ref/);
+  });
   it('groups heterogeneous domain collection rows without leaking references or mutating input', () => {
     const source = {
       assignments: [

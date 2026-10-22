@@ -116,12 +116,14 @@ export class Preferences {
   private ref = '';
   private pending: Changes = {};
   private generation = 0;
+  private reading: Promise<void> | undefined;
   private readonly sessionStatus = computed(
     () => this.session.snapshot().status,
   );
   constructor() {
     const release = this.actor.register(() => {
       this.generation++;
+      this.reading = undefined;
       this.ref = '';
       this.profileMutation.set(false);
       this.settings.set(null);
@@ -141,7 +143,25 @@ export class Preferences {
       }
     });
   }
-  async load(): Promise<void> {
+  ready(): Promise<void> {
+    return (
+      this.reading ??
+      (this.status() === 'idle' ? this.load() : Promise.resolve())
+    );
+  }
+  load(): Promise<void> {
+    if (this.reading) {
+      return this.reading;
+    }
+    const work = this.readSaved().finally(() => {
+      if (this.reading === work) {
+        this.reading = undefined;
+      }
+    });
+    this.reading = work;
+    return work;
+  }
+  private async readSaved(): Promise<void> {
     if (
       !this.auth.profile() ||
       this.session.snapshot().status !== 'authenticated'

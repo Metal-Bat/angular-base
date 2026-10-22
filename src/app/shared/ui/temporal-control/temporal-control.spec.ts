@@ -171,3 +171,17 @@ describe('Shared temporal control', () => {
     fixture.destroy();
   });
 });
+
+it('preserves existing clocks and gives typed/picked dates the same midnight default', async () => {
+  const fixture = await setup('datetime-local');
+  const vm = fixture.componentInstance;
+  vm.typeDate('2026-10-15');
+  await fixture.whenStable();
+  expect(vm.value()).toBe('2026-10-15T00:00');
+  expect(vm.error()).toBe('');
+  vm.timeChanged(clock(11, 30));
+  vm.typeDate('2026-10-16');
+  await fixture.whenStable();
+  expect(vm.value()).toBe('2026-10-16T11:30');
+  fixture.destroy();
+});

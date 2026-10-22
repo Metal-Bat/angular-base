@@ -19,8 +19,11 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--backend-root", default=os.getenv("DELIVERY_BACKEND_ROOT"))
 parser.add_argument("--notifications", action="store_true")
 parser.add_argument("--foundations", action="store_true")
-parser.add_argument("--foundation-task", choices=["009", "010", "011", "013", "014", "015", "016", "021"])
+parser.add_argument("--foundation-task", choices=["009", "010", "011", "013", "014", "015", "016", "021", "028", "029", "030", "031"])
+parser.add_argument("--form-designer-scope", choices=["core", "repairs", "kinds", "presentation"], default="core")
 args = parser.parse_args()
+if args.form_designer_scope != "core" and (not args.foundations or args.foundation_task != "016"):
+    raise SystemExit("--form-designer-scope requires --foundations --foundation-task 016")
 if args.foundation_task and not args.foundations:
     raise SystemExit("--foundation-task requires --foundations")
 if not args.backend_root:
@@ -37,8 +40,10 @@ worker_process = None
 artifacts = frontend / ("artifacts/paired-foundations" if args.foundations else "artifacts/paired-notifications" if args.notifications else "artifacts/paired-smoke")
 if args.foundation_task:
     artifacts = frontend / ("artifacts/paired-foundations-" + args.foundation_task)
+if args.form_designer_scope != "core":
+    artifacts = artifacts.with_name(artifacts.name + "-" + args.form_designer_scope)
 artifacts.mkdir(parents=True, exist_ok=True)
-evidence = {"task_scope": args.foundation_task or "full", "started_at": time.time(), "evidence": "real HTTP / disposable services", "commands": [],
+evidence = {"form_designer_scope": args.form_designer_scope, "task_scope": args.foundation_task or "full", "started_at": time.time(), "evidence": "real HTTP / disposable services", "commands": [],
             "browser_version": subprocess.check_output([os.getenv("FIREFOX_BINARY", "firefox"), "--version"], text=True).strip(),
             "limits": ["No live vendor/deployment/manual accessibility acceptance" if args.notifications or args.foundations else "No worker/provider/deployment/manual accessibility acceptance", "Foundation scope: actual contract/persistence and clocked scheduler/worker; full MAP coverage and team-member selection remain separate" if args.foundations else "C02-C13 new producer APIs are consumed by their owning tasks"]}
 
@@ -150,6 +155,7 @@ try:
         execute("seed existing browser journey", [str(python), "scripts/seed_frontend_browser.py"], backend, env, temp / "seed.log")
         if args.foundations:
             env['HELP_RELEASE_METADATA_FILE'] = str(frontend / 'docs/delivery/help-release-metadata.json')
+            env['FOUNDATION_TASK'] = args.foundation_task or ''
             execute('extend owned foundation actors', [str(python), str(frontend / 'scripts/foundations-paired-seed.py')], backend, env, temp / 'foundation-seed.log')
         if args.notifications or args.foundations:
             worker_log = (temp / "worker.log").open("w")
@@ -244,7 +250,7 @@ try:
                            "BROWSER_REPORT_PATH": str(artifacts / "browser.json")}
             if args.foundations:
                 browser_env.update(env)
-                browser_env.update(FOUNDATION_TASK=args.foundation_task or '', FOUNDATIONS_BROWSER_CHECKS='1', FOUNDATION_BACKEND_ROOT=str(backend), FOUNDATION_BACKEND_PYTHON=str(python), FOUNDATION_ACTION_SCRIPT=str(frontend / 'scripts/foundations-paired-action.py'), SUPPORT_ACTION_SCRIPT=str(frontend / 'scripts/support-paired-action.py'), CALENDAR_ACTION_SCRIPT=str(frontend / 'scripts/calendar-paired-action.py'), ANALYTICS_ACTION_SCRIPT=str(frontend / 'scripts/analytics-paired-action.py'), OWNED_BACKEND_PID=str(api_process.pid))
+                browser_env.update(FOUNDATION_TASK=args.foundation_task or '', FORM_DESIGNER_SCOPE=args.form_designer_scope, FOUNDATIONS_BROWSER_CHECKS='1', FOUNDATION_BACKEND_ROOT=str(backend), FOUNDATION_BACKEND_PYTHON=str(python), FOUNDATION_ACTION_SCRIPT=str(frontend / 'scripts/foundations-paired-action.py'), SUPPORT_ACTION_SCRIPT=str(frontend / 'scripts/support-paired-action.py'), CALENDAR_ACTION_SCRIPT=str(frontend / 'scripts/calendar-paired-action.py'), ANALYTICS_ACTION_SCRIPT=str(frontend / 'scripts/analytics-paired-action.py'), OWNED_BACKEND_PID=str(api_process.pid))
             if args.notifications:
                 browser_env.update(env)
                 browser_env.update(NOTIFICATION_BROWSER_CHECKS="1", NOTIFICATION_BACKEND_ROOT=str(backend), NOTIFICATION_BACKEND_PYTHON=str(python), NOTIFICATION_ACTION_SCRIPT=str(frontend / "scripts/notification-paired-action.py"))

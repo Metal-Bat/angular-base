@@ -67,6 +67,15 @@ describe('Workspace wire contracts', () => {
         ['/optional'],
         'EXPLICIT_OUTCOME',
         'Reviewer comment',
+        action === 'return'
+          ? [
+              {
+                scope: '/properties/amount',
+                message: 'Correct the amount',
+                item_key: null,
+              },
+            ]
+          : [],
       );
       expect(call).toHaveBeenCalledWith(
         `${action}_work_item_api_v1_work_items__ref_id__${action}_post`,
@@ -79,7 +88,16 @@ describe('Workspace wire contracts', () => {
             delete_paths: ['/optional'],
             outcome_key: 'EXPLICIT_OUTCOME',
             comment: 'Reviewer comment',
-            feedback: [],
+            feedback:
+              action === 'return'
+                ? [
+                    {
+                      scope: '/properties/amount',
+                      message: 'Correct the amount',
+                      item_key: null,
+                    },
+                  ]
+                : [],
           },
         },
       );

@@ -1,18 +1,18 @@
+import { Locale } from '../../../core/localization/locale';
+import { QuerySorts } from './query-sorts';
 import { QueryFilters } from './query-filters';
-import { SelectControl } from '../select-control/select-control';
 import { PanelModule } from 'primeng/panel';
 import { TagModule } from 'primeng/tag';
 import {
   ChangeDetectionStrategy,
   Component,
   effect,
+  inject,
   input,
   output,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ButtonDirective } from 'primeng/button';
-import { InputTextModule } from 'primeng/inputtext';
-import { ControlField } from '../control-field/control-field';
 import { LocalizePipe } from '../localize-pipe';
 import {
   compileQuery,
@@ -27,13 +27,11 @@ import {
   selector: 'app-list-query',
   imports: [
     QueryFilters,
-    SelectControl,
+    QuerySorts,
     PanelModule,
     TagModule,
     FormsModule,
     ButtonDirective,
-    InputTextModule,
-    ControlField,
     LocalizePipe,
   ],
   templateUrl: './list-query.html',
@@ -44,9 +42,23 @@ export class ListQueryEditor {
   private static nextId = 0;
   readonly sortFieldsId = 'sort-fields-' + ++ListQueryEditor.nextId;
   collapsed = true;
+  readonly editing = output<boolean>();
+  toggle(): void {
+    this.collapsed = !this.collapsed;
+    this.editing.emit(!this.collapsed);
+  }
+  readonly locale = inject(Locale);
   readonly query = input<ListQuery | null>(null);
   constructor() {
-    effect(() => this.hydrate(this.query()));
+    let confirmed = '';
+    effect(() => {
+      const query = this.query();
+      const identity = JSON.stringify(query && { ...query, page: 1 });
+      if (identity !== confirmed) {
+        confirmed = identity;
+        this.hydrate(query);
+      }
+    });
   }
   private hydrate(query: ListQuery | null): void {
     if (!query) {
@@ -161,11 +173,61 @@ export class ListQueryEditor {
       this.error = error instanceof Error ? error.message : 'Invalid query';
     }
   }
+  appliedSummary(): string[] {
+    const query = this.query();
+    if (!query) {
+      return [];
+    }
+    const label = (key: string): string => {
+      const field = this.fields().find((candidate) => candidate.key === key);
+      return this.locale.text(field?.label ?? 'Unavailable');
+    };
+    const value = (item: QueryValue): string =>
+      Array.isArray(item)
+        ? item.map(value).join(', ')
+        : typeof item === 'boolean'
+          ? this.locale.text(item ? 'Yes' : 'No')
+          : typeof item === 'number'
+            ? String(item)
+            : item === null
+              ? ''
+              : item;
+    return [
+      ...query.filters.map((filter) =>
+        [
+          label(filter.field_name),
+          this.locale.text(this.operators[filter.operation]),
+          value(filter.value),
+        ]
+          .filter(Boolean)
+          .join(' '),
+      ),
+      ...query.sort_orders.map((sort, index) => {
+        const keys = sort.field_name
+          ? [sort.field_name]
+          : (sort.multi_field ?? []);
+        const direction = this.locale.text(
+          sort.operation === 'asc' ? 'Ascending' : 'Descending',
+        );
+        return (
+          `${this.locale.text('Sort')} ${this.locale.number(index + 1)}: ` +
+          keys.map(label).join(', ') +
+          ' · ' +
+          direction
+        );
+      }),
+    ];
+  }
+  cancel(): void {
+    this.hydrate(this.query());
+    this.filterErrors = {};
+    this.sortErrors = {};
+    this.error = '';
+  }
   reset(): void {
     this.filters = [];
     this.sorts = [];
     this.extras = {};
-    this.size = 20;
     this.apply();
   }
 }

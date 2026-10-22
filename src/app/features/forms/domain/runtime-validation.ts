@@ -1,3 +1,4 @@
+import { isItemScope } from './row-values';
 import { JsonObject, JsonValue, RuntimeDocument } from './runtime-document';
 import { fieldValue, instancePointer, MISSING } from './canonical-values';
 export type FieldIssue = {
@@ -222,7 +223,7 @@ export function validateRuntime(
   requiredScopes = document.policy.required,
 ): readonly FieldIssue[] {
   return document.fields.flatMap((field) =>
-    field.scope.includes('/items')
+    isItemScope(field.scope)
       ? []
       : nestedIssues(
           fieldValue(data, field.scope),

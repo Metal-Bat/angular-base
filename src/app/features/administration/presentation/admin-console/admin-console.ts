@@ -1,3 +1,4 @@
+import { schemaErrors } from '../../../../shared/domain/schema-form';
 import { AdminCommandResult } from './admin-command-result';
 import { AdminCommandForm } from './admin-command-form';
 import { SelectControl } from '../../../../shared/ui/select-control/select-control';
@@ -197,6 +198,32 @@ export class AdminConsole {
       this.invalid.update((keys) => [...new Set([...keys, key])]);
       this.error.set('Invalid value: ' + field.title);
     }
+  }
+  changeTyped(
+    field: FieldSpec,
+    location: keyof AdminInput,
+    value: JsonValue | undefined,
+  ): void {
+    if (this.busy()) {
+      return;
+    }
+    const key = location + '.' + field.key;
+    this.dirty.set(true);
+    const next = { ...this.input()[location] };
+    if (value === undefined) {
+      delete next[field.key];
+    } else {
+      next[field.key] = value;
+    }
+    this.input.update((input) => ({ ...input, [location]: next }));
+    const errors = schemaErrors(field.schema, value, key, field.required);
+    this.invalid.update((keys) => [
+      ...keys.filter((item) => item !== key && !item.startsWith(key + '.')),
+      ...Object.keys(errors),
+    ]);
+    this.error.set(
+      this.invalid().length ? 'Correct invalid fields before continuing.' : '',
+    );
   }
   dismissResult(): void {
     if (this.busy()) {

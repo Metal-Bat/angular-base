@@ -1,0 +1,28 @@
+<label for="field-label">{{ "Label" | localize }}</label>
+<input
+  id="field-label"
+  maxlength="255"
+  pInputText
+  [disabled]="disabled()"
+  [ngModel]="message() ? resolvedLabel() : value()"
+  [placeholder]="placeholder()"
+  [readOnly]="!!message()"
+  (ngModelChange)="change($event)"
+/>
+@if (message()) {
+  <p>
+    {{
+      "This label is translated. Edit its translations in Languages." | localize
+    }}
+  </p>
+  <button
+    pButton
+    severity="secondary"
+    type="button"
+    [disabled]="disabled() || translationDisabled()"
+    [outlined]="true"
+    (click)="translationRequested.emit(message())"
+  >
+    {{ "Edit translation" | localize }}
+  </button>
+}

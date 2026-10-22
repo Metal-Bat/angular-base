@@ -1,0 +1,18 @@
+<button
+  aria-haspopup="menu"
+  pButton
+  severity="secondary"
+  type="button"
+  [attr.aria-expanded]="menu.visible"
+  [disabled]="disabled()"
+  (click)="menu.toggle($event)"
+>
+  {{ label() | localize }}<i aria-hidden="true" class="pi pi-chevron-down"></i>
+</button>
+<p-menu
+  #menu
+  appendTo="body"
+  [ariaLabel]="label() | localize"
+  [model]="model()"
+  [popup]="true"
+/>

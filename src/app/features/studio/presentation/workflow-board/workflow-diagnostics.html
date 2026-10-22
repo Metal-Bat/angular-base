@@ -1,9 +1,6 @@
 @let vm = view();
 @if (vm.diagnostics()) {
   <section [attr.aria-label]="'Diagnostics' | localize">
-    @if (message()) {
-      <p role="status">{{ message() | localize }}</p>
-    }
     <app-readiness-panel
       caption="Graph validation"
       note="Graph validation does not check installation, provider or worker readiness."
@@ -21,7 +18,7 @@
               severity="secondary"
               type="button"
               [outlined]="true"
-              (click)="vm.select(issue.node)"
+              (click)="vm.selectIssue(issue)"
             >
               {{ issue.pointer }} · {{ issue.code }} {{ issue.edge }}
             </button>

@@ -1,5 +1,7 @@
 import { ApiFailure } from '../../../../core/transport/api-failure';
 import { TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
+import { Locale } from '../../../../core/localization/locale';
 import { ActorState } from '../../../../core/auth/actor-state';
 import { Feedback } from '../../../../core/feedback/feedback';
 import { CalendarItem } from '../../application/calendar-port';
@@ -24,12 +26,99 @@ describe('Calendar command recovery and exact schedules', () => {
     save.mockReset();
     TestBed.configureTestingModule({
       providers: [
+        provideRouter([]),
         { provide: CALENDAR, useValue: { save } },
         {
           provide: Feedback,
           useValue: { confirm: vi.fn().mockResolvedValue(true) },
         },
       ],
+    });
+  });
+  it('edits existing instants in the saved user zone without rewriting seconds or the event zone', async () => {
+    TestBed.inject(Locale).timezone.set('Asia/Tehran');
+    save.mockResolvedValue(item);
+    const fixture = TestBed.createComponent(CalendarEditor);
+    fixture.componentRef.setInput('item', item);
+    await fixture.whenStable();
+    const vm = fixture.componentInstance;
+    expect(vm.timezone).toBe('Asia/Tehran');
+    expect(vm.start).toBe('2026-11-02T08:30');
+    expect(vm.end).toBe('2026-11-02T09:30');
+    expect(
+      fixture.nativeElement.querySelector('app-timezone-control'),
+    ).toBeNull();
+    vm.title = 'Title only';
+    vm.reminder = 'none';
+    await vm.save();
+    expect(save.mock.calls[0][0].schedule).toEqual(item.schedule);
+  });
+  it('uses settings for new events and keeps a draft stable when preferences change', async () => {
+    const locale = TestBed.inject(Locale);
+    locale.timezone.set('Asia/Tokyo');
+    save.mockResolvedValue(item);
+    const fixture = TestBed.createComponent(CalendarEditor);
+    await fixture.whenStable();
+    const vm = fixture.componentInstance;
+    vm.title = 'New event';
+    vm.start = '2026-11-02T09:00';
+    vm.end = '2026-11-02T10:00';
+    locale.timezone.set('America/New_York');
+    await fixture.whenStable();
+    await vm.save();
+    expect(save.mock.calls[0][0].schedule).toEqual({
+      kind: 'timed',
+      timezone: 'Asia/Tokyo',
+      start_at: '2026-11-02T00:00:00.000Z',
+      end_at: '2026-11-02T01:00:00.000Z',
+    });
+  });
+  it('retains date-only event dates and their original zone across user timezone changes', async () => {
+    TestBed.inject(Locale).timezone.set('Pacific/Auckland');
+    const allDay: CalendarItem = {
+      ...item,
+      schedule: {
+        kind: 'all_day',
+        timezone: 'America/New_York',
+        start_date: '2026-11-02',
+        end_date: '2026-11-03',
+      },
+    };
+    save.mockResolvedValue(allDay);
+    const fixture = TestBed.createComponent(CalendarEditor);
+    fixture.componentRef.setInput('item', allDay);
+    await fixture.whenStable();
+    const vm = fixture.componentInstance;
+    vm.title = 'Date-only title edit';
+    vm.reminder = 'none';
+    await vm.save();
+    expect(save.mock.calls[0][0].schedule).toEqual(allDay.schedule);
+  });
+  it('honors a deliberate DST-fold offset change while retaining the untouched endpoint exactly', async () => {
+    TestBed.inject(Locale).timezone.set('America/New_York');
+    const folded: CalendarItem = {
+      ...item,
+      schedule: {
+        kind: 'timed',
+        timezone: 'America/New_York',
+        start_at: '2026-11-01T05:30:37.123Z',
+        end_at: '2026-11-01T08:00:41.987Z',
+      },
+    };
+    save.mockResolvedValue(folded);
+    const fixture = TestBed.createComponent(CalendarEditor);
+    fixture.componentRef.setInput('item', folded);
+    await fixture.whenStable();
+    const vm = fixture.componentInstance;
+    expect(vm.start).toBe('2026-11-01T01:30');
+    vm.startChoice = '2026-11-01T06:30:00.000Z';
+    vm.reminder = 'none';
+    await vm.save();
+    expect(save.mock.calls[0][0].schedule).toEqual({
+      kind: 'timed',
+      timezone: 'America/New_York',
+      start_at: '2026-11-01T06:30:00.000Z',
+      end_at: '2026-11-01T08:00:41.987Z',
     });
   });
   it('preserves seconds/fractions on a title edit and retries exactly the original command', async () => {
@@ -41,6 +130,7 @@ describe('Calendar command recovery and exact schedules', () => {
     await fixture.whenStable();
     const vm = fixture.componentInstance;
     vm.title = 'Renamed appointment';
+    vm.reminder = 'none';
     await vm.save();
     const body = structuredClone(save.mock.calls[0][0]);
     expect(body.schedule).toEqual(item.schedule);
@@ -76,6 +166,27 @@ describe('Calendar command recovery and exact schedules', () => {
     expect(emitted).not.toHaveBeenCalled();
     expect(vm.title).toBe('');
   });
+  it('requires explicit reminder replacement even when no delivery rows exist', async () => {
+    const fixture = TestBed.createComponent(CalendarEditor);
+    fixture.componentRef.setInput('item', item);
+    fixture.componentRef.setInput('reminders', []);
+    await fixture.whenStable();
+    const vm = fixture.componentInstance;
+    vm.title = 'Retained title';
+    await vm.save();
+    expect(save).not.toHaveBeenCalled();
+    expect(vm.title).toBe('Retained title');
+    expect(vm.reminder).toBe('');
+    const confirm = TestBed.inject(Feedback).confirm;
+    vi.mocked(confirm).mockResolvedValue(false);
+    vm.reminder = '900';
+    await vm.save();
+    expect(confirm).toHaveBeenCalledWith(
+      'Replace the existing reminder configuration?',
+    );
+    expect(save).not.toHaveBeenCalled();
+    expect(vm.reminder).toBe('900');
+  });
   it('keeps confirmed conflict edits available for repair', async () => {
     save.mockRejectedValueOnce(
       new ApiFailure(409, null, null, [], false, 'revision'),
@@ -85,6 +196,7 @@ describe('Calendar command recovery and exact schedules', () => {
     await fixture.whenStable();
     const vm = fixture.componentInstance;
     vm.title = 'Preserved title';
+    vm.reminder = 'none';
     await vm.save();
     expect(vm.uncertain()).toBe(false);
     expect(vm.title).toBe('Preserved title');

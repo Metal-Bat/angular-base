@@ -1,108 +1,155 @@
-<section class="my-4 grid gap-3 rounded-lg border border-console-border p-4">
-  <h2>{{ "Saved views" | localize }}</h2>
-  @if (error()) {
-    <p role="alert">{{ error() | localize }}</p>
-  }
+<section
+  class="flex flex-wrap items-center gap-2 my-3"
+  [attr.aria-label]="'Saved views' | localize"
+>
   <app-select-control
     [ariaLabel]="'Saved views' | localize"
     [disabled]="busy() || uncertain() || reconcileRequired()"
     [value]="selected()"
     (selectionChanged)="choose($event.target.value)"
   >
-    <option value="">{{ "Choose" | localize }}</option>
+    <option value="">{{ "Saved views" | localize }}</option>
     @for (view of views(); track view.ref_id) {
       <option [value]="view.ref_id">
         {{ view.name }} {{ view.is_default ? "★" : "" }}
       </option>
     }
   </app-select-control>
-  <app-select-control
-    [ariaLabel]="'Columns' | localize"
-    [disabled]="busy() || uncertain() || reconcileRequired()"
-    [multiple]="true"
-    [value]="columns()"
-    (selectionChanged)="selectColumns($event.target.value)"
+  <button
+    pButton
+    severity="secondary"
+    type="button"
+    [disabled]="busy() || reconcileRequired() || uncertain() || !compatible()"
+    (click)="run('apply')"
   >
-    @for (column of columnOptions(); track column.key) {
-      <option [value]="column.key">{{ column.label | localize }}</option>
-    }
-  </app-select-control>
-  @if (selected() && !compatible()) {
-    <p role="status">
-      {{
-        "This saved view is incompatible. Replace it explicitly or remove it."
-          | localize
-      }}
-    </p>
-  }
-  <form class="flex flex-wrap gap-2" (ngSubmit)="run('save')">
-    <label for="saved-view-name">{{ "Name" | localize }}</label
-    ><input
-      id="saved-view-name"
-      maxlength="120"
-      name="viewName"
-      pInputText
-      required
-      [disabled]="busy() || uncertain() || reconcileRequired()"
-      [(ngModel)]="name"
-    />
+    {{ "Apply" | localize }}
+  </button>
+  <button
+    pButton
+    severity="secondary"
+    type="button"
+    [attr.aria-expanded]="columnPicker.overlayVisible"
+    [disabled]="busy() || uncertain() || reconcileRequired()"
+    (click)="columnPicker.toggle($event)"
+  >
+    {{ "Columns" | localize }}
+  </button>
+  <p-popover #columnPicker appendTo="body">
+    <div class="grid gap-2">
+      {{ "Columns" | localize }}
+      <app-select-control
+        [ariaLabel]="'Columns' | localize"
+        [disabled]="busy() || uncertain() || reconcileRequired()"
+        [multiple]="true"
+        [value]="columns()"
+        (selectionChanged)="selectColumns($event.target.value)"
+      >
+        @for (column of columnOptions(); track column.key) {
+          <option [value]="column.key">{{ column.label | localize }}</option>
+        }
+      </app-select-control>
+    </div>
+  </p-popover>
+  <button
+    #viewActions
+    aria-haspopup="menu"
+    pButton
+    severity="secondary"
+    type="button"
+    [attr.aria-expanded]="viewMenu.visible"
+    [disabled]="busy()"
+    (click)="viewMenu.toggle($event)"
+  >
+    {{ "View actions" | localize }}
+    <i aria-hidden="true" class="pi pi-angle-down"></i>
+  </button>
+  <p-menu #viewMenu appendTo="body" [model]="menuItems()" [popup]="true" />
+  @if (uncertain()) {
     <button
       pButton
-      type="submit"
-      [disabled]="busy() || reconcileRequired() || !query()"
-    >
-      {{
-        (uncertain() ? "Retry unchanged command" : "Save applied view")
-          | localize
-      }}
-    </button>
-  </form>
-  <div class="flex flex-wrap gap-2">
-    <button
-      pButton
-      type="button"
-      [disabled]="busy() || reconcileRequired() || uncertain() || !compatible()"
-      (click)="run('apply')"
-    >
-      {{ "Apply" | localize }}
-    </button>
-    <button
-      pButton
-      type="button"
-      [disabled]="busy() || reconcileRequired() || !selected() || !query()"
-      (click)="run('update')"
-    >
-      {{ "Update" | localize }}
-    </button>
-    <button
-      pButton
-      type="button"
-      [disabled]="busy() || reconcileRequired() || uncertain() || !selected()"
-      (click)="run('default')"
-    >
-      {{ "Make default" | localize }}
-    </button>
-    <button
-      pButton
-      severity="danger"
-      type="button"
-      [disabled]="busy() || reconcileRequired() || uncertain() || !selected()"
-      (click)="run('remove')"
-    >
-      {{ "Remove" | localize }}
-    </button>
-    <button
-      pButton
-      severity="secondary"
       type="button"
       [disabled]="busy()"
-      (click)="load()"
+      (click)="run(editor() === 'rename' ? 'rename' : 'save')"
     >
+      {{ "Retry unchanged command" | localize }}
+    </button>
+  }
+  @if (reconcileRequired()) {
+    <button pButton type="button" [disabled]="busy()" (click)="load()">
       {{ "Reload" | localize }}
     </button>
-  </div>
+  }
 </section>
-
+@if (error() && !editor()) {
+  <p role="alert">{{ error() | localize }}</p>
+}
+@if (selected() && !compatible()) {
+  <p role="status">
+    {{
+      "This saved view is incompatible. Replace it explicitly or remove it."
+        | localize
+    }}
+  </p>
+}
+<p-dialog
+  [closable]="false"
+  [draggable]="false"
+  [header]="(editor() === 'rename' ? 'Rename' : 'Save current view') | localize"
+  [modal]="true"
+  [resizable]="false"
+  [style]="{ width: '26rem', maxWidth: 'calc(100vw - 2rem)' }"
+  [visible]="editor() !== null"
+  (onHide)="restoreFocus()"
+>
+  @if (editor()) {
+    <form
+      class="grid gap-3"
+      (ngSubmit)="run(editor() === 'rename' ? 'rename' : 'save')"
+    >
+      @if (error()) {
+        <p role="alert">{{ error() | localize }}</p>
+      }
+      @if (error()) {
+        <button pButton type="button" [disabled]="busy()" (click)="load()">
+          {{ "Reload" | localize }}
+        </button>
+      }
+      <label for="saved-view-name">{{ "Name" | localize }}</label>
+      <input
+        id="saved-view-name"
+        maxlength="120"
+        name="viewName"
+        pInputText
+        required
+        [disabled]="busy() || uncertain() || reconcileRequired()"
+        [(ngModel)]="name"
+      />
+      @if (editor() === "save") {
+        <p>
+          {{ "Uses the current applied filters and sort order." | localize }}
+        </p>
+      }
+      <div class="flex gap-2">
+        <button
+          pButton
+          type="submit"
+          [disabled]="busy() || reconcileRequired() || !name.trim()"
+        >
+          {{ (uncertain() ? "Retry unchanged command" : "Save") | localize }}
+        </button>
+        <button
+          pButton
+          severity="secondary"
+          type="button"
+          [disabled]="busy() || uncertain() || reconcileRequired()"
+          (click)="closeEditor()"
+        >
+          {{ "Cancel" | localize }}
+        </button>
+      </div>
+    </form>
+  }
+</p-dialog>
 <app-saved-view-repair
   [original]="original()"
   [replacement]="query()"

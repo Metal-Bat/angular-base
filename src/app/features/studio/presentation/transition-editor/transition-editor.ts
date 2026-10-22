@@ -1,3 +1,5 @@
+import { interfaceExpressionCompletions } from '../../domain/interface-sources';
+import { expressionValues } from '../../domain/expression-values';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -17,7 +19,7 @@ import { ActorState } from '../../../../core/auth/actor-state';
 import { SelectControl } from '../../../../shared/ui/select-control/select-control';
 import { JsonObject, JsonValue } from '../../../forms/domain/runtime-document';
 import { patchTransition } from '../../domain/graph-controls';
-import { connectionKey } from '../../domain/workflow-authoring';
+import { connectionKey, graphSteps } from '../../domain/workflow-authoring';
 @Component({
   selector: 'app-transition-editor',
   imports: [
@@ -32,6 +34,35 @@ import { connectionKey } from '../../domain/workflow-authoring';
 })
 export class TransitionEditor {
   readonly graph = input.required<JsonObject>();
+  readonly completions = input<readonly JsonObject[]>([]);
+  readonly conditionRows = computed(() =>
+    interfaceExpressionCompletions(
+      this.completions(),
+      this.graph(),
+      this.selected(),
+    ),
+  );
+  readonly values = computed(() =>
+    expressionValues(this.conditionRows(), this.graph(), this.selected()),
+  );
+  readonly blockedValues = computed(() =>
+    this.conditionRows()
+      .filter(
+        (row) =>
+          row['source'] === 'request' &&
+          !this.values().includes(String(row['path'])),
+      )
+      .map((row) => String(row['path'])),
+  );
+  readonly inspected = input('');
+  readonly parallel = computed(
+    () =>
+      (
+        graphSteps(this.graph()).find(
+          (step) => step['key'] === this.selected(),
+        )?.['flow'] as JsonObject | undefined
+      )?.['split'] === 'ALL',
+  );
   readonly selected = input.required<string>();
   readonly disabled = input(false);
   readonly applied = output<JsonObject>();
@@ -47,18 +78,48 @@ export class TransitionEditor {
       .filter((item) => item.edge['source'] === this.selected()),
   );
   readonly id = linkedSignal<
-    readonly { edge: JsonObject; index: number; id: string }[],
+    {
+      rows: readonly { edge: JsonObject; index: number; id: string }[];
+      inspected: string;
+    },
     string
   >({
-    source: this.rows,
-    computation: (rows, previous) =>
-      rows.some((item) => item.id === previous?.value)
-        ? previous!.value
-        : (rows[0]?.id ?? ''),
+    source: () => ({ rows: this.rows(), inspected: this.inspected() }),
+    computation: ({ rows, inspected }, previous) => {
+      const incoming = rows.find(
+        (item) => connectionKey('transition', item.edge) === inspected,
+      );
+      if (incoming && inspected !== previous?.source.inspected) {
+        return incoming.id;
+      }
+      const unchanged = rows.find((item) => item.id === previous?.value);
+      const oldIndex = previous?.source.rows.find(
+        (item) => item.id === previous.value,
+      )?.index;
+      return (
+        unchanged?.id ??
+        rows.find((item) => item.index === oldIndex)?.id ??
+        rows[0]?.id ??
+        ''
+      );
+    },
   });
   readonly current = computed(() =>
     this.rows().find((item) => item.id === this.id()),
   );
+  readonly valuePath = linkedSignal(() => {
+    this.current();
+    return '';
+  });
+  insertPath(): void {
+    if (!this.values().includes(this.valuePath())) {
+      return;
+    }
+    this.update(
+      'condition',
+      [this.draft()['condition'], this.valuePath()].filter(Boolean).join(' '),
+    );
+  }
   readonly draft = linkedSignal<JsonObject>(() => this.initial());
   readonly dirty = linkedSignal(() => {
     this.current();
@@ -68,6 +129,7 @@ export class TransitionEditor {
   constructor() {
     const release = inject(ActorState).register(() => {
       this.id.set('');
+      this.valuePath.set('');
       this.draft.set({});
       this.dirty.set(false);
       this.error.set('');

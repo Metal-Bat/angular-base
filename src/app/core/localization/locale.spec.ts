@@ -1,3 +1,4 @@
+import { localizedDateTime } from '../../shared/ui/localized-datetime-pipe';
 import { computed } from '@angular/core';
 import {
   HttpClient,
@@ -16,6 +17,7 @@ import { sessionInterceptor } from '../auth/session-interceptor';
 import { ColorScheme } from '../theme/color-scheme';
 describe('Locale and shared theme', () => {
   beforeEach(() => {
+    localStorage.removeItem('workspace.public-theme');
     TestBed.configureTestingModule({
       providers: [
         provideRouter([]),
@@ -25,6 +27,7 @@ describe('Locale and shared theme', () => {
     });
   });
   afterEach(() => {
+    localStorage.removeItem('workspace.public-theme');
     document.documentElement.classList.remove('app-dark');
     document.documentElement.dir = 'ltr';
     document.documentElement.lang = 'en';
@@ -58,11 +61,11 @@ describe('Locale and shared theme', () => {
     await work;
     http.verify();
   });
-  it('changes both library themes through their common document selector without persistence', () => {
+  it('changes both library themes through their common document selector with a public theme hint', () => {
     const scheme = TestBed.inject(ColorScheme);
-    scheme.toggle();
+    scheme.setMode('dark');
     expect(document.documentElement.classList.contains('app-dark')).toBe(true);
-    scheme.toggle();
+    scheme.setMode('light');
     expect(scheme.dark()).toBe(false);
   });
   it('formats dates with an explicit time zone and Gregorian calendar and never normalizes input strings', async () => {
@@ -71,7 +74,13 @@ describe('Locale and shared theme', () => {
       '2026',
     );
     await locale.set('fa');
-    expect(locale.number(125)).not.toBe('125');
+    expect(locale.number(125)).toBe('125');
+    locale.numbering.set('arabext');
+    expect(locale.number(125)).toBe('۱۲۵');
+    await locale.set('en');
+    expect(locale.number(125)).toBe('۱۲۵');
+    locale.numbering.set('arab');
+    expect(locale.number(125)).toBe('١٢٥');
   });
 });
 
@@ -122,5 +131,35 @@ describe('Extensible language selection', () => {
     expect(locale.language()).toBe('ar');
     expect(locale.text('Sign in')).toBe('تسجيل الدخول');
     expect(locale.changing()).toBe(false);
+  });
+});
+
+describe('Language calendars for displayed instants', () => {
+  afterEach(() => {
+    document.documentElement.lang = 'en';
+    document.documentElement.dir = 'ltr';
+  });
+  it('uses language calendars and timezones and clears the old calendar override', async () => {
+    const locale = TestBed.inject(Locale);
+    locale.timezone.set('Asia/Tehran');
+    const value = '2026-10-17T20:00:00Z';
+    for (const [language, calendar] of [
+      ['en', 'gregory'],
+      ['fa', 'persian'],
+      ['ar', 'islamic-civil'],
+    ] as const) {
+      await locale.set(language);
+      expect(localizedDateTime(locale, value)).toBe(
+        new Intl.DateTimeFormat(language, {
+          calendar,
+          numberingSystem: 'latn',
+          timeZone: 'Asia/Tehran',
+          dateStyle: 'medium',
+          timeStyle: 'short',
+        }).format(new Date(value)),
+      );
+      expect(locale.calendar()).toBe(calendar);
+      locale.calendarOverride.set('gregory');
+    }
   });
 });

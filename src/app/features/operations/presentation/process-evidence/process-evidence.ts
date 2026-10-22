@@ -27,6 +27,10 @@ export class ProcessEvidence {
   async canLeave(): Promise<boolean> {
     return (await this.recovery()?.canLeave()) ?? true;
   }
+  pending(): boolean {
+    const recovery = this.recovery();
+    return !!(recovery?.busy() || recovery?.reason() || recovery?.frozen());
+  }
   readonly reference = input.required<string>();
   private readonly reader = inject(PROCESS_EVIDENCE);
   private readonly actor = inject(ActorState);

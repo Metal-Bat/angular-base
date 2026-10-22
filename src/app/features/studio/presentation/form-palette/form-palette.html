@@ -1,0 +1,69 @@
+@let vm = view();
+<section
+  class="form-palette"
+  [attr.aria-label]="'Component palette' | localize"
+>
+  <h2>{{ "Components" | localize }}</h2>
+  <div class="field-type-buttons">
+    @for (kind of vm.quickFieldTypes; track kind) {
+      <button
+        pButton
+        severity="secondary"
+        type="button"
+        [disabled]="vm.readonly() || vm.pending().length > 0"
+        [draggable]="!vm.readonly() && !vm.pending().length"
+        [outlined]="true"
+        (click)="vm.quickAdd(kind)"
+        (dragend)="vm.cancelDrag()"
+        (dragstart)="vm.dragPalette($event, kind)"
+      >
+        <i aria-hidden="true" class="pi pi-plus"></i
+        >{{ vm.componentLabels[kind] | localize }}
+      </button>
+    }
+  </div>
+  <details>
+    <summary>
+      {{ "All field types and layouts" | localize }}
+    </summary>
+    <label for="form-palette-search">{{ "Search components" | localize }}</label
+    ><input
+      id="form-palette-search"
+      pInputText
+      [ngModel]="vm.paletteSearch()"
+      (ngModelChange)="vm.paletteSearch.set($event)"
+    />
+    <label for="palette-category">{{ "Component category" | localize }}</label>
+    <app-select-control
+      inputId="palette-category"
+      [ngModel]="vm.paletteCategory()"
+      (ngModelChange)="vm.paletteCategory.set($event)"
+    >
+      <option value="">
+        {{ "All components" | localize }}
+      </option>
+      @for (category of vm.categories; track category) {
+        <option [value]="category">
+          {{ category | localize }}
+        </option>
+      }
+    </app-select-control>
+    <div class="all-field-type-buttons">
+      @for (kind of vm.filteredPalette(); track kind) {
+        <button
+          pButton
+          severity="secondary"
+          type="button"
+          [disabled]="vm.readonly() || vm.pending().length > 0"
+          [draggable]="!vm.readonly() && !vm.pending().length"
+          [outlined]="true"
+          (click)="vm.quickAdd(kind)"
+          (dragend)="vm.cancelDrag()"
+          (dragstart)="vm.dragPalette($event, kind)"
+        >
+          <span>{{ vm.componentLabels[kind] | localize }}</span>
+        </button>
+      }
+    </div>
+  </details>
+</section>

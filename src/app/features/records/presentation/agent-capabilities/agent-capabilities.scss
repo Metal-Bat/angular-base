@@ -1,0 +1,32 @@
+:host {
+  display: block;
+  min-inline-size: 0;
+}
+header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+}
+dl {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+dt {
+  font-size: 0.875rem;
+  color: var(--console-muted);
+}
+dd {
+  font-size: 1rem;
+  margin: 0;
+}
+.capability-note {
+  font-size: 0.875rem;
+  color: var(--console-muted);
+}
+@media (max-width: 48rem) {
+  dl {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

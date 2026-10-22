@@ -126,13 +126,16 @@ export class PersonalCollections {
     }
     return result;
   }
-  async favorite(body: components['schemas']['FavoriteInput']): Promise<void> {
+  async favorite(
+    body: components['schemas']['FavoriteInput'],
+  ): Promise<Favorite> {
     const epoch = this.actor.epoch;
     const response = await firstValueFrom(
       this.api.call('create_favorite_api_v1_me_favorites_post', { body }),
     );
-    readData(response, favorite);
+    const result = readData(response, favorite);
     this.current(epoch);
+    return result;
   }
   async unfavorite(ref: string): Promise<void> {
     const epoch = this.actor.epoch;

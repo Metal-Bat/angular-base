@@ -29,6 +29,17 @@ describe('Calendar presentation lifecycle', () => {
       vm.view.set(view);
       expect(vm.events()).toEqual(projection.events);
     }
+    await fixture.whenStable();
+    expect(
+      fixture.nativeElement.querySelectorAll('.calendar-agenda > section'),
+    ).toHaveLength(1);
+    vm.workflow.set(false);
+    await fixture.whenStable();
+    expect(
+      fixture.nativeElement.querySelectorAll('.calendar-agenda > section'),
+    ).toHaveLength(0);
+    vm.workflow.set(true);
+    await fixture.whenStable();
     vm.open(projection.events[0]);
     expect(selected).toHaveBeenCalledExactlyOnceWith(projection.events[0]);
     TestBed.inject(ActorState).reset();
@@ -52,4 +63,25 @@ describe('Calendar presentation lifecycle', () => {
       );
     }
   });
+});
+
+it('labels an incomplete empty period as partial and offers refresh without claiming no events', async () => {
+  const fixture = TestBed.createComponent(CalendarViews);
+  fixture.componentRef.setInput('anchor', '2026-10-08');
+  fixture.componentRef.setInput('projection', {
+    status: 'partial',
+    stale: true,
+    events: [],
+  });
+  await fixture.whenStable();
+  const root = fixture.nativeElement as HTMLElement;
+  expect(root.textContent).toContain('Only some events are shown.');
+  expect(root.textContent).not.toContain('No events in this range.');
+  const refresh = vi.fn();
+  fixture.componentInstance.refreshRequested.subscribe(refresh);
+  [...root.querySelectorAll('button')]
+    .find((button) => button.textContent?.trim() === 'Refresh')!
+    .click();
+  expect(refresh).toHaveBeenCalledOnce();
+  fixture.destroy();
 });

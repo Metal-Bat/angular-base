@@ -38,3 +38,24 @@ APP-FE-021.2 now supports explicit discard of invalid typed configuration withou
 Current producer/client: 379 operations / 565 schemas. Backend APP-BE-019/020/021/022/024/025 are implemented with scoped verification; APP-BE-023 still has full browser acceptance pending. Accepted exact D07 SDK exceptions remain VERIFIED_WITH_EXCEPTION. These capabilities are available for consumption and do not lock unrelated frontend implementation. Current live backend GraphBinding/GraphStep descriptions differ from the frozen producer; exact paths/wire fields are unchanged, but the complete paired gate remains BLOCKED until the backend producer owner refreezes its artifacts. Historical results above are retained.
 
 [Current five-slice acceptance and remaining blockers](APP-FE-021-025-ACCEPTANCE.md) records the actual results. All five parents remain BLOCKED; the old matrix's unlisted normal authoring and execution criteria remain required.
+
+## Current continuation — 2026-10-19
+
+The historical matrix above is retained. [The interface/wait continuation](../changes/APP-FE-024-INTERFACE.md)
+extends APP-FE-024.3 with workflow-level named interface inputs, nested object and
+collection fields/required flags, exact registered output schemas and actual
+Finish outcome choices. Existing advanced constraints, samples and immutable pins
+are preserved. APP-FE-024.1 adds authorized condition paths from the existing
+completion owner, intersecting prior outputs with current draft dominance. ALL
+split semantics and exclusive final-else semantics have separate guidance.
+APP-FE-024.2 actual timer/event/ALL-join scenarios are governed by the continuation's
+final completion receipt. The full dependency/fault/manual/deployment matrix and
+APP-FE-023 producer limits remain separate; no parent status is changed here.
+
+The Oct 19 interface continuation also reuses collection index/field controls for
+child inputs, consumes the child interface's own declared request values, and
+uses actual pinned child business outcomes. Supported lifecycle acceptance now
+includes asynchronous child timers, real branch joins/event expiry and bounded
+cycle/else authoring. The owning APP-FE-024-INTERFACE record and final scoped receipt
+separate these results from producer REQUEST schema reconstruction, legacy
+transform validation, fault/dependency and manual/deployed acceptance gaps.

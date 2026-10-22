@@ -1,34 +1,77 @@
-<h1 tabindex="-1">{{ "Favorites" | localize }}</h1>
+<header class="console-page-header">
+  <div>
+    <h1 tabindex="-1">{{ "Favorites" | localize }}</h1>
+    <p>
+      {{
+        "Star a form, workflow or other supported item to find it here."
+          | localize
+      }}
+    </p>
+  </div>
+  <button
+    data-favorite-reload
+    pButton
+    severity="secondary"
+    type="button"
+    [disabled]="busy()"
+    (click)="load(page())"
+  >
+    {{ "Reload" | localize }}
+  </button>
+</header>
 @if (error()) {
   <p role="alert">{{ error() | localize }}</p>
 }
-<button pButton type="button" [disabled]="busy()" (click)="load(page())">
-  {{ "Reload" | localize }}
-</button>
-<ul class="grid gap-3 py-4">
+@if (busy()) {
+  <p role="status">{{ "Loading…" | localize }}</p>
+}
+<ul class="grid gap-3 py-4" [attr.aria-busy]="busy()">
   @for (row of rows(); track row.ref_id) {
     <li
-      class="flex flex-wrap items-center gap-3 rounded-lg border border-console-border p-3"
+      class="flex items-center gap-3 rounded-lg border border-console-border p-4"
     >
-      <button pButton type="button" [disabled]="busy()" (click)="open(row)">
-        {{ row.target.label }}
-      </button>
-      <span>{{ kindLabel(row.target.kind) | localize }}</span>
-      @if (row.target.number !== null && row.target.number !== undefined) {
-        <span>{{ "Version" | localize }} {{ row.target.number }}</span>
-      }
+      <i aria-hidden="true" class="pi pi-bookmark text-console-muted"></i>
+      <div class="flex-1 min-w-0">
+        @if (href(row); as destination) {
+          <a
+            data-favorite-open
+            [href]="destination"
+            (click)="follow($event, row)"
+          >
+            <bdi>{{ row.target.label }}</bdi>
+          </a>
+        } @else {
+          <span>{{ "This resource is unavailable." | localize }}</span>
+        }
+        <p class="text-sm text-console-muted">
+          {{ kindLabel(row.target.kind) | localize }}
+          @if (
+            row.target.available &&
+            row.target.number !== null &&
+            row.target.number !== undefined
+          ) {
+            · {{ "Version" | localize }} {{ row.target.number }}
+          }
+        </p>
+      </div>
       <button
+        aria-pressed="true"
         pButton
-        severity="danger"
+        severity="secondary"
         type="button"
-        [disabled]="busy()"
+        [attr.aria-label]="'Remove from favorites' | localize"
+        [disabled]="busy() || reconcileRequired()"
+        [text]="true"
+        [title]="'Remove from favorites' | localize"
         (click)="remove(row)"
       >
-        {{ "Remove" | localize }}
+        <i aria-hidden="true" class="pi pi-star-fill"></i>
       </button>
     </li>
   } @empty {
-    <li>{{ "Nothing to show." | localize }}</li>
+    @if (!busy()) {
+      <li>{{ "Nothing to show." | localize }}</li>
+    }
   }
 </ul>
 <div class="flex gap-3">
@@ -38,9 +81,13 @@
     [disabled]="busy() || page() <= 1"
     (click)="load(page() - 1)"
   >
-    {{ "Previous" | localize }}</button
-  ><span>{{ page() }} / {{ pages() }}</span
-  ><button
+    {{ "Previous" | localize }}
+  </button>
+  <span
+    >{{ "Page" | localize }} {{ page() }} {{ "of" | localize }}
+    {{ pages() || 1 }}</span
+  >
+  <button
     pButton
     type="button"
     [disabled]="busy() || page() >= pages()"

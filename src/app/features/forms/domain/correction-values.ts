@@ -1,6 +1,6 @@
 import { JsonObject, JsonValue } from './runtime-document';
 import { MISSING } from './canonical-values';
-import { rowPath } from './row-values';
+import { isItemScope, rowPath } from './row-values';
 export function correctionValue(
   data: JsonObject | null,
   scope: string,
@@ -12,7 +12,7 @@ export function correctionValue(
   }
   const tokens = scope.split('/').slice(1);
   if (!item) {
-    if (tokens.includes('items')) {
+    if (isItemScope(scope)) {
       return MISSING;
     }
     let value: JsonValue = data;

@@ -1,0 +1,66 @@
+@let vm = view();
+@if (vm.reconcileRequired() && vm.mode() === "edit") {
+  <section aria-labelledby="record-recovery-title" class="record-recovery">
+    <h3 id="record-recovery-title">
+      {{ "Review the current record" | localize }}
+    </h3>
+    <p>
+      {{
+        "Your edits are retained. Inspect current state before choosing a revision."
+          | localize
+      }}
+    </p>
+    <button
+      pButton
+      severity="secondary"
+      type="button"
+      [disabled]="vm.busy() || vm.actionBusy()"
+      [outlined]="true"
+      (click)="vm.inspectCurrent()"
+    >
+      {{ "Inspect current record" | localize }}
+    </button>
+    @if (vm.recoveryRecord(); as current) {
+      @if (comparison(); as changes) {
+        <p>
+          {{ "Before: current record. After: your retained edits." | localize }}
+        </p>
+        <app-record-summary
+          title="Field changes"
+          [record]="changes"
+          [showIdentity]="false"
+        />
+        <button
+          pButton
+          severity="secondary"
+          type="button"
+          [disabled]="!vm.canReapply()"
+          [outlined]="true"
+          (click)="useRevision()"
+        >
+          {{ "Use current revision and keep my edits" | localize }}
+        </button>
+      } @else {
+        <p>
+          {{
+            "Complete valid field values to compare your retained edits."
+              | localize
+          }}
+        </p>
+      }
+      <details>
+        <summary>{{ "Current record" | localize }}</summary>
+        <app-record-summary
+          title="Current record"
+          [record]="current"
+          [showIdentity]="false"
+        />
+      </details>
+      @if (!vm.canReapply() && !vm.busy()) {
+        <p>
+          {{ "This record cannot be edited in its current state." | localize }}
+        </p>
+      }
+    }
+  </section>
+}

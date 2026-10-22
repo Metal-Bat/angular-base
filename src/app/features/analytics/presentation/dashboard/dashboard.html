@@ -1,58 +1,113 @@
-<h1 tabindex="-1">{{ "Dashboard" | localize }}</h1>
+<header class="console-page-header">
+  <h1 tabindex="-1">{{ "Dashboard" | localize }}</h1>
+</header>
 @if (error()) {
   <p role="alert">{{ error() | localize }}</p>
 }
-<form class="my-4 grid gap-3 sm:grid-cols-2" (ngSubmit)="load()">
-  <label for="metric-key">{{ "Metric" | localize }}</label
-  ><app-select-control
-    inputId="metric-key"
-    name="metric"
-    [ariaLabel]="'Metric' | localize"
-    [(ngModel)]="metric"
-  >
-    @for (item of catalog(); track item.metric_key) {
-      <option [value]="item.metric_key">
-        {{ metricTitle(item.metric_key) | localize }}
-      </option>
+<form class="dashboard-controls" (ngSubmit)="load()">
+  <div class="period-toolbar">
+    <app-control-field controlId="metric-period" label="Period">
+      <app-select-control
+        inputId="metric-period"
+        [ariaLabel]="'Period' | localize"
+        [value]="period"
+        (selectionChanged)="setPreset($event.target.value)"
+      >
+        <option value="today">{{ "Today" | localize }}</option>
+        <option value="week">{{ "Last 7 days" | localize }}</option>
+        <option value="month">{{ "Last 30 days" | localize }}</option>
+        <option value="custom">{{ "Custom" | localize }}</option>
+      </app-select-control>
+    </app-control-field>
+    <p class="period-timezone">
+      <span
+        >{{ "Timezone" | localize }}: <bdi>{{ timezone }}</bdi></span
+      >
+      <a id="metric-zone-settings" routerLink="/account/profile">{{
+        "Change timezone in user settings." | localize
+      }}</a>
+    </p>
+    @if (zoneError()) {
+      <p role="alert">{{ zoneError() | localize }}</p>
     }
-  </app-select-control>
-  <label for="metric-start">{{ "Start date" | localize }}</label
-  ><app-temporal-control controlId="metric-start" [(value)]="start" />
-  <label for="metric-end">{{ "End date (exclusive)" | localize }}</label
-  ><app-temporal-control controlId="metric-end" [(value)]="end" />
-  <label for="metric-zone">{{ "Timezone" | localize }}</label
-  ><input
-    id="metric-zone"
-    maxlength="64"
-    name="timezone"
-    pInputText
-    required
-    [(ngModel)]="timezone"
-  />
-  <label for="metric-dimension">{{ "Breakdown" | localize }}</label
-  ><app-select-control
-    inputId="metric-dimension"
-    name="dimension"
-    [ariaLabel]="'Breakdown' | localize"
-    [(ngModel)]="dimension"
-    ><option value="none">{{ "Total" | localize }}</option>
-    <option value="status">
-      {{ "Status" | localize }}
-    </option></app-select-control
-  >
-  <button pButton type="submit" [disabled]="state() === 'loading'">
-    {{ "Apply" | localize }}
-  </button>
+    <button pButton type="submit" [disabled]="state() === 'loading'">
+      {{ "Apply" | localize }}
+    </button>
+  </div>
+  @if (period === "custom") {
+    <div class="custom-period">
+      <app-control-field controlId="metric-start" label="Start date">
+        <app-temporal-control
+          controlId="metric-start"
+          [describedBy]="rangeError() ? 'metric-end-error' : ''"
+          [invalid]="!!rangeError()"
+          [(value)]="start"
+        />
+      </app-control-field>
+      <app-control-field
+        controlId="metric-end"
+        label="End date"
+        [error]="rangeError()"
+      >
+        <app-temporal-control
+          controlId="metric-end"
+          [describedBy]="rangeError() ? 'metric-end-error' : ''"
+          [invalid]="!!rangeError()"
+          [(value)]="lastDay"
+        />
+      </app-control-field>
+    </div>
+  }
+  <details class="metric-customize">
+    <summary>{{ "Customize" | localize }}</summary>
+    <div class="metric-filters">
+      <app-control-field controlId="metric-key" label="Metric">
+        <app-select-control
+          inputId="metric-key"
+          name="metric"
+          [ariaLabel]="'Metric' | localize"
+          [(ngModel)]="metric"
+        >
+          @for (item of catalog(); track item.metric_key) {
+            <option [value]="item.metric_key">
+              {{ metricTitle(item.metric_key) | localize }}
+            </option>
+          }
+        </app-select-control>
+      </app-control-field>
+      <app-control-field controlId="metric-dimension" label="Breakdown">
+        <app-select-control
+          inputId="metric-dimension"
+          name="dimension"
+          [ariaLabel]="'Breakdown' | localize"
+          [(ngModel)]="dimension"
+        >
+          <option value="none">{{ "Total" | localize }}</option>
+          <option value="status">{{ "Status" | localize }}</option>
+        </app-select-control>
+      </app-control-field>
+    </div>
+  </details>
 </form>
+@if (summaryQuery(); as query) {
+  @if (catalog().length) {
+    <app-dashboard-overview
+      [definitions]="catalog()"
+      [query]="query"
+      (drilldown)="openSummary($event)"
+    />
+  }
+}
 @if (range(); as dates) {
   <app-metric-card
-    [canDrillDown]="true"
+    [canDrillDown]="state() === 'ready' && !stale()"
     [end]="dates.end"
     [result]="result()"
     [stale]="stale()"
     [start]="dates.start"
     [state]="state()"
     [title]="metricTitle(result()?.metric_key || '')"
+    [unavailableReason]="unavailableReason()"
     (drilldown)="open($event)"
   />
 }

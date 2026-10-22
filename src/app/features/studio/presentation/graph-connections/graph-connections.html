@@ -1,33 +1,55 @@
 <section [attr.aria-label]="'Typed connections' | localize">
   <h3>{{ "Typed connections" | localize }}</h3>
+  <p role="status" [hidden]="targets().length > 0">
+    {{
+      "Data input ports are unavailable for mapping. Authorized condition values can still be loaded."
+        | localize
+    }}
+  </p>
   <p>{{ "Server validation is required before promotion." | localize }}</p>
+  <p [hidden]="!graph()['interface']">
+    {{
+      "Declared child inputs are available as data sources. Parent form values are isolated."
+        | localize
+    }}
+  </p>
   <label for="mapping-target">{{ "Target port" | localize }}</label>
   <app-select-control
     inputId="mapping-target"
-    [disabled]="interactionDisabled()"
+    [disabled]="interactionDisabled() || !!editing()"
     [ngModel]="target()"
-    (ngModelChange)="target.set($event); constant.set(undefined)"
+    (ngModelChange)="updateTarget($event)"
   >
     <option value="">{{ "Choose" | localize }}</option>
     @for (port of targets(); track port.key) {
       <option [value]="port.key">
-        {{ port.key }} · {{ port.schema["type"] }}
+        {{ port.key }} · {{ summary(port.schema) }}
       </option>
     }
   </app-select-control>
+  @if (targetPort(); as port) {
+    <p class="mapping-hint">
+      {{
+        (port.cardinality === "LIST"
+          ? "Ordered collection: each mapping appends a collection in order."
+          : "One value per input."
+        ) | localize
+      }}
+    </p>
+  }
   <details>
     <summary>{{ "Authorized data sources" | localize }}</summary>
     <app-studio-choice
       controlId="mapping-request"
       kind="request_types"
-      [disabled]="interactionDisabled()"
+      [disabled]="sourceDisabled()"
       [value]="request()"
       (picked)="setRequest($event)"
     />
     <button
       pButton
       type="button"
-      [disabled]="interactionDisabled() || busy() || !request()"
+      [disabled]="sourceDisabled() || busy() || !request()"
       (click)="load()"
     >
       {{ "Binding suggestions" | localize }}
@@ -35,7 +57,7 @@
     <button
       pButton
       type="button"
-      [disabled]="interactionDisabled() || busy() || page() <= 1"
+      [disabled]="sourceDisabled() || busy() || page() <= 1"
       (click)="load(page() - 1)"
     >
       {{ "Previous" | localize }}
@@ -43,41 +65,56 @@
     <button
       pButton
       type="button"
-      [disabled]="interactionDisabled() || busy() || page() >= pages()"
+      [disabled]="sourceDisabled() || busy() || page() >= pages()"
       (click)="load(page() + 1)"
     >
       {{ "Next" | localize }}
     </button>
   </details>
+  <p class="mapping-hint">
+    {{
+      "Incompatible sources are disabled. Use an explicit Transform step for conversion or field projection."
+        | localize
+    }}
+  </p>
   <label for="mapping-source">{{ "Source port" | localize }}</label>
   <app-select-control
     inputId="mapping-source"
     [disabled]="interactionDisabled()"
     [ngModel]="source()"
-    (ngModelChange)="source.set($event)"
+    (ngModelChange)="sourceChanged($event)"
   >
     <option value="">{{ "Constant value" | localize }}</option>
+    @if (source() === "__unavailable__") {
+      <option value="__unavailable__">
+        {{ "Reload sources to edit this mapping." | localize }}
+      </option>
+    }
     @for (item of sources(); track item.key) {
-      <option [value]="item.key">
-        {{ item.label }} · {{ item.schema["type"] }}
+      <option [disabled]="!sourceSelectable(item)" [value]="item.key">
+        {{ item.label }} · {{ summary(item.schema) }}
       </option>
     }
   </app-select-control>
-  @if (!source() && target() && targetSchema()["type"] !== "object") {
-    <app-schema-input
-      controlId="mapping-constant"
-      label="Constant value"
+  @if (collectionSource()) {
+    <app-collection-source
       [disabled]="interactionDisabled()"
-      [required]="true"
-      [schema]="targetSchema()"
-      [value]="constant()"
-      (valueChange)="constant.set($event)"
+      [field]="itemField()"
+      [index]="itemIndex()"
+      [schema]="selectedSource()!.schema"
+      (fieldChange)="itemField.set($event); touch()"
+      (indexChange)="itemIndex.set($event); touch()"
     />
   }
-  @if (!source() && targetSchema()["type"] === "object") {
-    <p>
-      {{ "Choose an authorized source for this structured port." | localize }}
-    </p>
+  @if (!source() && target()) {
+    <app-mapping-constant
+      [disabled]="interactionDisabled()"
+      [errors]="fieldErrors()"
+      [schema]="targetSchema()"
+      [value]="constant()"
+      (readyChange)="constantReady.set($event)"
+      (valueChange)="constant.set($event); touch()"
+    />
   }
   <button
     pButton
@@ -85,32 +122,38 @@
     [disabled]="
       interactionDisabled() ||
       !target() ||
-      (!source() && targetSchema()['type'] === 'object')
+      source() === '__unavailable__' ||
+      (!source() && !constantReady())
     "
     (click)="map()"
   >
-    {{ "Add data mapping" | localize }}
+    {{ (editing() ? "Update data mapping" : "Add data mapping") | localize }}
   </button>
-  <ul>
-    @for (binding of bindings(); track binding.id) {
-      <li>
-        {{ binding.edge["target_port"] }} ←
-        {{ $any(binding.edge["source_kind"]) | localize }}
-        {{ binding.edge["source_path"] || binding.edge["source_port"] }}
-        <button
-          pButton
-          type="button"
-          [disabled]="interactionDisabled()"
-          (click)="removeMapping(binding.id)"
-        >
-          {{ "Remove data mapping" | localize }}
-        </button>
-      </li>
-    }
-  </ul>
+  @if (mappingPending()) {
+    <button
+      pButton
+      severity="secondary"
+      type="button"
+      [disabled]="disabled() || transitionPending()"
+      (click)="cancel()"
+    >
+      {{ "Discard mapping edits" | localize }}
+    </button>
+  }
+  <app-mapping-list
+    [disabled]="disabled() || transitionPending() || mappingPending()"
+    [inspected]="inspectedEdge()"
+    [ports]="targets()"
+    [rows]="bindings()"
+    (edited)="edit($event)"
+    (moved)="move($event.id, $event.direction)"
+    (removed)="removeMapping($event)"
+  />
   <app-transition-editor
-    [disabled]="disabled()"
+    [completions]="rows()"
+    [disabled]="disabled() || mappingPending()"
     [graph]="graph()"
+    [inspected]="inspectedEdge()"
     [selected]="selected()"
     (applied)="transitionApplied($event)"
     (changed)="transitionChanged()"
@@ -133,25 +176,23 @@
     <app-studio-choice
       controlId="candidate-user"
       kind="users"
-      [disabled]="interactionDisabled()"
+      [disabled]="interactionDisabled() || mappingPending()"
       (picked)="candidate('user_ref', $event)"
     />
     <p>{{ "Work group" | localize }}</p>
     <app-studio-choice
       controlId="candidate-group"
       kind="work_groups"
-      [disabled]="interactionDisabled()"
+      [disabled]="interactionDisabled() || mappingPending()"
       (picked)="candidate('work_group_ref', $event)"
     />
     <p>{{ "Candidate count" | localize }}: {{ candidates().length }}</p>
     <app-candidate-targets
-      [disabled]="interactionDisabled()"
+      [disabled]="interactionDisabled() || mappingPending()"
       [graph]="graph()"
       [selected]="selected()"
       (applied)="applied.emit($event)"
     />
   }
-  @if (error()) {
-    <p role="alert">{{ error() | localize }}</p>
-  }
+  <p role="alert" [hidden]="!error()">{{ error() | localize }}</p>
 </section>

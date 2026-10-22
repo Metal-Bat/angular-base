@@ -69,3 +69,20 @@ Parent APP-FE-014 remains open: the producer lacks a membership-aware team selec
 Current APP-FE-014 status is BLOCKED / IMPLEMENTED (verified integrated slice; parent incomplete). The actual task-specific evidence above and the complete zero-warning pre-closure gate establish this status; the dated missing-producer and pending-gate prose above is historical. [The consolidated closure](../delivery/APP-FE-006-015-ACCEPTANCE.md) records the twelve exit-0 commands, 507 tests, ten Firefox scopes, source identity, retained failures and exact acceptance boundaries. The final post-documentation gate is `artifacts/check/manifest.json` with its complete command logs; it must pass on the unchanged final tree.
 
 The current producer has no suitable membership-aware team selector, and the full workflow-derived deadline/source matrix is not verified. Personal event/reminder conflict, current-read recovery, cancellation and unchanged committed-response replay acceptance passed.
+
+2026-10-15 revision-5 continuation: short-event target collisions, dense-event reachability and pinned all-day rows now have dedicated native desktop/phone regressions. Native 439 passes twelve cases; actual full foundations 440 passes thirty-six on unchanged source with exact producer match and empty diagnostics. Subsequent Agenda empty-day cleanup is separately verified by 442/443. [APP-FE-014.UX01](APP-FE-014.UX01.md) retains exact hashes, failed runs, scope and remaining acceptance; no strict master closure is claimed.
+
+## Reported calendar/select and theme continuation — 2026-10-17
+
+[Scoped repair and remaining font dependency](APP-FE-004-LOCALE-OVERLAYS.md) records the new user report, actual live browser interactions and independent final-check receipt. Historical verification and parent status are unchanged.
+
+## Calendar transition continuation — 2026-10-18
+
+The collected Firefox Cancel miss, deterministic leaving-popover/editor overlap reproduction and transition repair are recorded in [the editor flow audit](APP-FE-016-EDITOR-FLOW-AUDIT.md). Edit waits for the public popover close completion; current-reference operations and pending-input safeguards remain. The scoped completion receipt governs final verification and does not close parent acceptance.
+
+## Ordered follow-up — 2026-10-18
+
+[Ordered acceptance](APP-FE-038-ORDERED-FOLLOW-UP.md) records native Calendar
+create/repeated edit-cancel/focus/delete acceptance against the running backend,
+three-language date/filter regressions and the remaining membership-aware team
+selector dependency. Existing parent status and historical acceptance remain.

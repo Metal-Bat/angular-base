@@ -8,7 +8,7 @@ export {
   localTimeToInstant,
 } from '../../../shared/domain/wall-time';
 /** Gregorian presentation helpers; no C09 endpoint or wire DTO is assumed. */
-export type CalendarView = 'agenda' | 'week' | 'month';
+export type CalendarView = 'day' | 'agenda' | 'week' | 'month';
 export type DateWindow = { start: string; end: string };
 export function dateMillis(value: string): number {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
@@ -43,6 +43,9 @@ export function calendarWindow(
   calendar: CalendarSystem = 'gregory',
 ): DateWindow {
   const day = new Date(dateMillis(anchor));
+  if (view === 'day') {
+    return { start: anchor, end: shiftDate(anchor, 1) };
+  }
   if (view === 'month') {
     const days = calendarMonth(anchor, calendar);
     return { start: days[0], end: shiftDate(days[days.length - 1], 1) };

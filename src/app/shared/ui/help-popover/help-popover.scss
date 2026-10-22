@@ -1,0 +1,16 @@
+:host {
+  display: inline-flex;
+}
+button {
+  position: relative;
+  margin: 0;
+}
+.icon-only {
+  inline-size: var(--workspace-control-height);
+  min-inline-size: var(--workspace-control-height);
+  padding: 0;
+}
+.help-content {
+  font-size: 0.875rem;
+  line-height: 1.5;
+}

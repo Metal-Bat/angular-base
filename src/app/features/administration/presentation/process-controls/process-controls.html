@@ -1,63 +1,145 @@
 <header class="console-page-header">
   <div>
-    <span class="console-eyebrow">{{ "Administration" | localize }}</span>
     <h1 tabindex="-1">{{ "Process controls" | localize }}</h1>
-    <p class="console-description">
-      {{
-        "Open a process to review its state, timeline and scheduled actions."
-          | localize
-      }}
-    </p>
+    @if (row()?.["status"]; as status) {
+      <span class="console-record-status">{{ $any(status) | localize }}</span>
+    }
   </div>
-  @if (row()) {
-    <button
-      pButton
-      severity="secondary"
-      type="button"
-      [attr.aria-label]="'Reload' | localize"
-      [disabled]="busy()"
-      [outlined]="true"
-      (click)="load($any(row())['ref_id'])"
-    >
-      <i aria-hidden="true" class="pi pi-refresh"></i>
-    </button>
-  }
+  <div class="flex flex-wrap items-center gap-2">
+    @if (row(); as process) {
+      <button
+        pButton
+        severity="secondary"
+        type="button"
+        [attr.aria-label]="'Reload' | localize"
+        [attr.title]="'Reload' | localize"
+        [disabled]="busy()"
+        [outlined]="true"
+        (click)="load($any(process)['ref_id'])"
+      >
+        <i aria-hidden="true" class="pi pi-refresh"></i>
+      </button>
+      <app-resource-actions
+        base="/api/v1/processes"
+        group="processes"
+        [disabled]="busy()"
+        [row]="process"
+        (changed)="refresh()"
+      />
+    }
+  </div>
 </header>
-<form
-  class="console-panel flex flex-wrap items-end gap-3 mb-4"
-  (ngSubmit)="load()"
->
-  <app-control-field
-    controlId="process-reference"
-    label="Process reference"
-    [error]="error()"
-    [required]="true"
+<p role="status" [hidden]="!waitingForChild()">
+  {{
+    "Process commands are unavailable while a child workflow is active. Read-only tracking remains available."
+      | localize
+  }}
+</p>
+
+<p>
+  {{
+    "Open process tracking from an authorized request or task. This service has no general process search."
+      | localize
+  }}
+</p>
+@if (canRead()) {
+  <nav
+    class="flex flex-wrap gap-3"
+    [attr.aria-label]="'Process context' | localize"
   >
-    <input
-      id="process-reference"
-      name="reference"
-      pInputText
-      required
-      [disabled]="busy() || !allowed()"
-      [(ngModel)]="reference"
-    />
-  </app-control-field>
-  <button pButton type="submit" [disabled]="busy() || !allowed()">
-    {{ "Open" | localize }}
-  </button>
-</form>
+    <a routerLink="/operations/requests">{{ "My requests" | localize }}</a>
+    <a routerLink="/operations/tasks">{{ "Task inbox" | localize }}</a>
+    @if (requestReference()) {
+      <a [routerLink]="['/operations/requests', requestReference()]">{{
+        "Request detail" | localize
+      }}</a>
+    }
+    @if (row()?.["ref_id"]) {
+      <a [routerLink]="['/operations/processes', row()?.['ref_id']]">{{
+        "Process tracking" | localize
+      }}</a>
+    }
+  </nav>
+}
+<details class="my-4">
+  <summary>{{ "Advanced: open by process reference" | localize }}</summary>
+  <p>
+    {{
+      "Use this technical fallback only when an authorized process reference is already known. It does not grant access."
+        | localize
+    }}
+  </p>
+  <form class="flex flex-wrap items-end gap-3" (ngSubmit)="load()">
+    <app-control-field
+      controlId="process-reference"
+      label="Process reference"
+      [error]="error()"
+      [required]="true"
+    >
+      <input
+        id="process-reference"
+        name="reference"
+        pInputText
+        required
+        [disabled]="busy() || !allowed()"
+        [(ngModel)]="reference"
+      />
+    </app-control-field>
+    <button pButton type="submit" [disabled]="busy() || !allowed()">
+      {{ "Open" | localize }}
+    </button>
+  </form>
+</details>
+@if (error()) {
+  <p role="alert">{{ error() | localize }}</p>
+}
 @if (notice()) {
   <p role="status">{{ notice() | localize }}</p>
 }
-@if (row(); as record) {
-  <section class="console-panel mb-4">
-    <app-record-summary title="Selected process" [record]="record" />
-  </section>
-  <app-resource-actions
-    base="/api/v1/processes"
-    group="processes"
-    [disabled]="busy()"
-    [row]="record"
-    (changed)="refresh()"
-  />
+@if (row(); as process) {
+  @if (canRead()) {
+    <app-record-summary
+      title="Process state"
+      [groups]="sections"
+      [record]="process"
+      [showIdentity]="false"
+    />
+    <section>
+      <h2>{{ "Current positions" | localize }}</h2>
+      <p-table [value]="positions()">
+        <ng-template #header
+          ><tr>
+            <th scope="col">{{ "Step" | localize }}</th>
+            <th scope="col">{{ "Execution status" | localize }}</th>
+            <th scope="col">{{ "Token status" | localize }}</th>
+            <th scope="col">{{ "Waiting for" | localize }}</th>
+          </tr></ng-template
+        >
+        <ng-template #body let-position
+          ><tr>
+            <td>
+              <bdi>{{ position["step_key"] }}</bdi>
+            </td>
+            <td>
+              {{ position["execution_status"] ?? "Unavailable" | localize }}
+            </td>
+            <td>{{ position["token_status"] ?? "Unavailable" | localize }}</td>
+            <td>{{ position["wait_kind"] ?? "None" | localize }}</td>
+          </tr></ng-template
+        >
+        <ng-template #emptymessage
+          ><tr>
+            <td colspan="4">{{ "No active positions" | localize }}</td>
+          </tr></ng-template
+        >
+      </p-table>
+    </section>
+  } @else {
+    <p>
+      {{
+        "Recovery commands are available through their existing permissions. This view does not grant request or process inspection."
+          | localize
+      }}
+    </p>
+  }
 }

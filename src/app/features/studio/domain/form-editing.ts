@@ -7,6 +7,12 @@ export type FormEditState = {
 export class FormHistory {
   private past: FormEditState[] = [];
   private future: FormEditState[] = [];
+  get canUndo(): boolean {
+    return this.past.length > 0;
+  }
+  get canRedo(): boolean {
+    return this.future.length > 0;
+  }
   record(state: FormEditState): void {
     this.past.push(structuredClone(state));
     if (this.past.length > 20) {
@@ -52,6 +58,16 @@ export function patchNode(
 ): JsonObject {
   validatePresentation(patch);
   const node = authoredNode(renderOf(documents), path);
+  if (patch['outcome'] !== undefined) {
+    const declared = renderOf(documents)['outcomes'];
+    if (
+      node['component'] === 'action'
+        ? !Array.isArray(declared) || !declared.includes(patch['outcome'])
+        : patch['outcome'] !== null
+    ) {
+      throw Error('Choose a declared outcome for an action field.');
+    }
+  }
   if (
     patch['scope'] !== undefined ||
     patch['component'] !== undefined ||

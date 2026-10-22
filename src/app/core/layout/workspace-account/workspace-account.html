@@ -1,0 +1,46 @@
+@let vm = view();
+@if (vm.auth.profile(); as profile) {
+  <a
+    class="account-avatar"
+    routerLink="/account/profile"
+    [attr.aria-label]="'My information' | localize"
+    [attr.title]="'My information' | localize"
+    ><span aria-hidden="true">{{
+      profile.username.slice(0, 1).toUpperCase()
+    }}</span></a
+  >
+  <details class="account-menu">
+    <summary
+      [attr.aria-label]="('Account' | localize) + ': ' + profile.username"
+    >
+      <i aria-hidden="true" class="pi pi-user account-icon"></i
+      ><span
+        >{{ "Account" | localize }}: <bdi>{{ profile.username }}</bdi></span
+      >
+    </summary>
+    <button
+      pButton
+      severity="secondary"
+      type="button"
+      [text]="true"
+      (click)="vm.auth.logout()"
+    >
+      {{ "Sign out" | localize }}
+    </button>
+  </details>
+  <button
+    aria-controls="notification-panel"
+    pButton
+    severity="secondary"
+    type="button"
+    [attr.aria-expanded]="vm.notificationsOpen()"
+    [attr.aria-label]="'Notifications' | localize"
+    [text]="true"
+    (click)="vm.toggleNotifications()"
+  >
+    <i aria-hidden="true" class="pi pi-bell"></i>
+    <bdi data-notification-count [hidden]="!vm.notifications.unreadCount()">{{
+      vm.notifications.unreadCount()
+    }}</bdi>
+  </button>
+}

@@ -1,3 +1,4 @@
+import { LocalizedDateTimePipe } from '../../../../shared/ui/localized-datetime-pipe';
 import {
   ApiFailure,
   knownRejection,
@@ -24,6 +25,7 @@ import { CALENDAR } from '../../bindings';
 @Component({
   selector: 'app-work-reminders',
   imports: [
+    LocalizedDateTimePipe,
     FormsModule,
     RouterLink,
     ButtonDirective,

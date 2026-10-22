@@ -1,7 +1,7 @@
 import { JsonObject, RenderNode } from './runtime-document';
 /** Responsive presentation stays within the parent's current track count. */
 export function gridPlacement(
-  node: RenderNode,
+  node: Pick<RenderNode, 'display'>,
   columns: number,
 ): { column: string; row: string } {
   const value = node.display['grid'];

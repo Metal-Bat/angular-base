@@ -71,7 +71,7 @@
       <dt>{{ "Last seen" | localize }}</dt>
       <dd>{{ item.last_seen_at }}</dd>
       <dt>{{ "Retention deadline" | localize }}</dt>
-      <dd>{{ item.expires_at }}</dd>
+      <dd>{{ item.expires_at | localizedDateTime }}</dd>
     </dl>
     <div class="flex gap-3">
       <button

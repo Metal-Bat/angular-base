@@ -1,0 +1,76 @@
+:host {
+  display: block;
+  border-block-start: 1px solid var(--console-border);
+  padding-block-start: 1rem;
+  min-inline-size: 0;
+}
+.query-sorts,
+.sort-fields {
+  display: grid;
+  gap: 0.75rem;
+  min-inline-size: 0;
+}
+.sorts-heading,
+.sort-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+.sorts-heading {
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+h3,
+h4,
+p {
+  margin: 0;
+}
+h3,
+h4 {
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+.sort-help {
+  color: var(--console-muted);
+  font-size: 0.8125rem;
+}
+.sort-group {
+  border-block-start: 1px solid var(--console-border);
+  padding-block-start: 0.75rem;
+  min-inline-size: 0;
+}
+.sort-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 10rem;
+  gap: 1rem;
+  margin-block-start: 0.5rem;
+  align-items: start;
+}
+.sort-field {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.5rem;
+  align-items: end;
+}
+.sort-actions button {
+  min-inline-size: var(--workspace-control-height);
+  margin: 0;
+  padding-inline: 0.5rem;
+}
+.add-field {
+  justify-self: start;
+}
+.sort-error {
+  color: var(--mat-sys-error);
+  font-size: 0.875rem;
+  margin-block-start: 0.5rem;
+}
+@media (max-width: 48rem) {
+  .sort-body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .sort-actions button {
+    min-width: 2.875rem;
+    min-height: 2.875rem;
+  }
+}

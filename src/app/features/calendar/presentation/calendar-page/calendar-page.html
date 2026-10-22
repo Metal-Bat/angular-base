@@ -1,61 +1,94 @@
-<h1 tabindex="-1">{{ "Calendar" | localize }}</h1>
+<header class="console-page-header">
+  <h1 tabindex="-1">{{ "Calendar" | localize }}</h1>
+  <button
+    data-create-event
+    pButton
+    type="button"
+    [disabled]="deleting() || reconcileRequired()"
+    [hidden]="editing()"
+    (click)="create()"
+  >
+    {{ "Create event" | localize }}
+  </button>
+  <button
+    pButton
+    severity="secondary"
+    type="button"
+    [disabled]="deleting()"
+    [hidden]="editing()"
+    (click)="load()"
+  >
+    {{ "Refresh" | localize }}
+  </button>
+</header>
+@if (selectionBusy()) {
+  <p role="status">{{ "Loading…" | localize }}</p>
+}
 @if (error()) {
   <p role="alert">{{ error() | localize }}</p>
 }
-<form class="my-4 flex flex-wrap items-end gap-3" (ngSubmit)="load()">
-  <label class="grid gap-2" for="calendar-date"
-    >{{ "Date" | localize
-    }}<app-temporal-control controlId="calendar-date" [(value)]="date" /></label
-  ><label class="grid gap-2" for="calendar-zone"
-    >{{ "Timezone" | localize
-    }}<input
-      id="calendar-zone"
-      maxlength="64"
-      name="timezone"
-      pInputText
-      required
-      [(ngModel)]="timezone" /></label
-  ><button pButton type="submit">{{ "Apply" | localize }}</button
-  ><button pButton type="button" (click)="create()">
-    {{ "Create event" | localize }}
-  </button>
-</form>
-<app-calendar-views
-  [anchor]="anchor()"
-  [projection]="projection()"
-  [timezone]="zone()"
-  (selected)="open($event)"
-/>
+<section [hidden]="editing()">
+  <app-calendar-views
+    [anchor]="anchor()"
+    [projection]="projection()"
+    [timezone]="zone()"
+    (activated)="showDetails($event)"
+    (draftRequested)="create($event)"
+    (periodChanged)="changePeriod($event)"
+    (refreshRequested)="load()"
+  >
+    <details class="calendar-settings">
+      <summary>{{ "Calendar settings" | localize }}</summary>
+      <app-control-field controlId="calendar-date" label="Date">
+        <app-temporal-control
+          controlId="calendar-date"
+          [required]="true"
+          [value]="anchor()"
+          (valueChange)="changePeriod($event)"
+        />
+      </app-control-field>
+      <a routerLink="/account/profile">{{
+        "Change timezone in user settings." | localize
+      }}</a>
+    </details>
+  </app-calendar-views>
+</section>
 @if (editing()) {
   @if (selected()?.source_kind === "work_item") {
     <app-work-reminders [item]="selected()!" />
   } @else {
     <app-calendar-editor
+      [draft]="draft()"
       [item]="selected()"
       [reminders]="reminders()"
+      (cancelled)="close()"
       (reloadRequested)="reloadSelected()"
+      (removeRequested)="remove()"
       (saved)="saved($event)"
     />
   }
-  <div class="flex gap-3 my-3">
+  @if (selected()?.source_kind === "work_item") {
     <button pButton severity="secondary" type="button" (click)="close()">
-      {{ "Close" | localize }}</button
-    ><button
-      pButton
-      severity="danger"
-      type="button"
-      [disabled]="!selected()?.editable"
-      (click)="remove()"
-    >
-      {{ "Delete" | localize }}
+      {{ "Close" | localize }}
     </button>
-  </div>
-}
-<ul>
-  @for (reminder of reminders(); track reminder.ref_id) {
-    <li>
-      <time [attr.datetime]="reminder.due_at">{{ reminder.due_at }}</time> —
-      {{ reminder.status | localize }}
-    </li>
   }
-</ul>
+}
+@if (editing()) {
+  <ul>
+    @for (reminder of reminders(); track reminder.ref_id) {
+      <li>
+        <time [attr.datetime]="reminder.due_at">{{
+          reminder.due_at | localizedDateTime
+        }}</time>
+        —
+        {{ reminder.status | localize }}
+      </li>
+    }
+  </ul>
+}
+
+<app-calendar-event-details
+  [busy]="deleting() || reconcileRequired()"
+  (editRequested)="open($event)"
+  (removeRequested)="deleteFromDetails($event)"
+/>

@@ -1,0 +1,59 @@
+.dashboard-controls {
+  margin-block: 1rem;
+}
+.period-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 1rem;
+}
+.period-toolbar app-control-field {
+  flex: 0 1 17rem;
+  min-inline-size: 0;
+}
+.period-toolbar button {
+  margin: 0;
+}
+.custom-period,
+.metric-filters {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin-block: 1rem;
+  max-inline-size: 48rem;
+}
+.metric-customize {
+  margin-block-start: 1rem;
+  font-size: 0.875rem;
+}
+.metric-customize summary {
+  cursor: pointer;
+  color: var(--console-muted);
+}
+@media (max-width: 40rem) {
+  .period-toolbar app-control-field {
+    flex-basis: 100%;
+  }
+  .custom-period,
+  .metric-filters {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.console-page-header h1 {
+  font-weight: 600;
+}
+.console-page-header h1:focus {
+  outline: none;
+}
+
+.period-timezone {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 0.75rem;
+  margin: 0;
+  padding-block: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--console-muted);
+}

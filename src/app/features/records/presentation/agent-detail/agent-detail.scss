@@ -1,0 +1,25 @@
+:host {
+  display: block;
+  min-inline-size: 0;
+}
+
+.agent-detail-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 18rem;
+  gap: 1.5rem;
+  align-items: start;
+}
+.agent-detail-main {
+  min-inline-size: 0;
+}
+aside {
+  padding: 0;
+  margin: 0;
+  border: 0;
+  background: transparent;
+}
+@media (max-width: 70rem) {
+  .agent-detail-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

@@ -1,3 +1,5 @@
+import { ApiFailure } from '../../../../core/transport/api-failure';
+import { BehaviorSubject } from 'rxjs';
 import { TestBed } from '@angular/core/testing';
 import {
   ActivatedRoute,
@@ -41,7 +43,9 @@ describe('Process controls navigation', () => {
         {
           provide: ActivatedRoute,
           useValue: {
-            snapshot: { paramMap: convertToParamMap({ ref: 'old-process' }) },
+            paramMap: new BehaviorSubject(
+              convertToParamMap({ ref: 'old-process' }),
+            ),
           },
         },
         { provide: PROCESS_READER, useValue: read },
@@ -101,5 +105,64 @@ describe('Process controls navigation', () => {
         'a[href^="/administration/processes"]',
       ),
     ).toBeNull();
+  });
+  it('loads a new child route and rejects late data from the previous route', async () => {
+    const fixture = TestBed.createComponent(ProcessEntry);
+    fixture.componentInstance.polling.stop();
+    await fixture.whenStable();
+    const params = TestBed.inject(ActivatedRoute).paramMap as BehaviorSubject<
+      ReturnType<typeof convertToParamMap>
+    >;
+    let finish!: (value: ProcessSnapshot) => void;
+    read.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          finish = resolve;
+        }),
+    );
+    params.next(convertToParamMap({ ref: 'child-one' }));
+    await vi.waitFor(() =>
+      expect(read.mock.calls.at(-1)![0]).toBe('child-one'),
+    );
+    const firstSignal = read.mock.calls.at(-1)![3]!;
+    read.mockResolvedValueOnce({
+      ...process,
+      reference: 'child-two-current',
+      status: 'COMPLETED',
+    });
+    params.next(convertToParamMap({ ref: 'child-two' }));
+    await vi.waitFor(() =>
+      expect(fixture.componentInstance.snapshot()?.reference).toBe(
+        'child-two-current',
+      ),
+    );
+    await fixture.whenStable();
+    finish({ ...process, reference: 'late-child-one' });
+    await fixture.whenStable();
+    expect(firstSignal.aborted).toBe(true);
+    expect(fixture.componentInstance.snapshot()?.reference).toBe(
+      'child-two-current',
+    );
+    expect(read.mock.calls.at(-1)![0]).toBe('child-two');
+  });
+  it('refreshes the current page and reference, retaining outages but clearing revoked records', async () => {
+    const fixture = TestBed.createComponent(ProcessEntry);
+    const vm = fixture.componentInstance;
+    vm.polling.stop();
+    await fixture.whenStable();
+    read.mockResolvedValueOnce({ ...process, page: 2, totalPages: 3 });
+    await vm.load(2);
+    read.mockRejectedValueOnce(new Error('offline'));
+    await vm.load();
+    expect(read.mock.calls.at(-1)!.slice(0, 3)).toEqual([
+      'current-process',
+      2,
+      false,
+    ]);
+    expect(vm.snapshot()?.page).toBe(2);
+    read.mockRejectedValueOnce(new ApiFailure(403, null, null, []));
+    await vm.load();
+    expect(vm.snapshot()).toBeNull();
+    expect(vm.status()).toBe('');
   });
 });

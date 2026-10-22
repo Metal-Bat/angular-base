@@ -1,72 +1,144 @@
-<div class="canvas-sheet">
-  @for (card of cards(); track card.identity) {
-    <div
-      aria-hidden="true"
-      class="placement-drop"
-      (dragover)="dragOver($event)"
-      (drop)="drop($event, card.path, 'before')"
+@if (pages().length) {
+  <div class="page-navigation">
+    <label for="design-page">{{ "Page" | localize }}</label>
+    <app-select-control
+      inputId="design-page"
+      [ngModel]="currentPage()?.key ?? ''"
+      (ngModelChange)="pageKey.set($event)"
     >
-      {{ "Insert before" | localize }}
-    </div>
-    <button
-      class="field-card"
-      type="button"
-      [attr.aria-pressed]="card.active"
-      [class.field-card-selected]="card.active"
-      [draggable]="!disabled()"
-      [style.margin-inline-start.rem]="(card.path.length - 1) * 0.75"
-      (click)="selectedChange.emit(card.path)"
-      (dragend)="dragEnded.emit()"
-      (dragstart)="dragStarted.emit({ event: $event, path: card.path })"
-    >
-      <span class="card-type">{{ card.type | localize }}</span>
-      @if (card.invalidBinding) {
-        <span>{{ "Invalid field scope" | localize }}</span>
+      <option value="">{{ "All fields" | localize }}</option>
+      @for (page of pages(); track page.key) {
+        <option [value]="page.key">
+          {{ page.title || ("Untitled page" | localize) }}
+        </option>
       }
-      <strong
-        >{{ card.label }}
-        @if (card.required) {
-          <span aria-hidden="true">*</span
-          ><span class="sr-only">{{ "Required" | localize }}</span>
-        }
-      </strong>
-      <span aria-hidden="true" class="field-shape">
-        <i [class]="card.icon"></i>
-        <span
-          class="answer-line"
-          [class.multiline]="card.kind === 'textarea'"
-        ></span>
-      </span>
-    </button>
-    @if (card.container) {
-      <div
-        class="placement-drop"
-        (dragover)="dragOver($event)"
-        (drop)="drop($event, card.path, 'inside')"
+    </app-select-control>
+  </div>
+}
+<div class="canvas-sheet" [class.dragging]="dragging()">
+  <div class="layout-children" [style.--design-columns]="rootColumns()">
+    <ng-container *ngTemplateOutlet="placements; context: { $implicit: [] }" />
+  </div>
+  <ng-template #placements let-path>
+    @for (card of children(path); track card.identity) {
+      <section
+        class="placement-group"
+        [style.--design-column]="card.placement.column"
+        [style.--design-row]="card.placement.row"
       >
-        {{
-          (card.empty
-            ? "Drop a field inside this empty layout"
-            : "Drop inside this layout"
-          ) | localize
-        }}
-      </div>
+        <div
+          aria-hidden="true"
+          class="placement-drop"
+          (dragover)="dragOver($event)"
+          (drop)="drop($event, card.path, 'before')"
+        >
+          {{ "Insert before" | localize }}
+        </div>
+        <button
+          class="field-card"
+          type="button"
+          [attr.aria-pressed]="card.active"
+          [attr.data-node-key]="card.identity"
+          [class.field-card-selected]="card.active"
+          [draggable]="!disabled()"
+          (click)="selectedChange.emit(card.path)"
+          (dragend)="dragEnded.emit()"
+          (dragstart)="dragStarted.emit({ event: $event, path: card.path })"
+        >
+          @if (card.invalidBinding) {
+            <span>{{ "Invalid field scope" | localize }}</span>
+          }
+          <span aria-hidden="true" class="card-handle pi pi-bars"></span>
+          <strong
+            >{{ card.label }}
+            @if (card.required) {
+              <span aria-hidden="true">*</span
+              ><span class="sr-only">{{ "Required" | localize }}</span>
+            }
+          </strong>
+          <app-form-design-control
+            [childLabels]="card.childLabels"
+            [kind]="card.kind"
+            [label]="card.label"
+            [presentation]="card.presentation"
+            [schema]="card.schema"
+            [type]="card.type"
+          />
+          @if (card.help) {
+            <span class="card-help">{{ card.help }}</span>
+          }
+          <span class="card-type">{{ card.type | localize }}</span>
+        </button>
+        @if (!disabled()) {
+          <button
+            aria-haspopup="menu"
+            class="placement-menu"
+            pButton
+            severity="secondary"
+            type="button"
+            [attr.aria-expanded]="placementMenu.visible"
+            [attr.aria-label]="('Field actions' | localize) + ': ' + card.label"
+            [text]="true"
+            (click)="placementMenu.toggle($event)"
+          >
+            <i aria-hidden="true" class="pi pi-ellipsis-v"></i>
+          </button>
+          <p-menu
+            #placementMenu
+            appendTo="body"
+            [model]="card.menu"
+            [popup]="true"
+          />
+        }
+        @if (card.container) {
+          <div class="layout-children" [style.--design-columns]="card.columns">
+            <ng-container
+              *ngTemplateOutlet="placements; context: { $implicit: card.path }"
+            />
+          </div>
+          <div
+            class="placement-drop"
+            (dragover)="dragOver($event)"
+            (drop)="drop($event, card.path, 'inside')"
+          >
+            {{
+              (card.empty
+                ? "Drop a field inside this empty layout"
+                : "Drop inside this layout"
+              ) | localize
+            }}
+          </div>
+        }
+        <div
+          aria-hidden="true"
+          class="placement-drop"
+          (dragover)="dragOver($event)"
+          (drop)="drop($event, card.path, 'after')"
+        >
+          {{ "Insert after" | localize }}
+        </div>
+      </section>
+    } @empty {
+      @if (!path.length) {
+        <div
+          class="canvas-empty"
+          (dragover)="dragOver($event)"
+          (drop)="drop($event, [], 'inside')"
+        >
+          <i aria-hidden="true" class="pi pi-file-edit"></i>
+          <h3>{{ "Your form starts here" | localize }}</h3>
+          <p>{{ "Add your first field using the field types." | localize }}</p>
+        </div>
+      }
     }
-    <div
-      aria-hidden="true"
-      class="placement-drop"
-      (dragover)="dragOver($event)"
-      (drop)="drop($event, card.path, 'after')"
-    >
-      {{ "Insert after" | localize }}
-    </div>
-  } @empty {
-    <div class="canvas-empty">
-      <i aria-hidden="true" class="pi pi-file-edit"></i>
-      <h3>{{ "Your form starts here" | localize }}</h3>
-      <p>{{ "Add your first field using the field types." | localize }}</p>
-    </div>
-  }
+  </ng-template>
+  <div
+    class="placement-drop root-drop"
+    (dragover)="dragOver($event)"
+    (drop)="drop($event, [], 'inside')"
+  >
+    {{ "Drop inside this layout" | localize }}
+  </div>
   <button
     pButton
     severity="secondary"
@@ -76,21 +148,4 @@
   >
     {{ "Select root layout" | localize }}
   </button>
-</div>
-
-<p>{{ "Choose a field type to add it to your form." | localize }}</p>
-<div class="field-type-buttons">
-  @for (kind of quickTypes; track kind) {
-    <button
-      pButton
-      severity="secondary"
-      type="button"
-      [disabled]="disabled()"
-      [outlined]="true"
-      (click)="addRequested.emit(kind)"
-    >
-      <i aria-hidden="true" class="pi pi-plus"></i
-      >{{ componentLabels[kind] | localize }}
-    </button>
-  }
 </div>

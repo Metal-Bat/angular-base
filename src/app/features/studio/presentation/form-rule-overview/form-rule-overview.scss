@@ -1,0 +1,32 @@
+:host {
+  display: block;
+  min-inline-size: 0;
+}
+ul {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+button {
+  inline-size: 100%;
+  display: grid;
+  justify-items: start;
+  text-align: start;
+  overflow-wrap: anywhere;
+}
+button span:last-child {
+  font-size: 0.875rem;
+  color: var(--console-muted);
+}
+button[aria-pressed="true"] {
+  border-color: var(--p-primary-color);
+}
+
+li {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}

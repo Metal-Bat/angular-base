@@ -1,3 +1,5 @@
+import { CalendarDraft } from '../../domain/calendar-draft';
+import { ControlField } from '../../../../shared/ui/control-field/control-field';
 import { TemporalControl } from '../../../../shared/ui/temporal-control/temporal-control';
 import {
   ApiFailure,
@@ -18,6 +20,7 @@ import {
   untracked,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { ButtonDirective } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { ActorState } from '../../../../core/auth/actor-state';
@@ -49,6 +52,8 @@ function localMinute(instant: string, timezone: string): string {
 @Component({
   selector: 'app-calendar-editor',
   imports: [
+    ControlField,
+    RouterLink,
     TemporalControl,
     FormsModule,
     ButtonDirective,
@@ -57,11 +62,15 @@ function localMinute(instant: string, timezone: string): string {
     LocalizePipe,
   ],
   templateUrl: './calendar-editor.html',
+  styleUrl: './calendar-editor.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CalendarEditor {
   readonly item = input<CalendarItem | null>(null);
+  readonly draft = input<CalendarDraft | null>(null);
   readonly saved = output<CalendarItem>();
+  readonly cancelled = output<void>();
+  readonly removeRequested = output<void>();
   readonly reloadRequested = output<void>();
   readonly reconcileRequired = signal(false);
   readonly reminders = input<Reminder[]>([]);
@@ -69,7 +78,8 @@ export class CalendarEditor {
   readonly error = signal('');
   title = '';
   kind: 'timed' | 'all_day' = 'timed';
-  timezone = inject(Locale).timezone();
+  private readonly locale = inject(Locale);
+  timezone = this.locale.timezone();
   start = '';
   end = '';
   startChoice = '';
@@ -108,7 +118,8 @@ export class CalendarEditor {
     });
     effect(() => {
       const item = this.item();
-      untracked(() => this.accept(item));
+      const draft = this.draft();
+      untracked(() => this.accept(item, draft));
     });
   }
   private clear(): void {
@@ -121,19 +132,29 @@ export class CalendarEditor {
     this.busy.set(false);
     this.original = this.signature();
   }
-  private accept(item: CalendarItem | null): void {
+  private accept(item: CalendarItem | null, draft: CalendarDraft | null): void {
     this.generation++;
     this.clear();
     this.reminder = 'none';
+    // Capture the user's saved zone for this draft. Later preference changes
+    // must not reinterpret unfinished wall times or an uncertain command.
+    this.timezone = this.locale.timezone();
+    if (!item && draft) {
+      this.kind = draft.kind;
+      this.start = draft.start;
+      this.end = draft.end;
+    }
     if (!item || item.schedule.kind === 'deadline') {
       this.original = this.signature();
       return;
     }
-    this.reminder = this.reminders().length ? '' : 'none';
+    // Delivery history is not the event's active reminder configuration.
+    this.reminder = '';
     this.title = item.title;
     this.kind = item.schedule.kind;
-    this.timezone = item.schedule.timezone;
     if (item.schedule.kind === 'all_day') {
+      // Date-only schedules retain their original civil dates and zone.
+      this.timezone = item.schedule.timezone;
       this.start = item.schedule.start_date;
       this.end = item.schedule.end_date;
     } else {
@@ -163,32 +184,7 @@ export class CalendarEditor {
     if (!this.title.trim()) {
       throw Error('Invalid event');
     }
-    const original = this.item()?.schedule;
-    const unchanged =
-      original?.kind === 'timed' &&
-      this.kind === 'timed' &&
-      original.timezone === this.timezone &&
-      localMinute(original.start_at, this.timezone) === this.start &&
-      localMinute(original.end_at, this.timezone) === this.end;
-    const schedule: CalendarInput['schedule'] = unchanged
-      ? original
-      : this.kind === 'all_day'
-        ? {
-            kind: 'all_day',
-            timezone: this.timezone,
-            start_date: this.start,
-            end_date: this.end,
-          }
-        : {
-            kind: 'timed',
-            timezone: this.timezone,
-            start_at: localTimeToInstant(
-              this.start,
-              this.timezone,
-              this.startChoice,
-            ),
-            end_at: localTimeToInstant(this.end, this.timezone, this.endChoice),
-          };
+    const schedule = this.eventSchedule();
     if (
       this.kind === 'all_day' &&
       dateMillis(this.end) <= dateMillis(this.start)
@@ -197,10 +193,44 @@ export class CalendarEditor {
     }
     return {
       title: this.title.trim(),
-      schedule: unchanged ? original : schedule,
+      schedule,
       work_group_ref_id: this.item()?.work_group_ref_id ?? null,
       reminder_offsets: this.offsets(),
       command_key: crypto.randomUUID(),
+    };
+  }
+  private eventSchedule(): CalendarInput['schedule'] {
+    if (this.kind === 'all_day') {
+      return {
+        kind: 'all_day',
+        timezone: this.timezone,
+        start_date: this.start,
+        end_date: this.end,
+      };
+    }
+    const original = this.item()?.schedule;
+    const sameStart =
+      original?.kind === 'timed' &&
+      localMinute(original.start_at, this.timezone) === this.start &&
+      this.startChoice === new Date(original.start_at).toISOString();
+    const sameEnd =
+      original?.kind === 'timed' &&
+      localMinute(original.end_at, this.timezone) === this.end &&
+      this.endChoice === new Date(original.end_at).toISOString();
+    if (original?.kind === 'timed' && sameStart && sameEnd) {
+      return original;
+    }
+    return {
+      kind: 'timed',
+      timezone: this.timezone,
+      start_at:
+        sameStart && original?.kind === 'timed'
+          ? original.start_at
+          : localTimeToInstant(this.start, this.timezone, this.startChoice),
+      end_at:
+        sameEnd && original?.kind === 'timed'
+          ? original.end_at
+          : localTimeToInstant(this.end, this.timezone, this.endChoice),
     };
   }
   private offsets(): number[] {
@@ -227,7 +257,7 @@ export class CalendarEditor {
       if (!this.pending) {
         const body = this.body();
         if (
-          this.reminders().length &&
+          this.item() &&
           !(await this.feedback.confirm(
             'Replace the existing reminder configuration?',
           ))

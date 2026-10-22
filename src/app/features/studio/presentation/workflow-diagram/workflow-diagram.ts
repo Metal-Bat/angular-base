@@ -1,4 +1,5 @@
 import { WorkflowStepInspector } from './workflow-step-inspector';
+import { stepTypeTitle, workflowStepName } from '../../domain/workflow-labels';
 import { SelectControl } from '../../../../shared/ui/select-control/select-control';
 import {
   ChangeDetectionStrategy,
@@ -58,7 +59,8 @@ export class WorkflowDiagram {
   readonly nodes = computed<CanvasNode[]>(() =>
     this.topology().steps.map((step) => ({
       key: step.key,
-      title: step.typeCode,
+      title: workflowStepName(step.key),
+      typeTitle: stepTypeTitle(undefined, step.typeCode),
       position: this.positions()[step.key] ?? { x: 40, y: 40 },
       ports: [],
     })),

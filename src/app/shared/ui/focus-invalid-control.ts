@@ -19,9 +19,33 @@ export function focusInvalidControl(
         '.ui-field:has(.field-error) textarea',
         '.ui-field:has(.field-error) [role="combobox"]',
       ].join(', ');
+      const visible = (element: HTMLElement): boolean => {
+        for (
+          let ancestor: HTMLElement | null = element;
+          ancestor;
+          ancestor = ancestor.parentElement
+        ) {
+          const style = getComputedStyle(ancestor);
+          if (
+            ancestor.hidden ||
+            ancestor.getAttribute('aria-hidden') === 'true' ||
+            style.display === 'none' ||
+            style.visibility === 'hidden'
+          ) {
+            return false;
+          }
+        }
+        return true;
+      };
       const control =
-        container?.querySelector<HTMLElement>(selector) ??
-        container?.querySelector<HTMLElement>('fieldset[aria-invalid="true"]');
+        [...(container?.querySelectorAll<HTMLElement>(selector) ?? [])].find(
+          visible,
+        ) ??
+        [
+          ...(container?.querySelectorAll<HTMLElement>(
+            'fieldset[aria-invalid="true"]',
+          ) ?? []),
+        ].find(visible);
       control?.focus();
       control?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
     },

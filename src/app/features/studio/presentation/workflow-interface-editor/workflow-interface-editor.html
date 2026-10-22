@@ -1,0 +1,232 @@
+<details>
+  <summary>{{ "Reusable workflow interface" | localize }}</summary>
+  <p>
+    {{
+      "Declare isolated child inputs, returned outputs and business outcomes. Validate before publication."
+        | localize
+    }}
+  </p>
+  @if (unsupported()) {
+    <p role="status">
+      {{
+        "Unsupported workflow interface is retained. Typed editing is unavailable."
+          | localize
+      }}
+    </p>
+  } @else if (value(); as model) {
+    <label for="interface-category">{{ "Category" | localize }}</label>
+    <input
+      id="interface-category"
+      maxlength="64"
+      pInputText
+      [disabled]="locked()"
+      [ngModel]="model['category'] ?? 'general'"
+      (ngModelChange)="field('category', $event)"
+    />
+    <h3>{{ "Child inputs" | localize }}</h3>
+    @if (sampleLocked()) {
+      <p>
+        {{
+          "Saved samples protect input names and schemas. Required and assignment settings remain editable."
+            | localize
+        }}
+      </p>
+    }
+    @for (row of inputs(); track $index; let index = $index) {
+      <fieldset>
+        <legend>
+          <bdi>{{ row["name"] }}</bdi>
+        </legend>
+        <label [for]="'interface-input-name-' + index">{{
+          "Input name" | localize
+        }}</label>
+        <input
+          maxlength="64"
+          pInputText
+          [disabled]="locked() || sampleLocked()"
+          [id]="'interface-input-name-' + index"
+          [ngModel]="row['name']"
+          (ngModelChange)="port('inputs', index, 'name', $event)"
+        />
+        <p>
+          {{ "Value type" | localize }}:
+          <bdi>{{ summary($any(row["value_schema"])) | localize }}</bdi>
+        </p>
+        <app-interface-shape
+          [controlId]="'interface-shape-' + index"
+          [disabled]="locked() || sampleLocked()"
+          [schema]="$any(row['value_schema'])"
+          (editing)="setShapeEditing($event)"
+          (schemaChange)="port('inputs', index, 'value_schema', $event)"
+        />
+        <p-checkbox
+          [binary]="true"
+          [disabled]="locked()"
+          [inputId]="'interface-required-' + index"
+          [ngModel]="row['required'] !== false"
+          (ngModelChange)="port('inputs', index, 'required', $event)"
+        />
+        <label [for]="'interface-required-' + index">{{
+          "Required" | localize
+        }}</label>
+        <label [for]="'interface-assignment-' + index">{{
+          "Assignment" | localize
+        }}</label>
+        <app-select-control
+          [disabled]="
+            locked() || $any(row['value_schema'])['type'] !== 'string'
+          "
+          [inputId]="'interface-assignment-' + index"
+          [ngModel]="row['assignment'] ?? ''"
+          (ngModelChange)="port('inputs', index, 'assignment', $event || null)"
+        >
+          <option value="">{{ "None" | localize }}</option>
+          <option value="user">{{ "User" | localize }}</option>
+          <option value="work_group">{{ "Work group" | localize }}</option>
+        </app-select-control>
+        <button
+          pButton
+          severity="secondary"
+          type="button"
+          [disabled]="locked() || sampleLocked()"
+          (click)="remove('inputs', index)"
+        >
+          {{ "Remove input" | localize }}
+        </button>
+      </fieldset>
+    }
+    <fieldset [disabled]="locked() || sampleLocked() || inputs().length >= 64">
+      <legend>{{ "New child input" | localize }}</legend>
+      <label for="interface-new-name">{{ "Input name" | localize }}</label>
+      <input
+        id="interface-new-name"
+        maxlength="64"
+        pInputText
+        [ngModel]="inputName()"
+        (ngModelChange)="editInputName($event)"
+      />
+      <label for="interface-new-type">{{ "Value type" | localize }}</label>
+      <app-select-control
+        inputId="interface-new-type"
+        [disabled]="locked() || sampleLocked() || inputs().length >= 64"
+        [(ngModel)]="inputType"
+      >
+        @for (type of types; track type) {
+          <option [value]="type">{{ type | localize }}</option>
+        }
+        @for (source of sources(); track source.key) {
+          <option [value]="source.key">
+            {{ "Port schema" | localize }} · {{ source.label }}
+          </option>
+        }
+      </app-select-control>
+      <p>
+        {{
+          "Object and collection types accept arbitrary members. Choose a registered port schema to reuse its exact constraints."
+            | localize
+        }}
+      </p>
+      <button
+        pButton
+        type="button"
+        [disabled]="
+          locked() || sampleLocked() || inputs().length >= 64 || !canAddInput()
+        "
+        (click)="addInput()"
+      >
+        {{ "Add input" | localize }}
+      </button>
+    </fieldset>
+    <h3>{{ "Child outputs" | localize }}</h3>
+    @for (row of outputs(); track $index; let index = $index) {
+      <fieldset>
+        <legend>{{ "Child output" | localize }} {{ index + 1 }}</legend>
+        <label [for]="'interface-output-name-' + index">{{
+          "Output name" | localize
+        }}</label>
+        <input
+          maxlength="64"
+          pInputText
+          [disabled]="locked()"
+          [id]="'interface-output-name-' + index"
+          [ngModel]="row['name']"
+          (ngModelChange)="port('outputs', index, 'name', $event)"
+        />
+        <label [for]="'interface-output-source-' + index">{{
+          "Registered output port" | localize
+        }}</label>
+        <app-select-control
+          [disabled]="locked()"
+          [inputId]="'interface-output-source-' + index"
+          [ngModel]="sourceKey(row)"
+          (ngModelChange)="source(index, $event)"
+        >
+          @if (!sourceAvailable(row)) {
+            <option [value]="sourceKey(row)">
+              {{ "Select an available output port" | localize }}
+            </option>
+          }
+          @for (source of sources(); track source.key) {
+            <option [value]="source.key">{{ source.label }}</option>
+          }
+        </app-select-control>
+        <p>
+          {{ "Value type" | localize }}:
+          <bdi>{{ summary($any(row["value_schema"])) | localize }}</bdi>
+        </p>
+        <button
+          pButton
+          severity="secondary"
+          type="button"
+          [disabled]="locked()"
+          (click)="remove('outputs', index)"
+        >
+          {{ "Remove output" | localize }}
+        </button>
+      </fieldset>
+    }
+    <button
+      pButton
+      severity="secondary"
+      type="button"
+      [disabled]="locked() || outputs().length >= 64"
+      (click)="addOutput()"
+    >
+      {{ "Add output" | localize }}
+    </button>
+    <app-interface-outcomes
+      [disabled]="locked()"
+      [finishes]="finishes()"
+      [rows]="outcomes()"
+      (added)="addOutcome()"
+      (edited)="outcome($event.index, $event.key, $event.value)"
+      (removed)="removeOutcome($event)"
+    />
+    @for (error of errors(); track error) {
+      <p role="alert">{{ error | localize }}</p>
+    }
+    <div class="interface-actions">
+      <button
+        pButton
+        type="button"
+        [disabled]="locked() || !dirty() || errors().length > 0"
+        (click)="apply()"
+      >
+        {{ "Apply interface" | localize }}
+      </button>
+      <button
+        pButton
+        severity="secondary"
+        type="button"
+        [disabled]="locked() || !dirty()"
+        (click)="discard()"
+      >
+        {{ "Discard interface edits" | localize }}
+      </button>
+    </div>
+  } @else {
+    <button pButton type="button" [disabled]="locked()" (click)="create()">
+      {{ "Define child interface" | localize }}
+    </button>
+  }
+</details>

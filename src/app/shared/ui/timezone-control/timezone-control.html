@@ -1,0 +1,16 @@
+<app-select-control
+  [ariaLabel]="locale.text('Timezone')"
+  [describedBy]="describedBy()"
+  [disabled]="disabled()"
+  [emptyFilterMessage]="locale.text('No matching timezones.')"
+  [filter]="true"
+  [filterLabel]="locale.text('Search timezone')"
+  [inputId]="controlId()"
+  [invalid]="invalid()"
+  [value]="value()"
+  (selectionChanged)="change($event.target.value)"
+>
+  @for (option of options(); track option.value) {
+    <option [value]="option.value">{{ option.label }}</option>
+  }
+</app-select-control>

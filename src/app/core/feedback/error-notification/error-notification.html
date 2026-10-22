@@ -1,7 +1,16 @@
 <p-toast
   key="request-error"
-  position="top-right"
+  position="bottom-right"
   [baseZIndex]="6000"
+  [pt]="{
+    message: {
+      style: {
+        background: 'var(--console-surface)',
+        color: 'var(--console-text)',
+        borderColor: 'var(--console-border)',
+      },
+    },
+  }"
   [style]="{ width: 'min(24rem, calc(100vw - 2rem))' }"
   (onClose)="close($event.message.data)"
 >

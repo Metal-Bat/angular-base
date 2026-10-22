@@ -1,0 +1,84 @@
+@if (kind()) {
+  <app-studio-choice
+    [controlId]="id()"
+    [disabled]="disabled()"
+    [kind]="kind()"
+    [value]="selected()"
+    (picked)="changed.emit($event)"
+  />
+} @else if (field().key === "renderer_capabilities") {
+  <app-list-values
+    [controlId]="id()"
+    [disabled]="disabled()"
+    [value]="capabilities()"
+    (valueChange)="changeCapabilities($event)"
+  />
+} @else {
+  <fieldset [id]="id()">
+    <legend>{{ "Client restrictions" | localize }}</legend>
+    <p>
+      {{
+        "No restrictions allows all otherwise eligible clients. Removing existing restrictions requires confirmation."
+          | localize
+      }}
+    </p>
+    @for (target of targets(); track $index; let index = $index) {
+      <section
+        class="target-row"
+        [attr.aria-label]="
+          ('Client restriction' | localize) + ' ' + (index + 1)
+        "
+      >
+        <label [for]="id() + '-' + index + '-client'">{{
+          "Client" | localize
+        }}</label>
+        <app-studio-choice
+          kind="clients"
+          [controlId]="id() + '-' + index + '-client'"
+          [disabled]="disabled()"
+          [value]="$any(target['client_ref_id'] ?? '')"
+          (picked)="changeTarget(index, 'client_ref_id', $event)"
+        />
+        @for (
+          bound of ["minimum_release", "maximum_release_exclusive"];
+          track bound
+        ) {
+          <label [for]="id() + '-' + index + '-' + bound">{{
+            (bound === "minimum_release"
+              ? "Minimum release (inclusive)"
+              : "Maximum release (exclusive)"
+            ) | localize
+          }}</label>
+          <input
+            pInputText
+            [disabled]="disabled()"
+            [id]="id() + '-' + index + '-' + bound"
+            [ngModel]="target[bound] ?? ''"
+            [ngModelOptions]="{ standalone: true }"
+            (ngModelChange)="changeTarget(index, bound, $event)"
+          />
+        }
+        <button
+          pButton
+          severity="secondary"
+          type="button"
+          [disabled]="disabled()"
+          [text]="true"
+          (click)="removeTarget(index)"
+        >
+          {{ "Remove restriction" | localize }}
+        </button>
+      </section>
+    }
+    <button
+      pButton
+      severity="secondary"
+      type="button"
+      [disabled]="disabled() || targets().length >= 32"
+      [outlined]="true"
+      (click)="addTarget()"
+    >
+      {{ "Add client restriction" | localize }}
+    </button>
+  </fieldset>
+}

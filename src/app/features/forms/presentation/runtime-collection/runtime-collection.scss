@@ -1,0 +1,35 @@
+:host {
+  display: block;
+  min-inline-size: 0;
+}
+fieldset {
+  min-inline-size: 0;
+  border: 1px solid var(--console-border);
+  border-radius: 0.5rem;
+  padding: 1rem;
+}
+legend {
+  padding-inline: 0.25rem;
+  font-weight: 600;
+}
+.runtime-table {
+  display: block;
+  max-inline-size: 100%;
+  margin-block: 1rem;
+}
+.runtime-table td {
+  min-inline-size: 12rem;
+  vertical-align: top;
+}
+.runtime-table th {
+  text-align: start;
+}
+
+.runtime-table .collection-actions {
+  min-inline-size: 6rem;
+  inline-size: 6rem;
+}
+.runtime-collection:focus {
+  outline: 2px solid var(--p-primary-color);
+  outline-offset: 3px;
+}

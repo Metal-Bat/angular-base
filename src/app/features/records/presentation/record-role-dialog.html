@@ -3,12 +3,14 @@
   appendTo="body"
   position="center"
   [closable]="!vm.actionBusy()"
+  [closeAriaLabel]="'Close' | localize"
   [draggable]="false"
   [header]="'Assign role' | localize"
   [modal]="true"
   [resizable]="false"
   [style]="{ width: '58rem', maxWidth: 'calc(100vw - 2rem)' }"
   [visible]="vm.roleModal()"
+  (onHide)="restoreActions()"
   (visibleChange)="vm.closeRole()"
 >
   @if (vm.roleModal()) {

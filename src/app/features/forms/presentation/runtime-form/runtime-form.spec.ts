@@ -1,7 +1,8 @@
+import { ChoiceControl } from '../choice-control/choice-control';
 import { By } from '@angular/platform-browser';
 import { TemporalControl } from '../../../../shared/ui/temporal-control/temporal-control';
 import { TestBed } from '@angular/core/testing';
-import { RUNTIME_OPTIONS } from '../../bindings';
+import { FORM_RESOURCES, RUNTIME_OPTIONS } from '../../bindings';
 import {
   deferredPrimitives,
   implementedPrimitives,
@@ -11,6 +12,8 @@ import { runtimeFixture } from '../../testing/runtime-fixtures';
 import { RuntimeForm } from './runtime-form';
 import { RuntimeDocument } from '../../domain/runtime-document';
 import { OptionInput, OptionPage } from '../../domain/option-coordinator';
+import { RuntimeField } from '../runtime-node/runtime-field';
+import { MISSING } from '../../domain/canonical-values';
 import { FieldEdit } from '../../domain/canonical-values';
 function render(input: Record<string, unknown>): {
   document: RuntimeDocument;
@@ -27,6 +30,98 @@ function render(input: Record<string, unknown>): {
   return { document: result.document, fixture };
 }
 describe('Primitive presentation matrix', () => {
+  it('retains precision-losing runtime numeric text and preserves the prior canonical value', () => {
+    const { fixture, document } = render(runtimeFixture());
+    const edited = vi.fn();
+    fixture.componentInstance.edit.subscribe(edited);
+    const control = (
+      fixture.nativeElement as HTMLElement
+    ).querySelector<HTMLInputElement>(
+      '#field-' + CSS.escape(encodeURIComponent('/amount')),
+    )!;
+    for (const text of [
+      '9007199254740993',
+      '0.10000000000000000001',
+      '1e-324',
+    ]) {
+      control.value = text;
+      control.dispatchEvent(new Event('input'));
+      fixture.detectChanges();
+      expect(control.value).toBe(text);
+      expect(edited.mock.lastCall?.[0]).toMatchObject({
+        scope: '/properties/amount',
+        value: 125,
+        error: 'Enter a valid number',
+      });
+    }
+    control.value = '۱۲٫۵';
+    control.dispatchEvent(new Event('input'));
+    expect(edited.mock.lastCall?.[0]).toMatchObject({
+      scope: '/properties/amount',
+      value: 12.5,
+      error: undefined,
+    });
+    expect(document.canonical['amount']).toBe(125);
+  });
+  it('uses readable unresolved choice values and keeps ordinary search collapsed', async () => {
+    const { fixture } = render(runtimeFixture());
+    await fixture.whenStable();
+    const choice = fixture.debugElement.query(By.directive(ChoiceControl))
+      .componentInstance as ChoiceControl;
+    expect(choice.missingLabel('json:false')).toBe('No');
+    expect(choice.missingLabel('json:0')).toBe('0');
+    expect(choice.missingLabel('json:"Readable"')).toBe('Readable');
+    expect(
+      fixture.nativeElement.querySelector(
+        'app-choice-control input[type=search]',
+      ),
+    ).toBeNull();
+    choice.searchOpen.set(true);
+    await fixture.whenStable();
+    expect(
+      fixture.nativeElement.querySelector(
+        'app-choice-control input[type=search]',
+      ),
+    ).toBeTruthy();
+  });
+
+  it('shows resolved help and placeholder without changing canonical values', () => {
+    const input = runtimeFixture();
+    input['render_schema'] = {
+      dialect: 'bpms.render/1',
+      root: {
+        component: 'vertical',
+        children: [
+          {
+            component: 'integer',
+            scope: '/properties/amount',
+            label: 'Amount',
+            options: { placeholder: 'Whole units' },
+            localized_text: { help: 'Enter the number of units.' },
+            accessibility: { description: 'Use whole numbers.' },
+          },
+        ],
+      },
+    };
+    const { fixture, document } = render(input);
+    const control = fixture.nativeElement.querySelector(
+      'input',
+    ) as HTMLInputElement;
+    expect(control.placeholder).toBe('Whole units');
+    expect(control.getAttribute('inputmode')).toBe('numeric');
+    expect(control.getAttribute('aria-required')).toBe('true');
+    expect(
+      fixture.nativeElement
+        .querySelector('label [aria-hidden="true"]')
+        ?.textContent?.trim(),
+    ).toBe('*');
+    expect(fixture.nativeElement.textContent).toContain(
+      'Enter the number of units.',
+    );
+    expect(fixture.nativeElement.textContent).toContain('Use whole numbers.');
+    expect(control.getAttribute('aria-describedby')).toContain('hint');
+    expect(document.canonical).toEqual(input['data']);
+  });
   it('renders the backend grid column option without changing canonical values', () => {
     const input = runtimeFixture();
     input['render_schema'] = {
@@ -69,9 +164,72 @@ describe('Primitive presentation matrix', () => {
     expect(new Set(controls.map((control) => control.id)).size).toBe(2);
     expect(controls[0].id).toBe('field-' + encodeURIComponent('/amount'));
     expect(controls[1].id).toContain('--copy');
-    expect(
-      [...element.querySelectorAll('label')].map((label) => label.htmlFor),
-    ).toEqual(controls.map((control) => control.id));
+    for (const control of controls) {
+      expect(
+        [...element.querySelectorAll('label')].some(
+          (label) => label.htmlFor === control.id,
+        ),
+      ).toBe(true);
+    }
+    expect(document.canonical).toEqual(input['data']);
+  });
+  it('separates attachment placement IDs while uploading to the canonical field path', async () => {
+    const upload = vi.fn(async () => undefined);
+    TestBed.configureTestingModule({
+      providers: [
+        {
+          provide: FORM_RESOURCES,
+          useValue: {
+            ownerKey: (): string => 'case-owner',
+            attachments: async (): Promise<readonly never[]> => [],
+            upload,
+            transferBusy: (): boolean => false,
+            pendingAttachment: (): null => null,
+            progress: (): null => null,
+          },
+        },
+      ],
+    });
+    const input = runtimeFixture();
+    input['render_schema'] = {
+      dialect: 'bpms.render/1',
+      root: {
+        component: 'vertical',
+        children: ['original', 'copy'].map((key) => ({
+          component: 'attachment_collection',
+          scope: '/properties/amount',
+          node_key: key,
+          accessibility: { label: 'Supporting documents' },
+        })),
+      },
+    };
+    const { fixture, document } = render(input);
+    await fixture.whenStable();
+    const element = fixture.nativeElement as HTMLElement;
+    const controls = [...element.querySelectorAll<HTMLInputElement>('input')];
+    expect(controls).toHaveLength(4);
+    expect(new Set(controls.map((control) => control.id)).size).toBe(4);
+    for (const control of controls) {
+      expect(
+        [...element.querySelectorAll('label')].some(
+          (label) => label.htmlFor === control.id,
+        ),
+      ).toBe(true);
+    }
+    const file = new File(['receipt'], 'receipt.txt', { type: 'text/plain' });
+    const files =
+      element.querySelectorAll<HTMLInputElement>('input[type=file]');
+    for (const control of files) {
+      await vi.waitFor(() => expect(control.disabled).toBe(false));
+      Object.defineProperty(control, 'files', { value: [file] });
+      control.dispatchEvent(new Event('change'));
+      await fixture.whenStable();
+    }
+    expect(upload).toHaveBeenCalledTimes(2);
+    expect(upload.mock.calls).toEqual([
+      ['/amount', file, false, '', expect.any(AbortSignal)],
+      ['/amount', file, false, '', expect.any(AbortSignal)],
+    ]);
     expect(document.canonical).toEqual(input['data']);
   });
   beforeEach(() =>
@@ -160,6 +318,35 @@ describe('Primitive presentation matrix', () => {
       expect(fixture.nativeElement.querySelector('input')).toBeNull();
     },
   );
+  it('offers distinct null and omission intents only on eligible fields and preserves false', () => {
+    const { fixture } = render(runtimeFixture());
+    const fields = fixture.debugElement
+      .queryAll(By.directive(RuntimeField))
+      .map((element) => element.componentInstance as RuntimeField);
+    const amount = fields.find(
+      (field) => field.view().node().scope === '/properties/amount',
+    )!;
+    const decimal = fields.find(
+      (field) => field.view().node().scope === '/properties/decimal',
+    )!;
+    const approved = fields.find(
+      (field) => field.view().node().scope === '/properties/approved',
+    )!;
+    expect(amount.actions()).toEqual([]);
+    const edits: FieldEdit[] = [];
+    fixture.componentInstance.edit.subscribe((change) => edits.push(change));
+    decimal.actions().find((action) => action.label === 'Set null')!.command!(
+      {},
+    );
+    expect(edits.at(-1)?.value).toBeNull();
+    decimal.actions().find((action) => action.label === 'Remove value')!
+      .command!({});
+    expect(edits.at(-1)?.value).toBe(MISSING);
+    expect(approved.view().value()).toBe(false);
+    fixture.componentRef.setInput('busy', true);
+    fixture.detectChanges();
+    expect(fields.every((field) => field.actions().length === 0)).toBe(true);
+  });
   it('keeps read-only fields immutable and emits safe typed edits with pointer-linked labels/errors', () => {
     const input = runtimeFixture();
     const { fixture } = render(input);

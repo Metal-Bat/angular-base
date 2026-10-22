@@ -70,3 +70,73 @@ it('writes canonical child constants and deliberately clears exact inputs withou
   };
   expect(() => setChildInput(pinned, 'flag', true, rows)).toThrow('Remove');
 });
+it('projects an authorized collection item with exact leaf schema and refuses invalid indices or fields', async () => {
+  const { setChildSource } = await import('./subprocess-pin');
+  const childCatalog = [
+    {
+      category: 'subprocess',
+      metadata: {
+        workflow_version_ref: 'child',
+        interface: {
+          inputs: [{ name: 'note', value_schema: { type: 'string' } }],
+        },
+      },
+    },
+  ];
+  const sources = [
+    {
+      key: '/lines',
+      label: 'request.lines',
+      schema: {
+        type: 'array',
+        items: { type: 'object', properties: { note: { type: 'string' } } },
+      },
+      binding: { source_kind: 'REQUEST', source_path: '/lines' },
+    },
+  ];
+  const current = {
+    workflow_version_ref: 'child',
+    inputs: [{ name: 'other', source_kind: 'CONSTANT', constant_value: false }],
+  };
+  const next = setChildSource(
+    current,
+    'note',
+    '/lines',
+    childCatalog,
+    sources,
+    0,
+    '/note',
+  );
+  expect(next['inputs']).toEqual([
+    current.inputs[0],
+    {
+      name: 'note',
+      source_kind: 'REQUEST',
+      source_path: '/lines/0/note',
+      source_schema: { type: 'string' },
+    },
+  ]);
+  expect(() =>
+    setChildSource(
+      current,
+      'note',
+      '/lines',
+      childCatalog,
+      sources,
+      -1,
+      '/note',
+    ),
+  ).toThrow('index');
+  expect(() =>
+    setChildSource(
+      current,
+      'note',
+      '/lines',
+      childCatalog,
+      sources,
+      0,
+      '/missing',
+    ),
+  ).toThrow('field');
+  expect(current.inputs).toHaveLength(1);
+});

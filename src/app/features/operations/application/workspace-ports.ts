@@ -1,3 +1,4 @@
+import { CorrectionInput } from '../domain/correction-feedback';
 import {
   JsonObject,
   JsonValue,
@@ -39,6 +40,8 @@ export type CreationPort = {
 };
 export type EditorPort = {
   readonly caseKind: () => CaseKind;
+  /** Local case owner remains stable while server revision references rotate. */
+  readonly contextKey: () => string;
   readonly item: () => CaseRecord | null;
   readonly runtime: () => RuntimeCompatibility | null;
   readonly document: () => RuntimeDocument | null;
@@ -49,6 +52,8 @@ export type EditorPort = {
   readonly dirty: () => boolean;
   readonly error: State<string>;
   readonly comment: State<string>;
+  readonly corrections: State<readonly CorrectionInput[]>;
+  readonly decisionDirty: () => boolean;
   readonly overrides: () => readonly RenderNode[];
   readonly canEdit: () => boolean;
   readonly ownTask: () => boolean;
@@ -66,6 +71,7 @@ export type EditorPort = {
     ) => Promise<string>,
     replayable?: boolean,
     presentationResume?: boolean,
+    leaveAfterAccepted?: boolean,
   ): Promise<boolean>;
   submit(): Promise<void>;
   lifecycle(action: 'claim' | 'release' | 'start'): Promise<void>;

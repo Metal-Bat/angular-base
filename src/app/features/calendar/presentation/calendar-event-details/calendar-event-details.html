@@ -1,0 +1,101 @@
+<p-popover
+  #popup
+  appendTo="body"
+  [ariaLabel]="'Event details' | localize"
+  [dismissable]="!busy()"
+  [pt]="{
+    root: { 'aria-modal': 'false' },
+    content: {
+      style: {
+        maxHeight: 'var(--anchored-popover-height, calc(100dvh - 2rem))',
+        overflow: 'auto',
+      },
+    },
+  }"
+  [style]="{ width: '24rem', maxWidth: 'calc(100vw - 2rem)' }"
+  (onHide)="hidden()"
+  (onShow)="shown()"
+>
+  @if (detail(); as current) {
+    <h2>
+      <bdi>{{ current.event.title }}</bdi>
+    </h2>
+    <p>
+      {{
+        (current.event.source === "workflow"
+          ? "Workflow deadline"
+          : "Personal event"
+        ) | localize
+      }}
+    </p>
+    @if (current.event.kind === "all_day") {
+      <p>
+        {{ "All day" | localize }} ·
+        <time [attr.datetime]="current.event.start">{{
+          date(current.event.start, false)
+        }}</time>
+        @if (lastDay(current.event.end) !== current.event.start) {
+          –
+          <time [attr.datetime]="lastDay(current.event.end)">{{
+            date(lastDay(current.event.end), false)
+          }}</time>
+        }
+      </p>
+    } @else {
+      <p>
+        <time [attr.datetime]="current.event.start">{{
+          date(current.event.start, true)
+        }}</time>
+        @if (current.event.kind === "timed") {
+          –
+          <time [attr.datetime]="current.event.end">{{
+            date(current.event.end, true)
+          }}</time>
+        }
+      </p>
+      <p>
+        {{ "Timezone" | localize }}: <bdi>{{ current.zone }}</bdi>
+      </p>
+    }
+    <div class="detail-actions">
+      @if (current.item.source_kind === "manual" && current.item.editable) {
+        <button pButton type="button" [disabled]="busy()" (click)="edit()">
+          {{ "Edit" | localize }}
+        </button>
+        <button
+          pButton
+          severity="danger"
+          type="button"
+          [disabled]="busy()"
+          [outlined]="true"
+          (click)="remove()"
+        >
+          {{ "Delete" | localize }}
+        </button>
+      }
+      @if (current.item.source_kind === "work_item") {
+        <a [routerLink]="['/operations/tasks', current.item.ref_id]">{{
+          "Open task" | localize
+        }}</a>
+        <button
+          pButton
+          severity="secondary"
+          type="button"
+          [disabled]="busy()"
+          (click)="edit()"
+        >
+          {{ "Work reminders" | localize }}
+        </button>
+      }
+      <button
+        pButton
+        severity="secondary"
+        type="button"
+        [text]="true"
+        (click)="close()"
+      >
+        {{ "Close" | localize }}
+      </button>
+    </div>
+  }
+</p-popover>

@@ -2,6 +2,10 @@
 
 @import "tailwindcss" source("./");
 @import "tailwindcss-primeui";
+/* DOM gesture listeners contain no templates or utility classes (e.g. blur). */
+@source not "./app/features/studio/infrastructure/workflow-canvas/canvas-gestures.ts";
+/* Test-only strings are not application utility candidates. */
+@source not "./**/*.spec.ts";
 
 @custom-variant dark (&:where(.app-dark, .app-dark *));
 

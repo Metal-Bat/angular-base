@@ -1,0 +1,49 @@
+:host {
+  display: block;
+  min-inline-size: 0;
+}
+.event-editor {
+  display: grid;
+  gap: 1rem;
+}
+.event-actions {
+  position: sticky;
+  inset-block-start: var(--workspace-sticky-offset, 5rem);
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding-block: 1rem;
+  background: var(--console-bg);
+  border-block-end: 1px solid var(--console-border);
+}
+.event-actions h2 {
+  margin: 0;
+}
+.event-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.event-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: 1rem 1.5rem;
+  padding: 1.5rem;
+  background: var(--console-surface);
+  border: 1px solid var(--console-border);
+  border-radius: 0.75rem;
+}
+.event-hint {
+  color: var(--console-muted);
+  font-size: 0.875rem;
+}
+@media (max-width: 48rem) {
+  .event-fields {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 1rem;
+  }
+}

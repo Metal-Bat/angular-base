@@ -1,0 +1,23 @@
+:host {
+  display: block;
+  min-inline-size: 0;
+}
+.field-type-buttons {
+  margin-block: 1rem;
+}
+.field-type-buttons,
+.all-field-type-buttons {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+.field-type-buttons button,
+.all-field-type-buttons button {
+  justify-content: start;
+  margin: 0;
+  padding: 0.5rem;
+  min-block-size: 2.75rem;
+  min-inline-size: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}

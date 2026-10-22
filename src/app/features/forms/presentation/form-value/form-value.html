@@ -1,0 +1,22 @@
+<ng-container *ngTemplateOutlet="values; context: { $implicit: tree() }" />
+<ng-template #values let-node>
+  @if (node.children.length) {
+    <span class="structured-values" role="list">
+      @for (child of node.children; track $index) {
+        <span class="value-entry" role="listitem">
+          <strong
+            ><bdi>{{
+              child.translateLabel ? (child.label | localize) : child.label
+            }}</bdi></strong
+          >
+          <span
+            ><ng-container
+              *ngTemplateOutlet="values; context: { $implicit: child }"
+          /></span>
+        </span>
+      }
+    </span>
+  } @else {
+    <bdi>{{ node.translate ? (node.text | localize) : node.text }}</bdi>
+  }
+</ng-template>

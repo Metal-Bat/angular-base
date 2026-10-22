@@ -1,0 +1,103 @@
+<p-panel
+  [collapsed]="true"
+  [header]="'Filters' | localize"
+  [toggleable]="true"
+  (collapsedChange)="editing.emit(!$event)"
+>
+  <form class="grid gap-4" (ngSubmit)="apply()">
+    <div class="grid gap-4 sm:grid-cols-2">
+      <app-control-field controlId="task-filter-status" label="Status">
+        <app-select-control
+          inputId="task-filter-status"
+          name="status"
+          [disabled]="busy()"
+          [(ngModel)]="draft.status"
+        >
+          <option value="">{{ "All statuses" | localize }}</option>
+          @for (status of statuses; track status) {
+            <option [value]="status">{{ status | localize }}</option>
+          }
+        </app-select-control>
+      </app-control-field>
+      <app-control-field controlId="task-filter-time" label="Date field">
+        <app-select-control
+          inputId="task-filter-time"
+          name="time"
+          [disabled]="busy()"
+          [(ngModel)]="draft.time"
+        >
+          <option value="created_at">{{ "Created At" | localize }}</option>
+          <option value="closed_at">{{ "Closed At" | localize }}</option>
+        </app-select-control>
+      </app-control-field>
+      <app-control-field controlId="task-filter-after" label="From (inclusive)">
+        <app-temporal-control
+          controlId="task-filter-after"
+          kind="datetime"
+          [disabled]="busy()"
+          [(value)]="draft.after"
+        />
+      </app-control-field>
+      <app-control-field
+        controlId="task-filter-before"
+        label="Until (exclusive)"
+      >
+        <app-temporal-control
+          controlId="task-filter-before"
+          kind="datetime"
+          [disabled]="busy()"
+          [(value)]="draft.before"
+        />
+      </app-control-field>
+      <app-control-field controlId="task-filter-overdue" label="Overdue before">
+        <app-temporal-control
+          controlId="task-filter-overdue"
+          kind="datetime"
+          [disabled]="busy()"
+          [(value)]="draft.overdue"
+        />
+      </app-control-field>
+      <app-control-field controlId="task-filter-size" label="Rows per page">
+        <input
+          id="task-filter-size"
+          max="100"
+          min="1"
+          name="size"
+          pInputText
+          step="1"
+          type="number"
+          [disabled]="busy()"
+          [(ngModel)]="draft.size"
+        />
+      </app-control-field>
+    </div>
+    @if (error) {
+      <p role="alert">{{ error | localize }}</p>
+    }
+    <div class="flex flex-wrap gap-2">
+      <button pButton type="submit" [disabled]="busy()">
+        {{ "Apply" | localize }}
+      </button>
+      <button
+        pButton
+        severity="secondary"
+        type="button"
+        [disabled]="busy()"
+        [outlined]="true"
+        (click)="cancel()"
+      >
+        {{ "Cancel" | localize }}
+      </button>
+      <button
+        pButton
+        severity="secondary"
+        type="button"
+        [disabled]="busy()"
+        [text]="true"
+        (click)="clear()"
+      >
+        {{ "Clear" | localize }}
+      </button>
+    </div>
+  </form>
+</p-panel>

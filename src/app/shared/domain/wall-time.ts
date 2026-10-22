@@ -1,9 +1,12 @@
 import { gregorianMillis as dateMillis } from './calendar-value';
-function validateZone(zone: string): void {
-  new Intl.DateTimeFormat('en', { timeZone: zone }).format(0);
-}
-export function wallParts(time: number, zone: string): string {
-  const parts = new Intl.DateTimeFormat('en', {
+// Cache only ICU formatters, never actor values, candidate instants or form drafts.
+const formatters = new Map<string, Intl.DateTimeFormat>();
+function formatter(zone: string): Intl.DateTimeFormat {
+  const existing = formatters.get(zone);
+  if (existing) {
+    return existing;
+  }
+  const result = new Intl.DateTimeFormat('en', {
     timeZone: zone,
     calendar: 'gregory',
     year: 'numeric',
@@ -13,7 +16,18 @@ export function wallParts(time: number, zone: string): string {
     minute: '2-digit',
     second: '2-digit',
     hourCycle: 'h23',
-  }).formatToParts(time);
+  });
+  if (formatters.size >= 32) {
+    formatters.delete(formatters.keys().next().value!);
+  }
+  formatters.set(zone, result);
+  return result;
+}
+function validateZone(zone: string): void {
+  formatter(zone);
+}
+export function wallParts(time: number, zone: string): string {
+  const parts = formatter(zone).formatToParts(time);
   const get = (key: string): string =>
     parts.find((field) => field.type === key)!.value;
   const date = `${get('year').padStart(4, '0')}-${get('month')}-${get('day')}`;

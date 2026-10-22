@@ -1,3 +1,4 @@
+import { LocalizedDateTimePipe } from '../../../../shared/ui/localized-datetime-pipe';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -12,7 +13,7 @@ import { ProcessSnapshot } from '../../domain/process-tracking';
 
 @Component({
   selector: 'app-execution-path',
-  imports: [LocalizePipe, RouterLink, SelectControl],
+  imports: [LocalizedDateTimePipe, LocalizePipe, RouterLink, SelectControl],
   templateUrl: './execution-path.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

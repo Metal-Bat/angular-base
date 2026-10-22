@@ -6,21 +6,39 @@
   ><textarea
     id="task-comment"
     maxlength="4000"
-    [disabled]="editor().busy() || editor().blocked()"
+    pTextarea
+    rows="3"
+    [disabled]="disabled() || editor().busy() || editor().blocked()"
     [ngModel]="editor().comment()"
     (ngModelChange)="editor().comment.set($event)"
   ></textarea>
+  @if (hasReturn()) {
+    <app-correction-feedback-editor
+      [disabled]="disabled() || editor().busy() || editor().blocked()"
+      [document]="editor().document()!"
+      [entries]="editor().corrections()"
+      (entriesChange)="editor().corrections.set($event)"
+    />
+  }
   @for (action of editor().document()?.actions ?? []; track action.key) {
     <button
       pButton
-      severity="secondary"
       type="button"
       [disabled]="
+        disabled() ||
         editor().busy() ||
         editor().blocked() ||
-        (action.requireComment && !editor().comment().trim())
+        (action.requireComment && !editor().comment().trim()) ||
+        (action.kind === 'return' && !validCorrections())
       "
-      [outlined]="true"
+      [outlined]="action.kind !== 'complete'"
+      [severity]="
+        action.kind === 'reject'
+          ? 'danger'
+          : action.kind === 'return'
+            ? 'secondary'
+            : undefined
+      "
       (click)="editor().decide(action)"
     >
       {{ action.title }}
@@ -40,7 +58,7 @@
         pButton
         severity="secondary"
         type="button"
-        [disabled]="editor().busy() || editor().blocked()"
+        [disabled]="disabled() || editor().busy() || editor().blocked()"
         [outlined]="true"
         (click)="editor().lifecycle('claim')"
       >
@@ -53,7 +71,7 @@
           pButton
           severity="secondary"
           type="button"
-          [disabled]="editor().busy() || editor().blocked()"
+          [disabled]="disabled() || editor().busy() || editor().blocked()"
           [outlined]="true"
           (click)="editor().lifecycle('start')"
         >
@@ -64,7 +82,7 @@
         pButton
         severity="secondary"
         type="button"
-        [disabled]="editor().busy() || editor().blocked()"
+        [disabled]="disabled() || editor().busy() || editor().blocked()"
         [outlined]="true"
         (click)="editor().lifecycle('release')"
       >

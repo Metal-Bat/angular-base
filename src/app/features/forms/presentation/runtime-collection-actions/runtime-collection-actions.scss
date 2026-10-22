@@ -1,0 +1,21 @@
+:host {
+  display: block;
+}
+.row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.row-actions button {
+  margin: 0;
+}
+
+.compact {
+  display: grid;
+  grid-template-columns: repeat(2, 2.75rem);
+}
+.compact button {
+  inline-size: 2.75rem;
+  block-size: 2.75rem;
+  padding: 0;
+}

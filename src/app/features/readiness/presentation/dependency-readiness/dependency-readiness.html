@@ -15,7 +15,9 @@
     <p role="status">
       {{ (report.ready && !stale() ? "Ready" : "Blocked") | localize }}
     </p>
-    <time [attr.datetime]="report.checked_at">{{ report.checked_at }}</time>
+    <time [attr.datetime]="report.checked_at">{{
+      report.checked_at | localizedDateTime
+    }}</time>
     <p>
       {{ "Client compatibility" | localize }}:
       {{ report.client_readiness | localize }}

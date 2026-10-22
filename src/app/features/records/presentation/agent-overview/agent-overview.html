@@ -1,0 +1,55 @@
+<section [attr.aria-labelledby]="headingId">
+  <h3 [id]="headingId">
+    {{ "Configuration summary" | localize }}
+  </h3>
+  <dl>
+    @if (record()["status"]) {
+      <div>
+        <dt>{{ "Status" | localize }}</dt>
+        <dd>{{ $any(record()["status"]) | localize }}</dd>
+      </div>
+    }
+    @if (record()["number"] !== undefined) {
+      <div>
+        <dt>{{ "Version" | localize }}</dt>
+        <dd>{{ record()["number"] }}</dd>
+      </div>
+    }
+    <div>
+      <dt>{{ "Provider" | localize }}</dt>
+      <dd>
+        <bdi>{{ config()["provider_key"] || ("Not selected" | localize) }}</bdi>
+      </dd>
+    </div>
+    <div>
+      <dt>{{ "Model" | localize }}</dt>
+      <dd>
+        <bdi>{{ config()["model_id"] || ("Not selected" | localize) }}</bdi>
+      </dd>
+    </div>
+    <div>
+      <dt>{{ "Question" | localize }}</dt>
+      <dd>{{ decision()["question"] || ("Not provided" | localize) }}</dd>
+    </div>
+    <div>
+      <dt>{{ "Permitted inputs" | localize }}</dt>
+      <dd>{{ locale.number(count("allowed_fields")) }}</dd>
+    </div>
+    <div>
+      <dt>{{ "Allowed tools" | localize }}</dt>
+      <dd>{{ locale.number(count("allowed_tools")) }}</dd>
+    </div>
+    <div>
+      <dt>{{ "Spend limit (USD)" | localize }}</dt>
+      <dd>
+        <bdi>{{ limits()["spend_usd"] ?? ("Unknown" | localize) }}</bdi>
+      </dd>
+    </div>
+  </dl>
+  <p>
+    {{
+      "Agent configuration does not execute a provider or replace required human approval."
+        | localize
+    }}
+  </p>
+</section>

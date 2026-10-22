@@ -1,3 +1,5 @@
+import { ADMIN_API } from '../../administration/bindings';
+import { AdminApi } from '../../administration/infrastructure/admin-api';
 import { installationOperatorGuard } from '../../../core/permissions/installation-operator-guard';
 import { SUPPORT } from '../../support/bindings';
 import { SupportApi } from '../../support/infrastructure/support-api';
@@ -62,6 +64,7 @@ export const operationsRoutes: Routes = [
       ...runtimePreviewRoutes,
       {
         path: 'support',
+        title: 'Support | Workflow workspace',
         providers: [{ provide: SUPPORT, useExisting: SupportApi }],
         data: {
           access: 'authenticated',
@@ -74,6 +77,7 @@ export const operationsRoutes: Routes = [
       },
       {
         path: 'calendar',
+        title: 'Calendar | Workflow workspace',
         providers: [{ provide: CALENDAR, useExisting: CalendarApi }],
         data: { access: 'authenticated', requiredPermissions: [] },
         canDeactivate: [
@@ -87,6 +91,7 @@ export const operationsRoutes: Routes = [
       },
       {
         path: 'dashboard',
+        title: 'Dashboard | Workflow workspace',
         providers: [{ provide: ANALYTICS, useExisting: AnalyticsApi }],
         data: {
           access: 'authenticated',
@@ -99,6 +104,7 @@ export const operationsRoutes: Routes = [
       },
       {
         path: 'favorites',
+        title: 'Favorites | Workflow workspace',
         data: { access: 'authenticated', requiredPermissions: [] },
         loadComponent: () =>
           import('../../records/presentation/favorites/favorites').then(
@@ -107,6 +113,7 @@ export const operationsRoutes: Routes = [
       },
       {
         path: 'readiness',
+        title: 'Setup checklist | Workflow workspace',
         canActivate: [installationOperatorGuard],
         data: { access: 'authenticated', requiredPermissions: [] },
         loadComponent: () =>
@@ -116,6 +123,7 @@ export const operationsRoutes: Routes = [
       },
       {
         path: 'media',
+        title: 'Private uploads | Workflow workspace',
         data: { access: 'authenticated', requiredPermissions: [] },
         loadComponent: () =>
           import('./generic-media/generic-media').then((m) => m.GenericMedia),
@@ -123,6 +131,7 @@ export const operationsRoutes: Routes = [
       recordRoute('reports'),
       ...(['notifications'] as const).map((kind) => ({
         path: kind,
+        title: 'Notifications | Workflow workspace',
         data: {
           access: 'authenticated',
           requiredPermissions: [],
@@ -135,6 +144,7 @@ export const operationsRoutes: Routes = [
       })),
       {
         path: 'processes/:ref',
+        title: 'Process tracking | Workflow workspace',
         providers: [
           { provide: PROCESS_EVIDENCE, useExisting: ProcessEvidenceApi },
           { provide: ORDER_RECOVERY, useExisting: OrderRecoveryApi },
@@ -166,7 +176,7 @@ export const operationsRoutes: Routes = [
             useValue: () => new WorkspacePages(),
           },
         ],
-        title: 'RequestCatalog | Workflow workspace',
+        title: 'Start a request | Workflow workspace',
         data: {
           access: 'authenticated',
           requiredPermissions: ['requests.start'],
@@ -189,7 +199,7 @@ export const operationsRoutes: Routes = [
             useValue: () => new WorkspacePages(),
           },
         ],
-        title: 'RequestList | Workflow workspace',
+        title: 'My requests | Workflow workspace',
         data: {
           access: 'authenticated',
           requiredPermissions: ['requests.start'],
@@ -210,7 +220,7 @@ export const operationsRoutes: Routes = [
             useValue: () => new WorkspacePages(),
           },
         ],
-        title: 'TaskInbox | Workflow workspace',
+        title: 'Task inbox | Workflow workspace',
         data: {
           access: 'authenticated',
           requiredPermissions: ['requests.start'],
@@ -224,7 +234,7 @@ export const operationsRoutes: Routes = [
         providers: [
           { provide: CASE_EDITOR_FACTORY, useValue: () => new CaseEditor() },
         ],
-        title: 'CaseDetail | Workflow workspace',
+        title: 'Request detail | Workflow workspace',
         data: {
           access: 'authenticated',
           requiredPermissions: ['requests.start'],
@@ -241,9 +251,10 @@ export const operationsRoutes: Routes = [
       {
         path: 'tasks/:ref',
         providers: [
+          { provide: ADMIN_API, useExisting: AdminApi },
           { provide: CASE_EDITOR_FACTORY, useValue: () => new CaseEditor() },
         ],
-        title: 'CaseDetail | Workflow workspace',
+        title: 'Task detail | Workflow workspace',
         data: {
           access: 'authenticated',
           requiredPermissions: ['requests.start'],

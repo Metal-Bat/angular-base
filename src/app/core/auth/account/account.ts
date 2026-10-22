@@ -1,3 +1,4 @@
+import { LocalizedDateTimePipe } from '../../../shared/ui/localized-datetime-pipe';
 import { ButtonDirective } from 'primeng/button';
 import {
   ChangeDetectionStrategy,
@@ -24,7 +25,7 @@ type SessionRow = {
 @Component({
   host: { class: 'console-page' },
   selector: 'app-account',
-  imports: [ButtonDirective, FormsModule, LocalizePipe],
+  imports: [LocalizedDateTimePipe, ButtonDirective, FormsModule, LocalizePipe],
   templateUrl: './account.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

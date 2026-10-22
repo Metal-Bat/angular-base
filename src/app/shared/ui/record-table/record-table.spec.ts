@@ -2,8 +2,53 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { RecordTable } from './record-table';
 import { emptyQuery, ListQuery, QueryField } from '../../domain/list-query';
+import { Locale } from '../../../core/localization/locale';
 
 describe('Server-backed record table', () => {
+  it('displays valid saved sizes outside the standard choices without silently changing the query', async () => {
+    const fixture = setup({ ...emptyQuery(), size: 25 });
+    fixture.componentRef.setInput('pages', 2);
+    const emitted = vi.fn();
+    fixture.componentInstance.queried.subscribe(emitted);
+    await fixture.whenStable();
+    const picker: HTMLElement = fixture.nativeElement.querySelector(
+      '.page-jump [role=combobox]',
+    );
+    expect(picker.textContent?.trim()).toBe('25');
+    expect(fixture.componentInstance.pageSizes()).toEqual([
+      10, 20, 25, 50, 100,
+    ]);
+    fixture.componentRef.setInput('query', { ...emptyQuery(), size: 35 });
+    await fixture.whenStable();
+    expect(picker.textContent?.trim()).toBe('35');
+    expect(fixture.componentInstance.pageSizes()).toEqual([
+      10, 20, 35, 50, 100,
+    ]);
+    expect(emitted).not.toHaveBeenCalled();
+  });
+
+  it('keeps authored names and choice labels literal while localizing typed booleans', async () => {
+    const fixture = setup();
+    const row = { name: 'Yes', value: 'No', active: false };
+    fixture.componentRef.setInput('columns', [
+      { key: 'name', label: 'Name' },
+      { key: 'value', label: 'Choice' },
+      { key: 'active', label: 'Active' },
+    ]);
+    fixture.componentRef.setInput('rows', [row]);
+    const locale = TestBed.inject(Locale);
+    try {
+      await locale.set('fa');
+      fixture.detectChanges();
+      const cells = fixture.nativeElement.querySelectorAll('tbody td');
+      expect(cells[0].textContent.trim()).toBe('Yes');
+      expect(cells[1].textContent.trim()).toBe('No');
+      expect(cells[2].textContent.trim()).toBe(locale.text('No'));
+      expect(row).toEqual({ name: 'Yes', value: 'No', active: false });
+    } finally {
+      await locale.set('en');
+    }
+  });
   it('offers labelled icon actions only when their capabilities are configured', async () => {
     const fixture = setup();
     const row = { name: 'Ada' };

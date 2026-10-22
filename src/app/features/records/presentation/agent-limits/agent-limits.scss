@@ -1,0 +1,29 @@
+:host {
+  display: block;
+  min-inline-size: 0;
+}
+.limit-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.25rem;
+  margin-block: 1.5rem;
+}
+.strict-spend {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+dl {
+  margin: 0;
+}
+dt {
+  color: var(--console-muted);
+}
+dd {
+  margin: 0.25rem 0 0;
+}
+@media (max-width: 48rem) {
+  .limit-fields {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

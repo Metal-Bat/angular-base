@@ -24,3 +24,7 @@ Verification: configuration rejection/bootstrap tests, actor-switch cleanup and 
 Step 11–13 session requests and protected API calls use a cookie/CSRF interceptor. Protected requests cancel on actor reset; bootstrap/account-switch generations reject late responses. Permission changes also reset actor-owned memory. Cross-tab notifications contain only a session-change/logout event and are never persisted. The single-process boundary owns refresh rotation; neither tokens nor refresh ownership enter browser storage.
 
 Administration retains command inputs in actor memory, redacts credential-like response fields recursively, clears accepted password/credential inputs and fences late responses after actor changes. Static deployment never caches HTML/runtime configuration or serves source maps. See [release checks](RELEASE-READINESS.md).
+
+## Public login appearance hint — 2026-10-17
+
+The user explicitly requested frontend theme persistence on the login screen. The sole exception to empty persistent application storage is `localStorage["workspace.public-theme"]`, a validated `<palette>-<mode>` string using an existing palette and light/dark/system. It contains no actor identity, credentials, private data, language, timezone or draft. It survives actor cleanup; server preferences win after authentication and server defaults still govern explicit appearance reset. All sessionStorage and other localStorage keys remain forbidden by browser acceptance policy. See [the scoped repair record](changes/APP-FE-004-LOCALE-OVERLAYS.md).

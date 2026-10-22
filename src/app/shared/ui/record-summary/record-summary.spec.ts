@@ -64,6 +64,29 @@ describe('Record summary', () => {
   });
 });
 describe('Response detail coverage and history comparison', () => {
+  it('keeps nested settings and additional fields visible when using purposeful groups', async () => {
+    const fixture = TestBed.createComponent(RecordSummary);
+    fixture.componentRef.setInput('record', {
+      name: 'Approval',
+      settings: { allow_retry: false, limit: 0 },
+      new_property: 'Keep this',
+      secret: 'never-show',
+      created_at: null,
+    });
+    fixture.componentRef.setInput('title', 'Approval');
+    fixture.componentRef.setInput('groups', [
+      { title: 'Configuration', keys: ['settings'] },
+    ]);
+    fixture.componentRef.setInput('includeRemaining', true);
+    await fixture.whenStable();
+    const text = fixture.nativeElement.textContent;
+    expect(text).toContain('Allow Retry');
+    expect(text).toContain('No');
+    expect(text).toContain('0');
+    expect(text).toContain('Keep this');
+    expect(text).toContain('Not set');
+    expect(text).not.toContain('never-show');
+  });
   it('shows additional response properties instead of relying on a whitelist', async () => {
     const fixture = TestBed.createComponent(RecordSummary);
     fixture.componentRef.setInput('record', {

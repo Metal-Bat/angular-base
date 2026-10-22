@@ -33,3 +33,7 @@ APP-FE-028.2 delivers the independent implementation recorded in [authorized rec
 Current source-qualified evidence is in the [receipt/layout continuation](../delivery/APP-FE-026-028-RECEIPTS.md): successful strict 20-case backend rehearsal and two guarded resets, plus ten actual layout browser scenarios. Scope limits, failed earlier runs and current final gate remain explicit; parent acceptance is not changed.
 
 Observed complete frontend gate: 12 stages, 579 tests / 119 files and ten Firefox scopes passed with zero emitted warnings/required skips. The [continuation record](../delivery/APP-FE-026-028-RECEIPTS.md) retains its exact source hashes, preclosure manifest and final post-documentation gate location. Parent scope limitations remain unchanged.
+
+## Filter refresh continuation — 2026-10-18
+
+The native Firefox chooser race, owner refresh repair, complete failed collection run and final scoped verification receipt are recorded in [the editor flow audit](APP-FE-016-EDITOR-FLOW-AUDIT.md). Automatic request/task refresh now waits while filter editing is open; existing explicit loading fences and unchanged payload contracts remain. This continuation does not close parent acceptance.
