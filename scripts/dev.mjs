@@ -22,7 +22,9 @@ function start(args) {
   const child = spawn(process.execPath, args, {
     cwd: root,
     env: {
-      ...process.env,
+      ...Object.fromEntries(
+        Object.entries(process.env).filter(([key]) => key !== "NO_COLOR"),
+      ),
       NG_BUILD_MAX_WORKERS: process.env.NG_BUILD_MAX_WORKERS ?? "2",
     },
     stdio: "inherit",
@@ -81,7 +83,7 @@ try {
   }
   if (!stopping) {
     start([
-      "node_modules/@angular/cli/bin/ng.js",
+      "node_modules/nx/dist/bin/nx.js",
       "serve",
       ...process.argv.slice(2),
     ]);

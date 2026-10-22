@@ -1,0 +1,43 @@
+{
+  "$schema": "./node_modules/nx/schemas/nx-schema.json",
+  "targetDefaults": {
+    "build": {
+      "cache": true,
+      "dependsOn": ["^build"],
+      "inputs": ["production", "^production"]
+    },
+    "test": {
+      "cache": true,
+      "inputs": ["default", "^production"]
+    },
+    "lint": {
+      "cache": true,
+      "inputs": ["default"]
+    }
+  },
+  "namedInputs": {
+    "sharedGlobals": [
+      "{workspaceRoot}/pnpm-lock.yaml",
+      "{workspaceRoot}/pnpm-workspace.yaml",
+      "{workspaceRoot}/tsconfig.json",
+      "{workspaceRoot}/.postcssrc.json"
+    ],
+    "default": ["{projectRoot}/**/*", "sharedGlobals"],
+    "production": [
+      "default",
+      "!{projectRoot}/src/**/*.spec.ts",
+      "!{projectRoot}/src/test-setup.ts",
+      "!{projectRoot}/tests/**/*",
+      "!{projectRoot}/server/**/*.spec.mjs",
+      "!{projectRoot}/vitest.config.ts"
+    ]
+  },
+  "nxCloudId": "6ad9f5626b8bc9ddced8471f",
+  "defaultProject": "ng-architect",
+  "generators": {
+    "@nx/angular:component": {
+      "style": "scss",
+      "changeDetection": "OnPush"
+    }
+  }
+}

@@ -6,7 +6,12 @@ import { join } from "node:path";
 const output = await mkdtemp(join(tmpdir(), "workspace-foundations-"));
 function run(args, env = process.env) {
   return new Promise((resolve, reject) => {
-    const child = spawn(process.execPath, args, { stdio: "inherit", env });
+    const child = spawn(process.execPath, args, {
+      stdio: "inherit",
+      env: Object.fromEntries(
+        Object.entries(env).filter(([key]) => key !== "NO_COLOR"),
+      ),
+    });
     child.on("error", reject);
     child.on("exit", (code, signal) =>
       code === 0
@@ -17,8 +22,9 @@ function run(args, env = process.env) {
 }
 try {
   await run([
-    "node_modules/@angular/cli/bin/ng.js",
+    "node_modules/nx/dist/bin/nx.js",
     "build",
+    "--output-style=static",
     "--configuration",
     "development",
     "--output-path",

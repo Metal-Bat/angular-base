@@ -46,10 +46,22 @@ async function run(file, args, env, log) {
 }
 let exitCode = 1;
 try {
-  const env = { ...process.env, NG_BUILD_MAX_WORKERS: "2" };
+  const env = {
+    ...Object.fromEntries(
+      Object.entries(process.env).filter(([key]) => key !== "NO_COLOR"),
+    ),
+    NG_BUILD_MAX_WORKERS: "2",
+  };
   exitCode = await run(
-    "node_modules/@angular/cli/bin/ng.js",
-    ["build", "--configuration", "development", "--output-path", output],
+    "node_modules/nx/dist/bin/nx.js",
+    [
+      "build",
+      "--output-style=static",
+      "--configuration",
+      "development",
+      "--output-path",
+      output,
+    ],
     env,
     "build.log",
   );

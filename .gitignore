@@ -62,3 +62,9 @@ __pycache__/
 
 # Optional vendor styles generated from pinned NG-ZORRO
 /public/ui/ant-design.css
+
+
+# Nx local task cache and project graph
+/.nx/cache/
+/.nx/workspace-data/
+/.nx/migrate-runs/

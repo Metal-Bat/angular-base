@@ -1,0 +1,111 @@
+{
+  "$schema": "node_modules/nx/schemas/project-schema.json",
+  "name": "ng-architect",
+  "projectType": "application",
+  "generators": {
+    "@schematics/angular:component": {
+      "style": "scss"
+    }
+  },
+  "sourceRoot": "src",
+  "prefix": "app",
+  "targets": {
+    "build": {
+      "executor": "@angular/build:application",
+      "options": {
+        "browser": "src/main.ts",
+        "tsConfig": "tsconfig.app.json",
+        "inlineStyleLanguage": "scss",
+        "assets": [
+          {
+            "glob": "**/*",
+            "input": "public"
+          }
+        ],
+        "styles": [
+          "src/tailwind.css",
+          "node_modules/primeicons/primeicons.css",
+          "node_modules/@foblex/flow/styles/default.scss",
+          "src/styles.scss",
+          "src/vazirmatn-fonts.css"
+        ],
+        "outputPath": "dist/ng-architect"
+      },
+      "configurations": {
+        "production": {
+          "budgets": [
+            {
+              "type": "initial",
+              "maximumWarning": "500kB",
+              "maximumError": "1MB"
+            },
+            {
+              "type": "anyComponentStyle",
+              "maximumWarning": "4kB",
+              "maximumError": "8kB"
+            }
+          ],
+          "outputHashing": "all",
+          "fileReplacements": [
+            {
+              "replace": "src/app/core/development/preview-routes.ts",
+              "with": "src/app/core/development/preview-routes.production.ts"
+            },
+            {
+              "replace": "src/app/features/operations/presentation/runtime-preview.routes.ts",
+              "with": "src/app/features/operations/presentation/runtime-preview.routes.production.ts"
+            }
+          ]
+        },
+        "development": {
+          "optimization": false,
+          "extractLicenses": false,
+          "sourceMap": true
+        }
+      },
+      "defaultConfiguration": "production",
+      "outputs": ["{options.outputPath}"],
+      "dependsOn": ["^build", "fonts:prepare", "ui:prepare"]
+    },
+    "serve": {
+      "executor": "@angular/build:dev-server",
+      "configurations": {
+        "production": {
+          "buildTarget": "ng-architect:build:production"
+        },
+        "development": {
+          "buildTarget": "ng-architect:build:development"
+        }
+      },
+      "defaultConfiguration": "development",
+      "options": {
+        "proxyConfig": "src/proxy.conf.json"
+      },
+      "continuous": true,
+      "dependsOn": ["fonts:prepare", "ui:prepare"]
+    },
+    "extract-i18n": {
+      "executor": "@angular/build:extract-i18n",
+      "options": {
+        "buildTarget": "ng-architect:build"
+      }
+    },
+    "test": {
+      "executor": "@angular/build:unit-test",
+      "options": {
+        "tsConfig": "tsconfig.spec.json",
+        "runnerConfig": "vitest.config.ts",
+        "setupFiles": ["src/test-setup.ts"]
+      },
+      "outputs": ["{workspaceRoot}/coverage"]
+    },
+    "lint": {
+      "executor": "@angular-eslint/builder:lint",
+      "options": {
+        "lintFilePatterns": ["src/**/*.ts", "src/**/*.html"],
+        "maxWarnings": 0
+      },
+      "outputs": ["{options.outputFile}"]
+    }
+  }
+}

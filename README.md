@@ -41,6 +41,27 @@ Tests use Angular's unit-test builder with Vitest and jsdom. Route tests cover d
 
 The pinned Playwright pilot runs Chromium and Firefox against production Studio pages with fresh disposable HTTP fixtures through the real session boundary. Install matching binaries with `mise exec -- pnpm run playwright:install`, build with `mise run build`, then run `mise exec -- pnpm run test:playwright`. Browser binaries live under ignored `node_modules/.cache/playwright`; existing system `BROWSER_ENGINE`/`BROWSER_BINARY` settings govern only legacy runners. Playwright uses its managed binaries and explicitly selected projects. Its strict TypeScript and zero-warning lint checks and both pilot projects are included in `mise run check`. Reports and synthetic failure traces are under `artifacts/playwright/`; fixture evidence is distinct from the existing `test:paired-smoke` real-service harness. To explore WebKit separately, install its matching binary with the same `PLAYWRIGHT_BROWSERS_PATH` and run `test:playwright:webkit`; no Safari/device acceptance is claimed.
 
+## Nx workspace
+
+The existing Angular application is the `ng-architect` Nx project. `project.json`
+owns its build, serve, test, lint and translation targets; `nx.json` owns task
+caching and shared inputs. Source stays under `src/`, and deployment output stays
+at `dist/ng-architect/browser`.
+
+Use `mise run dev`, `mise run build`, `mise run lint`, `mise run test` and
+`mise run check` as before. Direct tasks use `mise exec -- pnpm exec nx
+run ng-architect:build` (or `:serve`, `:test`, `:lint`). Use
+`mise exec -- pnpm exec nx graph` to inspect the project graph. Use Nx Angular generators for code generation, for example
+`mise exec -- pnpm exec nx generate @nx/angular:component src/app/shared/ui/example`.
+The existing `pnpm ng` entry point now aliases Nx as well. Development and disposable browser builds run
+through Nx too. CI's deliberate-failure probes disable cache reads so each injected
+defect must be checked.
+
+Impeccable is installed locally at `.agents/skills/impeccable`. Its product UI
+guidance informs the shared shell and presentation styles; see [DESIGN.md](DESIGN.md).
+The skill is available to Codex on the next turn. It is development guidance, not an
+application runtime dependency.
+
 ## Domain-oriented organization
 
 Keep business rules independent of UI and transport libraries. As features are added, group their domain models, application use cases, infrastructure adapters, and presentation components under `src/app/features/<domain>/`. Use `core` for application-wide infrastructure and `shared` for reusable UI and utilities. These are architectural conventions, not implemented business features in this starter. See [extending the starter](docs/ARCHITECTURE.md) and [maintenance notes](docs/UPGRADE.md).
@@ -85,4 +106,4 @@ The session decision, server deployment variables and browser contract are in [S
 
 Steps 6–8 are implemented in the matching local backend; [PLATFORM-CONTRACT.md](docs/PLATFORM-CONTRACT.md) records the tested patch, new API snapshot, and remaining integration gates. Steps 9–13 are also implemented and locally verified; see [API-CLIENT.md](docs/API-CLIENT.md). Steps 14–18 are implemented locally: [UI/localization](docs/UI-FOUNDATION.md), [command coordination](docs/COMMAND-COORDINATION.md), and [runtime document model](docs/RUNTIME-DOCUMENT.md). Steps 19–23 add the [runtime renderer](docs/RUNTIME-RENDERER.md), conformance fixtures and [requester/reviewer journey](docs/WORKSPACE-JOURNEYS.md). The next task is **Step 24**: process timeline and the real backend journey.
 
-Ant Design is available through NG-ZORRO 21.3.3 alongside Material, PrimeNG and Tailwind. Run `mise run start` and open the development `/ui-preview` to try the mixed-library controls. See [UI library configuration](docs/UI-LIBRARIES.md#ant-design-with-tailwind--2026-10-11) for imports, scoped styling, themes and RTL.
+Ant Design is available through NG-ZORRO 21.3.3 alongside Material, PrimeNG and Tailwind. Run `mise run dev` and open the development `/ui-preview` to try the mixed-library controls. See [UI library configuration](docs/UI-LIBRARIES.md#ant-design-with-tailwind--2026-10-11) for imports, scoped styling, themes and RTL.

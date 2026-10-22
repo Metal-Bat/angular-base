@@ -9,9 +9,14 @@ try {
     "src",
     "public",
     "docs/reference",
-    "angular.json",
+    "scripts/prepare-fonts.mjs",
+    "scripts/prepare-ant-design.mjs",
+    "project.json",
+    "nx.json",
     "vitest.config.ts",
     "package.json",
+    "pnpm-lock.yaml",
+    "pnpm-workspace.yaml",
     "tsconfig.json",
     "tsconfig.app.json",
     "tsconfig.spec.json",
@@ -21,18 +26,30 @@ try {
     await cp(entry, join(sandbox, entry), { recursive: true });
   }
   await symlink(resolve("node_modules"), join(sandbox, "node_modules"), "dir");
-  const run = (args, script = "node_modules/@angular/cli/bin/ng.js") =>
-    spawnSync(process.execPath, [resolve(script), ...args], {
-      cwd: sandbox,
-      encoding: "utf8",
-      env: {
-        ...process.env,
-        CI: "true",
-        NG_CLI_ANALYTICS: "false",
-        NG_BUILD_MAX_WORKERS: "2",
+  const run = (args, script = "node_modules/nx/dist/bin/nx.js") =>
+    spawnSync(
+      process.execPath,
+      [
+        resolve(script),
+        ...args,
+        ...(script.endsWith("/nx.js") ? ["--output-style=static"] : []),
+      ],
+      {
+        cwd: sandbox,
+        encoding: "utf8",
+        env: {
+          ...Object.fromEntries(
+            Object.entries(process.env).filter(([key]) => key !== "NO_COLOR"),
+          ),
+          CI: "true",
+          NX_DAEMON: "false",
+          NX_SKIP_NX_CACHE: "true",
+          NG_CLI_ANALYTICS: "false",
+          NG_BUILD_MAX_WORKERS: "2",
+        },
+        timeout: 180000,
       },
-      timeout: 180000,
-    });
+    );
   const expectFailure = (label, args, expected, script) => {
     const result = run(args, script);
     if (
@@ -59,7 +76,7 @@ try {
   expectFailure(
     "Translation",
     [],
-    "Missing translation",
+    "Missing Persian translation: Untranslated gate probe",
     "scripts/check-delivery-ui.mjs",
   );
   await rm(join(sandbox, "src/app/shared/ui/ci-translation-probe.html"));
