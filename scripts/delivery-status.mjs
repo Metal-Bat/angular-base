@@ -1,7 +1,7 @@
 import { readFile, readdir, mkdir, writeFile } from "node:fs/promises";
 import { createHash } from "node:crypto";
 import { resolve } from "node:path";
-import { spawnSync } from "node:child_process";
+import { sourceIdentity } from "./source-identity.mjs";
 import { localCheckIssues, pairedEvidence } from "./delivery-evidence.mjs";
 const sha = (value) => createHash("sha256").update(value).digest("hex");
 const read = (path) => readFile(path, "utf8");
@@ -56,28 +56,9 @@ const optionalJson = async (path) => {
   }
 };
 const gate = await optionalJson("artifacts/check/manifest.json");
-const git = spawnSync(
-  "git",
-  ["ls-files", "--cached", "--others", "--exclude-standard"],
-  { encoding: "utf8" },
-);
-if (git.status !== 0) throw Error("Cannot read source identity");
-const paths = git.stdout
-  .trim()
-  .split("\n")
-  .filter(
-    (path) =>
-      path &&
-      !path.startsWith("artifacts/") &&
-      !path.startsWith("graphify-out/"),
-  )
-  .sort();
-const tree = [];
-for (const path of paths) {
-  const bytes = await readFile(path).catch(() => null);
-  tree.push([path, bytes ? sha(bytes) : "deleted"]);
-}
-const currentSha = sha(JSON.stringify(tree));
+const identity = await sourceIdentity();
+const tree = identity.files;
+const currentSha = identity.sha256;
 const localIssues = localCheckIssues(gate, currentSha);
 const currentGate = localIssues.length === 0;
 // Match paired-smoke.py's functional-source identity (Python's ASCII JSON with spaces).

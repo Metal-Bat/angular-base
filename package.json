@@ -46,7 +46,7 @@
     "test:browser-catalogs": "STUDIO_CATALOG_BROWSER_CHECKS=1 node server/browser-auth.spec.mjs",
     "delivery:inventory": "node scripts/delivery-inventory.mjs",
     "delivery:check": "node scripts/delivery-inventory.mjs --check && node scripts/check-delivery-ui.mjs && node scripts/check-peer-contract.mjs && node scripts/check-help-catalog.mjs",
-    "test:diagnostics": "node --test server/browser-diagnostics.spec.mjs server/browser-storage-policy.spec.mjs scripts/delivery-evidence.spec.mjs",
+    "test:diagnostics": "node --test server/browser-diagnostics.spec.mjs server/browser-storage-policy.spec.mjs scripts/delivery-evidence.spec.mjs scripts/source-identity.spec.mjs scripts/verification-process.spec.mjs scripts/browser-quality-check.spec.mjs",
     "test:paired-smoke": "python3 scripts/paired-smoke.py",
     "delivery:status": "node scripts/delivery-status.mjs",
     "test:browser-sandbox": "node scripts/browser-sandbox.mjs",
@@ -56,7 +56,8 @@
     "test:playwright": "env -u NO_COLOR PLAYWRIGHT_BROWSERS_PATH=./node_modules/.cache/playwright playwright test --project=chromium --project=firefox",
     "test:playwright:webkit": "env -u NO_COLOR PLAYWRIGHT_BROWSERS_PATH=./node_modules/.cache/playwright playwright test --project=webkit",
     "playwright:install": "PLAYWRIGHT_BROWSERS_PATH=./node_modules/.cache/playwright playwright install chromium firefox",
-    "nx": "env -u NO_COLOR nx"
+    "nx": "env -u NO_COLOR nx",
+    "check:integrated": "node scripts/check-project.mjs --require-pair"
   },
   "prettier": {
     "overrides": [
