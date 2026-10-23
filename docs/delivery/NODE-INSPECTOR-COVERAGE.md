@@ -59,3 +59,26 @@ includes asynchronous child timers, real branch joins/event expiry and bounded
 cycle/else authoring. The owning APP-FE-024-INTERFACE record and final scoped receipt
 separate these results from producer REQUEST schema reconstruction, legacy
 transform validation, fault/dependency and manual/deployed acceptance gaps.
+
+## Current reviewed primitive intake — 2026-10-22
+
+The dated table above retains its original scope. The current frozen registry has
+23 handler/version contracts: the existing eighteen plus five reviewed pure
+primitives. The main producer manifest governs the en/fa/ar inspector hashes.
+Unknown versions, runtime-disabled catalog rows and same-version schema drift
+still fail closed. Metadata discovery does not publish a version or authorize a
+runtime operation; the acceptance harness publishes only these five reviewed
+versions in its owned disposable database through the existing backend service.
+
+| New handler/version | Available configuration                                                     | Actual acceptance scope                                                                                                            |
+| ------------------- | --------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| arithmetic/1        | Named add/subtract/multiply/divide/remainder choices; canonical enum values | UI-selected addition in a published composed process; finite-number and zero-divisor semantics stay producer-owned                 |
+| number_compare/1    | Named equal/not-equal/order comparisons                                     | UI-selected equality after addition; exact pinned version                                                                          |
+| boolean_logic/1     | Named AND, OR and NOT choices                                               | UI-selected NOT feeds the existing routing engine                                                                                  |
+| if_else/1           | Existing typed input bindings, no invented configuration                    | False route executes; the invalid true route remains unexecuted                                                                    |
+| select_value/1      | Existing typed input bindings, no invented configuration                    | False condition selects zero, preserving the distinct null alternative; unconstrained output uses a compatible conversion consumer |
+
+[APP-FE-038 current continuation](../changes/APP-FE-038-FRONTEND-WRAP-UP.md)
+records source intake and retained failures. The current scoped receipt is under
+`artifacts/frontend-wrap-up/workflows-final/`; final batch receipts supersede it
+only for their recorded source. Parent APP-FE-021–025 acceptance remains separate.

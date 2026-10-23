@@ -9,9 +9,9 @@ export function sharedUserRecoveryJourney() {
   await click('Update User',actualUsers());
   await wait(()=>document.getElementById('record-first_name'),'Owned competing user editor');
   fill('record-first_name','Owned recovered identity');
-  const sharedCompeting=await fetch('/api/v1/admin/users/'+encodeURIComponent(sharedUserRef),{
+  const sharedCompeting=await fetch('/api/v1/admin/users/'+encodeURIComponent(sharedUser.ref_id),{
     method:'PUT',headers:{'content-type':'application/json','x-csrf-token':operatorSession.csrfToken},
-    body:JSON.stringify({ref_id:sharedUserRef,username:sharedUser.username,email:sharedUser.email,
+    body:JSON.stringify({ref_id:sharedUser.ref_id,username:sharedUser.username,email:sharedUser.email,
       first_name:'Owned concurrent identity',last_name:sharedUser.last_name})
   });
   check(sharedCompeting.ok,'Owned competing user update');
