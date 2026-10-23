@@ -121,13 +121,13 @@
   "intake_history": [
     {
       "backend_commit": "9999641f8e37077829ebbe7159a6cd794fb94b91",
-      "owner": "APP-FE-006–015",
+      "owner": "APP-FE-006\u2013015",
       "scope": "full effective en/fa paths and models, preserving historical producer fields",
       "diff": "../app-fe-015/contract-intake.json"
     },
     {
       "backend_commit": "9999641f8e37077829ebbe7159a6cd794fb94b91",
-      "owner": "APP-FE-016–020",
+      "owner": "APP-FE-016\u2013020",
       "scope": "Compared and reconciled full frozen producer; form contracts unchanged",
       "diff": "../app-fe-016-020/contract-intake.json"
     },
@@ -163,5 +163,30 @@
       "producer_manifest_sha256": "f8d5aeed5ef7fe7ff5b535be21d0d372355127bbcd0828f574d4925c994b5366",
       "diff": "../app-be-031/contract-intake.json"
     }
-  ]
+  ],
+  "reviewed_metadata_intakes": {
+    "workflow_primitives_2026_10_22": {
+      "date": "2026-10-22",
+      "owner": "APP-FE-021 / APP-FE-038",
+      "backend_commit": "4a5ec27f9f14eba7ad7fd7bbfa5280a7ed77d272",
+      "backend_functional_source_sha256": "4797a6226ccd6182dc0aa53dc5d753602c342d41cc46dba7273cd3dd9ca71d63",
+      "backend_worktree": "Uncommitted source; acceptance uses an immutable owned snapshot.",
+      "added_handlers": [
+        "arithmetic",
+        "boolean_logic",
+        "if_else",
+        "number_compare",
+        "select_value"
+      ],
+      "unchanged_existing_handlers": 18,
+      "unchanged_field_options": 20,
+      "inspector_sha256": {
+        "inspector-en.json": "583fd26baf81070c9aca413de4449242d97317d0f8ea4327c68c62014a505ea5",
+        "inspector-fa.json": "320ba04fd8f63b957f6f7bd4bfc95e9a69bb9c3653e2d4cb900750e76898b65b",
+        "inspector-ar.json": "8e498f87b03441545d997cacad14ce1f63bd045602a295b7e2675de5f1b85a13"
+      },
+      "openapi_change": "None; live reviewer profile matches all frozen paths/components.",
+      "compatibility": "Existing schemas, handler pins and DTO/operation contracts retained; unknown or mismatched catalog schemas still fail closed."
+    }
+  }
 }

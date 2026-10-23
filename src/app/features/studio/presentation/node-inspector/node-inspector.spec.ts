@@ -135,3 +135,46 @@ it('discards invalid typed buffers without changing the selected node or retaine
   vm.discard();
   expect(discarded).toHaveBeenCalledOnce();
 });
+
+it('shows readable primitive choices and emits reviewed canonical operations on the same version pin', async () => {
+  const primitive = source.handlers.find(
+    (item) => item.handler_key === 'number_compare',
+  )!;
+  const fixture = TestBed.createComponent(NodeInspector);
+  const original = {
+    key: 'compare',
+    type_code: primitive.code,
+    type_version_ref: 'comparison-pin',
+    config: { operation: 'lt' },
+  };
+  fixture.componentRef.setInput('step', original);
+  fixture.componentRef.setInput('catalog', [
+    {
+      type_schema: primitive.config_schema,
+      metadata: {
+        ref_id: 'comparison-pin',
+        code: primitive.code,
+        handler_key: primitive.handler_key,
+        handler_version: primitive.handler_version,
+      },
+    },
+  ]);
+  await fixture.whenStable();
+  const vm = fixture.componentInstance;
+  expect(fixture.nativeElement.textContent).toContain('Greater than or equal');
+  expect(Object.keys(vm.primitiveChoiceLabels('number_compare'))).toEqual(
+    primitive.config_schema.properties.operation!.enum,
+  );
+  const applied = vi.fn();
+  vm.applied.subscribe(applied);
+  vm.update('operation', 'gte');
+  vm.apply();
+  expect(applied).toHaveBeenCalledWith({
+    ...original,
+    config: { operation: 'gte' },
+  });
+  vm.update('operation', 'invented');
+  vm.apply();
+  expect(applied).toHaveBeenCalledTimes(1);
+  expect(vm.hasErrors()).toBe(true);
+});

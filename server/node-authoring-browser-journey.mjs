@@ -1,3 +1,4 @@
+import { workflowPrimitivesJourney } from "./workflow-primitives-journey.mjs";
 import { workflowRuntimeJourney } from "./workflow-runtime-journey.mjs";
 import { subprocessRuntimeJourney } from "./subprocess-runtime-journey.mjs";
 import { dataMappingRuntimeJourney } from "./data-mapping-runtime-journey.mjs";
@@ -30,7 +31,7 @@ ${foundationsBrowserHelpers(credentials)}
   const form=(await http('/api/v1/form-versions/'+encodeURIComponent(formVersions[0].ref_id),undefined,'GET')).data;
   const pinnedRequest=(await http('/api/v1/business-requests',{request_type_ref_id:accounts.request_type,data:{}})).data;
   const pinnedView=(await http('/api/v1/business-requests/'+encodeURIComponent(pinnedRequest.ref_id)+'/view',undefined,'GET')).data;
-  const catalog=(await http('/api/v1/designer/catalog',{page:1,size:100})).result.items.filter(row=>row.category==='step_type');
+  const catalog=[];for(let page=1;page<=10;page++){const result=(await http('/api/v1/designer/catalog',{page,size:100})).result;catalog.push(...result.items.filter(row=>row.category==='step_type'));if(page*100>=result.total)break;check(page<10,'Bounded complete authoring catalog');}
   const type=handler=>{const row=catalog.find(item=>item.metadata?.handler_key===handler&&item.metadata.handler_version==='1');check(row,'Actual registered handler '+handler);return row.metadata;};
   const first=original.steps.find(step=>step.type_code===type('human_task').code);check(first,'Existing human task');
   const finish=original.transitions.find(edge=>edge.source===first.key);check(finish,'Existing human completion route');
@@ -119,6 +120,7 @@ ${foundationsBrowserHelpers(credentials)}
 
 
   await select('owned_service');const operation=inspector().querySelector('app-operation-choice');await wait(()=>operation.querySelector('[role=combobox]:not([aria-disabled="true"])'),'Actual registered operations loaded');const operationControl=operation.querySelector('[role=combobox]');operationControl.click();await wait(()=>[...document.querySelectorAll('[role=option]')].some(row=>row.textContent.trim()==='sandbox.order.create/1'),'Rendered operation catalog');check(![...document.querySelectorAll('[role=option]')].some(row=>row.textContent.trim()==='sandbox.order.cancel/1'),'Compensation-only operation not offered in normal context');[...document.querySelectorAll('[role=option]')].find(row=>row.textContent.trim()==='sandbox.order.create/1').click();await new Promise(r=>setTimeout(r,75));check(operation.textContent.includes(create.approval_policy)&&operation.textContent.includes('Look up the receipt before retrying.'),'Actual approval/recovery metadata displayed');await click('Apply typed configuration',inspector());await save();await reopen();await select('owned_service');await wait(()=>inspector().querySelector('app-operation-choice')?.textContent.includes(create.approval_policy),'Operation policy reopened');stored=await persisted();const serviceStep=stored.graph.steps.find(row=>row.key==='owned_service');check(serviceStep.config.operation_key==='sandbox.order.create/1'&&serviceStep.config.connection_ref===connection.ref_id,'Actual operation config save/reopen preserves connection pin');check(inspector().textContent.includes('does not verify a connection'),'Configured metadata never claims verification');await record('APP-FE-025.1 actual registered operation selection, required approval/reconcile metadata and unverified connection pin save/reopen; no dispatch');
+${workflowPrimitivesJourney()}
 ${dataMappingRuntimeJourney()}
 ${subprocessRuntimeJourney()}
 ${workflowRuntimeJourney()}

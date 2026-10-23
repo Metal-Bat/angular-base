@@ -67,6 +67,11 @@
     ) {
     } @else if (editable(field.key, field.schema)) {
       <app-schema-input
+        [choiceLabels]="
+          field.key === 'operation'
+            ? primitiveChoiceLabels(handler.handler_key)
+            : {}
+        "
         [controlId]="'node-' + field.key"
         [disabled]="disabled()"
         [errors]="errors()"

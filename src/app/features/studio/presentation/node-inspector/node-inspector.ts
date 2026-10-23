@@ -1,3 +1,4 @@
+import { primitiveChoiceLabels } from '../../domain/primitive-configuration';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -47,6 +48,7 @@ import { OperationChoice } from '../operation-choice/operation-choice';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NodeInspector {
+  readonly primitiveChoiceLabels = primitiveChoiceLabels;
   readonly step = input.required<JsonObject>();
   readonly catalog = input.required<readonly JsonObject[]>();
   readonly graph = input<JsonObject>({});

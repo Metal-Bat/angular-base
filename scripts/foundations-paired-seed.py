@@ -43,6 +43,17 @@ async def main():
                 await session.flush()
             session.add(RolePermissionEntity(role_id=role.id, permission_id=permission.id))
         session.add(UserRoleEntity(user_id=actor.id, role_id=role.id))
+        if os.environ.get('FOUNDATION_TASK') == '021':
+            # Publish only reviewed pure primitives in this owned disposable DB.
+            # Existing applied migrations and published snapshots stay immutable.
+            from apps.step_types.application.registry import get_registry
+            from apps.step_types.application.service import StepTypeService
+            from core.ref_id import create_ref_id
+            step_types = StepTypeService(session, get_registry())
+            reviewed = {'arithmetic', 'number_compare', 'boolean_logic', 'if_else', 'select_value'}
+            for version in await step_types.reconcile():
+                if version.handler_key in reviewed and version.status == 'DRAFT':
+                    await step_types.publish(create_ref_id(version.id, version.version))
         if os.environ.get('FOUNDATION_TASK') == '030':
             # Controlled metadata in this owned database only. No credential is
             # resolved and this seed does not establish vendor verification.

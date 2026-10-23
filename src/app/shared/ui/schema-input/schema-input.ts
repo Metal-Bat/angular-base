@@ -51,6 +51,13 @@ export class SchemaInput {
   readonly valueChange = output<JsonValue | undefined>();
   readonly controlId = input.required<string>();
   readonly label = input('');
+  readonly choiceLabels = input<Readonly<Record<string, string>>>({});
+  choiceLabel(choice: JsonValue): JsonValue {
+    const labels = this.choiceLabels();
+    return Object.hasOwn(labels, String(choice))
+      ? labels[String(choice)]
+      : choice;
+  }
   readonly required = input(false);
   readonly longText = computed(
     () =>

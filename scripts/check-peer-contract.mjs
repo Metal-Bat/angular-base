@@ -96,3 +96,23 @@ for (const [name, schema] of Object.entries(inbox.components.schemas))
 console.log(
   "Verified current inbox/SSE intake and the main client share one producer manifest.",
 );
+
+// The main producer manifest also governs its reviewed inspector metadata slice.
+const primitiveIntake =
+  manifest.reviewed_metadata_intakes?.workflow_primitives_2026_10_22;
+assert.ok(primitiveIntake, "Reviewed workflow primitive intake is missing");
+for (const language of ["en", "fa", "ar"]) {
+  const name = `inspector-${language}.json`;
+  const content = await readFile(waveRoot + name);
+  const fingerprint = createHash("sha256").update(content).digest("hex");
+  assert.equal(fingerprint, wave.artifacts[name], name + " slice hash drift");
+  assert.equal(
+    fingerprint,
+    primitiveIntake.inspector_sha256[name],
+    name + " main producer drift",
+  );
+}
+assert.equal(inspector.handlers.length, 23);
+console.log(
+  "Verified 23 reviewed workflow handlers across en/fa/ar under the main producer manifest.",
+);

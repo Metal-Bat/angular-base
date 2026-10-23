@@ -19,7 +19,7 @@ const registered = source.handlers.map((handler) => ({
 })) as unknown as JsonObject[];
 describe('Frozen node inspector registry', () => {
   it('resolves every shipped handler/version against the current pin and exact schema', () => {
-    expect(handlers.length).toBe(18);
+    expect(handlers.length).toBe(23);
     expect(
       handlers
         .filter((handler) => handler.handler_key === 'notification')
@@ -180,4 +180,30 @@ it('round-trips transform v2 structured defaults and projections without JSON co
   expect(() =>
     applyConfiguration(step, handler, { conversion_key: 'unsupported' }),
   ).toThrow();
+});
+
+it('authors only reviewed primitive operation values without changing the exact version pin', () => {
+  const samples = [
+    ['arithmetic', 'multiply'],
+    ['number_compare', 'gte'],
+    ['boolean_logic', 'not'],
+  ] as const;
+  for (const [key, operation] of samples) {
+    const handler = handlers.find((item) => item.handler_key === key)!;
+    const step = {
+      key: 'primitive',
+      type_code: source.handlers.find((row) => row.handler_key === key)!.code,
+      type_version_ref: key + handler.handler_version,
+      config: {},
+    };
+    const inspector = inspectorFor(step, registered)!;
+    expect(inspector).not.toBeNull();
+    expect(applyConfiguration(step, inspector, { operation })).toEqual({
+      ...step,
+      config: { operation },
+    });
+    expect(() =>
+      applyConfiguration(step, inspector, { operation: 'unregistered' }),
+    ).toThrow();
+  }
 });

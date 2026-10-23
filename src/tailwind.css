@@ -6,6 +6,10 @@
 @source not "./app/features/studio/infrastructure/workflow-canvas/canvas-gestures.ts";
 /* Test-only strings are not application utility candidates. */
 @source not "./**/*.spec.ts";
+/* Frozen runtime schemas and operation keys are data, never utility classes. */
+@source not "./app/features/studio/domain/node-inspectors.json";
+@source not "./app/features/studio/domain/primitive-configuration.ts";
+@source not "./app/core/localization/*.json";
 
 @custom-variant dark (&:where(.app-dark, .app-dark *));
 

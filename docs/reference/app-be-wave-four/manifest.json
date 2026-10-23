@@ -24,11 +24,11 @@
   ],
   "artifacts": {
     "openapi-en.json": "49f59cb7804f07e820f7cb1f4d26adb4794b5496a7520d59df38d238fae907ed",
-    "inspector-en.json": "d313d137c9f92248e964e878df7aa40d263c378d44d5c3d7d38c03d3d5732d4e",
+    "inspector-en.json": "583fd26baf81070c9aca413de4449242d97317d0f8ea4327c68c62014a505ea5",
     "openapi-fa.json": "3c038a929390f07aadd6092e5a023bd9b52de2927b1d4819b15dbe244fc3612d",
-    "inspector-fa.json": "dcff1ed7d70896857204e02530ba7b4870eb657ad6cf31d0d1d5da4e9bd03637",
+    "inspector-fa.json": "320ba04fd8f63b957f6f7bd4bfc95e9a69bb9c3653e2d4cb900750e76898b65b",
     "openapi-ar.json": "232b0d0b4cfc847b51e6ed4070f95a351c73e391773200f4904654dbbcc5d363",
-    "inspector-ar.json": "3fbe2e3bf71a64e8f480f7ed94468ab9dbe2bc5ca91813fff0f5385fd1dffd7d",
+    "inspector-ar.json": "8e498f87b03441545d997cacad14ce1f63bd045602a295b7e2675de5f1b85a13",
     "metric-dictionary.json": "fecbc2f82cfbf20633c6547494b73c36f7c2cc4a04cc8b00cd93362d63ff2df2",
     "readiness-contracts.json": "88f8daaa5f9d7f973ed0aecde55f15de468d6403d698796945554be7f5f08b5b",
     "inbox-contracts.json": "037495100b65f6d1893f5aa940bd685ec323008b7c6f77205fae60b0452a5a08",
@@ -546,5 +546,28 @@
     ".mise.toml": "f8205c318c63e91e10cd8f779b9a2d5998ba1b9188883e9b3a7a88b6c737acda",
     "compose/backend/Dockerfile": "0f531c63fa637952d3d3d4528d1f6b8cfa9a36444d893d12c5d8d382d8cff558",
     "docker-compose.yml": "aec29ee3ec98ccd2ebfa5d1da117980a38b23c18a1ddabd35f84ce32d8beca9d"
+  },
+  "current_inspector_intake": {
+    "date": "2026-10-22",
+    "owner": "APP-FE-021 / APP-FE-038",
+    "backend_commit": "4a5ec27f9f14eba7ad7fd7bbfa5280a7ed77d272",
+    "backend_functional_source_sha256": "4797a6226ccd6182dc0aa53dc5d753602c342d41cc46dba7273cd3dd9ca71d63",
+    "backend_worktree": "Uncommitted source; acceptance uses an immutable owned snapshot.",
+    "added_handlers": [
+      "arithmetic",
+      "boolean_logic",
+      "if_else",
+      "number_compare",
+      "select_value"
+    ],
+    "unchanged_existing_handlers": 18,
+    "unchanged_field_options": 20,
+    "inspector_sha256": {
+      "inspector-en.json": "583fd26baf81070c9aca413de4449242d97317d0f8ea4327c68c62014a505ea5",
+      "inspector-fa.json": "320ba04fd8f63b957f6f7bd4bfc95e9a69bb9c3653e2d4cb900750e76898b65b",
+      "inspector-ar.json": "8e498f87b03441545d997cacad14ce1f63bd045602a295b7e2675de5f1b85a13"
+    },
+    "openapi_change": "None; live reviewer profile matches all frozen paths/components.",
+    "compatibility": "Existing schemas, handler pins and DTO/operation contracts retained; unknown or mismatched catalog schemas still fail closed."
   }
 }

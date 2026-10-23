@@ -58,7 +58,9 @@
       >
         <option value="">{{ "Choose a value" | localize }}</option>
         @for (choice of choices(); track $index) {
-          <option [value]="choice">{{ $any(choice) | localize }}</option>
+          <option [value]="choice">
+            {{ $any(choiceLabel(choice)) | localize }}
+          </option>
         }
       </app-select-control>
     } @else if (type() === "boolean") {
