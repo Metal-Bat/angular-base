@@ -12,7 +12,13 @@ selection are implemented. Exact final acceptance is in
 [the owning record](APP-FE-023-NESTED-OUTPUT.md). Earlier handoffs describing the
 resolver as returning the entire port remain historical for their recorded source.
 
-## Backend contracts still requiring an owning producer design and freeze
+## Backend contract follow-up
+
+The 2026-10-25 [binding repair](APP-FE-024-BINDING-CONTRACTS.md) implements the
+REQUEST-schema and legacy Transform deltas in the first two rows. Its exact
+completion receipt governs current acceptance; these are no longer absent
+implementations. Remaining rows require their producer design and freeze.
+Historical observations retain their original source scope.
 
 | Existing owner              | Remaining delta                                               | Required producer outcome                                                                                                                                                                                                 |
 | --------------------------- | ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

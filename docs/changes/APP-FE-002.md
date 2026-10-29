@@ -28,6 +28,13 @@ Local verification and the specific real HTTP journey are distinct evidence leve
 
 Graph refresh: `graphify update .` follows final source changes; no API rebuild cost. The old backlog links the authoritative delivery supplement instead of duplicating APP task bodies.
 
+## 2026-10-24 — Current dependency review and release-tool security patch
+
+[The existing-owner continuation](APP-FE-002-DEPENDENCIES.md) refreshes the pnpm
+audit for the current lockfile and patches the existing release-tool Undici
+override. Its current-source receipt owns scoped verification; historical gates,
+parent statuses and hosted/manual/deployment requirements remain separate.
+
 ## 2026-10-12 — Boundary fixture asset routing regression
 
 The reported pre-push Firefox failure returned 401 at the missing-CSRF assertion. This means the boundary had no recognized session before CSRF validation. The boundary fixture forwarded anonymous asset requests, including `/favicon.ico`, into session handling, which returns 401 with a clearing session cookie. A delayed anonymous asset response can therefore erase a newly issued login cookie. Eight standalone runs of the original browser scenario passed; the timing of the reported failure was not independently reproduced.

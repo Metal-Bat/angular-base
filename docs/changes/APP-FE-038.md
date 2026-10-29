@@ -27,3 +27,24 @@ The exact common handoff and boundary operation instructions are in [END-OF-BACK
 Extended the existing implementation through the independently scoped behavior in [the five-slice continuation record](../delivery/APP-FE-036-038-CONTINUATION.md). That record names changed/reused files, actual contract provenance, focused tests, retained failures and remaining criteria with owners. Parent acceptance remains BLOCKED / IMPLEMENTED; no historical result is replaced. Full final gate and repeated paired results are appended there from observed execution.
 
 Observed closure: the finalized-source actual pair passed 16 browser scenarios with exact HTTP contract and unchanged peer/runtime identities; the full gate passed all twelve stages with zero diagnostics, 559 Angular tests and ten Firefox scopes. Final exact-current-tree evidence after documentation closure lives in `artifacts/check/manifest.json` and `artifacts/app-fe-036-038/final-check/`. The linked continuation record preserves initial failures, scoped claims and precise remaining owners. Parent status remains unchanged.
+
+## Current-pair backlog execution — 2026-10-26
+
+The owner granted access to both working checkouts and requested selection and
+execution of the remaining backlog. The selected dependency order is recorded in
+[the current roadmap](../delivery/CURRENT-PAIR-ROADMAP.md). Existing changes,
+historical task IDs, applied migrations and published pins are preserved.
+
+Restored the existing local PostgreSQL, broker, storage and telemetry services and
+started the existing backend. API health returns HTTP 200. Scheduler/library
+focused verification passes all 51 cases. The frontend rerun builds in 15.863s
+and passes 1,064 tests across 234 files, then Nx reports the unclaimed Cloud
+workspace's 401. The native command exits 0; that remote-service error is retained
+separately. Subsequent local verification
+uses the installed Nx-supported NX_NO_CLOUD=true setting, without changing tests,
+deadlines, warning policy or hosted claims.
+
+Actual final results, failed attempts, source inventories and command logs belong
+to artifacts/roadmap-2026-10-26/. A complete current unchanged-source gate and
+required real-service acceptance remain necessary. No broader parent, demo,
+hosted, deployed or user acceptance follows from the roadmap or focused passes.

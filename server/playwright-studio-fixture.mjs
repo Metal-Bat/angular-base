@@ -1,3 +1,6 @@
+import { createOperationNoticeFixture } from "./operation-notice-fixture.mjs";
+import { createCalendarGroupFixture } from "./calendar-group-fixture.mjs";
+import { createAgentAuthoringFixture } from "./agent-authoring-fixture.mjs";
 import { createWorkspaceFixture } from "./workspace-fixture.mjs";
 import { createProfileFixture } from "./profile-fixture.mjs";
 import { readFile } from "node:fs/promises";
@@ -27,6 +30,8 @@ export async function startStudioBrowserFixture({
   inlineAttachments = false,
   sharedRecords = false,
   administrationDetails = false,
+  agentAuthoring = false,
+  operationNotices = false,
 } = {}) {
   const metrics = JSON.parse(
     await readFile(
@@ -37,8 +42,15 @@ export async function startStudioBrowserFixture({
       "utf8",
     ),
   );
+  const operationNotice = operationNotices
+    ? createOperationNoticeFixture()
+    : () => null;
+  const calendar = createCalendarGroupFixture();
   const records = createRecordsFixture();
-  const other = createOtherCrudFixture();
+  const other = createOtherCrudFixture({ publishedAgent: agentAuthoring });
+  const agentChecks = agentAuthoring
+    ? createAgentAuthoringFixture()
+    : () => null;
   const canvas = createCanvasFixture({
     conditional: conditionalWorkflow,
     dataMapping,
@@ -124,7 +136,7 @@ export async function startStudioBrowserFixture({
       }
       const preferred = preferences.handle(req.method, path, raw);
       if (preferred) preferred.body.data.workspace.landing_key = "studio";
-      let result = preferred?.body;
+      let result = preferred?.body ?? operationNotice(req.method, path, raw);
       res.statusCode = preferred?.status ?? 200;
       if (!result && path.endsWith("/login")) {
         if (JSON.parse(raw).password !== "fixture-password") {
@@ -191,11 +203,7 @@ export async function startStudioBrowserFixture({
           success: true,
           result: { items: [], page: 1, size: 20, total: 0, total_pages: 0 },
         };
-      if (!result && path === "/api/v1/calendar/events/search")
-        result = {
-          success: true,
-          result: { items: [], page: 1, size: 100, total: 0, total_pages: 0 },
-        };
+      result ??= calendar(req.method, path, raw);
       if (!result && path === "/api/v1/analytics/catalog")
         result = { success: true, data: metrics };
       if (!result && path === "/api/v1/analytics/query") {
@@ -253,6 +261,7 @@ export async function startStudioBrowserFixture({
         };
       }
       result ??=
+        agentChecks(req.method, path, raw) ??
         canvas.handle(req.method, path, raw) ??
         studio.handle(req.method, path, raw) ??
         other(path, raw, req.method) ??

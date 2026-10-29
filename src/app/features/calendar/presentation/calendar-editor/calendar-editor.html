@@ -5,7 +5,12 @@
       <button
         pButton
         type="submit"
-        [disabled]="busy() || reconcileRequired() || item()?.editable === false"
+        [disabled]="
+          busy() ||
+          reconcileRequired() ||
+          item()?.editable === false ||
+          (sharingGroup && !group)
+        "
       >
         {{ (uncertain() ? "Retry unchanged command" : "Save") | localize }}
       </button>
@@ -36,6 +41,12 @@
     <p role="alert">{{ error() | localize }}</p>
   }
   <div class="event-fields">
+    <app-calendar-group-choice
+      [disabled]="busy() || uncertain() || item()?.editable === false"
+      [value]="group"
+      (picked)="selectGroup($event)"
+      (sharingChanged)="sharingGroup = $event"
+    />
     <app-control-field controlId="event-title" label="Title">
       <input
         id="event-title"
@@ -146,7 +157,7 @@
     </p>
   }
 </form>
-@if (reconcileRequired()) {
+@if (reconcileRequired() && item()) {
   <button
     pButton
     type="button"
@@ -155,4 +166,13 @@
   >
     {{ "Reload current event" | localize }}
   </button>
+}
+
+@if (reconcileRequired() && !item()) {
+  <p role="alert">
+    {{
+      "Choose a current group or Personal to repair this draft, or cancel and start again."
+        | localize
+    }}
+  </p>
 }

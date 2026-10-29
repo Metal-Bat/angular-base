@@ -2246,3 +2246,25 @@ instead of repeated Calendar/event/Dashboard selectors. Final gates and actual
 owned-service scenarios are qualified by the completion receipt linked in those
 records. [The current peer handoff](../changes/APP-FE-023-PEER-HANDOFF.md) retains the
 other producer-dependent capabilities; parent/master statuses remain unchanged.
+
+### Dependency and binding continuation — 2026-10-25
+
+Existing APP-FE-002/033/038 owners continue with the
+[zero-advisory dependency review](../changes/APP-FE-002-DEPENDENCIES.md).
+APP-FE-024 consumes the [durable binding and legacy Transform repair](../changes/APP-FE-024-BINDING-CONTRACTS.md).
+Exact current gates and actual paired acceptance require the linked completion
+receipt. Earlier results and broader parent/manual/hosted/deployed statuses remain
+unchanged; pending verification is not readiness.
+
+### Current-pair backlog selection — 2026-10-26
+
+[Selected execution roadmap](CURRENT-PAIR-ROADMAP.md) reconciles both working
+checkouts and starts existing-owner prerequisite recovery and current-pair
+verification under APP-FE-002/024/036/037/038 and APP-BE-024.1/005.2. The October 25
+frontend closing gate timed out during the unit-test build; successful historical
+backend and paired receipts retain their exact source scope. Parent statuses and
+the private-assistant contract prerequisites remain unchanged.
+
+## Integration gap continuation — 2026-10-28
+
+The selected APP-FE-012/014/023/024/025/030 slices are implemented. [Current behavior, exact producer intake, actual paired/browser evidence and final full-gate receipt](../changes/APP-FE-INTEGRATION-2026-10-28.md) govern their scoped acceptance. Parent and private-assistant IDs/history remain unchanged; hosted/deployed/live-provider/manual/user acceptance is not inferred.

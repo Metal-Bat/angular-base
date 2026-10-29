@@ -51,11 +51,13 @@ test("a process which exits zero on cancellation still fails verification", asyn
 
 test("a hung descendant is terminated and releases its owned loopback port", async () => {
   let port;
+  const env = { ...process.env, FORCE_COLOR: "1" };
+  delete env.NO_COLOR;
   const descendant = `
     import {createServer} from 'node:net';
     process.on('SIGTERM',()=>{});
     const server=createServer();
-    server.listen(0,'127.0.0.1',()=>console.log(server.address().port));
+    server.listen(0,'127.0.0.1',()=>process.stdout.write(String(server.address().port)));
   `;
   const result = await run(
     `import {spawn} from 'node:child_process';
@@ -63,6 +65,7 @@ test("a hung descendant is terminated and releases its owned loopback port", asy
      spawn(process.execPath,['--input-type=module','-e',${JSON.stringify(descendant)}],{stdio:['ignore','inherit','inherit']});
      setInterval(()=>{},1000);`,
     {
+      env,
       timeoutMs: 1500,
       killGraceMs: 100,
       onOutput: (chunk) => {

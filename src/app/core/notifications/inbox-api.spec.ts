@@ -119,3 +119,59 @@ describe('Unified inbox producer adapter', () => {
     ).toThrow();
   });
 });
+
+it('accepts authorized operation process links while retaining unavailable legacy targets', () => {
+  const item = {
+    schema_version: 1,
+    ref_id: 'notice_current',
+    subject: 'Operation requires attention',
+    status: 'ACTIVE',
+    created_at: '2026-10-28T08:00:00Z',
+    read_at: null,
+    content: 'Review the current state.',
+  };
+  expect(
+    decodeInbox({
+      ...item,
+      target: {
+        kind: 'operation',
+        route_key: 'processes',
+        available: true,
+        ref_id: 'process_current',
+      },
+    }).target.ref_id,
+  ).toBe('process_current');
+  expect(
+    decodeInbox({
+      ...item,
+      target: {
+        kind: 'operation',
+        route_key: null,
+        available: false,
+        ref_id: null,
+      },
+    }).target.available,
+  ).toBe(false);
+  expect(() =>
+    decodeInbox({
+      ...item,
+      target: {
+        kind: 'operation',
+        route_key: 'https://private.invalid',
+        available: true,
+        ref_id: 'process_current',
+      },
+    }),
+  ).toThrow();
+  expect(() =>
+    decodeInbox({
+      ...item,
+      target: {
+        kind: 'operation',
+        route_key: null,
+        available: true,
+        ref_id: 'process_current',
+      },
+    }),
+  ).toThrow();
+});

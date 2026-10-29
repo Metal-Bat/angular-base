@@ -32,7 +32,18 @@ export type Reminder = {
   due_at: string;
   status: 'PENDING' | 'SENT' | 'CANCELLED' | 'EXPIRED';
 };
+export type CalendarGroupPage = {
+  items: readonly { key: string; value: string }[];
+  page: number;
+  total: number;
+  totalPages: number;
+};
 export type CalendarPort = {
+  groups(
+    search: string,
+    page: number,
+    abort: AbortSignal,
+  ): Promise<CalendarGroupPage>;
   search(
     body: CalendarQuery,
     signal?: AbortSignal,

@@ -117,6 +117,12 @@ export function dataMappingFixture(handlers) {
             type_schema: profile,
           },
           {
+            path: "process.status",
+            source: "process",
+            cardinality: "SCALAR",
+            type_schema: { type: "string" },
+          },
+          {
             path: "request.amount",
             source: "request",
             cardinality: "SCALAR",
@@ -136,7 +142,7 @@ export function dataMappingFixture(handlers) {
         ],
         page: 1,
         size: 100,
-        total: 3,
+        total: 4,
         total_pages: 1,
       },
     },

@@ -10,6 +10,10 @@ import { LocalizePipe } from '../../../../shared/ui/localize-pipe';
 import { JsonObject } from '../../../forms/domain/runtime-document';
 import { Locale } from '../../../../core/localization/locale';
 import { fieldLabel } from '../../../../shared/domain/field-label';
+import {
+  mappedTargetSchema,
+  objectDestination,
+} from '../../domain/object-field-mappings';
 import { schemaAt } from '../../domain/mapping-fields';
 import { schemaSummary } from '../../domain/mapping-schema';
 import { CanvasPort } from '../../domain/workflow-authoring';
@@ -68,6 +72,8 @@ export class MappingList {
   }
   readonly schema = (value: unknown): JsonObject =>
     value && typeof value === 'object' ? (value as JsonObject) : {};
+  readonly destination = objectDestination;
+  readonly targetSchema = mappedTargetSchema;
   readonly Number = Number;
   readonly edited = output<string>();
   readonly removed = output<string>();
@@ -76,8 +82,12 @@ export class MappingList {
     return this.ports().some((port) => port.key === row['target_port']);
   }
   listBinding(row: JsonObject): boolean {
-    return this.ports().some(
-      (port) => port.key === row['target_port'] && port.cardinality === 'LIST',
+    return (
+      !!row['target_projection'] ||
+      this.ports().some(
+        (port) =>
+          port.key === row['target_port'] && port.cardinality === 'LIST',
+      )
     );
   }
   canMove(row: JsonObject, direction: -1 | 1): boolean {

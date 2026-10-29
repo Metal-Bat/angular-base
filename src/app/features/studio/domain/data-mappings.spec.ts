@@ -314,3 +314,34 @@ it('preserves nested empty literals while validating required presence and item 
     ]),
   ).toHaveProperty('value.0');
 });
+
+it('refreshes an unprojected mapping target after an explicit registered port configuration change', () => {
+  const original = addMapping(graph, 'notify', 'data', nodes, null, {
+    enabled: false,
+  });
+  const row = (original['bindings'] as JsonObject[])[0];
+  const configured = nodes.map((node) => ({
+    ...node,
+    ports: node.ports.map((port) =>
+      port.key === 'data'
+        ? {
+            ...port,
+            schema: {
+              ...port.schema,
+              description: 'New registered declaration',
+            },
+          }
+        : port,
+    ),
+  }));
+  const updated = replaceMapping(
+    original,
+    connectionKey('data', row),
+    configured,
+    null,
+    { enabled: true },
+  );
+  expect((updated['bindings'] as JsonObject[])[0]['target_schema']).toEqual(
+    configured[0].ports[1].schema,
+  );
+});

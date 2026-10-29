@@ -1,0 +1,67 @@
+@if (rows().length) {
+  <details class="binding-preview">
+    <summary>{{ "Preview object mapping" | localize }}</summary>
+    <p>
+      {{
+        "Temporary author samples are cleared when you leave. Values are redacted in the result. This preview runs no workflow, model, tool or business operation."
+          | localize
+      }}
+    </p>
+    @for (row of rows(); track identity(row)) {
+      <section>
+        <h4>
+          <bdi>{{ destination(row) }}</bdi>
+        </h4>
+        @if (row["source_kind"] === "CONSTANT") {
+          <p>{{ "Uses the visible mapping constant." | localize }}</p>
+        } @else {
+          <label
+            ><input
+              type="checkbox"
+              [checked]="included(row)"
+              [disabled]="disabled() || busy()"
+              (change)="include(row, $event)"
+            />
+            {{ "Include author sample" | localize }}</label
+          >
+          @if (included(row)) {
+            <app-mapping-constant
+              [controlId]="'binding-sample-' + row['ordinal']"
+              [disabled]="disabled() || busy()"
+              [schema]="schema(row)"
+              [value]="samples()[identity(row)]"
+              (valueChange)="value(row, $event)"
+            />
+          }
+        }
+      </section>
+    }
+    <button
+      pButton
+      type="button"
+      [disabled]="disabled() || busy()"
+      (click)="preview()"
+    >
+      {{ "Check object samples" | localize }}
+    </button>
+    <p role="alert" [hidden]="!error()">{{ error() | localize }}</p>
+    @if (result(); as result) {
+      <div role="status">
+        <p>
+          {{ "Sample state" | localize }}: {{ result.sample_state | localize }}
+        </p>
+        @for (field of result.fields; track field.path) {
+          <p>
+            <bdi>{{ field.path }}</bdi> · {{ field.value_type | localize }} ·
+            {{ "Value redacted" | localize }}
+          </p>
+        }
+        @for (issue of result.issues; track $index) {
+          <p>
+            <bdi>{{ issue.pointer }}</bdi> · {{ issue.code | localize }}
+          </p>
+        }
+      </div>
+    }
+  </details>
+}

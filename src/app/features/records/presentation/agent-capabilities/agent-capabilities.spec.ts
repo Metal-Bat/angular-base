@@ -17,6 +17,7 @@ const provider: AgentProvider = {
 };
 const model = (connection: string): AgentModel => ({
   connection_ref: connection,
+  connection_name: connection + ' saved connection',
   provider: 'configured',
   model_id: 'model',
   source: 'configured',
@@ -59,6 +60,9 @@ describe('Agent metadata identity', () => {
     expect(fixture.componentInstance.model()?.region).toBe('current');
     expect(fixture.componentInstance.model()?.can_execute).toBe(false);
     expect(fixture.nativeElement.textContent).toContain('No');
+    expect(fixture.nativeElement.textContent).toContain(
+      'current saved connection',
+    );
     TestBed.inject(ActorState).reset();
     await fixture.whenStable();
     expect(fixture.componentInstance.model()).toBeNull();

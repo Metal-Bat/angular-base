@@ -86,3 +86,7 @@ The collected Firefox Cancel miss, deterministic leaving-popover/editor overlap 
 create/repeated edit-cancel/focus/delete acceptance against the running backend,
 three-language date/filter regressions and the remaining membership-aware team
 selector dependency. Existing parent status and historical acceptance remain.
+
+## Integration continuation — 2026-10-28
+
+The selected current consumer/producer gap is implemented in the [integration record](APP-FE-INTEGRATION-2026-10-28.md). That record and its final current-source receipt govern this scoped acceptance; historical results and broader parent/external acceptance remain unchanged.

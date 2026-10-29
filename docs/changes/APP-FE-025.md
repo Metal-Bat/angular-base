@@ -33,3 +33,38 @@ Delivered files, actual satisfied acceptance, all commands/results (including in
 ## Agent administration editor continuation — 2026-10-16
 
 [APP-FE-030.UX01](APP-FE-030.UX01.md) owns the dedicated agent detail/editor, meaningful decisions/policy/limits and current acceptance. It reuses the existing authorized selectors, model metadata, exact pins and command lifecycle. The [capability/producer handoff](../delivery/AGENT-EDITOR-CAPABILITIES.md) records exact off-page connection-name, workflow choice-shape/sample, retrieval catalog/preview and approved standalone-test gaps. Those gaps remain blocked capabilities; they do not erase supported typed filters, static/input choices or policy editing. No provider execution, backend source/migration, published payload or required human approval changes. This continuation does not close the broader APP-FE-025 parent.
+
+# 2026-10-27 Agent metadata and producer continuation
+
+The existing actor-fenced Agent metadata adapter now requires the producer's
+use-authorized `connection_name` and the existing capability view displays it using
+the localized Connection label. Focused Angular acceptance proves the current name
+is visible and retains actor cleanup/late-response privacy. No credential is exposed.
+
+The current single-producer intake contains 384 operations and 580 schemas,
+including five new owned Agent authoring/evaluation operations. Generated transport
+and API/UI source inventories are refreshed; an operation's owning screen is not
+proof of a usable consumer. Workflow-context, retrieval-preview and governed
+evaluation controls remain with APP-FE-025/030. The producer requires a published
+Agent plus an eligible immutable workflow/request and delegates normal submission;
+its evaluation response is submission identity, not a model verdict.
+
+Actual paired workflow/browser smoke passes with an exact live paths/schema match,
+unchanged functional source and no service diagnostics. Focused backend tests use
+the real database/process path with a synthetic model; no live provider test or human
+acceptance is claimed. Full current-source gates are recorded separately in
+`artifacts/seed-processes-2026-10-27/`. Initial inventory drift and the superseded
+export using local display-title settings are retained as failed/partial evidence;
+final exports use the existing synthetic exporter settings and deterministic checks.
+The complete final receipt governs verification; parent UI/demo/deployment tasks
+remain open. No permission, replay, approval or published-pin policy is changed.
+
+Local seed usability is also exercised against actual running services: the
+development boundary uses the v3 profile's public client/release, and an existing
+seeded requester opens/edits the leave draft and reloads its unchanged saved data.
+This performs no request submission or human approval. The unrelated foundations
+fixture synchronization failure and its strict repair belong to APP-FE-026.
+
+## Integration continuation — 2026-10-28
+
+The selected current consumer/producer gap is implemented in the [integration record](APP-FE-INTEGRATION-2026-10-28.md). That record and its final current-source receipt govern this scoped acceptance; historical results and broader parent/external acceptance remain unchanged.

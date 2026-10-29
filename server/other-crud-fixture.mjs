@@ -117,8 +117,9 @@ const resources = {
   "/api/v1/tasks/executions": execution,
   "/api/v1/processes": process,
 };
-export function createOtherCrudFixture() {
+export function createOtherCrudFixture({ publishedAgent = false } = {}) {
   const ownedResources = structuredClone(resources);
+  if (publishedAgent) ownedResources["/api/v1/ai-agents"].status = "PUBLISHED";
   return (url, body, method) => {
     const path = new URL(url, "http://fixture.invalid").pathname;
     const match = Object.entries(ownedResources).find(
@@ -179,6 +180,7 @@ export function createOtherCrudFixture() {
     if (/\/connections\/[^/]+\/models\/[^/]+\/metadata$/.test(path))
       return data({
         connection_ref: decodeURIComponent(path.split("/")[5]),
+        connection_name: "Review AI connection",
         provider: "fixture",
         model_id: decodeURIComponent(path.split("/")[7]),
         source: "configured",

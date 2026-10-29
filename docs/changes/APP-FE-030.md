@@ -29,3 +29,7 @@ APP-FE-030.1 extends the existing implementation. Scope, exact files, current co
 ## Dedicated agent editor owner — 2026-10-16
 
 The master V28–V30 administration editor is recorded under [APP-FE-030.UX01](APP-FE-030.UX01.md), with a capability-to-contract table and precise producer handoff. Existing diagnostics/budget scope and historical results above remain independent. Supported editor implementation, actual service scenarios, current browser/gate receipts and remaining backend-dependent capabilities are explicitly separated.
+
+## Integration continuation — 2026-10-28
+
+The selected current consumer/producer gap is implemented in the [integration record](APP-FE-INTEGRATION-2026-10-28.md). That record and its final current-source receipt govern this scoped acceptance; historical results and broader parent/external acceptance remain unchanged.

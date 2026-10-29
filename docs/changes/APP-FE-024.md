@@ -50,3 +50,7 @@ and broader fault/manual/deployment acceptance are unchanged.
 ### Literal authorized request paths
 
 The [literal-scope continuation](APP-FE-016-LITERAL-SCOPES.md) retains literal `items` and `properties` keys in already authorized REQUEST instance paths. Producer schema reconstruction, transforms and other mapper handoffs remain blocked; no new expression syntax or backend capability is inferred.
+
+## Integration continuation — 2026-10-28
+
+The selected current consumer/producer gap is implemented in the [integration record](APP-FE-INTEGRATION-2026-10-28.md). That record and its final current-source receipt govern this scoped acceptance; historical results and broader parent/external acceptance remain unchanged.

@@ -343,9 +343,13 @@ export const foundationsBrowserScript = `
   const cardKey=editorVm.outline().at(-1).identity;
   check(editorVm.outline().at(-1).scope==='/properties/field_2','Automatic stable field key');
   await wait(()=>[...formCards.querySelectorAll('.field-card')].at(-1)?.getAttribute('aria-pressed')==='true','New field selected in the rendered canvas');
+  const visualInspector=()=>window.ng.getComponent(builder.querySelector('app-form-inspector'));
+  await wait(()=>visualInspector()?.node().node_key===cardKey&&visualInspector()?.draft().node_key===cardKey&&visualInspector()?.documents()===editorVm.documents()&&document.getElementById('field-label')?.value==='Text','New field inspector rendered with current document');
   const visualLabel=document.getElementById('field-label');visualLabel.value='Visual field';visualLabel.dispatchEvent(new Event('input',{bubbles:true}));
+  await wait(()=>visualInspector().draft().label==='Visual field','Visual label input applied to current field');
   [...builder.querySelectorAll('button')].find(button=>button.textContent.trim()==='Apply properties').click();
   await wait(()=>formCards.textContent.includes('Visual field'),'Card label updated');
+  check(editorVm.outline().length===4&&editorVm.outline().at(-1).identity===cardKey&&editorVm.outline().at(-1).scope==='/properties/field_2','Label edit preserves the new field and its canonical binding');
   const outlineBefore=JSON.stringify(editorVm.documents());
   [...builder.querySelectorAll('button')].find(button=>button.textContent.trim()==='Preview').click();
   await wait(()=>!editorVm.busy()&&editorVm.previewFreshness()==='ready'&&builder.querySelector('app-runtime-form input'),'Unsaved form rendered');

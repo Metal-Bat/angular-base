@@ -2,6 +2,31 @@
 
 Steps 34–35 are implemented locally. Step 36 has local evidence but remains incomplete until the broader release decisions/tests below pass. Step 37 has executable local HTTP and HTTPS deployment/rollback rehearsals; actual staging remains pending. Step 38 awaits a search/bulk or push/collaboration choice and new contracts; offline drafts were deferred by the project owner on October 4. None of these statuses imply a production release.
 
+## Dependency continuation, October 25, 2026
+
+The [current audit](reference/dependency-review-2026-10-25.json) records zero
+development and zero production advisory entries after the reviewed remaining
+patches. The installed FTP compatibility regression passes; existing resolver
+deprecations remain visible in retained logs. Complete current gates and
+source-qualified evidence are governed by the completion receipt linked from
+[the owning record](changes/APP-FE-002-DEPENDENCIES.md). Earlier results below
+remain historical; hosted, manual, deployment and user acceptance stay open.
+
+## Dependency continuation, October 24, 2026
+
+The current [pnpm dependency review](reference/dependency-review-2026-10-24.json)
+records the exact current lockfile, zero production advisory entries, and 39
+development advisory entries (13 high, 20 moderate, six low). These are advisory
+entries, not distinct affected packages or proof of exploitability. The existing
+release-tool Undici override moves from 7.30.0 to the upstream security patch
+7.30.1; both release-tool vulnerable paths disappear from the repeated audit.
+Totals remain unchanged because other development consumers still use affected
+versions. The frozen installation and read-only release-tool version check pass.
+The [owning change record](changes/APP-FE-002-DEPENDENCIES.md) links the required
+final gate and remaining remediation. Resolver deprecations, hosted CI,
+deployment and human acceptance remain separate; this does not close release
+readiness. The October 3–4 reports below retain their historical scope.
+
 ## Follow-up verification, October 4, 2026
 
 `mise run check` passed: formatting, generated contracts (314 typed operations), types, lint (26 template-complexity warnings), 258 unit tests, 13 session tests, two deployment tests, production build and release manifest. Initial assets remain 403,887 bytes, with lazy canvas code and no public source maps. Negative CI lint/test/build probes passed. The full Firefox quality suite and Chromium suite through the installed Brave binary passed, including automated accessibility and local HTTPS rollback. This Chromium run uses Brave, rather than the prior Chrome for Testing binary; historical measurements below retain their original scope.

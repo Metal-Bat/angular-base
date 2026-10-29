@@ -13,7 +13,11 @@ export async function select(page: Page, key: string): Promise<Locator> {
   await page
     .locator(`.board-node[data-node-key="${key}"] .node-handle`)
     .click();
-  await page.getByRole('tab', { name: 'Properties', exact: true }).click();
+  const properties = page.getByRole('tab', { name: 'Properties', exact: true });
+  if (!(await properties.isVisible())) {
+    await page.locator('.dock-toggle').click();
+  }
+  await properties.click();
   return page.locator('app-graph-connections:visible');
 }
 export async function save(page: Page): Promise<Record<string, unknown>> {

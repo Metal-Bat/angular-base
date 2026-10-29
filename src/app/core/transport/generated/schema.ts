@@ -1,4 +1,4 @@
-// Generated; do not edit. Input SHA256: 49f59cb7804f07e820f7cb1f4d26adb4794b5496a7520d59df38d238fae907ed
+// Generated; do not edit. Input SHA256: 1631c8478aa9881be85b258f92d1ced156b67c51db89edf881f4844f7609169e
 export interface paths {
     "/api/v1/admin/audit-events/{ref_id}": {
         parameters: {
@@ -704,6 +704,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/ai-agents/{ref_id}/decision-preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Validate an author-provided decision sample
+         * @description Requires workflows.manage and ownership of the exact current agent. Validates at most 32 KiB of explicitly supplied permitted inputs and distinguishes static, missing, empty, invalid and valid choices. No provider, query, budget reservation, business command or execution-snapshot read occurs. This is local validation, never model evaluation evidence. Stale agent refs return 409; foreign agents are denied.
+         */
+        post: operations["preview_agent_decision_api_v1_ai_agents__ref_id__decision_preview_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/ai-agents/{ref_id}/evaluations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Submit an eligible request for governed agent evaluation
+         * @description Requires both workflows.manage and requests.start, ownership of the current published agent and of the selected eligible draft request. The request's immutable workflow must pin this exact agent. Delegates the unchanged submit_key and saved inputs to normal RequestService submission with the authenticated client context; exact replay, current refs, pinned grants, budgets, prices, worker lifecycle and required human approvals remain authoritative. Draft agents and mismatched pins return 409. Returns accepted request/process identity, never a fabricated provider verdict. Actual execution may be queued, denied, failed or uncertain; inspect ordinary process/AI evidence. No arbitrary draft execution, paid retry or protected-effect bypass is introduced.
+         */
+        post: operations["start_agent_evaluation_api_v1_ai_agents__ref_id__evaluations_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/ai-agents/{ref_id}/history": {
         parameters: {
             query?: never;
@@ -738,6 +778,66 @@ export interface paths {
          * @description Requires workflows.manage and ownership or superuser status. Publication pins the effective user/admin limits and price version, and checks the installed adapter, verified connection, model allowlist and retention declaration. No provider call occurs. Unsupported tool calls or hidden transport retries fail closed.
          */
         post: operations["publish_api_v1_ai_agents__ref_id__publish_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/ai-agents/{ref_id}/retrieval-preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Review a bounded saved-report lookup plan
+         * @description Requires workflows.manage, owned current agent and exact owned unexpired saved-report reference. Rechecks registered definition version, source/tool/classification and current report permission. Limit is 1–10 and cannot exceed either registered or saved-query bounds. Returns an allowed-field result schema without executing the query or calling a provider. Runtime lookup_saved_report/1 still requires approval of the exact pending read-only call and reauthorizes at dispatch; this preview is not that approval. Stale/expired refs return 409; foreign/disallowed sources are not exposed.
+         */
+        post: operations["agent_retrieval_preview_api_v1_ai_agents__ref_id__retrieval_preview_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/ai-agents/{ref_id}/retrieval-sources/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Find permitted owned report lookup sources
+         * @description Requires workflows.manage and ownership of the current agent. Returns only current unexpired owned saved reports whose exact registered definition opts into AI lookup and whose permission, classification, source and tool are allowed by this agent. Authorization and lifecycle filtering precede count and stable paging. Search matches definition keys; size/page use SelectQuery bounds. No private rows, saved filters, artifact paths or credentials are exposed. An empty catalog grants no authority and does not imply that missing sources were revoked.
+         */
+        post: operations["agent_retrieval_sources_api_v1_ai_agents__ref_id__retrieval_sources_search_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/ai-agents/{ref_id}/workflow-context": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Inspect exact workflow-bound agent choices
+         * @description Requires workflows.manage, owned current agent and current view authorization for the named active workflow. The exact workflow version and AI_DECISION step must pin this exact agent. Projects the declared whole-input source schema through its source path, or the shared object declaration for bpms.binding.object/1 fields. Optional whole-input author samples, a visible constant binding or an all-constant object composition are clearly identified; protected runtime samples are never fetched. Missing bindings, mixed legacy multiple bindings, mismatched agent pins and stale versions return 409. Multiple versioned object fields share one input schema; mixed-source compositions never fetch runtime values. No execution or model call occurs.
+         */
+        post: operations["agent_workflow_context_api_v1_ai_agents__ref_id__workflow_context_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1688,6 +1788,26 @@ export interface paths {
          * @description Authenticated Gregorian calendar. Personal events belong to their creator; a team event is visible only to current active members of its explicitly selected active work group. Only the creator can update/delete. No superuser bypass grants another person's calendar. Timed events use aware ISO-8601 instants and an IANA timezone; storage/output are UTC. A supplied non-UTC offset must match the named local wall time, rejecting DST gaps; explicit offsets disambiguate folds. All-day events retain start_date/end_date, exclusive end, without conversion into timed events. Each event spans at most 366 days. command_key binds exact create/update intent; same-key replay returns the current result, another intent conflicts. Updates/deletes require a current revision ref (409 stale); unavailable source is 404. Search/report require a half-open Gregorian date range of 1–93 days and IANA timezone, size 1–100, at most 20 filters and 10 sorts. Actual live work_item.due_at values appear as read-only deadline points only with requests.start and current available/claimed cartable authority. Live visibility and overlap precede filtering, count, ordering and pagination. Derived items link to work_items and cannot be edited as calendar events. Manual links use calendar_events. History returns only transition timestamps/operations, at most 1000, without private snapshots. Delete is soft and cancels pending reminders in the same transaction. Up to three distinct reminder offsets of 0–2592000 seconds are supported. Existing envelopes, snake_case, en/fa localization, and private no-store apply.
          */
         post: operations["search_api_v1_calendar_events_search_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/calendar/work-groups/select": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Select my active Calendar groups
+         * @description Read-only private selector for any authenticated current actor, without administrative group permission. Only the actor's current active memberships in live active groups are eligible; superusers have no membership bypass. Literal case-insensitive name search (1–100 characters when supplied) runs before counts and pagination. Omitted/null search matches all eligible groups. Page defaults to 1, size to 20 (1–100); stable name/id order. response_format=page returns the usual result envelope; items returns the same bounded page as a plain key/value array. No owner or lifecycle overrides. Keys are current opaque revision refs, values preserve user-entered names in every locale. Selection grants no write authority: Calendar commands recheck live membership and current group revision. Revoked/deleted groups disappear immediately on the next read, including counts; unauthenticated access is 401, malformed input 422. No business mutation or provider call. Private no-store headers apply to both formats.
+         */
+        post: operations["select_calendar_groups_api_v1_calendar_work_groups_select_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -3251,7 +3371,7 @@ export interface paths {
         };
         /**
          * Read unified notification
-         * @description Authenticated recipient-only unified inbox version 1. Case, work_item, ai_approval, report and account destinations resolve current owner-authorized references on every read. Calendar/support/operation targets are reserved and unavailable until their producers exist. An unavailable, deleted, revoked, expired or cancelled target exposes no private subject, content or reference. Stored labels never confer authority. Search is bounded and deterministic with existing filters/order/page/size plus unread=true/false; report is the same paginated search, not a queued archive. Unread totals count live ACTIVE unread inbox rows, including redacted unavailable destinations. Mark-read changes only read metadata, requires a current optimistic ref (409 when stale), and never decides or acts on a workflow. Non-owned refs fail 403; missing/deleted refs fail 404. Null read bodies are rejected; actions accept an empty object. UTC timestamps; en/fa template locale is chosen when staged with en fallback. Private no-store success/page envelopes, existing 401/403/404/409/422 errors. Refresh refs from mutation responses. Optional email defaults off; mandatory notices ignore optional opt-out. No delivery is performed by these reads.
+         * @description Authenticated recipient-only unified inbox version 1. Case, work_item, ai_approval, report and account destinations resolve current owner-authorized references on every read. Calendar and support targets resolve current authorized sources. Protected operation notices resolve the existing process screen: MAP-07 requires current superuser recovery authority and unresolved evidence; MAP-08 requires current requester ownership, requests.start and the exact confirmed CREATED receipt. Unknown outcomes never authorize provider replay. Old unsupported operation targets remain unavailable. An unavailable, deleted, revoked, expired or cancelled target exposes no private subject, content or reference. Stored labels never confer authority. Search is bounded and deterministic with existing filters/order/page/size plus unread=true/false; report is the same paginated search, not a queued archive. Unread totals count live ACTIVE unread inbox rows, including redacted unavailable destinations. Mark-read changes only read metadata, requires a current optimistic ref (409 when stale), and never decides or acts on a workflow. Non-owned refs fail 403; missing/deleted refs fail 404. Null read bodies are rejected; actions accept an empty object. UTC timestamps; en/fa/ar template locale is chosen when staged with en fallback. Private no-store success/page envelopes, existing 401/403/404/409/422 errors. Refresh refs from mutation responses. Optional email defaults off; mandatory notices ignore optional opt-out. No delivery is performed by these reads.
          */
         get: operations["detail_api_v1_inbox__ref_id__get"];
         put?: never;
@@ -3273,7 +3393,7 @@ export interface paths {
         put?: never;
         /**
          * Mark unified notification read
-         * @description Authenticated recipient-only unified inbox version 1. Case, work_item, ai_approval, report and account destinations resolve current owner-authorized references on every read. Calendar/support/operation targets are reserved and unavailable until their producers exist. An unavailable, deleted, revoked, expired or cancelled target exposes no private subject, content or reference. Stored labels never confer authority. Search is bounded and deterministic with existing filters/order/page/size plus unread=true/false; report is the same paginated search, not a queued archive. Unread totals count live ACTIVE unread inbox rows, including redacted unavailable destinations. Mark-read changes only read metadata, requires a current optimistic ref (409 when stale), and never decides or acts on a workflow. Non-owned refs fail 403; missing/deleted refs fail 404. Null read bodies are rejected; actions accept an empty object. UTC timestamps; en/fa template locale is chosen when staged with en fallback. Private no-store success/page envelopes, existing 401/403/404/409/422 errors. Refresh refs from mutation responses. Optional email defaults off; mandatory notices ignore optional opt-out. No delivery is performed by these reads.
+         * @description Authenticated recipient-only unified inbox version 1. Case, work_item, ai_approval, report and account destinations resolve current owner-authorized references on every read. Calendar and support targets resolve current authorized sources. Protected operation notices resolve the existing process screen: MAP-07 requires current superuser recovery authority and unresolved evidence; MAP-08 requires current requester ownership, requests.start and the exact confirmed CREATED receipt. Unknown outcomes never authorize provider replay. Old unsupported operation targets remain unavailable. An unavailable, deleted, revoked, expired or cancelled target exposes no private subject, content or reference. Stored labels never confer authority. Search is bounded and deterministic with existing filters/order/page/size plus unread=true/false; report is the same paginated search, not a queued archive. Unread totals count live ACTIVE unread inbox rows, including redacted unavailable destinations. Mark-read changes only read metadata, requires a current optimistic ref (409 when stale), and never decides or acts on a workflow. Non-owned refs fail 403; missing/deleted refs fail 404. Null read bodies are rejected; actions accept an empty object. UTC timestamps; en/fa/ar template locale is chosen when staged with en fallback. Private no-store success/page envelopes, existing 401/403/404/409/422 errors. Refresh refs from mutation responses. Optional email defaults off; mandatory notices ignore optional opt-out. No delivery is performed by these reads.
          */
         post: operations["mark_read_api_v1_inbox__ref_id__read_post"];
         delete?: never;
@@ -3313,7 +3433,7 @@ export interface paths {
         put?: never;
         /**
          * Report unified notifications
-         * @description Authenticated recipient-only unified inbox version 1. Case, work_item, ai_approval, report and account destinations resolve current owner-authorized references on every read. Calendar/support/operation targets are reserved and unavailable until their producers exist. An unavailable, deleted, revoked, expired or cancelled target exposes no private subject, content or reference. Stored labels never confer authority. Search is bounded and deterministic with existing filters/order/page/size plus unread=true/false; report is the same paginated search, not a queued archive. Unread totals count live ACTIVE unread inbox rows, including redacted unavailable destinations. Mark-read changes only read metadata, requires a current optimistic ref (409 when stale), and never decides or acts on a workflow. Non-owned refs fail 403; missing/deleted refs fail 404. Null read bodies are rejected; actions accept an empty object. UTC timestamps; en/fa template locale is chosen when staged with en fallback. Private no-store success/page envelopes, existing 401/403/404/409/422 errors. Refresh refs from mutation responses. Optional email defaults off; mandatory notices ignore optional opt-out. No delivery is performed by these reads.
+         * @description Authenticated recipient-only unified inbox version 1. Case, work_item, ai_approval, report and account destinations resolve current owner-authorized references on every read. Calendar and support targets resolve current authorized sources. Protected operation notices resolve the existing process screen: MAP-07 requires current superuser recovery authority and unresolved evidence; MAP-08 requires current requester ownership, requests.start and the exact confirmed CREATED receipt. Unknown outcomes never authorize provider replay. Old unsupported operation targets remain unavailable. An unavailable, deleted, revoked, expired or cancelled target exposes no private subject, content or reference. Stored labels never confer authority. Search is bounded and deterministic with existing filters/order/page/size plus unread=true/false; report is the same paginated search, not a queued archive. Unread totals count live ACTIVE unread inbox rows, including redacted unavailable destinations. Mark-read changes only read metadata, requires a current optimistic ref (409 when stale), and never decides or acts on a workflow. Non-owned refs fail 403; missing/deleted refs fail 404. Null read bodies are rejected; actions accept an empty object. UTC timestamps; en/fa/ar template locale is chosen when staged with en fallback. Private no-store success/page envelopes, existing 401/403/404/409/422 errors. Refresh refs from mutation responses. Optional email defaults off; mandatory notices ignore optional opt-out. No delivery is performed by these reads.
          */
         post: operations["search_api_v1_inbox_report_post"];
         delete?: never;
@@ -3333,7 +3453,7 @@ export interface paths {
         put?: never;
         /**
          * Search unified notifications
-         * @description Authenticated recipient-only unified inbox version 1. Case, work_item, ai_approval, report and account destinations resolve current owner-authorized references on every read. Calendar/support/operation targets are reserved and unavailable until their producers exist. An unavailable, deleted, revoked, expired or cancelled target exposes no private subject, content or reference. Stored labels never confer authority. Search is bounded and deterministic with existing filters/order/page/size plus unread=true/false; report is the same paginated search, not a queued archive. Unread totals count live ACTIVE unread inbox rows, including redacted unavailable destinations. Mark-read changes only read metadata, requires a current optimistic ref (409 when stale), and never decides or acts on a workflow. Non-owned refs fail 403; missing/deleted refs fail 404. Null read bodies are rejected; actions accept an empty object. UTC timestamps; en/fa template locale is chosen when staged with en fallback. Private no-store success/page envelopes, existing 401/403/404/409/422 errors. Refresh refs from mutation responses. Optional email defaults off; mandatory notices ignore optional opt-out. No delivery is performed by these reads.
+         * @description Authenticated recipient-only unified inbox version 1. Case, work_item, ai_approval, report and account destinations resolve current owner-authorized references on every read. Calendar and support targets resolve current authorized sources. Protected operation notices resolve the existing process screen: MAP-07 requires current superuser recovery authority and unresolved evidence; MAP-08 requires current requester ownership, requests.start and the exact confirmed CREATED receipt. Unknown outcomes never authorize provider replay. Old unsupported operation targets remain unavailable. An unavailable, deleted, revoked, expired or cancelled target exposes no private subject, content or reference. Stored labels never confer authority. Search is bounded and deterministic with existing filters/order/page/size plus unread=true/false; report is the same paginated search, not a queued archive. Unread totals count live ACTIVE unread inbox rows, including redacted unavailable destinations. Mark-read changes only read metadata, requires a current optimistic ref (409 when stale), and never decides or acts on a workflow. Non-owned refs fail 403; missing/deleted refs fail 404. Null read bodies are rejected; actions accept an empty object. UTC timestamps; en/fa/ar template locale is chosen when staged with en fallback. Private no-store success/page envelopes, existing 401/403/404/409/422 errors. Refresh refs from mutation responses. Optional email defaults off; mandatory notices ignore optional opt-out. No delivery is performed by these reads.
          */
         post: operations["search_api_v1_inbox_search_post"];
         delete?: never;
@@ -3351,7 +3471,7 @@ export interface paths {
         };
         /**
          * Read unified unread total
-         * @description Authenticated recipient-only unified inbox version 1. Case, work_item, ai_approval, report and account destinations resolve current owner-authorized references on every read. Calendar/support/operation targets are reserved and unavailable until their producers exist. An unavailable, deleted, revoked, expired or cancelled target exposes no private subject, content or reference. Stored labels never confer authority. Search is bounded and deterministic with existing filters/order/page/size plus unread=true/false; report is the same paginated search, not a queued archive. Unread totals count live ACTIVE unread inbox rows, including redacted unavailable destinations. Mark-read changes only read metadata, requires a current optimistic ref (409 when stale), and never decides or acts on a workflow. Non-owned refs fail 403; missing/deleted refs fail 404. Null read bodies are rejected; actions accept an empty object. UTC timestamps; en/fa template locale is chosen when staged with en fallback. Private no-store success/page envelopes, existing 401/403/404/409/422 errors. Refresh refs from mutation responses. Optional email defaults off; mandatory notices ignore optional opt-out. No delivery is performed by these reads.
+         * @description Authenticated recipient-only unified inbox version 1. Case, work_item, ai_approval, report and account destinations resolve current owner-authorized references on every read. Calendar and support targets resolve current authorized sources. Protected operation notices resolve the existing process screen: MAP-07 requires current superuser recovery authority and unresolved evidence; MAP-08 requires current requester ownership, requests.start and the exact confirmed CREATED receipt. Unknown outcomes never authorize provider replay. Old unsupported operation targets remain unavailable. An unavailable, deleted, revoked, expired or cancelled target exposes no private subject, content or reference. Stored labels never confer authority. Search is bounded and deterministic with existing filters/order/page/size plus unread=true/false; report is the same paginated search, not a queued archive. Unread totals count live ACTIVE unread inbox rows, including redacted unavailable destinations. Mark-read changes only read metadata, requires a current optimistic ref (409 when stale), and never decides or acts on a workflow. Non-owned refs fail 403; missing/deleted refs fail 404. Null read bodies are rejected; actions accept an empty object. UTC timestamps; en/fa/ar template locale is chosen when staged with en fallback. Private no-store success/page envelopes, existing 401/403/404/409/422 errors. Refresh refs from mutation responses. Optional email defaults off; mandatory notices ignore optional opt-out. No delivery is performed by these reads.
          */
         get: operations["unread_api_v1_inbox_unread_get"];
         put?: never;
@@ -5805,6 +5925,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/workflow-versions/{ref_id}/binding-preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Preview object field samples
+         * @description Pure bpms.binding.object/1 authoring preview. Requires workflows.manage and current view access to an active workflow; ref_id must identify the current version revision (409 stale; 404 missing, deleted or unauthorized workflow). The candidate graph is validated through the existing publication/type/source authorization path but is never saved, published or executed. target_step and target_port select a projected scalar object input. Existing constants are visible candidate values; other sources require explicit author samples of the selected source value, keyed by binding ordinal. No request submission, execution output, credential or runtime context is fetched as a sample. Omitted samples differ from explicit null, zero, false and empty collections. At most 64 unique samples / 32 KiB UTF-8 and a 1 MiB candidate are accepted (422 invalid body). Invalid candidates/types/values and missing samples return an INVALID or MISSING data result with bounded pointer/code issues, never submitted values. VALID returns only mapped paths, source kinds/origins and JSON value types; every value stays redacted. Constants cannot be overridden by samples. candidate_checksum identifies the validated candidate, not a deployed workflow. No provider, tool, handler, approval or business effect is invoked; no authorization is granted. Private no-store and existing snake_case success/error envelopes apply; authentication/permission errors remain 401/403. Existing whole-port and LIST bindings retain their original contracts.
+         */
+        post: operations["preview_object_fields_api_v1_workflow_versions__ref_id__binding_preview_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/workflow-versions/{ref_id}/default-apply": {
         parameters: {
             query?: never;
@@ -6372,6 +6512,37 @@ export interface components {
              */
             status: "DRAFT" | "PUBLISHED" | "RETIRED";
         };
+        /** AIAgentEvaluationDTO */
+        AIAgentEvaluationDTO: {
+            /** Agent Ref */
+            agent_ref: string;
+            /**
+             * Evidence Kind
+             * @default GOVERNED_REQUEST_SUBMISSION
+             * @constant
+             */
+            evidence_kind: "GOVERNED_REQUEST_SUBMISSION";
+            /** Process Ref */
+            process_ref: string | null;
+            /** Request Ref */
+            request_ref: string;
+            /** Request Status */
+            request_status: string;
+        };
+        /** AIAgentEvaluationInput */
+        AIAgentEvaluationInput: {
+            /**
+             * Request Ref
+             * @description Exact owned eligible draft request whose pinned published workflow uses this published agent. Inputs remain in the normal saved request; this command cannot inject arbitrary model inputs.
+             */
+            request_ref: string;
+            /**
+             * Submit Key
+             * @description Normal request submission replay key. Reuse only for the identical saved request payload; uncertain model execution is never retried through a new key.
+             * @example reviewed-agent-evaluation-1
+             */
+            submit_key: string;
+        };
         /** AIAgentPublishedSpec */
         AIAgentPublishedSpec: {
             /** Connection Ref */
@@ -6496,6 +6667,55 @@ export interface components {
              */
             review_below: number;
         };
+        /** AIDecisionPreviewDTO */
+        AIDecisionPreviewDTO: {
+            /** Issue Codes */
+            issue_codes?: string[];
+            /** Options */
+            options: components["schemas"]["AIChoice"][];
+            /** Options Input Key */
+            options_input_key: string | null;
+            /**
+             * Provider Called
+             * @default false
+             * @constant
+             */
+            provider_called: false;
+            /**
+             * Sample State
+             * @enum {string}
+             */
+            sample_state: "STATIC" | "MISSING" | "EMPTY" | "INVALID" | "VALID";
+        };
+        /** AIDecisionPreviewInput */
+        AIDecisionPreviewInput: {
+            /**
+             * Sample Inputs
+             * @description Optional author-provided permitted inputs, at most 32 KiB JSON. Never reads runtime snapshots or calls a provider.
+             * @example {
+             *       "options": [
+             *         {
+             *           "description": "Invoice handling",
+             *           "key": "finance",
+             *           "labels": {
+             *             "en": "Finance"
+             *           }
+             *         },
+             *         {
+             *           "description": "Service issues",
+             *           "key": "support",
+             *           "labels": {
+             *             "en": "Support"
+             *           }
+             *         }
+             *       ],
+             *       "ticket": "Example invoice"
+             *     }
+             */
+            sample_inputs?: {
+                [key: string]: components["schemas"]["JsonValue"];
+            } | null;
+        };
         /** AIInputDecision */
         AIInputDecision: {
             /** Options Input Key */
@@ -6512,6 +6732,11 @@ export interface components {
         AIModelMetadataDTO: {
             /** Can Execute */
             can_execute: boolean;
+            /**
+             * Connection Name
+             * @description Current display name of this exact use-authorized AI connection; never a credential or an integration-management projection.
+             */
+            connection_name: string;
             /** Connection Ref */
             connection_ref: string;
             /** Model Id */
@@ -6637,6 +6862,83 @@ export interface components {
             /** Unavailable Reason */
             unavailable_reason: string | null;
         };
+        /** AIReportLookupDTO */
+        AIReportLookupDTO: {
+            /**
+             * Classification
+             * @enum {string}
+             */
+            classification: "PUBLIC" | "INTERNAL" | "CONFIDENTIAL";
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Definition Version */
+            definition_version: number;
+            /** Fields */
+            fields: string[];
+            /** Max Rows */
+            max_rows: number;
+            /** Report Ref */
+            report_ref: string;
+            /** Source Key */
+            source_key: string;
+        };
+        /** AIReportLookupPreviewDTO */
+        AIReportLookupPreviewDTO: {
+            /** Agent Ref */
+            agent_ref: string;
+            /** Limit */
+            limit: number;
+            /**
+             * Requires Human Tool Approval
+             * @default true
+             * @constant
+             */
+            requires_human_tool_approval: true;
+            /**
+             * Result Schema
+             * @description Bounded projected result shape. Empty property schemas do not claim unregistered scalar types. No rows, saved filters, storage paths or credentials are returned.
+             */
+            result_schema: {
+                [key: string]: components["schemas"]["JsonValue"];
+            };
+            source: components["schemas"]["AIReportLookupDTO"];
+            /**
+             * Tool Called
+             * @default false
+             * @constant
+             */
+            tool_called: false;
+            /**
+             * Tool Key
+             * @default lookup_saved_report
+             * @constant
+             */
+            tool_key: "lookup_saved_report";
+            /**
+             * Tool Version
+             * @default 1
+             * @constant
+             */
+            tool_version: "1";
+        };
+        /** AIReportLookupPreviewInput */
+        AIReportLookupPreviewInput: {
+            /**
+             * Limit
+             * @description Reviewed maximum rows; must also fit the registered source and saved report limits.
+             * @default 10
+             * @example 5
+             */
+            limit: number;
+            /**
+             * Report Ref
+             * @description Current opaque reference of the author's unexpired saved report query, never a file URL or a definition chosen by arbitrary import path.
+             */
+            report_ref: string;
+        };
         /** AITaskLimits */
         "AITaskLimits-Input": {
             /** Elapsed Seconds */
@@ -6741,6 +7043,70 @@ export interface components {
              * @description Current version-bearing work-item reference; claim it through the normal work-item API before inspecting or deciding the tool call.
              */
             work_item_ref: string;
+        };
+        /** AIWorkflowContextDTO */
+        AIWorkflowContextDTO: {
+            /** Agent Ref */
+            agent_ref: string;
+            decision: components["schemas"]["AIDecisionPreviewDTO"];
+            /**
+             * Input Schema
+             * @description Declared JSON Schema for the exact AI data binding, projected through its source path. Null means undeclared, not an inferred runtime schema.
+             */
+            input_schema: {
+                [key: string]: components["schemas"]["JsonValue"];
+            } | null;
+            /**
+             * Sample Origin
+             * @enum {string}
+             */
+            sample_origin: "AUTHOR" | "CONSTANT_BINDING" | "NONE";
+            /** Step Key */
+            step_key: string;
+            /** Workflow Checksum */
+            workflow_checksum: string | null;
+            /** Workflow Version Ref */
+            workflow_version_ref: string;
+        };
+        /** AIWorkflowContextInput */
+        AIWorkflowContextInput: {
+            /**
+             * Sample Inputs
+             * @description Optional author-provided permitted inputs, at most 32 KiB JSON. Never reads runtime snapshots or calls a provider.
+             * @example {
+             *       "options": [
+             *         {
+             *           "description": "Invoice handling",
+             *           "key": "finance",
+             *           "labels": {
+             *             "en": "Finance"
+             *           }
+             *         },
+             *         {
+             *           "description": "Service issues",
+             *           "key": "support",
+             *           "labels": {
+             *             "en": "Support"
+             *           }
+             *         }
+             *       ],
+             *       "ticket": "Example invoice"
+             *     }
+             */
+            sample_inputs?: {
+                [key: string]: components["schemas"]["JsonValue"];
+            } | null;
+            /**
+             * Step Key
+             * @description Existing AI_DECISION step key in that exact saved executable graph.
+             * @example classify_invoice
+             */
+            step_key: string;
+            /**
+             * Workflow Version Ref
+             * @description Current revision-bearing reference of an active workflow version the author may view. Stale references conflict; published pins are not replaced.
+             */
+            workflow_version_ref: string;
         };
         /** AllDaySchedule */
         AllDaySchedule: {
@@ -6924,6 +7290,90 @@ export interface components {
              * @default false
              */
             initialize: boolean;
+        };
+        /** BindingPreviewDTO */
+        BindingPreviewDTO: {
+            /** Candidate Checksum */
+            candidate_checksum: string | null;
+            /** Fields */
+            fields?: components["schemas"]["BindingPreviewField"][];
+            /**
+             * Handler Called
+             * @default false
+             * @constant
+             */
+            handler_called: false;
+            /** Issues */
+            issues?: components["schemas"]["GraphIssue"][];
+            /**
+             * Provider Called
+             * @default false
+             * @constant
+             */
+            provider_called: false;
+            /**
+             * Sample State
+             * @enum {string}
+             */
+            sample_state: "VALID" | "MISSING" | "INVALID";
+            /** Target Port */
+            target_port: string;
+            /** Target Step */
+            target_step: string;
+            /**
+             * Tool Called
+             * @default false
+             * @constant
+             */
+            tool_called: false;
+            /**
+             * Values Redacted
+             * @default true
+             * @constant
+             */
+            values_redacted: true;
+            /** Workflow Version Ref */
+            workflow_version_ref: string;
+        };
+        /** BindingPreviewField */
+        BindingPreviewField: {
+            /** Path */
+            path: string;
+            /**
+             * Sample Origin
+             * @enum {string}
+             */
+            sample_origin: "AUTHOR" | "VISIBLE_CONSTANT";
+            /**
+             * Source Kind
+             * @enum {string}
+             */
+            source_kind: "REQUEST" | "CONTEXT" | "CONSTANT" | "STEP_OUTPUT";
+            /**
+             * Value Type
+             * @enum {string}
+             */
+            value_type: "null" | "boolean" | "integer" | "number" | "string" | "array" | "object";
+        };
+        /** BindingPreviewInput */
+        BindingPreviewInput: {
+            graph: components["schemas"]["GraphSnapshot"];
+            /** Samples */
+            samples?: components["schemas"]["BindingSourceSample"][];
+            /** Target Port */
+            target_port: string;
+            /** Target Step */
+            target_step: string;
+        };
+        /** BindingSourceSample */
+        BindingSourceSample: {
+            /**
+             * Ordinal
+             * @description Existing source binding ordinal within the selected input port. Constants cannot be overridden here.
+             */
+            ordinal: number;
+            /** @description Explicit author sample for the already-projected source value. Null, false, zero and empty collections are present values, distinct from an omitted sample. */
+            value: components["schemas"]["JsonValue"];
         };
         /** Body_token_api_v1_auth_token_post */
         Body_token_api_v1_auth_token_post: {
@@ -7213,6 +7663,24 @@ export interface components {
             };
             /** Priority */
             priority?: number | null;
+        };
+        /**
+         * CalendarGroupQuery
+         * @description Current actor only: no owner, membership or lifecycle overrides.
+         */
+        CalendarGroupQuery: {
+            /**
+             * Page
+             * @default 1
+             */
+            page: number;
+            /** Search */
+            search?: string | null;
+            /**
+             * Size
+             * @default 20
+             */
+            size: number;
         };
         /** CalendarHistoryDTO */
         CalendarHistoryDTO: {
@@ -8770,8 +9238,11 @@ export interface components {
             kind: "operation";
             /** Ref Id */
             ref_id?: string | null;
-            /** Route Key */
-            route_key?: null;
+            /**
+             * Route Key
+             * @description Current authorized protected-operation evidence opens the existing process screen. Null retains unavailable legacy operation targets; never an external URL or execution authority.
+             */
+            route_key?: "processes" | null;
         };
         /** GrantDTO */
         GrantDTO: {
@@ -8815,7 +9286,7 @@ export interface components {
             source_port?: string | null;
             /**
              * Source Schema
-             * @description For STEP_OUTPUT, the exact pinned output-port schema, including generic service metadata. Registered sandbox receipt guarantees refine server-side compatibility without changing persisted port metadata or graph checksums. Caller-supplied schema assertions cannot replace the trusted operation contract.
+             * @description For REQUEST/CONTEXT, the declared source JSON Schema is persisted with the executable binding across save, promotion, publication and reload; null retains legacy undeclared behavior. This schema is an authoring type contract, not data or authorization. For STEP_OUTPUT, use the exact pinned output-port schema, including generic service metadata. Trusted registered output guarantees refine validation without changing persisted port metadata or graph checksums. Caller assertions cannot replace trusted operation contracts.
              */
             source_schema?: {
                 [key: string]: unknown;
@@ -8826,6 +9297,8 @@ export interface components {
             step: string;
             /** Target Port */
             target_port: string;
+            /** @description Optional bpms.binding.object/1 destination field for a scalar object input. Absent/null retains whole-port semantics and is omitted from canonical output to preserve existing published payloads/checksums. Field bindings cannot overlap or mix with whole-port bindings. No array containers or implicit defaults; explicit null must satisfy the target leaf schema. */
+            target_projection?: components["schemas"]["ObjectFieldProjection"] | null;
             /** Target Schema */
             target_schema: {
                 [key: string]: unknown;
@@ -10082,6 +10555,19 @@ export interface components {
             /** Sort Orders */
             sort_orders?: components["schemas"]["SortOrder"][];
         };
+        /** ObjectFieldProjection */
+        ObjectFieldProjection: {
+            /**
+             * Dialect
+             * @constant
+             */
+            dialect: "bpms.binding.object/1";
+            /**
+             * Path
+             * @description RFC 6901 destination within declared object properties; no array containers, overlap or prototype keys. Explicit null is preserved and validated.
+             */
+            path: string;
+        };
         /**
          * OptionPreviewRequest
          * @example {
@@ -10286,6 +10772,28 @@ export interface components {
         Page_AIProcessEvidenceDTO_: {
             /** Items */
             items?: components["schemas"]["AIProcessEvidenceDTO"][];
+            /**
+             * Page
+             * @default 1
+             */
+            page: number;
+            /**
+             * Size
+             * @default 20
+             */
+            size: number;
+            /** Total */
+            total: number;
+            /**
+             * Total Pages
+             * @description Return the number of nonempty pages in the full result set.
+             */
+            readonly total_pages: number;
+        };
+        /** Page[AIReportLookupDTO] */
+        Page_AIReportLookupDTO_: {
+            /** Items */
+            items?: components["schemas"]["AIReportLookupDTO"][];
             /**
              * Page
              * @default 1
@@ -11445,6 +11953,25 @@ export interface components {
             /** Request Id */
             request_id: string;
             result: components["schemas"]["Page_AIProcessEvidenceDTO_"];
+            /**
+             * Success
+             * @default true
+             * @constant
+             */
+            success: true;
+        };
+        /** PageResponse[Page[AIReportLookupDTO]] */
+        PageResponse_Page_AIReportLookupDTO__: {
+            /**
+             * Code
+             * @default 200
+             */
+            code: number;
+            /** Error */
+            error?: null;
+            /** Request Id */
+            request_id: string;
+            result: components["schemas"]["Page_AIReportLookupDTO_"];
             /**
              * Success
              * @default true
@@ -14565,6 +15092,25 @@ export interface components {
              */
             success: true;
         };
+        /** SuccessResponse[AIAgentEvaluationDTO] */
+        SuccessResponse_AIAgentEvaluationDTO_: {
+            /**
+             * Code
+             * @default 200
+             */
+            code: number;
+            data: components["schemas"]["AIAgentEvaluationDTO"];
+            /** Error */
+            error?: null;
+            /** Request Id */
+            request_id: string;
+            /**
+             * Success
+             * @default true
+             * @constant
+             */
+            success: true;
+        };
         /** SuccessResponse[AIBudgetStatus] */
         SuccessResponse_AIBudgetStatus_: {
             /**
@@ -14573,6 +15119,25 @@ export interface components {
              */
             code: number;
             data: components["schemas"]["AIBudgetStatus"];
+            /** Error */
+            error?: null;
+            /** Request Id */
+            request_id: string;
+            /**
+             * Success
+             * @default true
+             * @constant
+             */
+            success: true;
+        };
+        /** SuccessResponse[AIDecisionPreviewDTO] */
+        SuccessResponse_AIDecisionPreviewDTO_: {
+            /**
+             * Code
+             * @default 200
+             */
+            code: number;
+            data: components["schemas"]["AIDecisionPreviewDTO"];
             /** Error */
             error?: null;
             /** Request Id */
@@ -14622,6 +15187,25 @@ export interface components {
              */
             success: true;
         };
+        /** SuccessResponse[AIReportLookupPreviewDTO] */
+        SuccessResponse_AIReportLookupPreviewDTO_: {
+            /**
+             * Code
+             * @default 200
+             */
+            code: number;
+            data: components["schemas"]["AIReportLookupPreviewDTO"];
+            /** Error */
+            error?: null;
+            /** Request Id */
+            request_id: string;
+            /**
+             * Success
+             * @default true
+             * @constant
+             */
+            success: true;
+        };
         /** SuccessResponse[AIToolApprovalDTO] */
         SuccessResponse_AIToolApprovalDTO_: {
             /**
@@ -14630,6 +15214,25 @@ export interface components {
              */
             code: number;
             data: components["schemas"]["AIToolApprovalDTO"];
+            /** Error */
+            error?: null;
+            /** Request Id */
+            request_id: string;
+            /**
+             * Success
+             * @default true
+             * @constant
+             */
+            success: true;
+        };
+        /** SuccessResponse[AIWorkflowContextDTO] */
+        SuccessResponse_AIWorkflowContextDTO_: {
+            /**
+             * Code
+             * @default 200
+             */
+            code: number;
+            data: components["schemas"]["AIWorkflowContextDTO"];
             /** Error */
             error?: null;
             /** Request Id */
@@ -14706,6 +15309,25 @@ export interface components {
              */
             code: number;
             data: components["schemas"]["BehaviorPreview"];
+            /** Error */
+            error?: null;
+            /** Request Id */
+            request_id: string;
+            /**
+             * Success
+             * @default true
+             * @constant
+             */
+            success: true;
+        };
+        /** SuccessResponse[BindingPreviewDTO] */
+        SuccessResponse_BindingPreviewDTO_: {
+            /**
+             * Code
+             * @default 200
+             */
+            code: number;
+            data: components["schemas"]["BindingPreviewDTO"];
             /** Error */
             error?: null;
             /** Request Id */
@@ -24557,6 +25179,316 @@ export interface operations {
             };
         };
     };
+    preview_agent_decision_api_v1_ai_agents__ref_id__decision_preview_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @example fa-IR
+                 */
+                "Accept-Language"?: string;
+                /**
+                 * @description Optional RFC 9110 HTTP-date generated by native clients for advisory diagnostics. Browser JavaScript cannot set Date. Missing or invalid values do not reject the request.
+                 * @example Mon, 28 Sep 2026 12:00:00 GMT
+                 */
+                Date?: string;
+                /** @description Optional caller-controlled client software identifier for audit and diagnostics; captured up to 1024 characters. Browsers supply their own value and may ignore manual Swagger overrides. Not trusted client identity or authorization. */
+                "User-Agent"?: string | null;
+                /**
+                 * @description Optional caller-supplied reason recorded in audit history. It is not an authorization credential.
+                 * @example Correcting a submitted request
+                 */
+                "X-Audit-Reason"?: string;
+                /** @description Optional UUIDv7 correlation identifier. Missing or invalid values are replaced with a generated UUIDv7; the effective value is returned in X-Request-ID. */
+                "X-Request-ID"?: string;
+            };
+            path: {
+                ref_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AIDecisionPreviewInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Protected actor-specific response; persistent caching is prohibited. */
+                    "Cache-Control"?: "private, no-store";
+                    /** @description Present as check-device-time only when the configured apparent difference threshold is reached. */
+                    "X-Client-Date-Advisory"?: "check-device-time";
+                    /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
+                    "X-Client-Date-Delta-Seconds"?: number;
+                    /** @description Optional client Date reading: available, unavailable, or invalid. No request is rejected for this diagnostic. */
+                    "X-Client-Date-Status"?: "available" | "unavailable" | "invalid";
+                    /** @description Server UTC receipt timestamp. Response Date, when present, is generated by the HTTP server or proxy. */
+                    "X-Server-Received-At"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuccessResponse_AIDecisionPreviewDTO_"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Content Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Locked */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    start_agent_evaluation_api_v1_ai_agents__ref_id__evaluations_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @example fa-IR
+                 */
+                "Accept-Language"?: string;
+                /**
+                 * @description Optional RFC 9110 HTTP-date generated by native clients for advisory diagnostics. Browser JavaScript cannot set Date. Missing or invalid values do not reject the request.
+                 * @example Mon, 28 Sep 2026 12:00:00 GMT
+                 */
+                Date?: string;
+                /** @description Optional caller-controlled client software identifier for audit and diagnostics; captured up to 1024 characters. Browsers supply their own value and may ignore manual Swagger overrides. Not trusted client identity or authorization. */
+                "User-Agent"?: string | null;
+                /**
+                 * @description Optional caller-supplied reason recorded in audit history. It is not an authorization credential.
+                 * @example Correcting a submitted request
+                 */
+                "X-Audit-Reason"?: string;
+                /** @description Optional UUIDv7 correlation identifier. Missing or invalid values are replaced with a generated UUIDv7; the effective value is returned in X-Request-ID. */
+                "X-Request-ID"?: string;
+            };
+            path: {
+                ref_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AIAgentEvaluationInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Protected actor-specific response; persistent caching is prohibited. */
+                    "Cache-Control"?: "private, no-store";
+                    /** @description Present as check-device-time only when the configured apparent difference threshold is reached. */
+                    "X-Client-Date-Advisory"?: "check-device-time";
+                    /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
+                    "X-Client-Date-Delta-Seconds"?: number;
+                    /** @description Optional client Date reading: available, unavailable, or invalid. No request is rejected for this diagnostic. */
+                    "X-Client-Date-Status"?: "available" | "unavailable" | "invalid";
+                    /** @description Server UTC receipt timestamp. Response Date, when present, is generated by the HTTP server or proxy. */
+                    "X-Server-Received-At"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuccessResponse_AIAgentEvaluationDTO_"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Content Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Locked */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     history_api_v1_ai_agents__ref_id__history_post: {
         parameters: {
             query?: never;
@@ -24859,6 +25791,471 @@ export interface operations {
             };
         };
     };
+    agent_retrieval_preview_api_v1_ai_agents__ref_id__retrieval_preview_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @example fa-IR
+                 */
+                "Accept-Language"?: string;
+                /**
+                 * @description Optional RFC 9110 HTTP-date generated by native clients for advisory diagnostics. Browser JavaScript cannot set Date. Missing or invalid values do not reject the request.
+                 * @example Mon, 28 Sep 2026 12:00:00 GMT
+                 */
+                Date?: string;
+                /** @description Optional caller-controlled client software identifier for audit and diagnostics; captured up to 1024 characters. Browsers supply their own value and may ignore manual Swagger overrides. Not trusted client identity or authorization. */
+                "User-Agent"?: string | null;
+                /**
+                 * @description Optional caller-supplied reason recorded in audit history. It is not an authorization credential.
+                 * @example Correcting a submitted request
+                 */
+                "X-Audit-Reason"?: string;
+                /** @description Optional UUIDv7 correlation identifier. Missing or invalid values are replaced with a generated UUIDv7; the effective value is returned in X-Request-ID. */
+                "X-Request-ID"?: string;
+            };
+            path: {
+                ref_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AIReportLookupPreviewInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Protected actor-specific response; persistent caching is prohibited. */
+                    "Cache-Control"?: "private, no-store";
+                    /** @description Present as check-device-time only when the configured apparent difference threshold is reached. */
+                    "X-Client-Date-Advisory"?: "check-device-time";
+                    /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
+                    "X-Client-Date-Delta-Seconds"?: number;
+                    /** @description Optional client Date reading: available, unavailable, or invalid. No request is rejected for this diagnostic. */
+                    "X-Client-Date-Status"?: "available" | "unavailable" | "invalid";
+                    /** @description Server UTC receipt timestamp. Response Date, when present, is generated by the HTTP server or proxy. */
+                    "X-Server-Received-At"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuccessResponse_AIReportLookupPreviewDTO_"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Content Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Locked */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    agent_retrieval_sources_api_v1_ai_agents__ref_id__retrieval_sources_search_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @example fa-IR
+                 */
+                "Accept-Language"?: string;
+                /**
+                 * @description Optional RFC 9110 HTTP-date generated by native clients for advisory diagnostics. Browser JavaScript cannot set Date. Missing or invalid values do not reject the request.
+                 * @example Mon, 28 Sep 2026 12:00:00 GMT
+                 */
+                Date?: string;
+                /** @description Optional caller-controlled client software identifier for audit and diagnostics; captured up to 1024 characters. Browsers supply their own value and may ignore manual Swagger overrides. Not trusted client identity or authorization. */
+                "User-Agent"?: string | null;
+                /**
+                 * @description Optional caller-supplied reason recorded in audit history. It is not an authorization credential.
+                 * @example Correcting a submitted request
+                 */
+                "X-Audit-Reason"?: string;
+                /** @description Optional UUIDv7 correlation identifier. Missing or invalid values are replaced with a generated UUIDv7; the effective value is returned in X-Request-ID. */
+                "X-Request-ID"?: string;
+            };
+            path: {
+                ref_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SelectQuery"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Protected actor-specific response; persistent caching is prohibited. */
+                    "Cache-Control"?: "private, no-store";
+                    /** @description Present as check-device-time only when the configured apparent difference threshold is reached. */
+                    "X-Client-Date-Advisory"?: "check-device-time";
+                    /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
+                    "X-Client-Date-Delta-Seconds"?: number;
+                    /** @description Optional client Date reading: available, unavailable, or invalid. No request is rejected for this diagnostic. */
+                    "X-Client-Date-Status"?: "available" | "unavailable" | "invalid";
+                    /** @description Server UTC receipt timestamp. Response Date, when present, is generated by the HTTP server or proxy. */
+                    "X-Server-Received-At"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PageResponse_Page_AIReportLookupDTO__"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Content Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Locked */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    agent_workflow_context_api_v1_ai_agents__ref_id__workflow_context_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @example fa-IR
+                 */
+                "Accept-Language"?: string;
+                /**
+                 * @description Optional RFC 9110 HTTP-date generated by native clients for advisory diagnostics. Browser JavaScript cannot set Date. Missing or invalid values do not reject the request.
+                 * @example Mon, 28 Sep 2026 12:00:00 GMT
+                 */
+                Date?: string;
+                /** @description Optional caller-controlled client software identifier for audit and diagnostics; captured up to 1024 characters. Browsers supply their own value and may ignore manual Swagger overrides. Not trusted client identity or authorization. */
+                "User-Agent"?: string | null;
+                /**
+                 * @description Optional caller-supplied reason recorded in audit history. It is not an authorization credential.
+                 * @example Correcting a submitted request
+                 */
+                "X-Audit-Reason"?: string;
+                /** @description Optional UUIDv7 correlation identifier. Missing or invalid values are replaced with a generated UUIDv7; the effective value is returned in X-Request-ID. */
+                "X-Request-ID"?: string;
+            };
+            path: {
+                ref_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AIWorkflowContextInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Protected actor-specific response; persistent caching is prohibited. */
+                    "Cache-Control"?: "private, no-store";
+                    /** @description Present as check-device-time only when the configured apparent difference threshold is reached. */
+                    "X-Client-Date-Advisory"?: "check-device-time";
+                    /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
+                    "X-Client-Date-Delta-Seconds"?: number;
+                    /** @description Optional client Date reading: available, unavailable, or invalid. No request is rejected for this diagnostic. */
+                    "X-Client-Date-Status"?: "available" | "unavailable" | "invalid";
+                    /** @description Server UTC receipt timestamp. Response Date, when present, is generated by the HTTP server or proxy. */
+                    "X-Server-Received-At"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuccessResponse_AIWorkflowContextDTO_"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Content Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Locked */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     model_metadata_api_v1_ai_agents_connections__connection_ref__models__model_id__metadata_get: {
         parameters: {
             query?: never;
@@ -24894,6 +26291,8 @@ export interface operations {
             /** @description Successful Response */
             200: {
                 headers: {
+                    /** @description Protected actor-specific response; persistent caching is prohibited. */
+                    "Cache-Control"?: "private, no-store";
                     /** @description Present as check-device-time only when the configured apparent difference threshold is reached. */
                     "X-Client-Date-Advisory"?: "check-device-time";
                     /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
@@ -33238,6 +34637,161 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PageResponse_Page_CalendarItemDTO__"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Content Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Locked */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    select_calendar_groups_api_v1_calendar_work_groups_select_post: {
+        parameters: {
+            query?: {
+                response_format?: "page" | "items";
+            };
+            header?: {
+                /**
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @example fa-IR
+                 */
+                "Accept-Language"?: string;
+                /**
+                 * @description Optional RFC 9110 HTTP-date generated by native clients for advisory diagnostics. Browser JavaScript cannot set Date. Missing or invalid values do not reject the request.
+                 * @example Mon, 28 Sep 2026 12:00:00 GMT
+                 */
+                Date?: string;
+                /** @description Optional caller-controlled client software identifier for audit and diagnostics; captured up to 1024 characters. Browsers supply their own value and may ignore manual Swagger overrides. Not trusted client identity or authorization. */
+                "User-Agent"?: string | null;
+                /**
+                 * @description Optional caller-supplied reason recorded in audit history. It is not an authorization credential.
+                 * @example Correcting a submitted request
+                 */
+                "X-Audit-Reason"?: string;
+                /** @description Optional UUIDv7 correlation identifier. Missing or invalid values are replaced with a generated UUIDv7; the effective value is returned in X-Request-ID. */
+                "X-Request-ID"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CalendarGroupQuery"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Protected actor-specific response; persistent caching is prohibited. */
+                    "Cache-Control"?: "private, no-store";
+                    /** @description Present as check-device-time only when the configured apparent difference threshold is reached. */
+                    "X-Client-Date-Advisory"?: "check-device-time";
+                    /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
+                    "X-Client-Date-Delta-Seconds"?: number;
+                    /** @description Optional client Date reading: available, unavailable, or invalid. No request is rejected for this diagnostic. */
+                    "X-Client-Date-Status"?: "available" | "unavailable" | "invalid";
+                    /** @description Server UTC receipt timestamp. Response Date, when present, is generated by the HTTP server or proxy. */
+                    "X-Server-Received-At"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PageResponse_Page_SelectOption_str___"] | components["schemas"]["SelectOption_str_"][];
                 };
             };
             /** @description Bad Request */
@@ -71119,6 +72673,161 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SuccessResponse_NoneType_"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Content Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Locked */
+            423: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    preview_object_fields_api_v1_workflow_versions__ref_id__binding_preview_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Optional preferred response language. English, Persian and Arabic are supported; regional tags use their base language and unsupported values fall back to English.
+                 * @example fa-IR
+                 */
+                "Accept-Language"?: string;
+                /**
+                 * @description Optional RFC 9110 HTTP-date generated by native clients for advisory diagnostics. Browser JavaScript cannot set Date. Missing or invalid values do not reject the request.
+                 * @example Mon, 28 Sep 2026 12:00:00 GMT
+                 */
+                Date?: string;
+                /** @description Optional caller-controlled client software identifier for audit and diagnostics; captured up to 1024 characters. Browsers supply their own value and may ignore manual Swagger overrides. Not trusted client identity or authorization. */
+                "User-Agent"?: string | null;
+                /**
+                 * @description Optional caller-supplied reason recorded in audit history. It is not an authorization credential.
+                 * @example Correcting a submitted request
+                 */
+                "X-Audit-Reason"?: string;
+                /** @description Optional UUIDv7 correlation identifier. Missing or invalid values are replaced with a generated UUIDv7; the effective value is returned in X-Request-ID. */
+                "X-Request-ID"?: string;
+            };
+            path: {
+                ref_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BindingPreviewInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    /** @description Protected actor-specific response; persistent caching is prohibited. */
+                    "Cache-Control"?: "private, no-store";
+                    /** @description Present as check-device-time only when the configured apparent difference threshold is reached. */
+                    "X-Client-Date-Advisory"?: "check-device-time";
+                    /** @description Signed server receipt minus client Date in seconds; includes transit and generation delay, so it is not exact clock skew. */
+                    "X-Client-Date-Delta-Seconds"?: number;
+                    /** @description Optional client Date reading: available, unavailable, or invalid. No request is rejected for this diagnostic. */
+                    "X-Client-Date-Status"?: "available" | "unavailable" | "invalid";
+                    /** @description Server UTC receipt timestamp. Response Date, when present, is generated by the HTTP server or proxy. */
+                    "X-Server-Received-At"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuccessResponse_BindingPreviewDTO_"];
                 };
             };
             /** @description Bad Request */

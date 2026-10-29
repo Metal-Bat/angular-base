@@ -10,6 +10,27 @@ export const inboxStreamPath = '/api/v1/inbox/events';
 function nullableString(value: unknown): boolean {
   return value === null || typeof value === 'string';
 }
+const routes: Record<string, string | null> = {
+  case: 'business_requests',
+  work_item: 'work_items',
+  ai_approval: 'work_items',
+  report: 'reports',
+  account: 'me',
+  support: 'support_incidents',
+  calendar: 'calendar_events',
+  operation: 'processes',
+};
+function validTargetRoute(target: Record<string, unknown>): boolean {
+  const kind = target['kind'];
+  return (
+    typeof kind === 'string' &&
+    Object.hasOwn(routes, kind) &&
+    (target['route_key'] === routes[kind] ||
+      (kind === 'operation' &&
+        target['available'] === false &&
+        target['route_key'] === null))
+  );
+}
 export function decodeInbox(raw: unknown): InboxItem {
   const item = record(raw);
   const target = record(item['target']);
@@ -27,20 +48,8 @@ export function decodeInbox(raw: unknown): InboxItem {
   ) {
     throw Error('Invalid inbox response');
   }
-  const routes: Record<string, string | null> = {
-    case: 'business_requests',
-    work_item: 'work_items',
-    ai_approval: 'work_items',
-    report: 'reports',
-    account: 'me',
-    support: 'support_incidents',
-    calendar: 'calendar_events',
-    operation: null,
-  };
   if (
-    typeof target['kind'] !== 'string' ||
-    !Object.hasOwn(routes, target['kind']) ||
-    target['route_key'] !== routes[target['kind']] ||
+    !validTargetRoute(target) ||
     (target['ref_id'] !== null &&
       (typeof target['ref_id'] !== 'string' ||
         !/^[A-Za-z0-9_-]{1,256}$/.test(target['ref_id']))) ||

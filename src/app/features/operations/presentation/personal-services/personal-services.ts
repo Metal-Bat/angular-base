@@ -260,6 +260,8 @@ export class PersonalServices {
         await this.router.navigate(['/operations/requests', ref]);
       } else if (target.kind === 'work_item' || target.kind === 'ai_approval') {
         await this.router.navigate(['/operations/tasks', ref]);
+      } else if (target.kind === 'operation') {
+        await this.router.navigate(['/operations/processes', ref]);
       } else if (target.kind === 'report') {
         await this.router.navigate(['/operations/reports'], {
           queryParams: { report: ref },

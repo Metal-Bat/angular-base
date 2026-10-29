@@ -68,9 +68,13 @@ test('Agent editing keeps typed choices, languages, data scope and exact limits 
   await expect(
     page
       .locator('.page-editor')
-      .getByText('This backend exposes no general retrieval-source catalog.', {
-        exact: false,
-      }),
+      .getByText(
+        'Inspect authorized saved-report sources in the saved version checks. ' +
+          'The server rechecks availability and permission before execution.',
+        {
+          exact: false,
+        },
+      ),
   ).toBeVisible();
   await page
     .getByRole('tab', { name: 'Instructions and decision', exact: true })

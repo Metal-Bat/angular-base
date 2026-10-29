@@ -1,0 +1,96 @@
+<app-control-field controlId="event-sharing" label="Event visibility">
+  <app-select-control
+    inputId="event-sharing"
+    [disabled]="disabled() || !active()"
+    [value]="shared() ? 'group' : 'personal'"
+    (selectionChanged)="scope($any($event.target.value))"
+  >
+    <option value="personal">{{ "Personal" | localize }}</option>
+    <option value="group">{{ "My work group" | localize }}</option>
+  </app-select-control>
+</app-control-field>
+@if (shared()) {
+  <p>
+    {{
+      "Current active members of the selected group can see this event. Only its creator can edit it."
+        | localize
+    }}
+  </p>
+  <div class="group-search">
+    <app-control-field controlId="event-group-search" label="Find my group"
+      ><input
+        id="event-group-search"
+        maxlength="100"
+        name="groupSearch"
+        pInputText
+        [disabled]="disabled() || busy()"
+        [(ngModel)]="search"
+    /></app-control-field>
+    <button
+      pButton
+      type="button"
+      [disabled]="disabled() || busy()"
+      (click)="load(1, true)"
+    >
+      {{ "Search" | localize }}
+    </button>
+  </div>
+  <app-control-field
+    controlId="event-work-group"
+    label="Work group"
+    [required]="true"
+  >
+    <app-select-control
+      inputId="event-work-group"
+      [disabled]="disabled() || busy() || !active()"
+      [value]="value() ?? ''"
+      (selectionChanged)="choose($any($event.target.value))"
+    >
+      <option value="">{{ "Choose a value" | localize }}</option>
+      @if (value() && !known()) {
+        <option [value]="value()">
+          {{ "Previously selected group" | localize }}
+        </option>
+      }
+      @for (group of page()?.items ?? []; track group.key) {
+        <option [value]="group.key">{{ group.value }}</option>
+      }
+    </app-select-control>
+  </app-control-field>
+  @if (busy()) {
+    <p role="status">{{ "Loading…" | localize }}</p>
+  }
+  @if (error()) {
+    <p role="alert">
+      {{
+        "Unable to load current group memberships. Retry the search." | localize
+      }}
+    </p>
+  }
+  @if (page()?.total === 0) {
+    <p>
+      {{ "No current active group membership matches this search." | localize }}
+    </p>
+  }
+  <nav class="group-search" [attr.aria-label]="'Work group pages' | localize">
+    <button
+      pButton
+      type="button"
+      [disabled]="disabled() || busy() || (page()?.page ?? 1) <= 1"
+      (click)="load((page()?.page ?? 1) - 1)"
+    >
+      {{ "Previous" | localize }}
+    </button>
+    <span>{{ page()?.page ?? 1 }} / {{ page()?.totalPages ?? 0 }}</span>
+    <button
+      pButton
+      type="button"
+      [disabled]="
+        disabled() || busy() || (page()?.page ?? 1) >= (page()?.totalPages ?? 0)
+      "
+      (click)="load((page()?.page ?? 1) + 1)"
+    >
+      {{ "Next" | localize }}
+    </button>
+  </nav>
+}

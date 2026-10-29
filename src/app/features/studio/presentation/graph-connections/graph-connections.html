@@ -37,6 +37,17 @@
       }}
     </p>
   }
+  <app-object-field-mapping
+    [disabled]="disabled() || transitionPending() || mappingPending()"
+    [graph]="graph()"
+    [nodes]="nodes()"
+    [port]="targetPort()"
+    [sources]="sources()"
+    [step]="selected()"
+    (applied)="objectPending.set(false); applied.emit($event)"
+    (changed)="objectPending.set(true); changed.emit()"
+    (discarded)="objectPending.set(false); discarded.emit()"
+  />
   <details>
     <summary>{{ "Authorized data sources" | localize }}</summary>
     <app-studio-choice
@@ -141,7 +152,9 @@
     </button>
   }
   <app-mapping-list
-    [disabled]="disabled() || transitionPending() || mappingPending()"
+    [disabled]="
+      disabled() || transitionPending() || mappingPending() || objectPending()
+    "
     [inspected]="inspectedEdge()"
     [ports]="targets()"
     [rows]="bindings()"
@@ -149,9 +162,18 @@
     (moved)="move($event.id, $event.direction)"
     (removed)="removeMapping($event)"
   />
+  <app-object-binding-preview
+    [disabled]="
+      disabled() || transitionPending() || mappingPending() || objectPending()
+    "
+    [graph]="graph()"
+    [port]="target()"
+    [step]="selected()"
+    [version]="version()"
+  />
   <app-transition-editor
     [completions]="rows()"
-    [disabled]="disabled() || mappingPending()"
+    [disabled]="disabled() || mappingPending() || objectPending()"
     [graph]="graph()"
     [inspected]="inspectedEdge()"
     [selected]="selected()"

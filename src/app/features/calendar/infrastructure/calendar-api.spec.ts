@@ -129,3 +129,58 @@ it('rejects mismatched source routes and any projection that offers editing a wo
     }),
   ).toThrow('Invalid calendar source authority');
 });
+
+it('uses the private current-membership selector and fences a late response by actor', async () => {
+  const { HttpResponse } = await import('@angular/common/http');
+  const { ActorState } = await import('../../../core/auth/actor-state');
+  const responses = new Subject<unknown>();
+  const call = vi.fn(() => responses);
+  TestBed.configureTestingModule({
+    providers: [{ provide: ApiClient, useValue: { call } }],
+  });
+  const api = TestBed.inject(CalendarApi);
+  const abort = new AbortController().signal;
+  const pending = api.groups('Finance', 2, abort);
+  expect(call).toHaveBeenCalledWith(
+    'select_calendar_groups_api_v1_calendar_work_groups_select_post',
+    {
+      body: { page: 2, size: 10, search: 'Finance' },
+      query: { response_format: 'page' },
+    },
+    abort,
+  );
+  responses.next(
+    new HttpResponse({
+      body: {
+        success: true,
+        result: {
+          items: [{ key: 'current-group', value: 'Finance' }],
+          page: 2,
+          size: 10,
+          total: 11,
+          total_pages: 2,
+        },
+      },
+    }),
+  );
+  expect((await pending).items).toEqual([
+    { key: 'current-group', value: 'Finance' },
+  ]);
+  const late = api.groups('', 1, abort).catch((error: unknown) => error);
+  TestBed.inject(ActorState).reset();
+  responses.next(
+    new HttpResponse({
+      body: {
+        success: true,
+        result: {
+          items: [{ key: 'private-old', value: 'Old membership' }],
+          page: 1,
+          size: 10,
+          total: 1,
+          total_pages: 1,
+        },
+      },
+    }),
+  );
+  expect(await late).toBeInstanceOf(Error);
+});

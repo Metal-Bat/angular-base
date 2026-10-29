@@ -1,0 +1,148 @@
+@let vm = view();
+<section aria-labelledby="agent-workflow-checks-title">
+  <h3 id="agent-workflow-checks-title">{{ "Workflow inputs" | localize }}</h3>
+  <p>
+    {{
+      "Choose a saved workflow version and its AI step to inspect declared inputs and choices."
+        | localize
+    }}
+  </p>
+  <div class="authoring-actions">
+    <app-control-field controlId="agent-workflow-search" label="Find a workflow"
+      ><input
+        id="agent-workflow-search"
+        maxlength="255"
+        pInputText
+        [(ngModel)]="vm.workflowSearch"
+    /></app-control-field>
+    <button
+      pButton
+      type="button"
+      [disabled]="vm.busy().includes('workflows')"
+      (click)="vm.loadWorkflows(1, true)"
+    >
+      {{ "Search" | localize }}
+    </button>
+  </div>
+  <app-record-table
+    actionLabel="Select"
+    primaryKey="ref"
+    [busy]="vm.busy().includes('workflows')"
+    [columns]="vm.columns"
+    [rows]="vm.workflows()?.items ?? []"
+    (opened)="vm.chooseWorkflow($event)"
+  />
+  <nav
+    class="authoring-actions"
+    [attr.aria-label]="'Workflow pages' | localize"
+  >
+    <button
+      pButton
+      type="button"
+      [disabled]="
+        vm.busy().includes('workflows') || (vm.workflows()?.page ?? 1) <= 1
+      "
+      (click)="vm.loadWorkflows((vm.workflows()?.page ?? 1) - 1)"
+    >
+      {{ "Previous" | localize }}
+    </button>
+    <span
+      >{{ vm.workflows()?.page ?? 1 }} /
+      {{ vm.workflows()?.totalPages ?? 0 }}</span
+    >
+    <button
+      pButton
+      type="button"
+      [disabled]="
+        vm.busy().includes('workflows') ||
+        (vm.workflows()?.page ?? 1) >= (vm.workflows()?.totalPages ?? 0)
+      "
+      (click)="vm.loadWorkflows((vm.workflows()?.page ?? 1) + 1)"
+    >
+      {{ "Next" | localize }}
+    </button>
+  </nav>
+  @if (vm.workflow(); as workflow) {
+    <h4>{{ workflow.name }} · {{ "Saved workflow versions" | localize }}</h4>
+    <app-record-table
+      actionLabel="Select"
+      primaryKey="ref"
+      [busy]="vm.busy().includes('versions')"
+      [columns]="vm.versionColumns"
+      [rows]="vm.versions()?.items ?? []"
+      (opened)="vm.chooseVersion($event)"
+    />
+    <nav
+      class="authoring-actions"
+      [attr.aria-label]="'Version pages' | localize"
+    >
+      <button
+        pButton
+        type="button"
+        [disabled]="
+          vm.busy().includes('versions') || (vm.versions()?.page ?? 1) <= 1
+        "
+        (click)="vm.loadVersions((vm.versions()?.page ?? 1) - 1)"
+      >
+        {{ "Previous" | localize }}
+      </button>
+      <span
+        >{{ vm.versions()?.page ?? 1 }} /
+        {{ vm.versions()?.totalPages ?? 0 }}</span
+      >
+      <button
+        pButton
+        type="button"
+        [disabled]="
+          vm.busy().includes('versions') ||
+          (vm.versions()?.page ?? 1) >= (vm.versions()?.totalPages ?? 0)
+        "
+        (click)="vm.loadVersions((vm.versions()?.page ?? 1) + 1)"
+      >
+        {{ "Next" | localize }}
+      </button>
+    </nav>
+  }
+  @if (vm.version(); as version) {
+    <p>{{ "Selected version" | localize }}: {{ version.name }}</p>
+    <app-control-field controlId="agent-workflow-step" label="AI step"
+      ><app-select-control
+        inputId="agent-workflow-step"
+        [value]="vm.step()"
+        (selectionChanged)="vm.selectStep($any($event.target.value))"
+        ><option value="">{{ "Choose a value" | localize }}</option>
+        @for (step of vm.steps(); track step.ref) {
+          <option [value]="step.ref">{{ step.name }}</option>
+        }
+      </app-select-control></app-control-field
+    >
+    <p [hidden]="vm.steps().length || vm.busy().includes('steps')">
+      {{ "This version does not pin the selected agent." | localize }}
+    </p>
+    <button
+      pButton
+      type="button"
+      [disabled]="!vm.step() || vm.busy().includes('context')"
+      (click)="vm.inspect()"
+    >
+      {{ "Inspect workflow inputs" | localize }}
+    </button>
+  }
+  @if (vm.context(); as context) {
+    <p>{{ vm.originLabel(context.origin) | localize }}</p>
+    <p [hidden]="context.schema !== null">
+      {{ "No input schema was declared for this binding." | localize }}
+    </p>
+    <dl class="authoring-fields">
+      @for (field of vm.fields(); track field.key) {
+        <div>
+          <dt>
+            <bdi>{{ field.key }}</bdi>
+          </dt>
+          <dd>{{ vm.sampleKind(field.kind) | localize }}</dd>
+        </div>
+      }
+    </dl>
+    <app-agent-sample-inputs [view]="vm" />
+  }
+</section>

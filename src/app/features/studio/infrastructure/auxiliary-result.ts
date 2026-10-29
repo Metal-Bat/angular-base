@@ -1,3 +1,4 @@
+import { bindingPreview } from './binding-preview-decoder';
 import { HttpResponse } from '@angular/common/http';
 import { record } from '../../../core/transport/api-failure';
 import {
@@ -14,6 +15,9 @@ export function readAuxiliary(
   response: HttpResponse<unknown>,
   body: JsonObject | undefined,
 ): unknown {
+  if (key === 'bindingPreview') {
+    return readData(response, (value) => bindingPreview(value, body));
+  }
   if (key === 'operations') {
     return readData(response, operationCatalog);
   }

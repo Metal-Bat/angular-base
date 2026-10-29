@@ -1,0 +1,19 @@
+:host {
+  display: block;
+  min-inline-size: 0;
+}
+.binding-preview {
+  border: 1px solid var(--console-border);
+  border-radius: var(--workspace-radius);
+  padding: 1rem;
+}
+summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+section {
+  margin-block: 1rem;
+}
+bdi {
+  overflow-wrap: anywhere;
+}

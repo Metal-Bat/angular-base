@@ -1,3 +1,4 @@
+import { objectPreviewFixture } from "./object-preview-fixture.mjs";
 import { subprocessMappingFixture } from "./subprocess-mapping-fixture.mjs";
 import { dataMappingFixture } from "./data-mapping-fixture.mjs";
 import { readFileSync } from "node:fs";
@@ -117,6 +118,8 @@ export function createCanvasFixture({
       }
       if (mapping && path.endsWith("/designer/selectors/users"))
         return mapping.users;
+      if (mapping && path.endsWith("/binding-preview"))
+        return objectPreviewFixture(JSON.parse(body));
       if (mapping && path.endsWith("/designer/completion"))
         return mapping.completion;
       if (path.endsWith("/designer/catalog"))

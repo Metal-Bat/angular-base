@@ -1,0 +1,81 @@
+@let vm = view();
+@for (choice of vm.choices(); track choice.row; let index = $index) {
+  <fieldset class="authoring-sample-field">
+    <legend>{{ "Choice" | localize }} {{ index + 1 }}</legend>
+    <div class="authoring-inputs">
+      <app-control-field
+        label="Choice key"
+        [controlId]="'sample-key-' + choice.row"
+        [required]="true"
+        ><input
+          dir="ltr"
+          maxlength="64"
+          pInputText
+          [id]="'sample-key-' + choice.row"
+          [ngModel]="choice.key"
+          (ngModelChange)="vm.choiceValue(choice.row, 'key', $event)"
+      /></app-control-field>
+      <app-control-field
+        label="English label"
+        [controlId]="'sample-en-' + choice.row"
+        ><input
+          dir="ltr"
+          pInputText
+          [id]="'sample-en-' + choice.row"
+          [ngModel]="choice.en"
+          (ngModelChange)="vm.choiceValue(choice.row, 'en', $event)"
+      /></app-control-field>
+      <app-control-field
+        label="Persian label"
+        [controlId]="'sample-fa-' + choice.row"
+        ><input
+          dir="rtl"
+          pInputText
+          [id]="'sample-fa-' + choice.row"
+          [ngModel]="choice.fa"
+          (ngModelChange)="vm.choiceValue(choice.row, 'fa', $event)"
+      /></app-control-field>
+      <app-control-field
+        label="Arabic label"
+        [controlId]="'sample-ar-' + choice.row"
+        ><input
+          dir="rtl"
+          pInputText
+          [id]="'sample-ar-' + choice.row"
+          [ngModel]="choice.ar"
+          (ngModelChange)="vm.choiceValue(choice.row, 'ar', $event)"
+      /></app-control-field>
+      <app-control-field
+        label="Description"
+        [controlId]="'sample-description-' + choice.row"
+        [required]="true"
+      >
+        <textarea
+          maxlength="512"
+          pTextarea
+          rows="3"
+          [id]="'sample-description-' + choice.row"
+          [ngModel]="choice.description"
+          (ngModelChange)="vm.choiceValue(choice.row, 'description', $event)"
+        ></textarea>
+      </app-control-field>
+    </div>
+    <button
+      pButton
+      severity="secondary"
+      type="button"
+      (click)="vm.removeChoice(choice.row)"
+    >
+      {{ "Remove choice" | localize }}
+    </button>
+  </fieldset>
+}
+<button
+  pButton
+  severity="secondary"
+  type="button"
+  [disabled]="vm.choices().length >= 254"
+  (click)="vm.addChoice()"
+>
+  {{ "Add choice" | localize }}
+</button>

@@ -3,7 +3,10 @@ import { catchError, firstValueFrom, fromEvent, takeUntil } from 'rxjs';
 import { ActorState } from '../../../core/auth/actor-state';
 import { ApiClient } from '../../../core/transport/api-client';
 import { ApiFailure, record } from '../../../core/transport/api-failure';
-import { CalendarSearchDenied } from '../application/calendar-port';
+import {
+  CalendarGroupPage,
+  CalendarSearchDenied,
+} from '../application/calendar-port';
 import {
   Page,
   readData,
@@ -101,6 +104,33 @@ function readReminders(raw: unknown): components['schemas']['ReminderDTO'][] {
 export class CalendarApi {
   private readonly api = inject(ApiClient);
   private readonly actor = inject(ActorState);
+  async groups(
+    search: string,
+    page: number,
+    abort: AbortSignal,
+  ): Promise<CalendarGroupPage> {
+    const epoch = this.actor.epoch;
+    const response = await firstValueFrom(
+      this.api.call(
+        'select_calendar_groups_api_v1_calendar_work_groups_select_post',
+        {
+          body: { page, size: 10, ...(search ? { search } : {}) },
+          query: { response_format: 'page' },
+        },
+        abort,
+      ),
+    );
+    if (epoch !== this.actor.epoch || abort.aborted) {
+      throw Error('Access changed');
+    }
+    return readResultPage(response, (value) => {
+      const row = record(value);
+      if (typeof row['key'] !== 'string' || typeof row['value'] !== 'string') {
+        throw Error('Invalid group choice');
+      }
+      return { key: row['key'], value: row['value'] };
+    });
+  }
   async search(
     body: CalendarQuery,
     signal?: AbortSignal,

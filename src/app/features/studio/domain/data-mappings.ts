@@ -1,7 +1,7 @@
 import { JsonObject, JsonValue } from '../../forms/domain/runtime-document';
 import { schemaBranch, schemaErrors } from '../../../shared/domain/schema-form';
 import { CanvasNode, connectionKey } from './workflow-authoring';
-import { schemaAt } from './mapping-fields';
+import { mappingFields, schemaAt } from './mapping-fields';
 import { MappingSource } from './mapping-sources';
 import { editorSchema, mappingCompatible } from './mapping-schema';
 export function addMapping(
@@ -141,7 +141,7 @@ export function moveMapping(
         (port) =>
           port.key === selected['target_port'] &&
           port.direction === 'INPUT' &&
-          port.cardinality === 'LIST',
+          (port.cardinality === 'LIST' || !!selected['target_projection']),
       )
   ) {
     throw Error('Invalid connection');
@@ -185,11 +185,29 @@ export function replaceMapping(
     ...graph,
     bindings: bindings.filter((_, position) => position !== index),
   };
+  const projection = old['target_projection'] as JsonObject | undefined;
+  const target = projection
+    ? schemaAt(old['target_schema'] as JsonObject, String(projection['path']))
+    : null;
+  const editNodes = target
+    ? nodes.map((node) =>
+        node.key === old['step']
+          ? {
+              ...node,
+              ports: node.ports.map((port) =>
+                port.direction === 'INPUT' && port.key === old['target_port']
+                  ? { ...port, schema: target }
+                  : port,
+              ),
+            }
+          : node,
+      )
+    : nodes;
   const result = addMapping(
-    reduced,
+    projection ? { bindings: [] } : reduced,
     String(old['step']),
     String(old['target_port']),
-    nodes,
+    editNodes,
     source,
     constant,
   );
@@ -211,7 +229,12 @@ export function replaceMapping(
     ...graph,
     bindings: bindings.map((row, position) =>
       position === index
-        ? { ...retained, ...replacement, ordinal: old['ordinal'] }
+        ? {
+            ...retained,
+            ...replacement,
+            ...(projection ? { target_schema: old['target_schema'] } : {}),
+            ordinal: old['ordinal'],
+          }
         : row,
     ),
   };
@@ -346,5 +369,18 @@ function emptyTextAllowed(schema: JsonObject): boolean {
     (shape['const'] === undefined || shape['const'] === '') &&
     (!Array.isArray(shape['enum']) || shape['enum'].includes('')) &&
     (!shape['pattern'] || new RegExp(String(shape['pattern'])).test(''))
+  );
+}
+
+export function selectableMappingSource(
+  source: MappingSource,
+  compatible: (schema: JsonObject) => boolean,
+): boolean {
+  const items = (editorSchema(source.schema)['items'] as JsonObject) ?? {};
+  return (
+    compatible(source.schema) ||
+    (isMappingCollection(source) &&
+      (compatible(items) ||
+        mappingFields(items).some((field) => compatible(field.schema))))
   );
 }

@@ -36,6 +36,8 @@ import {
   specifications,
 } from './resource-specifications';
 const tools = {
+  bindingPreview:
+    'preview_object_fields_api_v1_workflow_versions__ref_id__binding_preview_post',
   operations: 'get_business_operations_api_v1_step_types_operations_get',
   workflowGraph: 'get_graph_api_v1_workflow_versions__ref_id__graph_get',
   workspaceHistory:
@@ -209,7 +211,15 @@ export class StudioApi implements StudioPort {
       path,
       abort,
     );
-    return readAuxiliary(key, response, body);
+    const result = readAuxiliary(key, response, body);
+    if (
+      key === 'bindingPreview' &&
+      (result as { workflow_version_ref: string }).workflow_version_ref !==
+        path?.['ref_id']
+    ) {
+      throw Error('Mapping preview version changed');
+    }
+    return result;
   }
   choices(...input: Parameters<StudioPort['choices']>): Promise<AuthorPage> {
     return loadChoices(this.api, ...input);

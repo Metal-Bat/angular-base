@@ -382,4 +382,19 @@ export const personalMessages: Readonly<Record<string, string>> = {
   Column: 'ستون',
   Span: 'گستره ستون',
   Row: 'ردیف',
+  'Event visibility': 'نمایانی رویداد',
+  Personal: 'شخصی',
+  'My work group': 'گروه کاری من',
+  'Current active members of the selected group can see this event. Only its creator can edit it.':
+    'اعضای فعال فعلی گروه انتخاب‌شده می‌توانند این رویداد را ببینند. فقط سازنده آن می‌تواند ویرایش کند.',
+  'Find my group': 'یافتن گروه من',
+  'Work group': 'گروه کاری',
+  'Previously selected group': 'گروه انتخاب‌شده قبلی',
+  'Unable to load current group memberships. Retry the search.':
+    'بارگیری عضویت‌های فعلی گروه ممکن نشد. جست‌وجو را دوباره انجام دهید.',
+  'No current active group membership matches this search.':
+    'عضویت فعال فعلی در گروه مطابق این جست‌وجو نیست.',
+  'Work group pages': 'صفحه‌های گروه کاری',
+  'Choose a current group or Personal to repair this draft, or cancel and start again.':
+    'برای اصلاح پیش‌نویس، گروه فعلی یا حالت شخصی را انتخاب کنید؛ یا انصراف دهید و دوباره شروع کنید.',
 };

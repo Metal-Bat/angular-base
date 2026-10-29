@@ -1,0 +1,73 @@
+{
+  "date": "2026-10-25",
+  "owner": "APP-FE-002 / APP-FE-033 / APP-FE-038",
+  "status": "AUDITED_PATCHES_IMPLEMENTED",
+  "packageManager": "pnpm@12.11.2",
+  "lockfileSha256": "6cb4753dfe30f5292488d132c00a9cf479426881c01c0663bbdc517e735d4837",
+  "before": {
+    "info": 0,
+    "low": 6,
+    "moderate": 20,
+    "high": 13,
+    "critical": 0
+  },
+  "after": {
+    "info": 0,
+    "low": 0,
+    "moderate": 0,
+    "high": 0,
+    "critical": 0
+  },
+  "production": {
+    "info": 0,
+    "low": 0,
+    "moderate": 0,
+    "high": 0,
+    "critical": 0
+  },
+  "directChange": {
+    "vitest": {
+      "from": "4.1.11",
+      "to": "4.1.12"
+    }
+  },
+  "overrides": [
+    "overrides:",
+    "  \"release-it>undici\": 7.30.1",
+    "  \"@angular/build>piscina\": 5.3.2",
+    "  \"nx>undici\": 7.30.1",
+    "  \"@angular/build>undici\": 7.30.1",
+    "  \"@angular/build>vite\": 7.3.7",
+    "  \"@angular/cli>@modelcontextprotocol/sdk\": 1.32.0",
+    "  \"get-uri>basic-ftp\": 6.2.1",
+    "  \"zod@^4.0.0\": 4.6.6"
+  ],
+  "remediated": [
+    "undici",
+    "basic-ftp",
+    "http-cache-semantics",
+    "@modelcontextprotocol/sdk",
+    "vite",
+    "@vitest/mocker",
+    "ip-address",
+    "zod",
+    "body-parser",
+    "fast-uri"
+  ],
+  "compatibility": {
+    "ftp": "Actual get-uri/Client connection, MDTM fallback, directory listing and exact download bytes against an owned loopback server; no provider or release effects.",
+    "sdk": "Same-major development SDK update; public application/client contract unchanged except separately reviewed GraphBinding documentation.",
+    "remainingInstallDiagnostics": "Two existing resolver deprecations, glob@7.2.3 and inflight@1.0.6, retained in candidate logs; frozen installation is warning-free."
+  },
+  "evidence": {
+    "before": "artifacts/remaining-2026-10-25/audit-before-all.json",
+    "after": "artifacts/remaining-2026-10-25/audit-after-all.json",
+    "production": "artifacts/remaining-2026-10-25/audit-after-production.json",
+    "ftp": "artifacts/remaining-2026-10-25/ftp-installed-check.log",
+    "completion": "artifacts/remaining-2026-10-25/completion.json"
+  },
+  "limits": [
+    "Dependency advisory metadata is a dated registry result, not a full security or license approval.",
+    "Scoped completion requires the complete final gate and source-qualified receipt."
+  ]
+}

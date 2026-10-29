@@ -1,0 +1,246 @@
+{
+  "date": "2026-10-24",
+  "owner": "APP-FE-002 / APP-FE-033 / APP-FE-038",
+  "status": "AUDITED_PATCH_IMPLEMENTED",
+  "packageManager": "pnpm@12.11.2",
+  "node": "24.21.0",
+  "lockfileSha256": "d4f397681f5b0cca27cc983a123f8411862dcfb33872ad6aa7fd596f62cf37ce",
+  "before": {
+    "info": 0,
+    "low": 6,
+    "moderate": 20,
+    "high": 13,
+    "critical": 0
+  },
+  "after": {
+    "info": 0,
+    "low": 6,
+    "moderate": 20,
+    "high": 13,
+    "critical": 0
+  },
+  "production": {
+    "info": 0,
+    "low": 0,
+    "moderate": 0,
+    "high": 0,
+    "critical": 0
+  },
+  "patch": {
+    "package": "undici",
+    "consumer": "release-it",
+    "from": "7.30.0",
+    "to": "7.30.1",
+    "removedVulnerablePaths": [
+      ".>@release-it/conventional-changelog>release-it>undici",
+      ".>release-it>undici"
+    ],
+    "remainingReleaseUndiciPaths": [],
+    "source": "https://github.com/nodejs/undici/releases/tag/v7.30.1"
+  },
+  "remaining": [
+    {
+      "package": "undici",
+      "severities": [
+        "high",
+        "low",
+        "moderate"
+      ],
+      "installed": [
+        "6.29.0",
+        "7.29.0",
+        "7.29.1",
+        "8.11.2"
+      ],
+      "patchedRanges": [
+        ">=6.29.1",
+        ">=7.29.1",
+        ">=7.30.1",
+        ">=8.12.2"
+      ],
+      "advisories": [
+        "https://github.com/advisories/GHSA-2gqq-gqf2-x968",
+        "https://github.com/advisories/GHSA-2jfj-6hjv-fm6j",
+        "https://github.com/advisories/GHSA-3wwx-pv8p-q78v",
+        "https://github.com/advisories/GHSA-3xpg-4rpp-hhhm",
+        "https://github.com/advisories/GHSA-4qv8-2p9j-2685",
+        "https://github.com/advisories/GHSA-8436-99hf-9mmv",
+        "https://github.com/advisories/GHSA-f72v-6w45-q472",
+        "https://github.com/advisories/GHSA-pmjh-fq2x-6v4x",
+        "https://github.com/advisories/GHSA-r53p-7pc4-xj5r",
+        "https://github.com/advisories/GHSA-rfgv-xxqx-mfg5",
+        "https://github.com/advisories/GHSA-rx4f-c7p8-82vq",
+        "https://github.com/advisories/GHSA-w293-vg96-wgc3",
+        "https://github.com/advisories/GHSA-xjj6-f33q-929c"
+      ]
+    },
+    {
+      "package": "basic-ftp",
+      "severities": [
+        "high"
+      ],
+      "installed": [
+        "5.3.1"
+      ],
+      "patchedRanges": [
+        ">=6.2.1"
+      ],
+      "advisories": [
+        "https://github.com/advisories/GHSA-c475-qrg2-pj4r"
+      ]
+    },
+    {
+      "package": "http-cache-semantics",
+      "severities": [
+        "high"
+      ],
+      "installed": [
+        "4.2.0"
+      ],
+      "patchedRanges": [
+        ">=4.3.0"
+      ],
+      "advisories": [
+        "https://github.com/advisories/GHSA-ch52-4w7c-c8xp"
+      ]
+    },
+    {
+      "package": "@modelcontextprotocol/sdk",
+      "severities": [
+        "high",
+        "moderate"
+      ],
+      "installed": [
+        "1.30.0"
+      ],
+      "patchedRanges": [
+        ">=1.31.0",
+        ">=1.32.0"
+      ],
+      "advisories": [
+        "https://github.com/advisories/GHSA-22jm-h49p-29qw",
+        "https://github.com/advisories/GHSA-46jr-4wx8-v453",
+        "https://github.com/advisories/GHSA-6prh-2h8m-c8cw",
+        "https://github.com/advisories/GHSA-6qxp-vccf-f47h",
+        "https://github.com/advisories/GHSA-rvq5-wwqv-78pq"
+      ]
+    },
+    {
+      "package": "vite",
+      "severities": [
+        "high",
+        "low",
+        "moderate"
+      ],
+      "installed": [
+        "7.3.6"
+      ],
+      "patchedRanges": [
+        ">=7.3.7"
+      ],
+      "advisories": [
+        "https://github.com/advisories/GHSA-587h-7wmj-h5pm",
+        "https://github.com/advisories/GHSA-698v-4r3x-3vcv",
+        "https://github.com/advisories/GHSA-9jrq-w75r-8gcw",
+        "https://github.com/advisories/GHSA-r825-w8mm-5pxw",
+        "https://github.com/advisories/GHSA-rq7h-c2jc-7f22"
+      ]
+    },
+    {
+      "package": "@vitest/mocker",
+      "severities": [
+        "moderate"
+      ],
+      "installed": [
+        "4.1.11"
+      ],
+      "patchedRanges": [
+        ">=4.1.12"
+      ],
+      "advisories": [
+        "https://github.com/advisories/GHSA-qxg6-89mg-rqv8",
+        "https://github.com/advisories/GHSA-xp26-3454-mjgp"
+      ]
+    },
+    {
+      "package": "ip-address",
+      "severities": [
+        "moderate"
+      ],
+      "installed": [
+        "10.7.3"
+      ],
+      "patchedRanges": [
+        ">=10.7.4"
+      ],
+      "advisories": [
+        "https://github.com/advisories/GHSA-rxp7-6hxx-x8q5"
+      ]
+    },
+    {
+      "package": "zod",
+      "severities": [
+        "high"
+      ],
+      "installed": [
+        "4.3.6"
+      ],
+      "patchedRanges": [
+        ">=4.6.6"
+      ],
+      "advisories": [
+        "https://github.com/advisories/GHSA-mrhx-c7xc-m3w5"
+      ]
+    },
+    {
+      "package": "body-parser",
+      "severities": [
+        "high"
+      ],
+      "installed": [
+        "2.3.0"
+      ],
+      "patchedRanges": [
+        ">=2.4.0"
+      ],
+      "advisories": [
+        "https://github.com/advisories/GHSA-27r3-jxmh-p828"
+      ]
+    },
+    {
+      "package": "fast-uri",
+      "severities": [
+        "low",
+        "moderate"
+      ],
+      "installed": [
+        "3.1.8"
+      ],
+      "patchedRanges": [
+        ">=3.1.9"
+      ],
+      "advisories": [
+        "https://github.com/advisories/GHSA-333x-w4r6-6crp",
+        "https://github.com/advisories/GHSA-w74x-v6f9-j3xg",
+        "https://github.com/advisories/GHSA-wjr9-j795-jxcr",
+        "https://github.com/advisories/GHSA-xhq7-xmqj-769h"
+      ]
+    }
+  ],
+  "verification": {
+    "frozenInstall": "passed",
+    "releaseToolVersion": "v21.1.0",
+    "fullCheckReceipt": "artifacts/remaining-2026-10-24/completion.json",
+    "sourcePairIntake": "artifacts/remaining-2026-10-24/intake.json",
+    "rawAuditBefore": "artifacts/remaining-2026-10-24/audit-before-all.json",
+    "rawAuditAfter": "artifacts/remaining-2026-10-24/audit-after-all.json",
+    "productionAudit": "artifacts/remaining-2026-10-24/audit-after-production.json"
+  },
+  "limitations": [
+    "Advisory entries are not distinct affected packages or exploitability proofs.",
+    "Production dependency audit is not a complete security review.",
+    "Remaining patches require their own reviewed resolution and verification; no major upgrade or new override is applied.",
+    "Candidate resolver emitted existing glob@7.2.3 and inflight@1.0.6 deprecations; frozen installation emitted no warnings.",
+    "Hosted CI, deployment and manual/user acceptance remain unverified."
+  ]
+}

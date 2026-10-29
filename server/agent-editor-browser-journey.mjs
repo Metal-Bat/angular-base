@@ -1,3 +1,4 @@
+import { agentAuthoringBrowserJourney } from "./agent-authoring-browser-journey.mjs";
 import { foundationsBrowserHelpers } from "./foundations-browser-journey.mjs";
 
 /** Actual owned services; seeded connection metadata never proves vendor execution. */
@@ -47,6 +48,14 @@ ${foundationsBrowserHelpers(credentials)}
   const query=await http('/api/v1/ai-agents/search',{page:1,size:20,filters:[{field_name:'status',operation:'equal',value:'DRAFT'},{field_name:'name',operation:'contains',value:'Owned agent'},{field_name:'number',operation:'gte',value:1}],sort_orders:[{field_name:'created_at',operation:'desc'},{field_name:'name',operation:'asc'}]});
   check(query.result.items.some(row=>row.ref_id===agent.ref_id),'Actual typed agent list query');
   await record('APP-FE-030 actual typed SearchRequest filtering and ordered sorts; distinct from retrieval');
+
+  const checksTab=[...document.querySelectorAll('app-agent-detail [role=tab]')].find(row=>row.textContent.trim()==='Saved version checks');check(checksTab,'Saved agent checks tab');checksTab.click();await wait(()=>document.querySelector('app-agent-authoring'),'Saved authoring consumer');
+  const checks=()=>document.querySelector('app-agent-authoring');await click('Inspect saved choices',checks());await wait(()=>checks().querySelector('section[aria-labelledby="agent-choice-preview-title"] [role=status]'),'Actual decision preview');check(checks().textContent.includes('No choice sample is available'),'Missing choice inputs are honest');
+  const retrieval=checks().querySelector('app-agent-retrieval-checks');await click('Search',retrieval);await wait(()=>!retrieval.textContent.includes('Loading…'),'Actual permitted source search');check(!retrieval.querySelector('app-record-table tbody tr td button'),'No invented source for disabled lookup policy');
+  check(checks().textContent.includes('A published agent and request-start permission are required for evaluation.')&&!button('Submit governed evaluation',checks()),'Draft agent cannot submit an evaluation');
+  const preview=(await http('/api/v1/ai-agents/'+encodeURIComponent(agent.ref_id)+'/decision-preview',{sample_inputs:{question:'Synthetic author question',choices:[{key:'a',labels:{en:'A'},description:'A'},{key:'b',labels:{en:'B'},description:'B'}]}})).data;check(preview.sample_state==='VALID'&&preview.provider_called===false,'Actual explicit choice preview never calls provider');
+  await record('APP-FE-030 actual saved Agent checks consumer, missing/valid explicit sample states, permitted empty retrieval and draft evaluation fence without provider dispatch');
+${agentAuthoringBrowserJourney()}
   await click('Sign out');await login(1);
   const denied=await request('/api/v1/ai-agents/'+encodeURIComponent(agent.ref_id),undefined,'GET');check([403,404].includes(denied.status),'Other author denied private agent');
   const deniedModel=await request('/api/v1/ai-agents/connections/'+encodeURIComponent(accounts.agent_connection)+'/models/owned-model/metadata',undefined,'GET');check([403,404].includes(deniedModel.status),'Unauthorized connection metadata denied');

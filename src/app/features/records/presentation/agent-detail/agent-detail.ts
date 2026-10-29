@@ -4,6 +4,7 @@ import { AgentLimits } from '../agent-limits/agent-limits';
 import { AgentOverview } from '../agent-overview/agent-overview';
 import { AgentPolicySummary } from '../agent-policy-summary/agent-policy-summary';
 import { AgentCapabilities } from '../agent-capabilities/agent-capabilities';
+import { AgentAuthoring } from '../agent-authoring/agent-authoring';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -28,6 +29,7 @@ import { agentSections } from '../agent-sections';
     AgentOverview,
     AgentPolicySummary,
     AgentCapabilities,
+    AgentAuthoring,
   ],
   templateUrl: './agent-detail.html',
   styleUrl: './agent-detail.scss',

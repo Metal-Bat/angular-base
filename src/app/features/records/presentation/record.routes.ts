@@ -1,5 +1,6 @@
 import { ADMIN_API } from '../../administration/bindings';
-import { AGENT_METADATA } from '../bindings';
+import { AGENT_AUTHORING, AGENT_METADATA } from '../bindings';
+import { AgentAuthoringApi } from '../infrastructure/agent-authoring-api';
 import { AgentMetadataApi } from '../infrastructure/agent-metadata-api';
 import { AdminApi } from '../../administration/infrastructure/admin-api';
 import { Route } from '@angular/router';
@@ -19,6 +20,7 @@ export function recordRoute(key: string, path = key): Route {
     runGuardsAndResolvers: 'paramsOrQueryParamsChange',
     title: definition.title + ' | Workflow workspace',
     providers: [
+      { provide: AGENT_AUTHORING, useExisting: AgentAuthoringApi },
       { provide: AGENT_METADATA, useExisting: AgentMetadataApi },
       { provide: ADMIN_API, useExisting: AdminApi },
       { provide: RECORDS, useExisting: RecordsApi },

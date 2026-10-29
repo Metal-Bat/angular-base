@@ -1,0 +1,109 @@
+@if (supported()) {
+  <details class="object-fields">
+    <summary>{{ "Assemble object fields" | localize }}</summary>
+    <p>
+      {{
+        "Map declared fields from different sources. Arrays stay whole; null is an explicit value. Server validation is required."
+          | localize
+      }}
+    </p>
+    <label for="object-destination">{{ "Destination field" | localize }}</label>
+    <app-select-control
+      inputId="object-destination"
+      [disabled]="disabled()"
+      [ngModel]="destination()"
+      (ngModelChange)="destination.set($event); choose()"
+    >
+      <option value="">
+        {{ (fixed() ? "Choose" : "New field") | localize }}
+      </option>
+      @for (field of fields(); track field.path) {
+        <option [value]="field.path">{{ field.label }}</option>
+      }
+    </app-select-control>
+    @if (!fixed() && !destination()) {
+      <label for="object-field-name">{{ "Field name" | localize }}</label>
+      <input
+        id="object-field-name"
+        maxlength="120"
+        pInputText
+        [disabled]="disabled()"
+        [ngModel]="name()"
+        (ngModelChange)="name.set($event); touch()"
+      />
+    }
+    <label for="object-field-source">{{ "Field source" | localize }}</label>
+    <app-select-control
+      inputId="object-field-source"
+      [disabled]="disabled()"
+      [ngModel]="source()"
+      (ngModelChange)="source.set($event); choose()"
+    >
+      <option value="">{{ "Constant value" | localize }}</option>
+      @for (item of sources(); track item.key) {
+        <option
+          [disabled]="!!destination() && !compatible(item.schema)"
+          [value]="item.key"
+        >
+          {{ item.label }}
+        </option>
+      }
+    </app-select-control>
+    @if (!source()) {
+      @if (!destination()) {
+        <label for="object-field-type">{{ "Field type" | localize }}</label>
+        <app-select-control
+          inputId="object-field-type"
+          [disabled]="disabled()"
+          [ngModel]="kind()"
+          (ngModelChange)="kind.set($event); choose()"
+        >
+          @for (
+            type of ["string", "integer", "number", "boolean", "null", "array"];
+            track type
+          ) {
+            <option [value]="type">{{ type | localize }}</option>
+          }
+        </app-select-control>
+      }
+      @if (schema()["type"] === "null") {
+        <p>{{ "Explicit null" | localize }}</p>
+      } @else {
+        <app-mapping-constant
+          controlId="object-field-constant"
+          [disabled]="disabled()"
+          [schema]="schema()"
+          [value]="constant()"
+          (readyChange)="ready.set($event)"
+          (valueChange)="constant.set($event); touch()"
+        />
+      }
+    }
+    <div class="actions">
+      <button
+        pButton
+        type="button"
+        [disabled]="
+          disabled() ||
+          (!destination() && !name().trim()) ||
+          (!source() && schema()['type'] !== 'null' && !ready())
+        "
+        (click)="add()"
+      >
+        {{ "Add object field" | localize }}
+      </button>
+      @if (pending()) {
+        <button
+          pButton
+          severity="secondary"
+          type="button"
+          [disabled]="disabled()"
+          (click)="cancel()"
+        >
+          {{ "Discard mapping edits" | localize }}
+        </button>
+      }
+    </div>
+    <p role="alert" [hidden]="!error()">{{ error() | localize }}</p>
+  </details>
+}

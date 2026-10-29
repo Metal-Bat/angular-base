@@ -1,3 +1,7 @@
+import { missingActionRoutes } from '../../domain/missing-action-routes';
+import { ObjectBindingPreview } from '../object-binding-preview/object-binding-preview';
+import { ObjectFieldMapping } from '../object-field-mapping/object-field-mapping';
+import { mappedTargetSchema } from '../../domain/object-field-mappings';
 import { workflowMappingSources } from '../../domain/interface-sources';
 import { translatedSchemaSummary } from '../schema-summary';
 import {
@@ -35,9 +39,9 @@ import {
   mappingSelection,
   moveMapping,
   replaceMapping,
+  selectableMappingSource,
 } from '../../domain/data-mappings';
 import { seedValue } from '../../../../shared/domain/schema-form';
-import { mappingFields } from '../../domain/mapping-fields';
 import { CollectionSource } from '../collection-source/collection-source';
 import { MappingList } from '../mapping-list/mapping-list';
 import type { MappingSource } from '../../domain/mapping-sources';
@@ -47,6 +51,8 @@ import { TransitionEditor } from '../transition-editor/transition-editor';
 @Component({
   selector: 'app-graph-connections',
   imports: [
+    ObjectBindingPreview,
+    ObjectFieldMapping,
     CandidateTargets,
     MappingList,
     CollectionSource,
@@ -73,12 +79,17 @@ export class GraphConnections {
   readonly applied = output<JsonObject>();
   readonly changed = output<void>();
   readonly discarded = output<void>();
+  readonly objectPending = signal(false);
   readonly transitionPending = signal(false);
   readonly sourceDisabled = computed(
-    () => this.disabled() || this.transitionPending(),
+    () => this.disabled() || this.transitionPending() || this.objectPending(),
   );
   readonly interactionDisabled = computed(
-    () => this.disabled() || this.transitionPending() || !this.targets().length,
+    () =>
+      this.disabled() ||
+      this.transitionPending() ||
+      this.objectPending() ||
+      !this.targets().length,
   );
   readonly itemIndex = signal<number | null>(null);
   readonly itemField = signal('');
@@ -123,11 +134,17 @@ export class GraphConnections {
   readonly targetPort = computed(() =>
     this.targets().find((port) => port.key === this.target()),
   );
-  readonly targetSchema = computed(() =>
-    editorSchema(this.targetPort()?.schema ?? {}),
-  );
+  readonly targetContract = computed(() => {
+    const binding = this.bindings().find(
+      (item) => item.id === this.editing(),
+    )?.edge;
+    return binding?.['target_projection']
+      ? mappedTargetSchema(binding)
+      : (this.targetPort()?.schema ?? {});
+  });
+  readonly targetSchema = computed(() => editorSchema(this.targetContract()));
   readonly compatible = (schema: JsonObject): boolean =>
-    mappingCompatible(schema, this.targetPort()?.schema ?? {});
+    mappingCompatible(schema, this.targetContract());
   readonly bindings = computed(() =>
     ((this.graph()['bindings'] ?? []) as JsonObject[])
       .filter((binding) => binding['step'] === this.selected())
@@ -157,22 +174,9 @@ export class GraphConnections {
       (item) => item['step'] === this.selected(),
     ),
   );
-  readonly missingRoutes = computed(() => {
-    const step = (this.graph()['steps'] as JsonObject[]).find(
-      (item) => item['key'] === this.selected(),
-    );
-    const actions = ((step?.['task_contract'] as JsonObject | undefined)?.[
-      'actions'
-    ] ?? []) as JsonObject[];
-    return actions
-      .filter(
-        (action) =>
-          !this.transitions().some(
-            (item) => item.edge['outcome'] === action['outcome_key'],
-          ),
-      )
-      .map((action) => String(action['outcome_key']));
-  });
+  readonly missingRoutes = computed(() =>
+    missingActionRoutes(this.graph(), this.selected()),
+  );
   private readonly api = inject(STUDIO_API);
   private generation = 0;
   constructor() {
@@ -195,6 +199,7 @@ export class GraphConnections {
   }
   reset(): void {
     this.generation++;
+    this.objectPending.set(false);
     this.request.set('');
     this.rows.set([]);
     this.page.set(1);
@@ -306,15 +311,7 @@ export class GraphConnections {
     this.touch();
   }
   sourceSelectable(source: MappingSource): boolean {
-    const schema = source.schema;
-    return (
-      this.compatible(schema) ||
-      (isMappingCollection(source) &&
-        (this.compatible((editorSchema(schema)['items'] as JsonObject) ?? {}) ||
-          mappingFields(
-            (editorSchema(schema)['items'] as JsonObject) ?? {},
-          ).some((field) => this.compatible(field.schema))))
-    );
+    return selectableMappingSource(source, this.compatible);
   }
   updateTarget(value: string): void {
     this.target.set(value);
@@ -322,7 +319,6 @@ export class GraphConnections {
     this.constant.set(
       seedValue(schema) ?? (schema['type'] === 'boolean' ? false : undefined),
     );
-    this.touch();
   }
   touch(): void {
     this.mappingPending.set(true);

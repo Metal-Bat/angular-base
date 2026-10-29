@@ -8,6 +8,8 @@ export function startStudioBrowserFixture(options?: {
   inlineAttachments?: boolean;
   sharedRecords?: boolean;
   administrationDetails?: boolean;
+  agentAuthoring?: boolean;
+  operationNotices?: boolean;
   attachmentReceipt?: "absent" | "committed" | null;
   density?: "comfortable" | "compact";
 }): Promise<{

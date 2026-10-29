@@ -1,15 +1,15 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "frontend-contract",
-    "description": "Async API with versioned references, background tasks, private media, and observability.",
     "contact": {
       "name": "API support"
     },
+    "description": "Async API with versioned references, background tasks, private media, and observability.",
     "license": {
-      "name": "Project license",
-      "identifier": "MIT"
+      "identifier": "MIT",
+      "name": "Project license"
     },
+    "title": "test",
     "version": "1.0.0"
   },
   "paths": {
@@ -770,7 +770,7 @@
     },
     "/api/v1/inbox/report": {
       "post": {
-        "description": "Authenticated recipient-only unified inbox version 1. Case, work_item, ai_approval, report and account destinations resolve current owner-authorized references on every read. Calendar/support/operation targets are reserved and unavailable until their producers exist. An unavailable, deleted, revoked, expired or cancelled target exposes no private subject, content or reference. Stored labels never confer authority. Search is bounded and deterministic with existing filters/order/page/size plus unread=true/false; report is the same paginated search, not a queued archive. Unread totals count live ACTIVE unread inbox rows, including redacted unavailable destinations. Mark-read changes only read metadata, requires a current optimistic ref (409 when stale), and never decides or acts on a workflow. Non-owned refs fail 403; missing/deleted refs fail 404. Null read bodies are rejected; actions accept an empty object. UTC timestamps; en/fa template locale is chosen when staged with en fallback. Private no-store success/page envelopes, existing 401/403/404/409/422 errors. Refresh refs from mutation responses. Optional email defaults off; mandatory notices ignore optional opt-out. No delivery is performed by these reads.",
+        "description": "Authenticated recipient-only unified inbox version 1. Case, work_item, ai_approval, report and account destinations resolve current owner-authorized references on every read. Calendar and support targets resolve current authorized sources. Protected operation notices resolve the existing process screen: MAP-07 requires current superuser recovery authority and unresolved evidence; MAP-08 requires current requester ownership, requests.start and the exact confirmed CREATED receipt. Unknown outcomes never authorize provider replay. Old unsupported operation targets remain unavailable. An unavailable, deleted, revoked, expired or cancelled target exposes no private subject, content or reference. Stored labels never confer authority. Search is bounded and deterministic with existing filters/order/page/size plus unread=true/false; report is the same paginated search, not a queued archive. Unread totals count live ACTIVE unread inbox rows, including redacted unavailable destinations. Mark-read changes only read metadata, requires a current optimistic ref (409 when stale), and never decides or acts on a workflow. Non-owned refs fail 403; missing/deleted refs fail 404. Null read bodies are rejected; actions accept an empty object. UTC timestamps; en/fa/ar template locale is chosen when staged with en fallback. Private no-store success/page envelopes, existing 401/403/404/409/422 errors. Refresh refs from mutation responses. Optional email defaults off; mandatory notices ignore optional opt-out. No delivery is performed by these reads.",
         "operationId": "search_api_v1_inbox_report_post",
         "parameters": [
           {
@@ -1023,7 +1023,7 @@
     },
     "/api/v1/inbox/search": {
       "post": {
-        "description": "Authenticated recipient-only unified inbox version 1. Case, work_item, ai_approval, report and account destinations resolve current owner-authorized references on every read. Calendar/support/operation targets are reserved and unavailable until their producers exist. An unavailable, deleted, revoked, expired or cancelled target exposes no private subject, content or reference. Stored labels never confer authority. Search is bounded and deterministic with existing filters/order/page/size plus unread=true/false; report is the same paginated search, not a queued archive. Unread totals count live ACTIVE unread inbox rows, including redacted unavailable destinations. Mark-read changes only read metadata, requires a current optimistic ref (409 when stale), and never decides or acts on a workflow. Non-owned refs fail 403; missing/deleted refs fail 404. Null read bodies are rejected; actions accept an empty object. UTC timestamps; en/fa template locale is chosen when staged with en fallback. Private no-store success/page envelopes, existing 401/403/404/409/422 errors. Refresh refs from mutation responses. Optional email defaults off; mandatory notices ignore optional opt-out. No delivery is performed by these reads.",
+        "description": "Authenticated recipient-only unified inbox version 1. Case, work_item, ai_approval, report and account destinations resolve current owner-authorized references on every read. Calendar and support targets resolve current authorized sources. Protected operation notices resolve the existing process screen: MAP-07 requires current superuser recovery authority and unresolved evidence; MAP-08 requires current requester ownership, requests.start and the exact confirmed CREATED receipt. Unknown outcomes never authorize provider replay. Old unsupported operation targets remain unavailable. An unavailable, deleted, revoked, expired or cancelled target exposes no private subject, content or reference. Stored labels never confer authority. Search is bounded and deterministic with existing filters/order/page/size plus unread=true/false; report is the same paginated search, not a queued archive. Unread totals count live ACTIVE unread inbox rows, including redacted unavailable destinations. Mark-read changes only read metadata, requires a current optimistic ref (409 when stale), and never decides or acts on a workflow. Non-owned refs fail 403; missing/deleted refs fail 404. Null read bodies are rejected; actions accept an empty object. UTC timestamps; en/fa/ar template locale is chosen when staged with en fallback. Private no-store success/page envelopes, existing 401/403/404/409/422 errors. Refresh refs from mutation responses. Optional email defaults off; mandatory notices ignore optional opt-out. No delivery is performed by these reads.",
         "operationId": "search_api_v1_inbox_search_post",
         "parameters": [
           {
@@ -1276,7 +1276,7 @@
     },
     "/api/v1/inbox/unread": {
       "get": {
-        "description": "Authenticated recipient-only unified inbox version 1. Case, work_item, ai_approval, report and account destinations resolve current owner-authorized references on every read. Calendar/support/operation targets are reserved and unavailable until their producers exist. An unavailable, deleted, revoked, expired or cancelled target exposes no private subject, content or reference. Stored labels never confer authority. Search is bounded and deterministic with existing filters/order/page/size plus unread=true/false; report is the same paginated search, not a queued archive. Unread totals count live ACTIVE unread inbox rows, including redacted unavailable destinations. Mark-read changes only read metadata, requires a current optimistic ref (409 when stale), and never decides or acts on a workflow. Non-owned refs fail 403; missing/deleted refs fail 404. Null read bodies are rejected; actions accept an empty object. UTC timestamps; en/fa template locale is chosen when staged with en fallback. Private no-store success/page envelopes, existing 401/403/404/409/422 errors. Refresh refs from mutation responses. Optional email defaults off; mandatory notices ignore optional opt-out. No delivery is performed by these reads.",
+        "description": "Authenticated recipient-only unified inbox version 1. Case, work_item, ai_approval, report and account destinations resolve current owner-authorized references on every read. Calendar and support targets resolve current authorized sources. Protected operation notices resolve the existing process screen: MAP-07 requires current superuser recovery authority and unresolved evidence; MAP-08 requires current requester ownership, requests.start and the exact confirmed CREATED receipt. Unknown outcomes never authorize provider replay. Old unsupported operation targets remain unavailable. An unavailable, deleted, revoked, expired or cancelled target exposes no private subject, content or reference. Stored labels never confer authority. Search is bounded and deterministic with existing filters/order/page/size plus unread=true/false; report is the same paginated search, not a queued archive. Unread totals count live ACTIVE unread inbox rows, including redacted unavailable destinations. Mark-read changes only read metadata, requires a current optimistic ref (409 when stale), and never decides or acts on a workflow. Non-owned refs fail 403; missing/deleted refs fail 404. Null read bodies are rejected; actions accept an empty object. UTC timestamps; en/fa/ar template locale is chosen when staged with en fallback. Private no-store success/page envelopes, existing 401/403/404/409/422 errors. Refresh refs from mutation responses. Optional email defaults off; mandatory notices ignore optional opt-out. No delivery is performed by these reads.",
         "operationId": "unread_api_v1_inbox_unread_get",
         "parameters": [
           {
@@ -1519,7 +1519,7 @@
     },
     "/api/v1/inbox/{ref_id}": {
       "get": {
-        "description": "Authenticated recipient-only unified inbox version 1. Case, work_item, ai_approval, report and account destinations resolve current owner-authorized references on every read. Calendar/support/operation targets are reserved and unavailable until their producers exist. An unavailable, deleted, revoked, expired or cancelled target exposes no private subject, content or reference. Stored labels never confer authority. Search is bounded and deterministic with existing filters/order/page/size plus unread=true/false; report is the same paginated search, not a queued archive. Unread totals count live ACTIVE unread inbox rows, including redacted unavailable destinations. Mark-read changes only read metadata, requires a current optimistic ref (409 when stale), and never decides or acts on a workflow. Non-owned refs fail 403; missing/deleted refs fail 404. Null read bodies are rejected; actions accept an empty object. UTC timestamps; en/fa template locale is chosen when staged with en fallback. Private no-store success/page envelopes, existing 401/403/404/409/422 errors. Refresh refs from mutation responses. Optional email defaults off; mandatory notices ignore optional opt-out. No delivery is performed by these reads.",
+        "description": "Authenticated recipient-only unified inbox version 1. Case, work_item, ai_approval, report and account destinations resolve current owner-authorized references on every read. Calendar and support targets resolve current authorized sources. Protected operation notices resolve the existing process screen: MAP-07 requires current superuser recovery authority and unresolved evidence; MAP-08 requires current requester ownership, requests.start and the exact confirmed CREATED receipt. Unknown outcomes never authorize provider replay. Old unsupported operation targets remain unavailable. An unavailable, deleted, revoked, expired or cancelled target exposes no private subject, content or reference. Stored labels never confer authority. Search is bounded and deterministic with existing filters/order/page/size plus unread=true/false; report is the same paginated search, not a queued archive. Unread totals count live ACTIVE unread inbox rows, including redacted unavailable destinations. Mark-read changes only read metadata, requires a current optimistic ref (409 when stale), and never decides or acts on a workflow. Non-owned refs fail 403; missing/deleted refs fail 404. Null read bodies are rejected; actions accept an empty object. UTC timestamps; en/fa/ar template locale is chosen when staged with en fallback. Private no-store success/page envelopes, existing 401/403/404/409/422 errors. Refresh refs from mutation responses. Optional email defaults off; mandatory notices ignore optional opt-out. No delivery is performed by these reads.",
         "operationId": "detail_api_v1_inbox__ref_id__get",
         "parameters": [
           {
@@ -1771,7 +1771,7 @@
     },
     "/api/v1/inbox/{ref_id}/read": {
       "post": {
-        "description": "Authenticated recipient-only unified inbox version 1. Case, work_item, ai_approval, report and account destinations resolve current owner-authorized references on every read. Calendar/support/operation targets are reserved and unavailable until their producers exist. An unavailable, deleted, revoked, expired or cancelled target exposes no private subject, content or reference. Stored labels never confer authority. Search is bounded and deterministic with existing filters/order/page/size plus unread=true/false; report is the same paginated search, not a queued archive. Unread totals count live ACTIVE unread inbox rows, including redacted unavailable destinations. Mark-read changes only read metadata, requires a current optimistic ref (409 when stale), and never decides or acts on a workflow. Non-owned refs fail 403; missing/deleted refs fail 404. Null read bodies are rejected; actions accept an empty object. UTC timestamps; en/fa template locale is chosen when staged with en fallback. Private no-store success/page envelopes, existing 401/403/404/409/422 errors. Refresh refs from mutation responses. Optional email defaults off; mandatory notices ignore optional opt-out. No delivery is performed by these reads.",
+        "description": "Authenticated recipient-only unified inbox version 1. Case, work_item, ai_approval, report and account destinations resolve current owner-authorized references on every read. Calendar and support targets resolve current authorized sources. Protected operation notices resolve the existing process screen: MAP-07 requires current superuser recovery authority and unresolved evidence; MAP-08 requires current requester ownership, requests.start and the exact confirmed CREATED receipt. Unknown outcomes never authorize provider replay. Old unsupported operation targets remain unavailable. An unavailable, deleted, revoked, expired or cancelled target exposes no private subject, content or reference. Stored labels never confer authority. Search is bounded and deterministic with existing filters/order/page/size plus unread=true/false; report is the same paginated search, not a queued archive. Unread totals count live ACTIVE unread inbox rows, including redacted unavailable destinations. Mark-read changes only read metadata, requires a current optimistic ref (409 when stale), and never decides or acts on a workflow. Non-owned refs fail 403; missing/deleted refs fail 404. Null read bodies are rejected; actions accept an empty object. UTC timestamps; en/fa/ar template locale is chosen when staged with en fallback. Private no-store success/page envelopes, existing 401/403/404/409/422 errors. Refresh refs from mutation responses. Optional email defaults off; mandatory notices ignore optional opt-out. No delivery is performed by these reads.",
         "operationId": "mark_read_api_v1_inbox__ref_id__read_post",
         "parameters": [
           {
@@ -2252,8 +2252,17 @@
             "title": "Ref Id"
           },
           "route_key": {
-            "title": "Route Key",
-            "type": "null"
+            "anyOf": [
+              {
+                "const": "processes",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Current authorized protected-operation evidence opens the existing process screen. Null retains unavailable legacy operation targets; never an external URL or execution authority.",
+            "title": "Route Key"
           }
         },
         "required": [
@@ -2737,13 +2746,13 @@
     },
     "securitySchemes": {
       "OAuth2PasswordBearer": {
-        "type": "oauth2",
         "flows": {
           "password": {
             "scopes": {},
             "tokenUrl": "/api/v1/auth/token"
           }
-        }
+        },
+        "type": "oauth2"
       }
     }
   }

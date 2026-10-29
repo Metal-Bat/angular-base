@@ -6,6 +6,7 @@
     <li [class.inspected]="inspected() === binding.id">
       <p>
         <strong>{{ portLabel(binding.edge["target_port"]) | localize }}</strong>
+        <bdi>{{ destination(binding.edge) }}</bdi>
         <span aria-hidden="true">{{ arrow() }}</span>
         {{ sourceLabel(binding.edge) | localize }}
         <bdi
@@ -17,7 +18,7 @@
         {{ "Source type" | localize }}:
         {{ summary(sourceSchema(binding.edge)) }}
         · {{ "Target type" | localize }}:
-        {{ summary(schema(binding.edge["target_schema"])) }}
+        {{ summary(targetSchema(binding.edge)) }}
       </p>
       @if (listBinding(binding.edge)) {
         <p>

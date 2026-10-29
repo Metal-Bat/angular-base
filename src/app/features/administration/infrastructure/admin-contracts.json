@@ -4200,6 +4200,104 @@
         }
       },
       {
+        "id": "preview_agent_decision_api_v1_ai_agents__ref_id__decision_preview_post",
+        "title": "Validate an author-provided decision sample",
+        "permission": "workflows.manage",
+        "mutation": true,
+        "method": "post",
+        "path": "/api/v1/ai-agents/{ref_id}/decision-preview",
+        "bodyRequired": true,
+        "schemas": {
+          "body": {
+            "required": [],
+            "properties": {
+              "sample_inputs": {
+                "anyOf": [
+                  {
+                    "additionalProperties": {},
+                    "maxProperties": 64,
+                    "type": "object"
+                  },
+                  { "type": "null" }
+                ],
+                "description": "Optional author-provided permitted inputs, at most 32 KiB JSON. Never reads runtime snapshots or calls a provider.",
+                "examples": [
+                  {
+                    "options": [
+                      {
+                        "description": "Invoice handling",
+                        "key": "finance",
+                        "labels": { "en": "Finance" }
+                      },
+                      {
+                        "description": "Service issues",
+                        "key": "support",
+                        "labels": { "en": "Support" }
+                      }
+                    ],
+                    "ticket": "Example invoice"
+                  }
+                ],
+                "title": "Sample Inputs"
+              }
+            }
+          },
+          "path": {
+            "required": ["ref_id"],
+            "properties": {
+              "ref_id": {
+                "title": "ref id",
+                "type": "string",
+                "description": ""
+              }
+            }
+          },
+          "query": { "required": [], "properties": {} }
+        }
+      },
+      {
+        "id": "start_agent_evaluation_api_v1_ai_agents__ref_id__evaluations_post",
+        "title": "Submit an eligible request for governed agent evaluation",
+        "permission": "workflows.manage",
+        "mutation": true,
+        "method": "post",
+        "path": "/api/v1/ai-agents/{ref_id}/evaluations",
+        "bodyRequired": true,
+        "schemas": {
+          "body": {
+            "required": ["submit_key", "request_ref"],
+            "properties": {
+              "request_ref": {
+                "description": "Exact owned eligible draft request whose pinned published workflow uses this published agent. Inputs remain in the normal saved request; this command cannot inject arbitrary model inputs.",
+                "maxLength": 128,
+                "minLength": 1,
+                "title": "Request Ref",
+                "type": "string"
+              },
+              "submit_key": {
+                "description": "Normal request submission replay key. Reuse only for the identical saved request payload; uncertain model execution is never retried through a new key.",
+                "examples": ["reviewed-agent-evaluation-1"],
+                "maxLength": 128,
+                "minLength": 1,
+                "title": "Submit Key",
+                "type": "string"
+              }
+            }
+          },
+          "path": {
+            "required": ["ref_id"],
+            "properties": {
+              "ref_id": {
+                "title": "ref id",
+                "type": "string",
+                "description": ""
+              }
+            }
+          },
+          "query": { "required": [], "properties": {} }
+        }
+      },
+      {
         "id": "history_api_v1_ai_agents__ref_id__history_post",
         "title": "Inspect one AI agent version history",
         "permission": "workflows.manage",
@@ -4317,6 +4415,167 @@
         "bodyRequired": false,
         "schemas": {
           "body": { "required": [], "properties": {} },
+          "path": {
+            "required": ["ref_id"],
+            "properties": {
+              "ref_id": {
+                "title": "ref id",
+                "type": "string",
+                "description": ""
+              }
+            }
+          },
+          "query": { "required": [], "properties": {} }
+        }
+      },
+      {
+        "id": "agent_retrieval_preview_api_v1_ai_agents__ref_id__retrieval_preview_post",
+        "title": "Review a bounded saved-report lookup plan",
+        "permission": "workflows.manage",
+        "mutation": true,
+        "method": "post",
+        "path": "/api/v1/ai-agents/{ref_id}/retrieval-preview",
+        "bodyRequired": true,
+        "schemas": {
+          "body": {
+            "required": ["report_ref"],
+            "properties": {
+              "limit": {
+                "default": 10,
+                "description": "Reviewed maximum rows; must also fit the registered source and saved report limits.",
+                "examples": [5],
+                "maximum": 10,
+                "minimum": 1,
+                "title": "Limit",
+                "type": "integer"
+              },
+              "report_ref": {
+                "description": "Current opaque reference of the author's unexpired saved report query, never a file URL or a definition chosen by arbitrary import path.",
+                "maxLength": 128,
+                "minLength": 1,
+                "title": "Report Ref",
+                "type": "string"
+              }
+            }
+          },
+          "path": {
+            "required": ["ref_id"],
+            "properties": {
+              "ref_id": {
+                "title": "ref id",
+                "type": "string",
+                "description": ""
+              }
+            }
+          },
+          "query": { "required": [], "properties": {} }
+        }
+      },
+      {
+        "id": "agent_retrieval_sources_api_v1_ai_agents__ref_id__retrieval_sources_search_post",
+        "title": "Find permitted owned report lookup sources",
+        "permission": "workflows.manage",
+        "mutation": false,
+        "method": "post",
+        "path": "/api/v1/ai-agents/{ref_id}/retrieval-sources/search",
+        "bodyRequired": true,
+        "schemas": {
+          "body": {
+            "required": [],
+            "properties": {
+              "page": {
+                "default": 1,
+                "minimum": 1,
+                "title": "Page",
+                "type": "integer"
+              },
+              "search": {
+                "anyOf": [
+                  { "maxLength": 100, "minLength": 1, "type": "string" },
+                  { "type": "null" }
+                ],
+                "title": "Search"
+              },
+              "size": {
+                "default": 20,
+                "maximum": 100,
+                "minimum": 1,
+                "title": "Size",
+                "type": "integer"
+              }
+            }
+          },
+          "path": {
+            "required": ["ref_id"],
+            "properties": {
+              "ref_id": {
+                "title": "ref id",
+                "type": "string",
+                "description": ""
+              }
+            }
+          },
+          "query": { "required": [], "properties": {} }
+        }
+      },
+      {
+        "id": "agent_workflow_context_api_v1_ai_agents__ref_id__workflow_context_post",
+        "title": "Inspect exact workflow-bound agent choices",
+        "permission": "workflows.manage",
+        "mutation": true,
+        "method": "post",
+        "path": "/api/v1/ai-agents/{ref_id}/workflow-context",
+        "bodyRequired": true,
+        "schemas": {
+          "body": {
+            "required": ["workflow_version_ref", "step_key"],
+            "properties": {
+              "sample_inputs": {
+                "anyOf": [
+                  {
+                    "additionalProperties": {},
+                    "maxProperties": 64,
+                    "type": "object"
+                  },
+                  { "type": "null" }
+                ],
+                "description": "Optional author-provided permitted inputs, at most 32 KiB JSON. Never reads runtime snapshots or calls a provider.",
+                "examples": [
+                  {
+                    "options": [
+                      {
+                        "description": "Invoice handling",
+                        "key": "finance",
+                        "labels": { "en": "Finance" }
+                      },
+                      {
+                        "description": "Service issues",
+                        "key": "support",
+                        "labels": { "en": "Support" }
+                      }
+                    ],
+                    "ticket": "Example invoice"
+                  }
+                ],
+                "title": "Sample Inputs"
+              },
+              "step_key": {
+                "description": "Existing AI_DECISION step key in that exact saved executable graph.",
+                "examples": ["classify_invoice"],
+                "maxLength": 64,
+                "minLength": 1,
+                "title": "Step Key",
+                "type": "string"
+              },
+              "workflow_version_ref": {
+                "description": "Current revision-bearing reference of an active workflow version the author may view. Stale references conflict; published pins are not replaced.",
+                "maxLength": 128,
+                "minLength": 1,
+                "title": "Workflow Version Ref",
+                "type": "string"
+              }
+            }
+          },
           "path": {
             "required": ["ref_id"],
             "properties": {

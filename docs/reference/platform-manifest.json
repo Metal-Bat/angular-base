@@ -2,12 +2,12 @@
   "generatedDate": "2026-10-03",
   "backendBaseCommit": "8921841a866c190d794f41af7a41389400fea26b",
   "backendChanges": "Uncommitted tested patch applied to the local fast-api-sample checkout; not deployed.",
-  "operationCount": 379,
-  "schemaCount": 565,
+  "operationCount": 386,
+  "schemaCount": 587,
   "sources": [
     {
       "file": "platform-openapi.json",
-      "sha256": "49f59cb7804f07e820f7cb1f4d26adb4794b5496a7520d59df38d238fae907ed"
+      "sha256": "1631c8478aa9881be85b258f92d1ced156b67c51db89edf881f4844f7609169e"
     },
     {
       "file": "backend-platform.patch",
@@ -32,5 +32,15 @@
   ],
   "notificationIntakeManifest": "app-be-001/contract-manifest.json",
   "currentIntakeManifest": "app-be-001/contract-manifest.json",
-  "currentIntakeRecord": "app-fe-008.1/contract-intake.json"
+  "currentIntakeRecord": "app-fe-008.1/contract-intake.json",
+  "current_intake": {
+    "date": "2026-10-28",
+    "owner": "APP-BE-019.UX03 / APP-FE-023/024; APP-BE-016.UX01 / APP-FE-014; APP-BE-014.UX01 / APP-FE-012; Agent UI acceptance",
+    "backend_commit": "4a5ec27f9f14eba7ad7fd7bbfa5280a7ed77d272",
+    "producer_source_sha256": "3f4045f6312f043b6bebba8beb589d7f6a82b060fd3df39a7200853b7567850e",
+    "producer_manifest_sha256": "7a28ff46a1b21c2b18eec3ae8d0af40317a74ec45fe037b40016ccf82d5b85f8",
+    "migration_root": "0001_schema",
+    "migration_head": "0005_binding_object_fields",
+    "scope": "Versioned object field mappings and redacted candidate-only samples, current Calendar memberships and evidence-bound operation notices/current process destinations; preserve owned Agent preview/submission contracts, replay, published pins and existing authority. Local acceptance is separate from hosted, live-provider and human acceptance."
+  }
 }

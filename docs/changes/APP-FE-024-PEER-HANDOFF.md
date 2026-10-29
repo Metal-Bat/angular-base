@@ -6,6 +6,12 @@ producer comparison belong to `artifacts/workflow-interface/services-attempt-*`
 and the final scoped receipt. This is a handoff, not an approved new exception or
 permission to label the full parent ready.
 
+2026-10-25 continuation: the owner authorized the REQUEST-persistence and legacy
+Transform repairs. Their implementation and source-qualified acceptance now belong
+to [the current repair record](APP-FE-024-BINDING-CONTRACTS.md) and its completion
+receipt. Findings below remain historical for their recorded source; an absent or
+partial current receipt is not verification.
+
 ## Legacy transform/1 binding validation conflicts
 
 The new owned parallel-wait acceptance graph initially used registered transform/1

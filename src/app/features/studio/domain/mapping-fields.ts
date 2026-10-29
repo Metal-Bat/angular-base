@@ -50,6 +50,9 @@ export function boundInputSchema(
   const binding = ((graph['bindings'] ?? []) as JsonObject[]).find(
     (row) => row['step'] === step && row['target_port'] === port,
   );
+  if (binding?.['target_projection']) {
+    return binding['target_schema'] as JsonObject;
+  }
   if (binding?.['source_kind'] === 'CONSTANT') {
     return constantSchema(binding['constant_value']);
   }

@@ -153,3 +153,71 @@ it('allows deliberate removal of a saved binding whose input definition is unava
   vm.removeMapping(vm.bindings()[0].id);
   expect(applied.mock.calls[0][0].bindings).toEqual([]);
 });
+
+it('compares sources against pinned union types while constants use normalized form schemas', async () => {
+  const { fixture } = await setup();
+  const vm = fixture.componentInstance;
+  fixture.componentRef.setInput('nodes', [
+    {
+      key: 'review',
+      title: 'Conversion',
+      position: { x: 0, y: 0 },
+      ports: [
+        {
+          key: 'value',
+          direction: 'INPUT',
+          cardinality: 'SCALAR',
+          schema: { type: ['string', 'integer'] },
+        },
+      ],
+    },
+  ]);
+  await fixture.whenStable();
+  vm.updateTarget('value');
+  expect(vm.compatible({ type: 'string' })).toBe(true);
+  expect(vm.compatible({ type: 'boolean' })).toBe(false);
+  expect(vm.targetSchema()['anyOf']).toEqual([
+    { type: 'string' },
+    { type: 'integer' },
+  ]);
+});
+
+it('uses the current port when editing a whole mapping after a conversion changes', async () => {
+  const { fixture } = await setup();
+  fixture.componentRef.setInput('graph', {
+    ...fixture.componentInstance.graph(),
+    bindings: [
+      {
+        step: 'review',
+        target_port: 'data',
+        source_kind: 'CONSTANT',
+        constant_value: {},
+        target_schema: { type: 'object' },
+      },
+    ],
+  });
+  fixture.componentRef.setInput('nodes', [
+    {
+      key: 'review',
+      title: 'Conversion',
+      position: { x: 0, y: 0 },
+      ports: [
+        {
+          key: 'data',
+          direction: 'INPUT',
+          cardinality: 'SCALAR',
+          schema: { type: ['string', 'integer', 'number'] },
+        },
+      ],
+    },
+  ]);
+  await fixture.whenStable();
+  const vm = fixture.componentInstance;
+  vm.edit(vm.bindings()[0].id);
+  expect(vm.compatible({ type: 'string' })).toBe(true);
+  expect(vm.targetSchema()['anyOf']).toEqual([
+    { type: 'string' },
+    { type: 'integer' },
+    { type: 'number' },
+  ]);
+});

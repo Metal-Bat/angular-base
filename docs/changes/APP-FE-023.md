@@ -47,3 +47,7 @@ and indexed-item selection, structured constants, editing/reordering, configured
 Transform v2 schemas and field-based object projections. Parent status remains
 BLOCKED for the precise producer/runtime and acceptance limits in that record.
 Historical scalar and ordinal evidence remains intact.
+
+## Integration continuation — 2026-10-28
+
+The selected current consumer/producer gap is implemented in the [integration record](APP-FE-INTEGRATION-2026-10-28.md). That record and its final current-source receipt govern this scoped acceptance; historical results and broader parent/external acceptance remain unchanged.

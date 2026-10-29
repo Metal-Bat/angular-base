@@ -1,6 +1,10 @@
 import { InjectionToken } from '@angular/core';
 import { RecordsPort } from './application/records-port';
 import { AgentMetadataPort } from './application/agent-metadata-port';
+import { AgentAuthoringPort } from './application/agent-authoring-port';
+export const AGENT_AUTHORING = new InjectionToken<AgentAuthoringPort>(
+  'Agent authoring',
+);
 export const AGENT_METADATA = new InjectionToken<AgentMetadataPort>(
   'Agent metadata',
 );

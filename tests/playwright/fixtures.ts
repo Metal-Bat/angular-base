@@ -11,6 +11,8 @@ export const test = base.extend<{
   inlineAttachments: boolean;
   sharedRecords: boolean;
   administrationDetails: boolean;
+  agentAuthoring: boolean;
+  operationNotices: boolean;
   attachmentReceipt: 'absent' | 'committed' | null;
   diagnostics: void;
   authenticated: void;
@@ -23,6 +25,8 @@ export const test = base.extend<{
   inlineAttachments: [false, { option: true }],
   sharedRecords: [false, { option: true }],
   administrationDetails: [false, { option: true }],
+  agentAuthoring: [false, { option: true }],
+  operationNotices: [false, { option: true }],
   attachmentReceipt: [null, { option: true }],
   authenticated: [
     async ({ page, appURL }, use): Promise<void> => {
@@ -70,6 +74,8 @@ export const test = base.extend<{
       inlineAttachments,
       sharedRecords,
       administrationDetails,
+      agentAuthoring,
+      operationNotices,
       attachmentReceipt,
     },
     use,
@@ -98,6 +104,8 @@ export const test = base.extend<{
       inlineAttachments,
       sharedRecords,
       administrationDetails,
+      agentAuthoring,
+      operationNotices,
       attachmentReceipt,
     });
     try {

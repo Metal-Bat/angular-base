@@ -1,0 +1,80 @@
+@let vm = view();
+<div class="authoring-actions">
+  <p-checkbox
+    inputId="agent-use-sample"
+    [binary]="true"
+    [ngModel]="vm.useSample()"
+    (ngModelChange)="vm.useSample.set($event); vm.editSample()"
+  /><label for="agent-use-sample">{{
+    "Provide an author sample" | localize
+  }}</label>
+</div>
+@if (vm.useSample()) {
+  <p>
+    {{
+      "Include an input to distinguish an explicit empty value from a missing input."
+        | localize
+    }}
+  </p>
+  @for (field of vm.fields(); track field.key) {
+    <fieldset class="authoring-sample-field">
+      <legend>
+        <bdi>{{ field.key }}</bdi>
+      </legend>
+      <div class="authoring-actions">
+        <p-checkbox
+          [binary]="true"
+          [disabled]="field.kind === 'unsupported'"
+          [inputId]="'agent-include-' + field.key"
+          [ngModel]="vm.enabledInputs().includes(field.key)"
+          (ngModelChange)="vm.toggleInput(field.key, $event)"
+        /><label [for]="'agent-include-' + field.key">{{
+          "Include input" | localize
+        }}</label>
+      </div>
+      @if (vm.enabledInputs().includes(field.key)) {
+        @switch (field.kind) {
+          @case ("choices") {
+            <app-agent-sample-choices [view]="vm" />
+          }
+          @case ("boolean") {
+            <p-checkbox
+              [binary]="true"
+              [inputId]="'agent-sample-' + field.key"
+              [ngModel]="vm.sampleValues()[field.key] === true"
+              (ngModelChange)="vm.sampleValue(field.key, $event)"
+            /><label [for]="'agent-sample-' + field.key">{{
+              "Value" | localize
+            }}</label>
+          }
+          @default {
+            <app-control-field
+              label="Value"
+              [controlId]="'agent-sample-' + field.key"
+              ><input
+                pInputText
+                [id]="'agent-sample-' + field.key"
+                [inputMode]="field.kind === 'text' ? 'text' : 'decimal'"
+                [ngModel]="vm.sampleValues()[field.key] ?? ''"
+                (ngModelChange)="vm.sampleValue(field.key, $event)"
+            /></app-control-field>
+          }
+        }
+      }
+      <p [hidden]="field.kind !== 'unsupported'">
+        {{
+          "This declared input type cannot be entered in this sample editor."
+            | localize
+        }}
+      </p>
+    </fieldset>
+  }
+  <button
+    pButton
+    type="button"
+    [disabled]="vm.busy().includes('sample')"
+    (click)="vm.previewSample()"
+  >
+    {{ "Preview sample choices" | localize }}
+  </button>
+}

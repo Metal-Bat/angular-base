@@ -43,6 +43,15 @@ async def main():
                 await session.flush()
             session.add(RolePermissionEntity(role_id=role.id, permission_id=permission.id))
         session.add(UserRoleEntity(user_id=actor.id, role_id=role.id))
+        if os.environ.get('FOUNDATION_TASK') == '014':
+            from apps.work_groups.domain.entity import WorkGroupEntity, WorkGroupMemberEntity
+            from core.ref_id import create_ref_id
+            own = WorkGroupEntity(code='CG' + uuid7().hex, name='Owned Calendar Team')
+            foreign = WorkGroupEntity(code='CG' + uuid7().hex, name='Foreign Calendar Team')
+            session.add_all([own, foreign])
+            await session.flush()
+            session.add(WorkGroupMemberEntity(work_group_id=own.id, user_id=actor.id, added_by_user_id=actor.id))
+            accounts['calendar_group'] = create_ref_id(own.id, own.version)
         if os.environ.get('FOUNDATION_TASK') == '021':
             # Publish only reviewed pure primitives in this owned disposable DB.
             # Existing applied migrations and published snapshots stay immutable.
@@ -70,6 +79,24 @@ async def main():
             session.add(connection)
             await session.flush()
             accounts['agent_connection'] = create_ref_id(connection.id, connection.version)
+            import importlib.util
+            spec = importlib.util.spec_from_file_location('owned_agent_authoring', Path(__file__).with_name('agent-authoring-paired-seed.py'))
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            try:
+                await module.seed_agent_authoring(session, actor, connection, accounts)
+            except Exception as error:
+                import traceback
+                safe = {'error_type': type(error).__name__, 'frames': [{'file': Path(frame.filename).name, 'function': frame.name, 'line': frame.lineno} for frame in traceback.extract_tb(error.__traceback__)]}
+                if hasattr(error, 'issues'):
+                    safe['issues'] = [{'pointer': item.get('pointer'), 'code': item.get('code')} for item in error.issues]
+                target = Path(__file__).resolve().parents[1] / 'artifacts/integration-2026-10-28/agent-seed-failure.json'
+                if hasattr(error, 'errors'):
+                    safe['validation'] = [{'path': list(item['loc']), 'code': item['type']} for item in error.errors(include_input=False, include_url=False, include_context=False)]
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.with_name('agent-seed-failure-' + uuid7().hex + '.json').write_text(json.dumps(safe, indent=2)+'\n')
+                target.write_text(json.dumps(safe, indent=2)+'\n')
+                raise
             outsider = (await session.exec(select(UserEntity).where(UserEntity.username == accounts['users'][1]))).one()
             session.add(UserRoleEntity(user_id=outsider.id, role_id=role.id))
         if os.environ.get('FOUNDATION_TASK') == '028':

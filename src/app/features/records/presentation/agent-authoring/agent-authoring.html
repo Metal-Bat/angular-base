@@ -1,0 +1,52 @@
+<h3>{{ "Saved version checks" | localize }}</h3>
+<p>
+  {{
+    "These checks use the saved version. Save your edits first. Previews never execute a provider or a tool."
+      | localize
+  }}
+</p>
+@for (error of errorRows(); track error[0]) {
+  <p role="alert">
+    {{ errorLabel(error[0]) | localize }}: {{ error[1] | localize }}
+  </p>
+}
+@if (busy().length) {
+  <p role="status">{{ "Loading…" | localize }}</p>
+}
+@if (active()) {
+  <button
+    pButton
+    severity="secondary"
+    type="button"
+    [disabled]="busy().includes('decision')"
+    (click)="inspectDecision()"
+  >
+    {{ "Inspect saved choices" | localize }}
+  </button>
+  <app-agent-workflow-checks [view]="this" />
+  @if (decision(); as preview) {
+    <section aria-labelledby="agent-choice-preview-title">
+      <h3 id="agent-choice-preview-title">
+        {{ "Decision choice preview" | localize }}
+      </h3>
+      <p role="status">{{ stateLabel(preview.state) | localize }}</p>
+      <ul>
+        @for (choice of preview.options; track choice.key) {
+          <li>
+            <strong>{{ choiceLabel(choice.labels, choice.key) }}</strong>
+            <p>{{ choice.description }}</p>
+          </li>
+        }
+      </ul>
+      <ul>
+        @for (issue of preview.issues; track issue) {
+          <li>
+            <bdi>{{ issue }}</bdi>
+          </li>
+        }
+      </ul>
+    </section>
+  }
+  <app-agent-retrieval-checks [view]="this" />
+  <app-agent-evaluation-checks [view]="this" />
+}

@@ -7,15 +7,15 @@
   "schemas": {
     "en": {
       "path": "openapi-en.json",
-      "sha256": "49f59cb7804f07e820f7cb1f4d26adb4794b5496a7520d59df38d238fae907ed"
+      "sha256": "1631c8478aa9881be85b258f92d1ced156b67c51db89edf881f4844f7609169e"
     },
     "fa": {
       "path": "openapi-fa.json",
-      "sha256": "3c038a929390f07aadd6092e5a023bd9b52de2927b1d4819b15dbe244fc3612d"
+      "sha256": "7ac7287a4d9db630320ae90c021c354bded512ad721b7f44f3cbceb8016475cd"
     },
     "ar": {
       "path": "openapi-ar.json",
-      "sha256": "232b0d0b4cfc847b51e6ed4070f95a351c73e391773200f4904654dbbcc5d363"
+      "sha256": "544332e23ac5bb997718a8b14a13b9c3785fbc7fcbf8be5ae2c58ef74a997119"
     }
   },
   "permissions": {
@@ -93,19 +93,20 @@
     "consumer_verified": false
   },
   "notification_intake": {
-    "backend_commit": "9999641f8e37077829ebbe7159a6cd794fb94b91",
+    "backend_commit": "4a5ec27f9f14eba7ad7fd7bbfa5280a7ed77d272",
     "source": "../inbox.openapi.json",
-    "sha256": "73bb25ced8034f33747ec40436bcc7c046263f3fbf69b8ef1b9d317d460eb945",
-    "scope": "Unified inbox and SSE schema closure from the same Arabic producer intake."
+    "sha256": "de021d5853747ada3d00f90c09c5f5cacf6242ec6af9bb7a33526ec216979b2d",
+    "scope": "Unified inbox/SSE and protected-operation process destinations from the same effective producer manifest; legacy unavailable operations retained."
   },
   "current_intake": {
-    "backend_commit": "9999641f8e37077829ebbe7159a6cd794fb94b91",
-    "owner": "APP-FE-008.1",
-    "scope": "Full en/fa/ar producer intake; additive Arabic locales, numbering, plural branches and task text. Operation IDs, security, wire values and operation structure are unchanged except the additive Arabic help-state query locale.",
-    "producer_source_sha256": "ab19ef1fa950baf108ae7d9598458e8c6c18ff778009311d86a3876df49cd85c",
-    "producer_manifest_sha256": "1a6ad3abcee7a45c3f078e4df9b1bb6a511977aba34488cd61a9cd676428fb47",
-    "diff": "../app-fe-008.1/contract-intake.json",
-    "documentation_cleanup": "2026-10-11: removed unused backend backlog mirror; public contracts unchanged. Current source acknowledged for required paired checks."
+    "date": "2026-10-28",
+    "owner": "APP-BE-019.UX03 / APP-FE-023/024; APP-BE-016.UX01 / APP-FE-014; APP-BE-014.UX01 / APP-FE-012; Agent UI acceptance",
+    "backend_commit": "4a5ec27f9f14eba7ad7fd7bbfa5280a7ed77d272",
+    "producer_source_sha256": "3f4045f6312f043b6bebba8beb589d7f6a82b060fd3df39a7200853b7567850e",
+    "producer_manifest_sha256": "7a28ff46a1b21c2b18eec3ae8d0af40317a74ec45fe037b40016ccf82d5b85f8",
+    "migration_root": "0001_schema",
+    "migration_head": "0005_binding_object_fields",
+    "scope": "Versioned object field mappings and redacted candidate-only samples, current Calendar memberships and evidence-bound operation notices/current process destinations; preserve owned Agent preview/submission contracts, replay, published pins and existing authority. Local acceptance is separate from hosted, live-provider and human acceptance."
   },
   "ordered_011_description_intake": {
     "date": "2026-10-09",
@@ -121,13 +122,13 @@
   "intake_history": [
     {
       "backend_commit": "9999641f8e37077829ebbe7159a6cd794fb94b91",
-      "owner": "APP-FE-006\u2013015",
+      "owner": "APP-FE-006–015",
       "scope": "full effective en/fa paths and models, preserving historical producer fields",
       "diff": "../app-fe-015/contract-intake.json"
     },
     {
       "backend_commit": "9999641f8e37077829ebbe7159a6cd794fb94b91",
-      "owner": "APP-FE-016\u2013020",
+      "owner": "APP-FE-016–020",
       "scope": "Compared and reconciled full frozen producer; form contracts unchanged",
       "diff": "../app-fe-016-020/contract-intake.json"
     },
@@ -162,6 +163,18 @@
       "producer_source_sha256": "dd3ec9595a1153c663970b07266c0e69a9abc5ffd50214928a56db45a6c9c0de",
       "producer_manifest_sha256": "f8d5aeed5ef7fe7ff5b535be21d0d372355127bbcd0828f574d4925c994b5366",
       "diff": "../app-be-031/contract-intake.json"
+    },
+    {
+      "date": "2026-10-25",
+      "owner": "APP-BE-019.UX02 / APP-BE-028.UX01 / APP-FE-024",
+      "backend_commit": "4a5ec27f9f14eba7ad7fd7bbfa5280a7ed77d272",
+      "producer_source_sha256": "e1be25e34250fe2c1f9a1a3874216b9dfe75673b9c4e6010c447f94a35b38ae0",
+      "producer_manifest_sha256": "fd422568000d392c1d3804fa4cd098180683d1c20c1b75a4eac99cbaff6ae010",
+      "migration_root": "0001_schema",
+      "migration_head": "0004_binding_source_schema",
+      "scope": "REQUEST/CONTEXT schema durability and legacy Transform validation/execution. Wire field names, operation IDs, paths, security and registered handler metadata are unchanged; GraphBinding.source_schema documentation now describes durable declarations.",
+      "diff": "../../../artifacts/remaining-2026-10-25/contract-diff-final.json",
+      "metadata_note": "Private uppercase comment and notification recipient lock compatibility corrections; public schemas and registered handler fingerprints unchanged."
     }
   ],
   "reviewed_metadata_intakes": {
@@ -188,5 +201,79 @@
       "openapi_change": "None; live reviewer profile matches all frozen paths/components.",
       "compatibility": "Existing schemas, handler pins and DTO/operation contracts retained; unknown or mismatched catalog schemas still fail closed."
     }
-  }
+  },
+  "historical_intakes": [
+    {
+      "backend_commit": "9999641f8e37077829ebbe7159a6cd794fb94b91",
+      "owner": "APP-FE-008.1",
+      "scope": "Full en/fa/ar producer intake; additive Arabic locales, numbering, plural branches and task text. Operation IDs, security, wire values and operation structure are unchanged except the additive Arabic help-state query locale.",
+      "producer_source_sha256": "ab19ef1fa950baf108ae7d9598458e8c6c18ff778009311d86a3876df49cd85c",
+      "producer_manifest_sha256": "1a6ad3abcee7a45c3f078e4df9b1bb6a511977aba34488cd61a9cd676428fb47",
+      "diff": "../app-fe-008.1/contract-intake.json",
+      "documentation_cleanup": "2026-10-11: removed unused backend backlog mirror; public contracts unchanged. Current source acknowledged for required paired checks."
+    },
+    {
+      "date": "2026-10-25",
+      "owner": "APP-BE-019.UX02 / APP-FE-024",
+      "backend_commit": "4a5ec27f9f14eba7ad7fd7bbfa5280a7ed77d272",
+      "producer_source_sha256": "142d9b1a8aab45259733a210b6355470eac0f6cd1463d8748fb40eefce711d6b",
+      "producer_manifest_sha256": "05e6a1c68f32b7b5c0c0d3d295513c1f5c98466e5f27b02b327ffb4f19a197ee",
+      "migration_root": "0001_schema",
+      "migration_head": "0004_binding_source_schema",
+      "scope": "REQUEST/CONTEXT schema durability and legacy Transform validation/execution. Wire field names, operation IDs, paths, security and registered handler metadata are unchanged; GraphBinding.source_schema documentation now describes durable declarations.",
+      "diff": "../../../artifacts/remaining-2026-10-25/contract-diff-final.json",
+      "metadata_note": "Uppercase private database comment convention corrected; public schemas and registered handler fingerprints unchanged."
+    },
+    {
+      "date": "2026-10-27",
+      "owner": "APP-BE-019.UX01 / APP-FE-025/030",
+      "backend_commit": "4a5ec27f9f14eba7ad7fd7bbfa5280a7ed77d272",
+      "producer_source_sha256": "c602cf9757104320810c334e282d1c012e3d97e7acaea85bf6cc24d3c7bdfce1",
+      "producer_manifest_sha256": "94018845ee5ab04e320a71a59b07e4dab6e88b7c5af3dd72d7c8845a473f02d0",
+      "migration_root": "0001_schema",
+      "migration_head": "0004_binding_source_schema",
+      "scope": "Five owned Agent authoring/evaluation operations and exact use-authorized connection_name metadata. Evaluations delegate eligible request submission and preserve published pins, normal approval, budget and replay semantics. Preview results never claim provider execution.",
+      "diff": "../../../artifacts/seed-processes-2026-10-27/agent-contract-diff.json"
+    },
+    {
+      "date": "2026-10-28",
+      "owner": "APP-BE-016.UX01 / APP-FE-014; Agent integration acceptance",
+      "backend_commit": "4a5ec27f9f14eba7ad7fd7bbfa5280a7ed77d272",
+      "producer_source_sha256": "e29ac3f028dad98d0f08fc73d203f176f9653a784c9062ea74c57baf4e4413c6",
+      "producer_manifest_sha256": "c0073a9f02fdaebbb25b5bb72a503029235912cccb8a6e9ce8173f80474b3d91",
+      "migration_root": "0001_schema",
+      "migration_head": "0004_binding_source_schema",
+      "scope": "Current actor Calendar work-group selector; preserve the five owned Agent authoring/evaluation contracts and governed execution. Local acceptance remains separate from hosted, live-provider and human acceptance."
+    },
+    {
+      "date": "2026-10-28",
+      "owner": "APP-BE-016.UX01 / APP-FE-014; APP-BE-014.UX01 / APP-FE-012; Agent UI acceptance",
+      "backend_commit": "4a5ec27f9f14eba7ad7fd7bbfa5280a7ed77d272",
+      "producer_source_sha256": "16fb2830f2152e23a3d4ffa9fbad23b7eceae39d16788c3d08fe1f9ce1c1883b",
+      "producer_manifest_sha256": "50cd60b5b9af2740028dfae856d48f5a6d31a33bf4b1cf89ca6402f44f5955ee",
+      "migration_root": "0001_schema",
+      "migration_head": "0004_binding_source_schema",
+      "scope": "Current Calendar memberships and evidence-bound operation notices/current process destinations; preserve owned Agent preview/submission contracts, replay, published pins and existing authority. Local acceptance is separate from hosted, live-provider and human acceptance."
+    },
+    {
+      "date": "2026-10-28",
+      "owner": "APP-BE-019.UX03 / APP-FE-023/024; APP-BE-016.UX01 / APP-FE-014; APP-BE-014.UX01 / APP-FE-012; Agent UI acceptance",
+      "backend_commit": "4a5ec27f9f14eba7ad7fd7bbfa5280a7ed77d272",
+      "producer_source_sha256": "c063bdf7b6f6b3ea36330cf899e9b5599ce03377e9157d96ee217b6d6609631d",
+      "producer_manifest_sha256": "7f36e762125c8cf902b0c6c2a1248edb5e5de293559f34bb74c935419ff10a91",
+      "migration_root": "0001_schema",
+      "migration_head": "0005_binding_object_fields",
+      "scope": "Versioned object field mappings and redacted candidate-only samples, current Calendar memberships and evidence-bound operation notices/current process destinations; preserve owned Agent preview/submission contracts, replay, published pins and existing authority. Local acceptance is separate from hosted, live-provider and human acceptance."
+    },
+    {
+      "date": "2026-10-28",
+      "owner": "APP-BE-019.UX03 / APP-FE-023/024; APP-BE-016.UX01 / APP-FE-014; APP-BE-014.UX01 / APP-FE-012; Agent UI acceptance",
+      "backend_commit": "4a5ec27f9f14eba7ad7fd7bbfa5280a7ed77d272",
+      "producer_source_sha256": "fea9312489424844301a3d65c347f1298dad313f13d938b5df31df79962d8a66",
+      "producer_manifest_sha256": "40b7884bd11caa8ac159c331e47c73a074677ebe9d1c17764e6d90dc1dd64040",
+      "migration_root": "0001_schema",
+      "migration_head": "0005_binding_object_fields",
+      "scope": "Versioned object field mappings and redacted candidate-only samples, current Calendar memberships and evidence-bound operation notices/current process destinations; preserve owned Agent preview/submission contracts, replay, published pins and existing authority. Local acceptance is separate from hosted, live-provider and human acceptance."
+    }
+  ]
 }

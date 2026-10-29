@@ -204,4 +204,53 @@ describe('Calendar command recovery and exact schedules', () => {
     await vm.save();
     expect(save).toHaveBeenCalledTimes(1);
   });
+  it('requires a chosen group and preserves the exact uncertain command', async () => {
+    save.mockRejectedValueOnce(new ApiFailure(0, null, null, [], true));
+    const fixture = TestBed.createComponent(CalendarEditor);
+    await fixture.whenStable();
+    const vm = fixture.componentInstance;
+    vm.title = 'Group appointment';
+    vm.kind = 'all_day';
+    vm.start = '2026-10-29';
+    vm.end = '2026-10-30';
+    vm.sharingGroup = true;
+    await vm.save();
+    expect(save).not.toHaveBeenCalled();
+    vm.group = 'current-group';
+    await vm.save();
+    const original = structuredClone(save.mock.calls[0][0]);
+    expect(original.work_group_ref_id).toBe('current-group');
+    expect(vm.uncertain()).toBe(true);
+    vm.group = 'changed-group';
+    save.mockResolvedValueOnce(item);
+    await vm.save();
+    expect(save.mock.calls[1][0]).toEqual(original);
+  });
+  it('repairs a stale group without losing the new draft', async () => {
+    save.mockRejectedValueOnce(
+      new ApiFailure(409, null, null, [], false, 'revision'),
+    );
+    const fixture = TestBed.createComponent(CalendarEditor);
+    await fixture.whenStable();
+    const vm = fixture.componentInstance;
+    vm.title = 'Retained group draft';
+    vm.kind = 'all_day';
+    vm.start = '2026-10-29';
+    vm.end = '2026-10-30';
+    vm.sharingGroup = true;
+    vm.selectGroup('old-group');
+    await vm.save();
+    expect(vm.reconcileRequired()).toBe(true);
+    const original = save.mock.calls[0][0];
+    vm.selectGroup('fresh-group');
+    expect(vm.reconcileRequired()).toBe(false);
+    save.mockResolvedValueOnce(item);
+    await vm.save();
+    expect(save.mock.calls[1][0]).toMatchObject({
+      title: original.title,
+      schedule: original.schedule,
+      work_group_ref_id: 'fresh-group',
+    });
+    expect(save.mock.calls[1][0].command_key).not.toBe(original.command_key);
+  });
 });

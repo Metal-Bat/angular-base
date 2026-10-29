@@ -74,6 +74,7 @@ export class AgentMetadataApi implements AgentMetadataPort {
       }
       return {
         connection_ref: connection,
+        connection_name: string(row, 'connection_name'),
         model_id: model,
         provider: string(row, 'provider'),
         source: 'configured' as const,

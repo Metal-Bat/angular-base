@@ -1,0 +1,106 @@
+@let vm = view();
+<section aria-labelledby="agent-retrieval-checks-title">
+  <h3 id="agent-retrieval-checks-title">
+    {{ "Saved report lookup" | localize }}
+  </h3>
+  <p>
+    {{
+      "Only currently authorized saved queries permitted by this agent are listed. Preview returns no report rows and runs no tool."
+        | localize
+    }}
+  </p>
+  <div class="authoring-actions">
+    <app-control-field controlId="agent-report-search" label="Find a source"
+      ><input
+        id="agent-report-search"
+        maxlength="100"
+        pInputText
+        [(ngModel)]="vm.reportSearch" /></app-control-field
+    ><button
+      pButton
+      type="button"
+      [disabled]="vm.busy().includes('sources')"
+      (click)="vm.loadSources(1, true)"
+    >
+      {{ "Search" | localize }}
+    </button>
+  </div>
+  <app-record-table
+    actionLabel="Select"
+    primaryKey="ref"
+    [busy]="vm.busy().includes('sources')"
+    [columns]="vm.reportColumns"
+    [rows]="vm.reportRows()"
+    (opened)="vm.chooseSource($event)"
+  />
+  <nav
+    class="authoring-actions"
+    [attr.aria-label]="'Saved report pages' | localize"
+  >
+    <button
+      pButton
+      type="button"
+      [disabled]="
+        vm.busy().includes('sources') || (vm.reports()?.page ?? 1) <= 1
+      "
+      (click)="vm.loadSources((vm.reports()?.page ?? 1) - 1)"
+    >
+      {{ "Previous" | localize }}</button
+    ><span
+      >{{ vm.reports()?.page ?? 1 }} / {{ vm.reports()?.totalPages ?? 0 }}</span
+    ><button
+      pButton
+      type="button"
+      [disabled]="
+        vm.busy().includes('sources') ||
+        (vm.reports()?.page ?? 1) >= (vm.reports()?.totalPages ?? 0)
+      "
+      (click)="vm.loadSources((vm.reports()?.page ?? 1) + 1)"
+    >
+      {{ "Next" | localize }}
+    </button>
+  </nav>
+  @if (vm.source(); as source) {
+    <h4>{{ source.name }}</h4>
+    <p>
+      {{ "Classification" | localize }}:
+      {{ source.classification | localize }} ·
+      {{ "Definition version" | localize }}: {{ source.version }}
+    </p>
+    <div class="authoring-actions">
+      <app-control-field controlId="agent-lookup-limit" label="Maximum rows"
+        ><input
+          id="agent-lookup-limit"
+          min="1"
+          pInputText
+          type="number"
+          [max]="source.maxRows"
+          [(ngModel)]="vm.limit"
+          (ngModelChange)="vm.lookup.set(null)" /></app-control-field
+      ><button
+        pButton
+        type="button"
+        [disabled]="!vm.validLimit() || vm.busy().includes('lookup')"
+        (click)="vm.previewLookup()"
+      >
+        {{ "Preview lookup" | localize }}
+      </button>
+    </div>
+  }
+  @if (vm.lookup(); as lookup) {
+    <p role="status">
+      {{
+        "Lookup preview ready. Human tool approval is still required before execution."
+          | localize
+      }}
+    </p>
+    <p>{{ "Maximum rows" | localize }}: {{ lookup.limit }}</p>
+    <ul>
+      @for (field of lookup.source.fields; track field) {
+        <li>
+          <bdi>{{ field }}</bdi>
+        </li>
+      }
+    </ul>
+  }
+</section>

@@ -1,3 +1,4 @@
+import { CalendarGroupChoice } from '../calendar-group-choice/calendar-group-choice';
 import { CalendarDraft } from '../../domain/calendar-draft';
 import { ControlField } from '../../../../shared/ui/control-field/control-field';
 import { TemporalControl } from '../../../../shared/ui/temporal-control/temporal-control';
@@ -52,6 +53,7 @@ function localMinute(instant: string, timezone: string): string {
 @Component({
   selector: 'app-calendar-editor',
   imports: [
+    CalendarGroupChoice,
     ControlField,
     RouterLink,
     TemporalControl,
@@ -77,6 +79,9 @@ export class CalendarEditor {
   readonly busy = signal(false);
   readonly error = signal('');
   title = '';
+  group: string | null = null;
+  sharingGroup = false;
+  private staleGroup = false;
   kind: 'timed' | 'all_day' = 'timed';
   private readonly locale = inject(Locale);
   timezone = this.locale.timezone();
@@ -95,6 +100,8 @@ export class CalendarEditor {
   private signature(): string {
     return JSON.stringify([
       this.title,
+      this.group,
+      this.sharingGroup,
       this.kind,
       this.timezone,
       this.start,
@@ -124,6 +131,9 @@ export class CalendarEditor {
   }
   private clear(): void {
     this.title = this.start = this.end = this.startChoice = this.endChoice = '';
+    this.group = null;
+    this.sharingGroup = false;
+    this.staleGroup = false;
     this.pending = null;
     this.uncertain.set(false);
     this.reconcileRequired.set(false);
@@ -136,6 +146,8 @@ export class CalendarEditor {
     this.generation++;
     this.clear();
     this.reminder = 'none';
+    this.group = item?.work_group_ref_id ?? null;
+    this.sharingGroup = !!this.group;
     // Capture the user's saved zone for this draft. Later preference changes
     // must not reinterpret unfinished wall times or an uncertain command.
     this.timezone = this.locale.timezone();
@@ -180,8 +192,20 @@ export class CalendarEditor {
       this.start = this.end = this.startChoice = this.endChoice = '';
     }
   }
+  selectGroup(reference: string | null): void {
+    if (this.busy() || this.uncertain()) {
+      return;
+    }
+    const changed = this.group !== reference;
+    this.group = reference;
+    if (changed && this.staleGroup && !this.item() && !this.pending) {
+      this.staleGroup = false;
+      this.reconcileRequired.set(false);
+      this.error.set('');
+    }
+  }
   private body(): CalendarInput {
-    if (!this.title.trim()) {
+    if (!this.title.trim() || (this.sharingGroup && !this.group)) {
       throw Error('Invalid event');
     }
     const schedule = this.eventSchedule();
@@ -194,7 +218,7 @@ export class CalendarEditor {
     return {
       title: this.title.trim(),
       schedule,
-      work_group_ref_id: this.item()?.work_group_ref_id ?? null,
+      work_group_ref_id: this.group,
       reminder_offsets: this.offsets(),
       command_key: crypto.randomUUID(),
     };
@@ -285,22 +309,32 @@ export class CalendarEditor {
       this.saved.emit(item);
     } catch (error) {
       if (generation === this.generation) {
-        this.reconcileRequired.set(
-          error instanceof ApiFailure && error.httpStatus === 409,
-        );
-        const uncertain = !knownRejection(error);
-        if (!uncertain) {
-          this.pending = null;
-        }
-        this.uncertain.set(uncertain);
-        this.error.set(
-          'The command could not be confirmed. Refresh current state before retrying.',
-        );
+        this.commandFailed(error);
       }
     } finally {
       if (generation === this.generation) {
         this.busy.set(false);
       }
     }
+  }
+  private commandFailed(error: unknown): void {
+    this.reconcileRequired.set(
+      error instanceof ApiFailure && error.httpStatus === 409,
+    );
+    const uncertain = !knownRejection(error);
+    this.staleGroup =
+      !this.item() &&
+      !!this.group &&
+      !uncertain &&
+      error instanceof ApiFailure &&
+      error.httpStatus === 409 &&
+      error.conflictKind === 'revision';
+    if (!uncertain) {
+      this.pending = null;
+    }
+    this.uncertain.set(uncertain);
+    this.error.set(
+      'The command could not be confirmed. Refresh current state before retrying.',
+    );
   }
 }

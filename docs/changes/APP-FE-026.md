@@ -33,3 +33,20 @@ APP-FE-026.2 delivers the independent implementation recorded in [authorized rec
 Current source-qualified evidence is in the [receipt/layout continuation](../delivery/APP-FE-026-028-RECEIPTS.md): successful strict 20-case backend rehearsal and two guarded resets, plus ten actual layout browser scenarios. Scope limits, failed earlier runs and current final gate remain explicit; parent acceptance is not changed.
 
 Observed complete frontend gate: 12 stages, 579 tests / 119 files and ten Firefox scopes passed with zero emitted warnings/required skips. The [continuation record](../delivery/APP-FE-026-028-RECEIPTS.md) retains its exact source hashes, preclosure manifest and final post-documentation gate location. Parent scope limitations remain unchanged.
+
+# 2026-10-27 required-gate fixture continuation
+
+The full gate stopped in the existing foundations form-designer scenario: the
+fixture edited the previous inspector before the newly selected field's inspector
+had rendered. A separate repeat exposed a language-picker click while disabled by
+an in-flight preference update. The fixture now waits for the exact new node key,
+current documents, inspector draft and rendered label, and for an enabled language
+choice. It additionally asserts that the label edit retains all four nodes and the
+new canonical field binding. Existing roundtrip/preview identity assertions and all
+deadlines remain unchanged. No production UI code or warning policy was changed.
+
+The complete owning `node server/browser-foundations.spec.mjs` passes after the
+repair; failed and passing logs are retained under
+`artifacts/seed-processes-2026-10-27/`. Full unchanged-source verification is still
+required and governed by that directory's final completion receipt. This is a test
+synchronization repair under the existing form owner, not new feature acceptance.

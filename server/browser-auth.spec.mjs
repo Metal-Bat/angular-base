@@ -302,6 +302,7 @@ const script = `
   await openPreferences();
   await wait(dropdownsIdle,'previous language dropdown closed');
   const picker=document.querySelector('[data-language-picker]');
+  await wait(()=>!picker.querySelector('select')?.disabled&&picker.querySelector('[role="combobox"]')?.getAttribute('aria-disabled')!=='true','language choice enabled');
   const source=picker.querySelector('select');
   const control=picker.querySelector('[role="combobox"]');
   const option=Array.from(source.options).find(option=>option.value===value);

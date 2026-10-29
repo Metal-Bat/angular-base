@@ -1,0 +1,147 @@
+@let vm = view();
+<section aria-labelledby="agent-evaluation-checks-title">
+  <h3 id="agent-evaluation-checks-title">
+    {{ "Governed evaluation" | localize }}
+  </h3>
+  <p>
+    {{
+      "Evaluation submits an owned saved draft whose immutable workflow pins this published agent. It follows normal budgets and approvals; submission is not a model verdict."
+        | localize
+    }}
+  </p>
+  @if (vm.canEvaluate()) {
+    <button
+      pButton
+      severity="secondary"
+      type="button"
+      [disabled]="vm.submitting() || vm.needsReconciliation() || vm.confirmed()"
+      (click)="vm.loadRequests()"
+    >
+      {{ "Refresh my draft requests" | localize }}
+    </button>
+    <app-record-table
+      actionLabel="Select"
+      primaryKey="ref"
+      [busy]="
+        vm.busy().includes('request') ||
+        vm.submitting() ||
+        vm.needsReconciliation() ||
+        vm.confirmed()
+      "
+      [columns]="vm.requestColumns"
+      [rows]="vm.requestRows()"
+      (opened)="vm.chooseRequest($event)"
+    />
+    <nav
+      class="authoring-actions"
+      [attr.aria-label]="'Draft request pages' | localize"
+    >
+      <button
+        pButton
+        type="button"
+        [disabled]="
+          vm.submitting() ||
+          vm.needsReconciliation() ||
+          (vm.drafts()?.page ?? 1) <= 1
+        "
+        (click)="vm.loadRequests((vm.drafts()?.page ?? 1) - 1)"
+      >
+        {{ "Previous" | localize }}</button
+      ><span
+        >{{ vm.drafts()?.page ?? 1 }} / {{ vm.drafts()?.totalPages ?? 0 }}</span
+      ><button
+        pButton
+        type="button"
+        [disabled]="
+          vm.submitting() ||
+          vm.needsReconciliation() ||
+          (vm.drafts()?.page ?? 1) >= (vm.drafts()?.totalPages ?? 0)
+        "
+        (click)="vm.loadRequests((vm.drafts()?.page ?? 1) + 1)"
+      >
+        {{ "Next" | localize }}
+      </button>
+    </nav>
+  } @else {
+    <p>
+      {{
+        "A published agent and request-start permission are required for evaluation."
+          | localize
+      }}
+    </p>
+  }
+  @if (vm.selectedRequest(); as request) {
+    <h4>{{ vm.requestTitle(request) }}</h4>
+    <p>{{ "Status" | localize }}: {{ request.status | localize }}</p>
+    <a [routerLink]="vm.href('requests', request.ref)">{{
+      "Review saved request" | localize
+    }}</a>
+    <p
+      [hidden]="
+        vm.compatibleRequest() || vm.needsReconciliation() || vm.result()
+      "
+    >
+      {{
+        "Choose a current owned draft whose saved workflow pins this agent."
+          | localize
+      }}
+    </p>
+    <div class="authoring-actions">
+      <button
+        pButton
+        type="button"
+        [disabled]="
+          !vm.canEvaluate() ||
+          !vm.compatibleRequest() ||
+          vm.submitting() ||
+          vm.confirmed() ||
+          vm.needsReconciliation() ||
+          !!vm.result()
+        "
+        [loading]="vm.submitting()"
+        (click)="vm.submitEvaluation()"
+      >
+        {{ "Submit saved request" | localize }}</button
+      ><button
+        pButton
+        severity="secondary"
+        type="button"
+        [disabled]="vm.submitting() || vm.busy().includes('request')"
+        (click)="vm.checkRequest()"
+      >
+        {{ "Check current request" | localize }}
+      </button>
+    </div>
+  }
+  @if (vm.needsReconciliation()) {
+    <p role="alert">
+      {{
+        "The submission result needs reconciliation. Check the current request; do not create a new submission."
+          | localize
+      }}
+    </p>
+    <button
+      pButton
+      severity="secondary"
+      type="button"
+      [disabled]="!vm.canReplay()"
+      (click)="vm.retrySubmission()"
+    >
+      {{ "Recover original submission" | localize }}
+    </button>
+  }
+  @if (vm.result(); as result) {
+    <p role="status">
+      {{ "Request submission confirmed" | localize }} ·
+      {{ result.status | localize }}
+    </p>
+    <a [routerLink]="vm.href('requests', result.request)">{{
+      "Open request" | localize
+    }}</a>
+    @if (result.process) {
+      <a [routerLink]="vm.href('processes', result.process)">{{
+        "Track process" | localize
+      }}</a>
+    }
+  }
+</section>

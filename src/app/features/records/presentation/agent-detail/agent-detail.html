@@ -6,6 +6,7 @@
         @for (section of sections(); track section.key) {
           <p-tab [value]="section.key">{{ section.title | localize }}</p-tab>
         }
+        <p-tab value="checks">{{ "Saved version checks" | localize }}</p-tab>
       </p-tablist>
       <p-tabpanels
         ><p-tabpanel value="identity"
@@ -14,6 +15,11 @@
             [record]="identity()"
             [showIdentity]="false"
         /></p-tabpanel>
+        <p-tabpanel value="checks">
+          @if (tab() === "checks") {
+            <app-agent-authoring [record]="record()" />
+          }
+        </p-tabpanel>
         @for (section of sections(); track section.key) {
           <p-tabpanel [value]="section.key">
             @if (section.key === "instructions") {

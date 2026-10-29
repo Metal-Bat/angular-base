@@ -456,6 +456,22 @@ export const endpoints = {
     "requestMedia": "application/json",
     "responseType": "json"
   },
+  "preview_agent_decision_api_v1_ai_agents__ref_id__decision_preview_post": {
+    "path": "/api/v1/ai-agents/{ref_id}/decision-preview",
+    "method": "POST",
+    "area": "ai-agents",
+    "scope": "api",
+    "requestMedia": "application/json",
+    "responseType": "json"
+  },
+  "start_agent_evaluation_api_v1_ai_agents__ref_id__evaluations_post": {
+    "path": "/api/v1/ai-agents/{ref_id}/evaluations",
+    "method": "POST",
+    "area": "ai-agents",
+    "scope": "api",
+    "requestMedia": "application/json",
+    "responseType": "json"
+  },
   "history_api_v1_ai_agents__ref_id__history_post": {
     "path": "/api/v1/ai-agents/{ref_id}/history",
     "method": "POST",
@@ -470,6 +486,30 @@ export const endpoints = {
     "area": "ai-agents",
     "scope": "api",
     "requestMedia": null,
+    "responseType": "json"
+  },
+  "agent_retrieval_preview_api_v1_ai_agents__ref_id__retrieval_preview_post": {
+    "path": "/api/v1/ai-agents/{ref_id}/retrieval-preview",
+    "method": "POST",
+    "area": "ai-agents",
+    "scope": "api",
+    "requestMedia": "application/json",
+    "responseType": "json"
+  },
+  "agent_retrieval_sources_api_v1_ai_agents__ref_id__retrieval_sources_search_post": {
+    "path": "/api/v1/ai-agents/{ref_id}/retrieval-sources/search",
+    "method": "POST",
+    "area": "ai-agents",
+    "scope": "api",
+    "requestMedia": "application/json",
+    "responseType": "json"
+  },
+  "agent_workflow_context_api_v1_ai_agents__ref_id__workflow_context_post": {
+    "path": "/api/v1/ai-agents/{ref_id}/workflow-context",
+    "method": "POST",
+    "area": "ai-agents",
+    "scope": "api",
+    "requestMedia": "application/json",
     "responseType": "json"
   },
   "catalog_api_v1_analytics_catalog_get": {
@@ -822,6 +862,14 @@ export const endpoints = {
     "area": "calendar-events",
     "scope": "api",
     "requestMedia": null,
+    "responseType": "json"
+  },
+  "select_calendar_groups_api_v1_calendar_work_groups_select_post": {
+    "path": "/api/v1/calendar/work-groups/select",
+    "method": "POST",
+    "area": "calendar-events",
+    "scope": "api",
+    "requestMedia": "application/json",
     "responseType": "json"
   },
   "cancel_reminders_api_v1_calendar_work_reminders__ref_id__delete": {
@@ -2819,6 +2867,14 @@ export const endpoints = {
   "update_version_api_v1_workflow_versions__ref_id__put": {
     "path": "/api/v1/workflow-versions/{ref_id}",
     "method": "PUT",
+    "area": "workflow-versions",
+    "scope": "api",
+    "requestMedia": "application/json",
+    "responseType": "json"
+  },
+  "preview_object_fields_api_v1_workflow_versions__ref_id__binding_preview_post": {
+    "path": "/api/v1/workflow-versions/{ref_id}/binding-preview",
+    "method": "POST",
     "area": "workflow-versions",
     "scope": "api",
     "requestMedia": "application/json",

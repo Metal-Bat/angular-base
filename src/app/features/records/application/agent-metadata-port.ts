@@ -9,6 +9,7 @@ export type AgentProvider = {
 };
 export type AgentModel = {
   connection_ref: string;
+  connection_name: string;
   provider: string;
   model_id: string;
   source: 'configured';

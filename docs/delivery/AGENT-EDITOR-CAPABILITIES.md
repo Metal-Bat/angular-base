@@ -1,5 +1,17 @@
 # Agent editor capability reconciliation — V28–V30
 
+2026-10-27 producer continuation: APP-BE-019.UX01 now implements use-authorized
+connection names, exact workflow context/decision preview, authorized saved-report
+catalog/non-executing preview and governed evaluation submission. The current
+producer identity is in `../reference/app-be-wave-four/manifest.json`; the historical
+candidate below remains historical evidence. The existing metadata adapter now
+consumes and displays `connection_name` with actor cleanup and late-response fences.
+Focused Angular acceptance passes. New authoring operations have generated transport;
+purposeful workflow-context, retrieval-preview and evaluation UI still belongs to
+APP-FE-025/030 and is not completed by this producer intake. Evaluation requires a
+published Agent and an eligible saved request; its result is governed submission,
+not a provider verdict. No preview executes tools or grants approval.
+
 Candidate date: 2026-10-16. Owner: APP-FE-030.UX01 with APP-FE-025. This is the dedicated agent administration editor and its existing adapters, not closure of the parent tasks, workflow execution, deployment or user acceptance. The exact producer manifest remains `8b17df36f51e4a00716f73383c577af3d0dde046585932879e8df86befa7fcd5`; no backend source or schema is changed by this slice.
 
 | User task                             | Verified contract owner                                                             | Implemented presentation / boundary                                                                                                                                                                                                                                                                                             |
