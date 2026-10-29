@@ -288,7 +288,7 @@ const script = `
  const dropdownsIdle=()=>!document.querySelector('[role="combobox"][aria-expanded="true"]') && Array.from(document.querySelectorAll('.p-select-overlay, .p-multiselect-overlay')).every(overlay=>overlay.getAnimations({subtree:true}).every(animation=>animation.playState!=='running'));
  const chooseTheme=async value=>{
   await openPreferences();
-  await wait(dropdownsIdle,'previous dropdown closed');
+  await wait(()=>dropdownsIdle()&&themeControl()?.getAttribute('aria-disabled')!=='true','previous theme dropdown closed and control ready');
   const control=themeControl();check(control,'PrimeNG theme combobox');
   control.focus();control.click();await wait(()=>control.getAttribute('aria-expanded')==='true','theme popup');
   const popup=()=>document.getElementById(control.getAttribute('aria-controls'));

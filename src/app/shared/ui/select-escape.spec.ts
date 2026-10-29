@@ -225,3 +225,59 @@ describe('Select Escape during entry', () => {
     expect(close).not.toHaveBeenCalled();
   });
 });
+
+it('preserves a single-select Enter dismissal across late overlay entry without swallowing selection', () => {
+  const host = document.createElement('div');
+  host.innerHTML = '<span role="combobox" aria-expanded="true"></span>';
+  const shown = new EventEmitter<void>();
+  const hidden = new EventEmitter<void>();
+  const entered = new EventEmitter<void>();
+  const close = vi.fn();
+  const selection = vi.fn();
+  const release = bindSelectEscape(
+    host,
+    shown,
+    hidden,
+    close,
+    undefined,
+    entered,
+    true,
+  );
+  const control = host.querySelector('span')!;
+  control.addEventListener('keydown', selection);
+  control.dispatchEvent(
+    new KeyboardEvent('keydown', { code: 'Enter', bubbles: true }),
+  );
+  shown.emit();
+  expect(selection).toHaveBeenCalledOnce();
+  expect(close).not.toHaveBeenCalled();
+  entered.emit();
+  expect(close).toHaveBeenCalledExactlyOnceWith(true);
+  release();
+});
+
+it('keeps MultiSelect Enter selection open across entry', () => {
+  const host = document.createElement('div');
+  host.innerHTML = '<span role="combobox" aria-expanded="true"></span>';
+  const shown = new EventEmitter<void>();
+  const hidden = new EventEmitter<void>();
+  const entered = new EventEmitter<void>();
+  const close = vi.fn();
+  const release = bindSelectEscape(
+    host,
+    shown,
+    hidden,
+    close,
+    undefined,
+    entered,
+  );
+  host
+    .querySelector('span')!
+    .dispatchEvent(
+      new KeyboardEvent('keydown', { code: 'Enter', bubbles: true }),
+    );
+  shown.emit();
+  entered.emit();
+  expect(close).not.toHaveBeenCalled();
+  release();
+});

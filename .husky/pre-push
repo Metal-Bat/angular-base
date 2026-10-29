@@ -1,1 +1,2 @@
-mise run check
+# Local verification must not depend on the unclaimed remote cache.
+NX_NO_CLOUD=true mise run check

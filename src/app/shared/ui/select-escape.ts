@@ -12,7 +12,7 @@ type VisibilityEvent = {
   subscribe(next: () => void): { unsubscribe(): void };
 };
 
-/** Preserve Escape when PrimeNG's pending enter callback reasserts visibility. */
+/** Preserve dismissal when PrimeNG's pending entry reasserts visibility. */
 export function bindSelectEscape(
   host: HTMLElement,
   shown: VisibilityEvent,
@@ -20,6 +20,7 @@ export function bindSelectEscape(
   close: (restoreFocus: boolean) => void,
   startClosing?: () => void,
   entered?: VisibilityEvent,
+  closeOnEnter = false,
 ): () => void {
   const document = host.ownerDocument;
   let pending = false;
@@ -80,7 +81,7 @@ export function bindSelectEscape(
   };
   const capture = (event: KeyboardEvent): void => {
     if (
-      event.code === 'Escape' &&
+      (event.code === 'Escape' || (closeOnEnter && event.code === 'Enter')) &&
       host.querySelector('[role="combobox"][aria-expanded="true"]')
     ) {
       pending = true;
@@ -143,6 +144,7 @@ export class SelectEscape extends SelectOverlayState {
           (restoreFocus) => select.hide(restoreFocus),
           () => this.closing.set(true),
           this.entered,
+          true,
         ),
       );
     });

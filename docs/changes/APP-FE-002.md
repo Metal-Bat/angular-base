@@ -44,3 +44,7 @@ The fixture now reserves session handling for `/session/` and `/api/`, serves HT
 Focused Firefox checks passed, including three repeated repaired-fixture runs and the final scenario with its report at `/tmp/browser-boundary-fixed.json`. It records login 200, authenticated session status 200, missing-CSRF 403, authorized search 200, raw-token denial 404 and logout 200. The initial HTTPS verification attempt exposed the added Node fetch's inability to trust the disposable certificate; the regression now runs inside the browser instead, preserving the existing isolated TLS policy. Chromium is unavailable locally, so no repaired Chromium/HTTPS result is claimed.
 
 The final full `mise run check` result, unchanged start/end source identities, command exits and diagnostic counts are recorded in `artifacts/check/manifest.json`, with complete stage logs under `artifacts/check/`. Only a completed exit-0 manifest with zero diagnostics establishes local verification for this repair. Existing unrelated contract-manifest working-tree changes are preserved. This is fixture verification, not real-service, deployment or user acceptance evidence.
+
+## Local push verification continuation — 2026-10-29
+
+[Scoped hook and single-select entry repair](APP-FE-002-PUSH-2026-10-29.md) preserves the complete gate and records the intermittent Firefox failure, controlled regression, current-source verification and remote-access outcome separately from historical completion.
